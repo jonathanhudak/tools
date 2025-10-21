@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual HTML Editor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .editor-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Toolbar */
+        .toolbar {
+            width: 60px;
+            background: #2c3e50;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+            gap: 15px;
+        }
+
+        .toolbar-btn {
+            width: 40px;
+            height: 40px;
+            background: #34495e;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .toolbar-btn:hover {
+            background: #4a6278;
+            transform: scale(1.1);
+        }
+
+        .toolbar-btn.export {
+            margin-top: auto;
+            background: #27ae60;
+        }
+
+        .toolbar-btn.export:hover {
+            background: #2ecc71;
+        }
+
+        /* Canvas Area */
+        .canvas-area {
+            flex: 1;
+            background: #ecf0f1;
+            overflow-y: auto;
+            padding: 40px;
+        }
+
+        .canvas {
+            min-height: 600px;
+            background: white;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Style Panel */
+        .style-panel {
+            width: 320px;
+            background: #34495e;
+            color: white;
+            padding: 20px;
+            overflow-y: auto;
+            transition: transform 0.3s;
+        }
+
+        .style-panel.hidden {
+            transform: translateX(100%);
+        }
+
+        .style-panel h2 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #4a6278;
+        }
+
+        .style-group {
+            margin-bottom: 20px;
+        }
+
+        .style-group label {
+            display: block;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            color: #bdc3c7;
+        }
+
+        .style-group input,
+        .style-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            background: #4a6278;
+            color: white;
+            font-size: 14px;
+        }
+
+        .style-group input[type="color"] {
+            height: 40px;
+            cursor: pointer;
+        }
+
+        .style-group input[type="range"] {
+            cursor: pointer;
+        }
+
+        .delete-btn {
+            width: 100%;
+            padding: 12px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: background 0.2s;
+        }
+
+        .delete-btn:hover {
+            background: #c0392b;
+        }
+
+        /* Editable Elements */
+        .canvas [contenteditable="true"] {
+            outline: 2px dashed transparent;
+            transition: outline 0.2s;
+            cursor: text;
+        }
+
+        .canvas [contenteditable="true"]:hover {
+            outline-color: #3498db;
+        }
+
+        .canvas [contenteditable="true"]:focus {
+            outline-color: #2980b9;
+            outline-style: solid;
+        }
+
+        .canvas .editable-element {
+            position: relative;
+            min-height: 20px;
+        }
+
+        .canvas .editable-element.selected {
+            outline: 2px solid #3498db;
+        }
+
+        .canvas .editable-element:hover {
+            outline: 2px dashed #3498db;
+        }
+
+        .canvas img {
+            max-width: 100%;
+            height: auto;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .canvas img:hover {
+            opacity: 0.9;
+            outline: 2px dashed #3498db;
+        }
+
+        .canvas img.selected {
+            outline: 2px solid #3498db;
+        }
+
+        /* Welcome Message */
+        .welcome-message {
+            text-align: center;
+            color: #7f8c8d;
+            padding: 60px 20px;
+        }
+
+        .welcome-message h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .welcome-message p {
+            font-size: 16px;
+        }
+
+        /* Tooltip */
+        .toolbar-btn::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            left: 70px;
+            background: #2c3e50;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .toolbar-btn:hover::after {
+            opacity: 1;
+        }
+
+        /* File input hidden */
+        #image-upload {
+            display: none;
+        }
+
+        /* Range value display */
+        .range-value {
+            display: inline-block;
+            margin-left: 10px;
+            color: #ecf0f1;
+            font-weight: bold;
+        }
+
+        .style-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .style-row input[type="range"] {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="editor-container">
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <button class="toolbar-btn" data-tooltip="Add Heading" onclick="addElement('h1')">H1</button>
+            <button class="toolbar-btn" data-tooltip="Add Subheading" onclick="addElement('h2')">H2</button>
+            <button class="toolbar-btn" data-tooltip="Add Paragraph" onclick="addElement('p')">P</button>
+            <button class="toolbar-btn" data-tooltip="Add Button" onclick="addElement('button')">B</button>
+            <button class="toolbar-btn" data-tooltip="Add Container" onclick="addElement('div')">□</button>
+            <button class="toolbar-btn" data-tooltip="Add Image" onclick="addElement('img')">🖼</button>
+            <button class="toolbar-btn export" data-tooltip="Export HTML" onclick="exportHTML()">⬇</button>
+        </div>
+
+        <!-- Canvas Area -->
+        <div class="canvas-area">
+            <div class="canvas" id="canvas">
+                <div class="welcome-message">
+                    <h1>Visual HTML Editor</h1>
+                    <p>Click the toolbar buttons to add elements, then click to edit them inline!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Style Panel -->
+        <div class="style-panel" id="stylePanel">
+            <h2>Element Styles</h2>
+            <div id="styleControls">
+                <p style="color: #95a5a6; text-align: center; padding: 20px;">Select an element to edit its styles</p>
+            </div>
+        </div>
+
+        <!-- Hidden file input for images -->
+        <input type="file" id="image-upload" accept="image/*">
+    </div>
+
+    <script>
+        let selectedElement = null;
+        let imageUploadCallback = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('canvas').addEventListener('click', handleCanvasClick);
+            document.getElementById('image-upload').addEventListener('change', handleImageUpload);
+        });
+
+        // Add element to canvas
+        function addElement(type) {
+            const canvas = document.getElementById('canvas');
+            const welcomeMsg = canvas.querySelector('.welcome-message');
+            if (welcomeMsg) {
+                welcomeMsg.remove();
+            }
+
+            const element = document.createElement(type);
+            element.classList.add('editable-element');
+
+            switch(type) {
+                case 'h1':
+                    element.textContent = 'Heading 1';
+                    element.style.fontSize = '36px';
+                    element.style.fontWeight = 'bold';
+                    element.style.marginBottom = '20px';
+                    makeEditable(element);
+                    break;
+                case 'h2':
+                    element.textContent = 'Heading 2';
+                    element.style.fontSize = '28px';
+                    element.style.fontWeight = 'bold';
+                    element.style.marginBottom = '15px';
+                    makeEditable(element);
+                    break;
+                case 'p':
+                    element.textContent = 'Click to edit this paragraph. You can type anything you want here.';
+                    element.style.fontSize = '16px';
+                    element.style.lineHeight = '1.6';
+                    element.style.marginBottom = '15px';
+                    makeEditable(element);
+                    break;
+                case 'button':
+                    element.textContent = 'Click Me';
+                    element.style.padding = '12px 24px';
+                    element.style.fontSize = '16px';
+                    element.style.backgroundColor = '#3498db';
+                    element.style.color = 'white';
+                    element.style.border = 'none';
+                    element.style.borderRadius = '4px';
+                    element.style.cursor = 'pointer';
+                    element.style.marginBottom = '15px';
+                    makeEditable(element);
+                    break;
+                case 'div':
+                    element.textContent = 'Container - Click to edit';
+                    element.style.padding = '20px';
+                    element.style.marginBottom = '15px';
+                    element.style.border = '2px solid #ddd';
+                    element.style.borderRadius = '4px';
+                    makeEditable(element);
+                    break;
+                case 'img':
+                    element.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect fill="%23ddd" width="400" height="300"/%3E%3Ctext fill="%23999" font-family="sans-serif" font-size="24" x="50%25" y="50%25" text-anchor="middle" dominant-baseline="middle"%3EClick to upload image%3C/text%3E%3C/svg%3E';
+                    element.style.marginBottom = '15px';
+                    element.style.maxWidth = '100%';
+                    element.style.display = 'block';
+                    element.onclick = (e) => {
+                        e.stopPropagation();
+                        imageUploadCallback = element;
+                        document.getElementById('image-upload').click();
+                    };
+                    break;
+            }
+
+            canvas.appendChild(element);
+            selectElement(element);
+        }
+
+        // Make element editable
+        function makeEditable(element) {
+            if (element.tagName !== 'IMG') {
+                element.contentEditable = 'true';
+                element.addEventListener('focus', () => {
+                    element.dataset.editing = 'true';
+                });
+                element.addEventListener('blur', () => {
+                    delete element.dataset.editing;
+                });
+            }
+        }
+
+        // Handle canvas clicks
+        function handleCanvasClick(e) {
+            const target = e.target;
+            if (target.classList.contains('editable-element') || target.tagName === 'IMG') {
+                e.stopPropagation();
+                if (!target.dataset.editing) {
+                    selectElement(target);
+                }
+            } else if (target.id === 'canvas') {
+                deselectElement();
+            }
+        }
+
+        // Select element
+        function selectElement(element) {
+            if (selectedElement) {
+                selectedElement.classList.remove('selected');
+            }
+            selectedElement = element;
+            element.classList.add('selected');
+            updateStylePanel(element);
+        }
+
+        // Deselect element
+        function deselectElement() {
+            if (selectedElement) {
+                selectedElement.classList.remove('selected');
+                selectedElement = null;
+            }
+            document.getElementById('styleControls').innerHTML = '<p style="color: #95a5a6; text-align: center; padding: 20px;">Select an element to edit its styles</p>';
+        }
+
+        // Update style panel
+        function updateStylePanel(element) {
+            const computedStyle = window.getComputedStyle(element);
+            const isImage = element.tagName === 'IMG';
+
+            let controls = '';
+
+            if (!isImage) {
+                // Font Size
+                const fontSize = parseInt(computedStyle.fontSize) || 16;
+                controls += `
+                    <div class="style-group">
+                        <label>Font Size</label>
+                        <div class="style-row">
+                            <input type="range" min="10" max="72" value="${fontSize}"
+                                   oninput="updateStyle('fontSize', this.value + 'px'); this.nextElementSibling.textContent = this.value + 'px'">
+                            <span class="range-value">${fontSize}px</span>
+                        </div>
+                    </div>
+                `;
+
+                // Font Weight
+                controls += `
+                    <div class="style-group">
+                        <label>Font Weight</label>
+                        <select onchange="updateStyle('fontWeight', this.value)">
+                            <option value="normal" ${computedStyle.fontWeight === 'normal' || computedStyle.fontWeight === '400' ? 'selected' : ''}>Normal</option>
+                            <option value="bold" ${computedStyle.fontWeight === 'bold' || computedStyle.fontWeight === '700' ? 'selected' : ''}>Bold</option>
+                            <option value="lighter" ${computedStyle.fontWeight === 'lighter' ? 'selected' : ''}>Lighter</option>
+                        </select>
+                    </div>
+                `;
+
+                // Text Color
+                const color = rgbToHex(computedStyle.color);
+                controls += `
+                    <div class="style-group">
+                        <label>Text Color</label>
+                        <input type="color" value="${color}" onchange="updateStyle('color', this.value)">
+                    </div>
+                `;
+
+                // Text Align
+                controls += `
+                    <div class="style-group">
+                        <label>Text Align</label>
+                        <select onchange="updateStyle('textAlign', this.value)">
+                            <option value="left" ${computedStyle.textAlign === 'left' ? 'selected' : ''}>Left</option>
+                            <option value="center" ${computedStyle.textAlign === 'center' ? 'selected' : ''}>Center</option>
+                            <option value="right" ${computedStyle.textAlign === 'right' ? 'selected' : ''}>Right</option>
+                            <option value="justify" ${computedStyle.textAlign === 'justify' ? 'selected' : ''}>Justify</option>
+                        </select>
+                    </div>
+                `;
+            }
+
+            // Background Color
+            const bgColor = rgbToHex(computedStyle.backgroundColor);
+            controls += `
+                <div class="style-group">
+                    <label>Background Color</label>
+                    <input type="color" value="${bgColor}" onchange="updateStyle('backgroundColor', this.value)">
+                </div>
+            `;
+
+            // Padding
+            const padding = parseInt(computedStyle.padding) || 0;
+            controls += `
+                <div class="style-group">
+                    <label>Padding</label>
+                    <div class="style-row">
+                        <input type="range" min="0" max="100" value="${padding}"
+                               oninput="updateStyle('padding', this.value + 'px'); this.nextElementSibling.textContent = this.value + 'px'">
+                        <span class="range-value">${padding}px</span>
+                    </div>
+                </div>
+            `;
+
+            // Margin Bottom
+            const marginBottom = parseInt(computedStyle.marginBottom) || 0;
+            controls += `
+                <div class="style-group">
+                    <label>Margin Bottom</label>
+                    <div class="style-row">
+                        <input type="range" min="0" max="100" value="${marginBottom}"
+                               oninput="updateStyle('marginBottom', this.value + 'px'); this.nextElementSibling.textContent = this.value + 'px'">
+                        <span class="range-value">${marginBottom}px</span>
+                    </div>
+                </div>
+            `;
+
+            // Border
+            const borderWidth = parseInt(computedStyle.borderWidth) || 0;
+            const borderColor = rgbToHex(computedStyle.borderColor);
+            controls += `
+                <div class="style-group">
+                    <label>Border Width</label>
+                    <div class="style-row">
+                        <input type="range" min="0" max="10" value="${borderWidth}"
+                               oninput="updateStyle('borderWidth', this.value + 'px'); this.nextElementSibling.textContent = this.value + 'px'">
+                        <span class="range-value">${borderWidth}px</span>
+                    </div>
+                </div>
+                <div class="style-group">
+                    <label>Border Color</label>
+                    <input type="color" value="${borderColor}" onchange="updateStyle('borderColor', this.value); updateStyle('borderStyle', 'solid')">
+                </div>
+            `;
+
+            // Border Radius
+            const borderRadius = parseInt(computedStyle.borderRadius) || 0;
+            controls += `
+                <div class="style-group">
+                    <label>Border Radius</label>
+                    <div class="style-row">
+                        <input type="range" min="0" max="50" value="${borderRadius}"
+                               oninput="updateStyle('borderRadius', this.value + 'px'); this.nextElementSibling.textContent = this.value + 'px'">
+                        <span class="range-value">${borderRadius}px</span>
+                    </div>
+                </div>
+            `;
+
+            if (isImage) {
+                // Image width
+                const width = parseInt(element.style.width) || parseInt(computedStyle.width) || 400;
+                controls += `
+                    <div class="style-group">
+                        <label>Width</label>
+                        <div class="style-row">
+                            <input type="range" min="50" max="1200" value="${width}"
+                                   oninput="updateStyle('width', this.value + 'px'); this.nextElementSibling.textContent = this.value + 'px'">
+                            <span class="range-value">${width}px</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Delete button
+            controls += `<button class="delete-btn" onclick="deleteElement()">Delete Element</button>`;
+
+            document.getElementById('styleControls').innerHTML = controls;
+        }
+
+        // Update style
+        function updateStyle(property, value) {
+            if (selectedElement) {
+                selectedElement.style[property] = value;
+            }
+        }
+
+        // Delete element
+        function deleteElement() {
+            if (selectedElement) {
+                selectedElement.remove();
+                selectedElement = null;
+                deselectElement();
+            }
+        }
+
+        // Handle image upload
+        function handleImageUpload(e) {
+            const file = e.target.files[0];
+            if (file && imageUploadCallback) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    imageUploadCallback.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+                imageUploadCallback = null;
+            }
+            e.target.value = '';
+        }
+
+        // Export HTML
+        function exportHTML() {
+            const canvas = document.getElementById('canvas');
+            const clonedCanvas = canvas.cloneNode(true);
+
+            // Remove contenteditable and selected class
+            clonedCanvas.querySelectorAll('[contenteditable]').forEach(el => {
+                el.removeAttribute('contenteditable');
+            });
+            clonedCanvas.querySelectorAll('.selected').forEach(el => {
+                el.classList.remove('selected');
+            });
+            clonedCanvas.querySelectorAll('.editable-element').forEach(el => {
+                el.classList.remove('editable-element');
+            });
+
+            // Create full HTML
+            const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Web Page</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            margin: 0;
+            padding: 40px;
+            background: #ecf0f1;
+        }
+        .canvas {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    ${clonedCanvas.outerHTML}
+</body>
+</html>`;
+
+            // Download
+            const blob = new Blob([html], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'my-webpage.html';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Helper: RGB to Hex
+        function rgbToHex(rgb) {
+            if (rgb.startsWith('#')) return rgb;
+            const match = rgb.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+            if (!match) return '#000000';
+            const r = parseInt(match[1]);
+            const g = parseInt(match[2]);
+            const b = parseInt(match[3]);
+            return '#' + [r, g, b].map(x => {
+                const hex = x.toString(16);
+                return hex.length === 1 ? '0' + hex : hex;
+            }).join('');
+        }
+    </script>
+</body>
+</html>
