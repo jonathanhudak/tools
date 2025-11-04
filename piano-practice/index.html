@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PianoPractice Pro</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- VexFlow from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/vexflow@4.2.2/build/cjs/vexflow.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <h1>🎹 PianoPractice Pro</h1>
+            <div class="header-controls">
+                <button id="themeToggle" class="icon-btn" title="Toggle dark/light mode">
+                    <span class="theme-icon">🌙</span>
+                </button>
+                <div class="midi-status" id="midiStatus">
+                    <span class="status-dot"></span>
+                    <span class="status-text">No MIDI</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Sidebar Navigation -->
+            <aside class="sidebar">
+                <nav class="module-nav">
+                    <button class="nav-btn active" data-module="sightReading">
+                        <span class="nav-icon">👁️</span>
+                        <span>Sight Reading</span>
+                    </button>
+                    <button class="nav-btn" data-module="scales">
+                        <span class="nav-icon">🎼</span>
+                        <span>Scales Quiz</span>
+                    </button>
+                    <button class="nav-btn" data-module="keys">
+                        <span class="nav-icon">🔑</span>
+                        <span>Key Signatures</span>
+                    </button>
+                    <button class="nav-btn" data-module="chords">
+                        <span class="nav-icon">🎵</span>
+                        <span>Chords Quiz</span>
+                    </button>
+                    <button class="nav-btn" data-module="progress">
+                        <span class="nav-icon">📊</span>
+                        <span>Progress</span>
+                    </button>
+                </nav>
+
+                <!-- MIDI Device Selector -->
+                <div class="midi-panel">
+                    <h3>MIDI Device</h3>
+                    <select id="midiDeviceSelect" class="midi-select">
+                        <option value="">No device connected</option>
+                    </select>
+                    <button id="connectMidiBtn" class="btn btn-secondary">Connect MIDI</button>
+                    <div class="virtual-keyboard-toggle">
+                        <label>
+                            <input type="checkbox" id="virtualKeyboardToggle">
+                            <span>Virtual Keyboard</span>
+                        </label>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Module Container -->
+            <main class="module-container">
+                <!-- Sight Reading Module -->
+                <div id="sightReadingModule" class="module active">
+                    <div class="module-header">
+                        <h2>Sight Reading Practice</h2>
+                        <div class="module-controls">
+                            <label>
+                                <span>Clef:</span>
+                                <select id="clefSelect">
+                                    <option value="treble">Treble</option>
+                                    <option value="bass">Bass</option>
+                                </select>
+                            </label>
+                            <label>
+                                <span>Range:</span>
+                                <select id="rangeSelect">
+                                    <option value="c4-c5">C4-C5 (Beginner)</option>
+                                    <option value="c4-g5">C4-G5 (Intermediate)</option>
+                                    <option value="a3-c6">A3-C6 (Advanced)</option>
+                                </select>
+                            </label>
+                            <label>
+                                <input type="checkbox" id="fallingNotesToggle">
+                                <span>Falling Notes Mode</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Notation Display -->
+                    <div class="notation-container">
+                        <div id="staffDisplay" class="staff-display"></div>
+                        <div id="fallingNotesDisplay" class="falling-notes-display hidden"></div>
+                    </div>
+
+                    <!-- Feedback Display -->
+                    <div class="feedback-display">
+                        <div class="score-display">
+                            <div class="score-item">
+                                <span class="score-label">Correct:</span>
+                                <span class="score-value" id="correctCount">0</span>
+                            </div>
+                            <div class="score-item">
+                                <span class="score-label">Incorrect:</span>
+                                <span class="score-value" id="incorrectCount">0</span>
+                            </div>
+                            <div class="score-item">
+                                <span class="score-label">Streak:</span>
+                                <span class="score-value" id="streakCount">0</span>
+                            </div>
+                            <div class="score-item">
+                                <span class="score-label">Avg Time:</span>
+                                <span class="score-value" id="avgTime">-</span>
+                            </div>
+                        </div>
+                        <div class="feedback-message" id="feedbackMessage">
+                            Play the note shown above
+                        </div>
+                    </div>
+
+                    <!-- Session Controls -->
+                    <div class="session-controls">
+                        <button id="startSessionBtn" class="btn btn-primary">Start Practice</button>
+                        <button id="stopSessionBtn" class="btn btn-secondary hidden">Stop</button>
+                        <button id="nextNoteBtn" class="btn btn-secondary">Next Note</button>
+                    </div>
+                </div>
+
+                <!-- Scales Module (Placeholder) -->
+                <div id="scalesModule" class="module">
+                    <div class="module-header">
+                        <h2>Scales Quiz</h2>
+                    </div>
+                    <div class="coming-soon">
+                        <p>🎼</p>
+                        <p>Coming Soon</p>
+                        <p>Practice major and minor scales with MIDI validation</p>
+                    </div>
+                </div>
+
+                <!-- Keys Module (Placeholder) -->
+                <div id="keysModule" class="module">
+                    <div class="module-header">
+                        <h2>Key Signatures Quiz</h2>
+                    </div>
+                    <div class="coming-soon">
+                        <p>🔑</p>
+                        <p>Coming Soon</p>
+                        <p>Master key signature recognition and circle of fifths</p>
+                    </div>
+                </div>
+
+                <!-- Chords Module (Placeholder) -->
+                <div id="chordsModule" class="module">
+                    <div class="module-header">
+                        <h2>Chords Quiz</h2>
+                    </div>
+                    <div class="coming-soon">
+                        <p>🎵</p>
+                        <p>Coming Soon</p>
+                        <p>Learn and practice chord recognition and voicings</p>
+                    </div>
+                </div>
+
+                <!-- Progress Module (Placeholder) -->
+                <div id="progressModule" class="module">
+                    <div class="module-header">
+                        <h2>Practice Progress</h2>
+                    </div>
+                    <div class="coming-soon">
+                        <p>📊</p>
+                        <p>Coming Soon</p>
+                        <p>Track your progress with detailed analytics and charts</p>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Virtual Keyboard (Hidden by default) -->
+        <div id="virtualKeyboard" class="virtual-keyboard hidden">
+            <div class="keyboard-container">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Modules -->
+    <script src="js/utils/music-theory.js"></script>
+    <script src="js/utils/storage.js"></script>
+    <script src="js/midi/midi-manager.js"></script>
+    <script src="js/notation/staff-renderer.js"></script>
+    <script src="js/notation/falling-notes.js"></script>
+    <script src="js/modules/sight-reading.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
