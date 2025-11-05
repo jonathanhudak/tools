@@ -1,0 +1,26 @@
+{
+  "name": "music-practice",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "A comprehensive web-based instrument practice application designed to improve sight reading, scales, key signatures, and chord recognition through interactive exercises. Supports keyboard instruments via MIDI input and stringed/bowed instruments (violin, guitar) via microphone-based pitch detection.",
+  "main": "./dist/app.js",
+  "types": "./dist/app.d.ts",
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "pitchy": "^4.1.0",
+    "tonal": "^6.4.2"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.0",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.3"
+  }
+}

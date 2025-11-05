@@ -4,32 +4,63 @@
  * Inspired by rhythm games and Synthesia
  */
 
-class FallingNotesRenderer {
-    constructor(containerId) {
+// Type definitions
+interface NoteConfig {
+    noteWidth: number;
+    noteHeight: number;
+    fallSpeed: number;
+    hitZoneY: number;
+    hitZoneHeight: number;
+    colors: {
+        note: string;
+        hitZone: string;
+        hitZoneBorder: string;
+        correct: string;
+        incorrect: string;
+    };
+}
+
+interface FallingNote {
+    midiNote: number;
+    noteName: string;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    color: string;
+    hit: boolean;
+    missed: boolean;
+}
+
+export class FallingNotesRenderer {
+    private containerId: string;
+    private container: HTMLElement | null;
+    private canvas: HTMLCanvasElement | null = null;
+    private ctx: CanvasRenderingContext2D | null = null;
+    private animationId: number | null = null;
+    private notes: FallingNote[] = [];
+    private currentTargetNote: FallingNote | null = null;
+    private isAnimating: boolean = false;
+
+    // Configuration
+    private config: NoteConfig = {
+        noteWidth: 80,
+        noteHeight: 20,
+        fallSpeed: 2, // pixels per frame
+        hitZoneY: 350, // Y position of hit zone
+        hitZoneHeight: 40,
+        colors: {
+            note: '#3b82f6',
+            hitZone: 'rgba(59, 130, 246, 0.2)',
+            hitZoneBorder: '#3b82f6',
+            correct: '#10b981',
+            incorrect: '#ef4444'
+        }
+    };
+
+    constructor(containerId: string) {
         this.containerId = containerId;
         this.container = document.getElementById(containerId);
-        this.canvas = null;
-        this.ctx = null;
-        this.animationId = null;
-        this.notes = [];
-        this.currentTargetNote = null;
-        this.isAnimating = false;
-
-        // Configuration
-        this.config = {
-            noteWidth: 80,
-            noteHeight: 20,
-            fallSpeed: 2, // pixels per frame
-            hitZoneY: 350, // Y position of hit zone
-            hitZoneHeight: 40,
-            colors: {
-                note: '#3b82f6',
-                hitZone: 'rgba(59, 130, 246, 0.2)',
-                hitZoneBorder: '#3b82f6',
-                correct: '#10b981',
-                incorrect: '#ef4444'
-            }
-        };
 
         if (!this.container) {
             console.error('Container not found:', containerId);
@@ -42,7 +73,7 @@ class FallingNotesRenderer {
     /**
      * Initialize canvas
      */
-    init() {
+    private init(): void {
         try {
             // Create canvas
             this.canvas = document.createElement('canvas');
@@ -50,6 +81,8 @@ class FallingNotesRenderer {
             this.canvas.height = 400;
             this.canvas.style.width = '100%';
             this.canvas.style.height = '100%';
+
+            if (!this.container) return;
 
             this.container.innerHTML = '';
             this.container.appendChild(this.canvas);
@@ -64,11 +97,13 @@ class FallingNotesRenderer {
 
     /**
      * Add a new falling note
-     * @param {number} midiNote - MIDI note number
-     * @param {string} noteName - Note name for display
+     * @param midiNote - MIDI note number
+     * @param noteName - Note name for display
      */
-    addNote(midiNote, noteName) {
-        const note = {
+    addNote(midiNote: number, noteName: string): void {
+        if (!this.canvas) return;
+
+        const note: FallingNote = {
             midiNote,
             noteName,
             x: (this.canvas.width - this.config.noteWidth) / 2,
@@ -92,7 +127,7 @@ class FallingNotesRenderer {
     /**
      * Start the animation loop
      */
-    startAnimation() {
+    startAnimation(): void {
         this.isAnimating = true;
         this.animate();
     }
@@ -100,9 +135,9 @@ class FallingNotesRenderer {
     /**
      * Stop the animation loop
      */
-    stopAnimation() {
+    stopAnimation(): void {
         this.isAnimating = false;
-        if (this.animationId) {
+        if (this.animationId !== null) {
             cancelAnimationFrame(this.animationId);
             this.animationId = null;
         }
@@ -111,8 +146,8 @@ class FallingNotesRenderer {
     /**
      * Animation loop
      */
-    animate() {
-        if (!this.isAnimating) return;
+    private animate(): void {
+        if (!this.isAnimating || !this.ctx || !this.canvas) return;
 
         // Clear canvas
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -135,7 +170,7 @@ class FallingNotesRenderer {
             this.drawNote(note);
 
             // Remove notes that have fallen off screen
-            return note.y < this.canvas.height + 50;
+            return note.y < this.canvas!.height + 50;
         });
 
         // Continue animation
@@ -145,7 +180,9 @@ class FallingNotesRenderer {
     /**
      * Draw the hit zone
      */
-    drawHitZone() {
+    private drawHitZone(): void {
+        if (!this.ctx || !this.canvas) return;
+
         const ctx = this.ctx;
         const y = this.config.hitZoneY;
         const height = this.config.hitZoneHeight;
@@ -168,9 +205,11 @@ class FallingNotesRenderer {
 
     /**
      * Draw a note
-     * @param {Object} note - Note object
+     * @param note - Note object
      */
-    drawNote(note) {
+    private drawNote(note: FallingNote): void {
+        if (!this.ctx) return;
+
         const ctx = this.ctx;
 
         // Note rectangle
@@ -192,10 +231,10 @@ class FallingNotesRenderer {
 
     /**
      * Check if a played note matches the target
-     * @param {number} playedMidi - MIDI note that was played
-     * @returns {boolean} True if correct
+     * @param playedMidi - MIDI note that was played
+     * @returns True if correct
      */
-    checkNote(playedMidi) {
+    checkNote(playedMidi: number): boolean {
         if (!this.currentTargetNote || this.currentTargetNote.hit) {
             return false;
         }
@@ -222,19 +261,19 @@ class FallingNotesRenderer {
 
     /**
      * Set the falling speed
-     * @param {number} speed - Pixels per frame
+     * @param speed - Pixels per frame
      */
-    setSpeed(speed) {
+    setSpeed(speed: number): void {
         this.config.fallSpeed = speed;
     }
 
     /**
      * Clear all notes
      */
-    clear() {
+    clear(): void {
         this.notes = [];
         this.currentTargetNote = null;
-        if (this.ctx) {
+        if (this.ctx && this.canvas) {
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         }
     }
@@ -242,8 +281,8 @@ class FallingNotesRenderer {
     /**
      * Show welcome message
      */
-    showWelcome() {
-        if (!this.ctx) return;
+    showWelcome(): void {
+        if (!this.ctx || !this.canvas) return;
 
         this.clear();
         this.stopAnimation();
@@ -265,7 +304,7 @@ class FallingNotesRenderer {
     /**
      * Destroy the renderer
      */
-    destroy() {
+    destroy(): void {
         this.stopAnimation();
         this.notes = [];
         this.currentTargetNote = null;
@@ -276,4 +315,6 @@ class FallingNotesRenderer {
 }
 
 // Make available globally
-window.FallingNotesRenderer = FallingNotesRenderer;
+if (typeof window !== 'undefined') {
+    (window as any).FallingNotesRenderer = FallingNotesRenderer;
+}

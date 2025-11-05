@@ -3,24 +3,73 @@
  * Handles MIDI device connection, input detection, and note events
  */
 
-class MidiManager {
+import { midiToNoteName, midiToFrequency } from '../utils/music-theory.js';
+
+// Type definitions
+export interface MIDIDevice {
+    id: string;
+    name: string;
+    manufacturer: string;
+    state: MIDIPortDeviceState;
+    connection: MIDIPortConnectionState;
+}
+
+export interface NoteOnEvent {
+    note: number;
+    velocity: number;
+    noteName: string;
+    frequency: number;
+    timestamp: number;
+}
+
+export interface NoteOffEvent {
+    note: number;
+    noteName: string;
+    timestamp: number;
+}
+
+export interface DeviceChangeEvent {
+    connected?: boolean;
+    device?: MIDIInput | null;
+    type?: string;
+    port?: MIDIPort;
+}
+
+export interface ErrorEvent {
+    message: string;
+}
+
+type EventCallback<T> = (event: T) => void;
+
+interface Listeners {
+    noteOn: EventCallback<NoteOnEvent>[];
+    noteOff: EventCallback<NoteOffEvent>[];
+    deviceChange: EventCallback<DeviceChangeEvent>[];
+    error: EventCallback<ErrorEvent>[];
+}
+
+export type EventType = keyof Listeners;
+
+export class MidiManager {
+    private midiAccess: MIDIAccess | null = null;
+    private selectedInput: MIDIInput | null = null;
+    private listeners: Listeners;
+    private activeNotes: Set<number>;
+
     constructor() {
-        this.midiAccess = null;
-        this.selectedInput = null;
         this.listeners = {
             noteOn: [],
             noteOff: [],
             deviceChange: [],
             error: []
         };
-        this.activeNotes = new Set();
+        this.activeNotes = new Set<number>();
     }
 
     /**
      * Initialize MIDI access
-     * @returns {Promise<boolean>} Success status
      */
-    async init() {
+    async init(): Promise<boolean> {
         try {
             // Check for Web MIDI API support
             if (!navigator.requestMIDIAccess) {
@@ -32,8 +81,8 @@ class MidiManager {
             this.midiAccess = await navigator.requestMIDIAccess();
 
             // Listen for device connections/disconnections
-            this.midiAccess.addEventListener('statechange', (e) => {
-                this.handleStateChange(e);
+            this.midiAccess.addEventListener('statechange', (e: Event) => {
+                this.handleStateChange(e as MIDIConnectionEvent);
             });
 
             // Initialize available devices
@@ -50,17 +99,16 @@ class MidiManager {
 
     /**
      * Get list of available MIDI input devices
-     * @returns {Array} Array of device objects
      */
-    getInputDevices() {
+    getInputDevices(): MIDIDevice[] {
         if (!this.midiAccess) return [];
 
-        const devices = [];
+        const devices: MIDIDevice[] = [];
         for (const input of this.midiAccess.inputs.values()) {
             devices.push({
                 id: input.id,
-                name: input.name,
-                manufacturer: input.manufacturer,
+                name: input.name || 'Unknown Device',
+                manufacturer: input.manufacturer || 'Unknown',
                 state: input.state,
                 connection: input.connection
             });
@@ -71,10 +119,8 @@ class MidiManager {
 
     /**
      * Connect to a specific MIDI input device
-     * @param {string} deviceId - Device ID to connect to
-     * @returns {boolean} Success status
      */
-    connectDevice(deviceId) {
+    connectDevice(deviceId: string): boolean {
         if (!this.midiAccess) {
             console.error('MIDI not initialized');
             return false;
@@ -92,7 +138,7 @@ class MidiManager {
         }
 
         // Attach event listener
-        input.onmidimessage = (message) => this.handleMidiMessage(message);
+        input.onmidimessage = (message: MIDIMessageEvent) => this.handleMidiMessage(message);
 
         this.selectedInput = input;
         this.emitDeviceChange({ connected: true, device: input });
@@ -104,7 +150,7 @@ class MidiManager {
     /**
      * Disconnect current MIDI device
      */
-    disconnectDevice() {
+    disconnectDevice(): void {
         if (this.selectedInput) {
             this.selectedInput.onmidimessage = null;
             this.selectedInput = null;
@@ -116,10 +162,13 @@ class MidiManager {
 
     /**
      * Handle incoming MIDI messages
-     * @param {MIDIMessageEvent} message - MIDI message event
      */
-    handleMidiMessage(message) {
-        const [status, note, velocity] = message.data;
+    private handleMidiMessage(message: MIDIMessageEvent): void {
+        if (!message.data || message.data.length < 3) return;
+
+        const status = message.data[0];
+        const note = message.data[1];
+        const velocity = message.data[2];
 
         // Extract message type from status byte
         const messageType = status & 0xf0;
@@ -146,10 +195,8 @@ class MidiManager {
 
     /**
      * Handle note on event
-     * @param {number} note - MIDI note number
-     * @param {number} velocity - Note velocity (0-127)
      */
-    handleNoteOn(note, velocity) {
+    private handleNoteOn(note: number, velocity: number): void {
         this.activeNotes.add(note);
 
         // Emit to all registered listeners
@@ -158,8 +205,8 @@ class MidiManager {
                 callback({
                     note,
                     velocity,
-                    noteName: MusicTheory.midiToNoteName(note),
-                    frequency: MusicTheory.midiToFrequency(note),
+                    noteName: midiToNoteName(note),
+                    frequency: midiToFrequency(note),
                     timestamp: Date.now()
                 });
             } catch (error) {
@@ -170,9 +217,8 @@ class MidiManager {
 
     /**
      * Handle note off event
-     * @param {number} note - MIDI note number
      */
-    handleNoteOff(note) {
+    private handleNoteOff(note: number): void {
         this.activeNotes.delete(note);
 
         // Emit to all registered listeners
@@ -180,7 +226,7 @@ class MidiManager {
             try {
                 callback({
                     note,
-                    noteName: MusicTheory.midiToNoteName(note),
+                    noteName: midiToNoteName(note),
                     timestamp: Date.now()
                 });
             } catch (error) {
@@ -191,9 +237,10 @@ class MidiManager {
 
     /**
      * Handle device state changes (connection/disconnection)
-     * @param {MIDIConnectionEvent} event - State change event
      */
-    handleStateChange(event) {
+    private handleStateChange(event: MIDIConnectionEvent): void {
+        if (!event.port) return;
+
         console.log('MIDI device state changed:', event.port.name, event.port.state);
         this.updateDeviceList();
 
@@ -211,7 +258,7 @@ class MidiManager {
     /**
      * Update the device list (called on state changes)
      */
-    updateDeviceList() {
+    private updateDeviceList(): void {
         const devices = this.getInputDevices();
         console.log('Available MIDI devices:', devices);
 
@@ -223,12 +270,10 @@ class MidiManager {
 
     /**
      * Register an event listener
-     * @param {string} event - Event type ('noteOn', 'noteOff', 'deviceChange', 'error')
-     * @param {Function} callback - Callback function
      */
-    on(event, callback) {
+    on<T extends EventType>(event: T, callback: Listeners[T][number]): void {
         if (this.listeners[event]) {
-            this.listeners[event].push(callback);
+            this.listeners[event].push(callback as any);
         } else {
             console.warn('Unknown event type:', event);
         }
@@ -236,12 +281,10 @@ class MidiManager {
 
     /**
      * Remove an event listener
-     * @param {string} event - Event type
-     * @param {Function} callback - Callback function to remove
      */
-    off(event, callback) {
+    off<T extends EventType>(event: T, callback: Listeners[T][number]): void {
         if (this.listeners[event]) {
-            const index = this.listeners[event].indexOf(callback);
+            const index = this.listeners[event].indexOf(callback as any);
             if (index > -1) {
                 this.listeners[event].splice(index, 1);
             }
@@ -250,9 +293,8 @@ class MidiManager {
 
     /**
      * Emit device change event
-     * @param {Object} data - Event data
      */
-    emitDeviceChange(data) {
+    private emitDeviceChange(data: DeviceChangeEvent): void {
         this.listeners.deviceChange.forEach(callback => {
             try {
                 callback(data);
@@ -264,9 +306,8 @@ class MidiManager {
 
     /**
      * Emit error event
-     * @param {string} message - Error message
      */
-    emitError(message) {
+    private emitError(message: string): void {
         this.listeners.error.forEach(callback => {
             try {
                 callback({ message });
@@ -278,28 +319,22 @@ class MidiManager {
 
     /**
      * Check if a note is currently being played
-     * @param {number} note - MIDI note number
-     * @returns {boolean} True if note is active
      */
-    isNoteActive(note) {
+    isNoteActive(note: number): boolean {
         return this.activeNotes.has(note);
     }
 
     /**
      * Get all currently active notes
-     * @returns {Array} Array of active MIDI note numbers
      */
-    getActiveNotes() {
+    getActiveNotes(): number[] {
         return Array.from(this.activeNotes);
     }
 
     /**
      * Simulate a note (for testing without MIDI device)
-     * @param {number} note - MIDI note number
-     * @param {number} velocity - Note velocity
-     * @param {number} duration - Duration in milliseconds
      */
-    simulateNote(note, velocity = 64, duration = 500) {
+    simulateNote(note: number, velocity: number = 64, duration: number = 500): void {
         this.handleNoteOn(note, velocity);
 
         setTimeout(() => {
@@ -309,12 +344,28 @@ class MidiManager {
 
     /**
      * Check if MIDI is supported
-     * @returns {boolean} True if Web MIDI API is supported
      */
-    static isSupported() {
-        return !!navigator.requestMIDIAccess;
+    static isSupported(): boolean {
+        return typeof navigator !== 'undefined' && !!navigator.requestMIDIAccess;
+    }
+
+    /**
+     * Get current connected device
+     */
+    getConnectedDevice(): MIDIDevice | null {
+        if (!this.selectedInput) return null;
+
+        return {
+            id: this.selectedInput.id,
+            name: this.selectedInput.name || 'Unknown Device',
+            manufacturer: this.selectedInput.manufacturer || 'Unknown',
+            state: this.selectedInput.state,
+            connection: this.selectedInput.connection
+        };
     }
 }
 
-// Make available globally
-window.MidiManager = MidiManager;
+// Make available globally for legacy code
+if (typeof window !== 'undefined') {
+    (window as any).MidiManager = MidiManager;
+}
