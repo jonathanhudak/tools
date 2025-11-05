@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/jonathanhudak/tools/compare/v1.0.1...v1.0.2) (2025-11-05)
+
+
+### Bug Fixes
+
+* release ([0f60d6b](https://github.com/jonathanhudak/tools/commit/0f60d6b8d7f439437ab66ff964f4865eeecd8246))
+
 ## [1.0.1](https://github.com/jonathanhudak/tools/compare/v1.0.0...v1.0.1) (2025-11-05)
 
 
