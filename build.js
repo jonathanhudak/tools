@@ -45,9 +45,21 @@ items.forEach(item => {
 
         // Copy dist to docs
         const distPath = path.join(dirPath, 'dist');
+        const appDeployPath = path.join(deployDir, dirName);
+
         if (fs.existsSync(distPath)) {
-          const appDeployPath = path.join(deployDir, dirName);
           fs.cpSync(distPath, appDeployPath, { recursive: true });
+
+          // Also copy HTML files and other static assets from root if they exist
+          const staticFiles = ['index.html', 'styles.css', 'favicon.ico', 'assets', 'css', 'images', 'fonts', 'public'];
+          staticFiles.forEach(file => {
+            const srcFile = path.join(dirPath, file);
+            if (fs.existsSync(srcFile)) {
+              const destFile = path.join(appDeployPath, file);
+              fs.cpSync(srcFile, destFile, { recursive: true });
+            }
+          });
+
           console.log(`✓ ${dirName} built and copied to docs/${dirName}/`);
         } else {
           console.warn(`⚠ ${dirName} built but no dist/ directory found`);
