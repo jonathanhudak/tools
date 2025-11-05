@@ -1,17 +1,28 @@
 {
-  "name": "tools",
+  "name": "tools-monorepo",
   "version": "1.0.0",
   "description": "Collection of web-based tools and utilities",
+  "private": true,
   "type": "module",
+  "packageManager": "npm@10.8.2",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "build": "node build.js",
-    "deploy": "gh-pages -d docs -t true",
-    "typecheck": "cd music-practice && npm run typecheck"
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "deploy": "npm run build && gh-pages -d docs -t true",
+    "music": "npm run -w @hudak/music-practice --"
   },
   "keywords": [
     "tools",
     "web-apps",
-    "utilities"
+    "utilities",
+    "monorepo"
   ],
   "author": "Jonathan Hudak",
   "license": "ISC",
@@ -21,6 +32,7 @@
     "@semantic-release/git": "^10.0.1",
     "@semantic-release/github": "^11.0.6",
     "gh-pages": "^6.3.0",
-    "semantic-release": "^24.2.9"
+    "semantic-release": "^24.2.9",
+    "turbo": "^2.6.0"
   }
 }

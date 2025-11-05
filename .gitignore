@@ -4,3 +4,6 @@ dist
 .DS_Store
 *.log
 CHANGELOG.md
+.turbo
+.vite
+*.tsbuildinfo

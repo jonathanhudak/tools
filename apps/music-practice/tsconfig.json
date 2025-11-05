@@ -1,0 +1,14 @@
+{
+  "extends": "@tools/typescript-config/react.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "noEmit": true,
+    "allowJs": true
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist", "js"],
+  "references": [{ "path": "./tsconfig.node.json" }]
+}
