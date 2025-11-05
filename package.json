@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "node build.js",
+    "deploy": "gh-pages -d docs -t true",
     "typecheck": "cd music-practice && npm run typecheck"
   },
   "keywords": [
@@ -19,6 +20,7 @@
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
     "@semantic-release/github": "^11.0.6",
+    "gh-pages": "^6.3.0",
     "semantic-release": "^24.2.9"
   }
 }

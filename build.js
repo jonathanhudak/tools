@@ -64,7 +64,17 @@ items.forEach(item => {
   else if (fs.existsSync(indexHtmlPath)) {
     console.log(`Copying static app ${dirName}...`);
     const appDeployPath = path.join(deployDir, dirName);
-    fs.cpSync(dirPath, appDeployPath, { recursive: true });
+    fs.mkdirSync(appDeployPath, { recursive: true });
+
+    // Copy only specific files, not node_modules or other build artifacts
+    const filesToCopy = fs.readdirSync(dirPath);
+    filesToCopy.forEach(file => {
+      if (file === 'node_modules' || file.startsWith('.')) return;
+      const srcPath = path.join(dirPath, file);
+      const destPath = path.join(appDeployPath, file);
+      fs.cpSync(srcPath, destPath, { recursive: true });
+    });
+
     console.log(`✓ ${dirName} copied to docs/${dirName}/`);
   }
 });
