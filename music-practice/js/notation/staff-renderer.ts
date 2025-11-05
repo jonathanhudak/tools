@@ -3,14 +3,34 @@
  * Uses VexFlow to render musical notation on staff
  */
 
-class StaffRenderer {
-    constructor(containerId) {
+import { MusicTheory } from '../utils/music-theory.js';
+
+// VexFlow types (declare global types for VexFlow library)
+declare global {
+    interface Window {
+        Vex: any;
+    }
+    const Vex: any;
+}
+
+// Type definitions
+export type ClefType = 'treble' | 'bass';
+
+interface RenderOptions {
+    highlight?: boolean;
+}
+
+export class StaffRenderer {
+    private containerId: string;
+    private container: HTMLElement | null;
+    private renderer: any = null;
+    private context: any = null;
+    private currentNote: string | null = null;
+    private clef: ClefType = 'treble';
+
+    constructor(containerId: string) {
         this.containerId = containerId;
         this.container = document.getElementById(containerId);
-        this.renderer = null;
-        this.context = null;
-        this.currentNote = null;
-        this.clef = 'treble';
 
         if (!this.container) {
             console.error('Container not found:', containerId);
@@ -23,13 +43,15 @@ class StaffRenderer {
     /**
      * Initialize VexFlow renderer
      */
-    init() {
+    private init(): void {
         try {
             // Check if VexFlow is loaded
             if (typeof Vex === 'undefined') {
                 console.error('VexFlow not loaded');
                 return;
             }
+
+            if (!this.container) return;
 
             // Clear container
             this.container.innerHTML = '';
@@ -55,18 +77,18 @@ class StaffRenderer {
 
     /**
      * Set the clef type
-     * @param {string} clef - 'treble' or 'bass'
+     * @param clef - 'treble' or 'bass'
      */
-    setClef(clef) {
+    setClef(clef: ClefType): void {
         this.clef = clef;
     }
 
     /**
      * Render a single note on the staff
-     * @param {string} vexflowNote - Note in VexFlow format (e.g., "c/4")
-     * @param {Object} options - Rendering options
+     * @param vexflowNote - Note in VexFlow format (e.g., "c/4")
+     * @param options - Rendering options
      */
-    renderNote(vexflowNote, options = {}) {
+    renderNote(vexflowNote: string, options: RenderOptions = {}): void {
         if (!this.context) {
             console.error('Renderer not initialized');
             return;
@@ -74,6 +96,8 @@ class StaffRenderer {
 
         try {
             const VF = Vex.Flow;
+
+            if (!this.container) return;
 
             // Clear previous content
             this.context.clear();
@@ -132,9 +156,9 @@ class StaffRenderer {
 
     /**
      * Render multiple notes on the staff
-     * @param {Array} notes - Array of VexFlow notes
+     * @param notes - Array of VexFlow notes
      */
-    renderNotes(notes) {
+    renderNotes(notes: string[]): void {
         if (!this.context) {
             console.error('Renderer not initialized');
             return;
@@ -142,6 +166,8 @@ class StaffRenderer {
 
         try {
             const VF = Vex.Flow;
+
+            if (!this.container) return;
 
             // Clear previous content
             this.context.clear();
@@ -191,12 +217,12 @@ class StaffRenderer {
 
     /**
      * Render a scale on the staff
-     * @param {Array} midiNotes - Array of MIDI note numbers
+     * @param midiNotes - Array of MIDI note numbers
      */
-    renderScale(midiNotes) {
+    renderScale(midiNotes: number[]): void {
         const vexflowNotes = midiNotes
             .map(midi => MusicTheory.midiToVexflow(midi, this.clef))
-            .filter(note => note !== null);
+            .filter((note): note is string => note !== null);
 
         if (vexflowNotes.length > 0) {
             this.renderNotes(vexflowNotes);
@@ -206,22 +232,26 @@ class StaffRenderer {
     /**
      * Highlight the current note (visual feedback)
      */
-    highlightNote() {
+    private highlightNote(): void {
+        if (!this.container) return;
+
         // Add a visual highlight to the SVG
         const svg = this.container.querySelector('svg');
         if (svg) {
             const noteheads = svg.querySelectorAll('.vf-notehead');
             noteheads.forEach(notehead => {
-                notehead.style.fill = '#3b82f6';
+                (notehead as HTMLElement).style.fill = '#3b82f6';
             });
         }
     }
 
     /**
      * Show feedback for correct/incorrect note
-     * @param {boolean} isCorrect - Whether the note was correct
+     * @param isCorrect - Whether the note was correct
      */
-    showFeedback(isCorrect) {
+    showFeedback(isCorrect: boolean): void {
+        if (!this.container) return;
+
         const svg = this.container.querySelector('svg');
         if (!svg) return;
 
@@ -229,23 +259,26 @@ class StaffRenderer {
         const color = isCorrect ? '#10b981' : '#ef4444';
 
         noteheads.forEach(notehead => {
-            notehead.style.fill = color;
-            notehead.style.transition = 'fill 0.3s ease';
+            const element = notehead as HTMLElement;
+            element.style.fill = color;
+            element.style.transition = 'fill 0.3s ease';
         });
 
         // Reset after animation
         setTimeout(() => {
             noteheads.forEach(notehead => {
-                notehead.style.fill = '';
+                (notehead as HTMLElement).style.fill = '';
             });
         }, 500);
     }
 
     /**
      * Show error message
-     * @param {string} message - Error message to display
+     * @param message - Error message to display
      */
-    showError(message) {
+    private showError(message: string): void {
+        if (!this.container) return;
+
         this.container.innerHTML = `
             <div style="
                 display: flex;
@@ -263,7 +296,9 @@ class StaffRenderer {
     /**
      * Show welcome message
      */
-    showWelcome() {
+    showWelcome(): void {
+        if (!this.container) return;
+
         this.container.innerHTML = `
             <div style="
                 display: flex;
@@ -289,22 +324,26 @@ class StaffRenderer {
     /**
      * Clear the staff
      */
-    clear() {
+    clear(): void {
         if (this.context) {
             this.context.clear();
         }
-        this.container.innerHTML = '';
+        if (this.container) {
+            this.container.innerHTML = '';
+        }
         this.currentNote = null;
     }
 
     /**
      * Get the current note
-     * @returns {string} Current VexFlow note
+     * @returns Current VexFlow note
      */
-    getCurrentNote() {
+    getCurrentNote(): string | null {
         return this.currentNote;
     }
 }
 
 // Make available globally
-window.StaffRenderer = StaffRenderer;
+if (typeof window !== 'undefined') {
+    (window as any).StaffRenderer = StaffRenderer;
+}

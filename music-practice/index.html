@@ -12,7 +12,7 @@
     <div class="app-container">
         <!-- Header -->
         <header class="app-header">
-            <h1>🎹 PianoPractice Pro</h1>
+            <h1>🎵 InstrumentPractice Pro</h1>
             <div class="header-controls">
                 <button id="themeToggle" class="icon-btn" title="Toggle dark/light mode">
                     <span class="theme-icon">🌙</span>
@@ -20,6 +20,10 @@
                 <div class="midi-status" id="midiStatus">
                     <span class="status-dot"></span>
                     <span class="status-text">No MIDI</span>
+                </div>
+                <div class="microphone-status" id="microphoneStatus">
+                    <span class="status-dot"></span>
+                    <span class="status-text">No Microphone</span>
                 </div>
             </div>
         </header>
@@ -51,8 +55,18 @@
                     </button>
                 </nav>
 
+                <!-- Instrument Selector -->
+                <div class="instrument-panel">
+                    <h3>Instrument</h3>
+                    <select id="instrumentSelect" class="instrument-select">
+                        <option value="piano">🎹 Piano (MIDI)</option>
+                        <option value="violin">🎻 Violin (Microphone)</option>
+                        <option value="guitar">🎸 Guitar (Microphone)</option>
+                    </select>
+                </div>
+
                 <!-- MIDI Device Selector -->
-                <div class="midi-panel">
+                <div class="midi-panel" id="midiSection">
                     <h3>MIDI Device</h3>
                     <select id="midiDeviceSelect" class="midi-select">
                         <option value="">No device connected</option>
@@ -63,6 +77,28 @@
                             <input type="checkbox" id="virtualKeyboardToggle">
                             <span>Virtual Keyboard</span>
                         </label>
+                    </div>
+                </div>
+
+                <!-- Microphone Input -->
+                <div class="microphone-panel" id="microphoneSection" style="display: none;">
+                    <h3>Microphone</h3>
+                    <select id="audioDeviceSelect" class="audio-select">
+                        <option value="">Select microphone...</option>
+                    </select>
+                    <div id="microphoneControls">
+                        <button id="connectMicrophoneBtn" class="btn btn-primary">🎤 Connect Microphone</button>
+                    </div>
+                    <div class="audio-level-display">
+                        <label>Audio Level:</label>
+                        <div class="level-bar">
+                            <div class="level-fill" id="audioLevelBar"></div>
+                        </div>
+                    </div>
+                    <div class="pitch-display" id="pitchDisplay">
+                        <span class="pitch-label">Detected:</span>
+                        <span class="pitch-value" id="detectedPitch">-</span>
+                        <span class="pitch-cents" id="detectedCents"></span>
                     </div>
                 </div>
             </aside>
@@ -132,6 +168,7 @@
                         <button id="startSessionBtn" class="btn btn-primary">Start Practice</button>
                         <button id="stopSessionBtn" class="btn btn-secondary hidden">Stop</button>
                         <button id="nextNoteBtn" class="btn btn-secondary">Next Note</button>
+                        <button id="playReferenceBtn" class="btn btn-secondary">🔊 Play Note</button>
                     </div>
                 </div>
 
@@ -193,13 +230,7 @@
         </div>
     </div>
 
-    <!-- JavaScript Modules -->
-    <script src="js/utils/music-theory.js"></script>
-    <script src="js/utils/storage.js"></script>
-    <script src="js/midi/midi-manager.js"></script>
-    <script src="js/notation/staff-renderer.js"></script>
-    <script src="js/notation/falling-notes.js"></script>
-    <script src="js/modules/sight-reading.js"></script>
-    <script src="js/app.js"></script>
+    <!-- JavaScript Bundle (TypeScript compiled) -->
+    <script type="module" src="dist/app.js"></script>
 </body>
 </html>
