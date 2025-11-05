@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/jonathanhudak/tools/compare/v1.0.2...v1.0.3) (2025-11-05)
+
+
+### Bug Fixes
+
+* include HTML and CSS files in music-practice deployment ([49e22b5](https://github.com/jonathanhudak/tools/commit/49e22b5bf3ea2556bda813369faaa15577fb3652))
+
 ## [1.0.2](https://github.com/jonathanhudak/tools/compare/v1.0.1...v1.0.2) (2025-11-05)
 
 
