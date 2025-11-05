@@ -1,0 +1,14 @@
+{
+  "name": "visual-html-builder",
+  "version": "1.0.0",
+  "description": "A visual HTML editor with real-time preview",
+  "private": true,
+  "scripts": {
+    "build": "echo 'Static app - no build needed' && exit 0",
+    "dev": "echo 'Open index.html in browser'",
+    "clean": "echo 'Nothing to clean'"
+  },
+  "keywords": ["html", "editor", "visual", "builder"],
+  "author": "Jonathan Hudak",
+  "license": "ISC"
+}

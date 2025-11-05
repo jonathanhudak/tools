@@ -15,17 +15,18 @@ fs.mkdirSync(deployDir);
 // Add .nojekyll to prevent Jekyll processing
 fs.writeFileSync(path.join(deployDir, '.nojekyll'), '');
 
-// Get all directories in the root
-const items = fs.readdirSync(__dirname, { withFileTypes: true });
+// Get all directories in the apps folder
+const appsDir = path.join(__dirname, 'apps');
+const items = fs.readdirSync(appsDir, { withFileTypes: true });
 
 items.forEach(item => {
   if (!item.isDirectory()) return;
 
   const dirName = item.name;
-  const dirPath = path.join(__dirname, dirName);
+  const dirPath = path.join(appsDir, dirName);
 
   // Skip special directories
-  if (dirName.startsWith('.') || dirName === 'node_modules' || dirName === 'docs') {
+  if (dirName.startsWith('.') || dirName === 'node_modules') {
     return;
   }
 
