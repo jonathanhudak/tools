@@ -33,6 +33,7 @@ interface FallingNote {
 }
 
 export class FallingNotesRenderer {
+    private containerId: string;
     private container: HTMLElement | null;
     private canvas: HTMLCanvasElement | null = null;
     private ctx: CanvasRenderingContext2D | null = null;
@@ -58,6 +59,7 @@ export class FallingNotesRenderer {
     };
 
     constructor(containerId: string) {
+        this.containerId = containerId;
         this.container = document.getElementById(containerId);
 
         if (!this.container) {

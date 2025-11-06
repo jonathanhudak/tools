@@ -238,7 +238,119 @@ export { AudioManager };
 
 ### CSS/Styling Standards
 
-#### File Organization
+#### Tailwind CSS v4 + shadcn/ui (React Apps)
+
+For React applications, we use Tailwind CSS v4 with the Vite plugin and shadcn/ui components.
+
+**Key Setup Requirements:**
+
+1. **Package Structure:**
+```
+packages/ui/
+├── src/
+│   ├── components/        # shadcn/ui components
+│   ├── lib/utils.ts       # cn() utility
+│   └── styles/
+│       └── globals.css    # Tailwind + theme config
+```
+
+2. **Critical: Custom Utility Classes**
+
+Tailwind v4 does NOT automatically generate utilities for custom CSS variables. You must explicitly define them:
+
+```css
+/* packages/ui/src/styles/globals.css */
+@import "tailwindcss";
+
+@source "../**/*.{ts,tsx}";  /* Tell Tailwind to scan UI components */
+
+@theme {
+  /* Define color variables in HSL format */
+  --color-popover: 0 0% 100%;
+  --color-card: 0 0% 100%;
+  /* ... other colors */
+}
+
+.dark {
+  /* Dark mode overrides */
+  --color-popover: 0 0% 10%;
+  --color-card: 0 0% 15%;
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--color-border));
+  }
+  body {
+    background-color: hsl(var(--color-background));
+    color: hsl(var(--color-foreground));
+  }
+}
+
+/* CRITICAL: Manually define semantic color utilities */
+@layer utilities {
+  .bg-popover {
+    background-color: hsl(var(--color-popover));
+  }
+  .bg-card {
+    background-color: hsl(var(--color-card));
+  }
+  .text-popover-foreground {
+    color: hsl(var(--color-popover-foreground));
+  }
+  .text-card-foreground {
+    color: hsl(var(--color-card-foreground));
+  }
+  /* Add all other semantic color utilities */
+}
+```
+
+**Why This Is Required:**
+- Tailwind v4 automatically generates utilities like `bg-red-500` from its built-in color palette
+- Custom CSS variables (like `--color-popover`) are NOT automatically converted to utilities
+- shadcn/ui components use classes like `bg-popover`, which won't work without explicit definitions
+- The `@source` directive tells Tailwind where to scan for class names
+
+3. **App-Level CSS:**
+```css
+/* apps/music-practice/src/index.css */
+@import "@hudak/ui/styles/globals.css";
+
+/* Override theme colors for this app */
+:root {
+  --color-primary: 222 47% 55%;
+  --radius-lg: 0.75rem;
+}
+
+.dark {
+  --color-primary: 222 47% 65%;
+}
+```
+
+4. **Vite Configuration:**
+```typescript
+// vite.config.ts
+import tailwindcss from '@tailwindcss/vite';
+
+export default defineConfig({
+  plugins: [
+    react(),
+    tailwindcss(),  // No config needed - uses CSS-based config
+  ],
+});
+```
+
+5. **Dark Mode Toggle:**
+```typescript
+// Toggle dark mode by adding/removing .dark class on documentElement
+const toggleTheme = () => {
+  document.documentElement.classList.toggle('dark');
+};
+```
+
+#### Vanilla CSS (Non-React Apps)
+
+For non-React apps, use standard CSS Custom Properties:
 
 ```
 css/

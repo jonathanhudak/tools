@@ -3,7 +3,10 @@
   "extends": "./base.json",
   "compilerOptions": {
     "lib": ["ES2020"],
-    "moduleResolution": "node",
-    "types": ["node"]
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "types": ["node"],
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true
   }
 }

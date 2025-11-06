@@ -3,8 +3,10 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@hudak/ui/*": ["../../packages/ui/src/*"]
     },
+    "types": ["vite/client"],
     "noEmit": true,
     "allowJs": true
   },

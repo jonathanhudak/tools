@@ -5,6 +5,7 @@
   "files": [
     "base.json",
     "react.json",
-    "node.json"
+    "node.json",
+    "vite.json"
   ]
 }

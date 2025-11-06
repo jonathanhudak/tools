@@ -5,7 +5,7 @@
   "description": "A comprehensive web-based instrument practice application designed to improve sight reading, scales, key signatures, and chord recognition through interactive exercises. Supports keyboard instruments via MIDI input and stringed/bowed instruments (violin, guitar) via microphone-based pitch detection.",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
@@ -15,6 +15,8 @@
   "author": "Jonathan Hudak",
   "license": "ISC",
   "dependencies": {
+    "@tanstack/react-router": "^1.91.6",
+    "@hudak/ui": "*",
     "pitchy": "^4.1.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -22,13 +24,12 @@
     "vexflow": "^4.2.5"
   },
   "devDependencies": {
+    "@tanstack/router-devtools": "^1.91.6",
     "@tools/eslint-config": "*",
     "@tools/typescript-config": "*",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
-    "@vitejs/plugin-react": "^4.3.4",
     "eslint": "^8.57.1",
-    "typescript": "^5.9.3",
-    "vite": "^5.4.11"
+    "typescript": "^5.9.3"
   }
 }

@@ -3,7 +3,7 @@
  * Uses VexFlow to render musical notation on staff
  */
 
-import { MusicTheory } from '../utils/music-theory.js';
+import { MusicTheory } from '../utils/music-theory';
 
 // VexFlow types (declare global types for VexFlow library)
 declare global {
@@ -21,6 +21,7 @@ interface RenderOptions {
 }
 
 export class StaffRenderer {
+    private containerId: string;
     private container: HTMLElement | null;
     private renderer: any = null;
     private context: any = null;
@@ -28,6 +29,7 @@ export class StaffRenderer {
     private clef: ClefType = 'treble';
 
     constructor(containerId: string) {
+        this.containerId = containerId;
         this.container = document.getElementById(containerId);
 
         if (!this.container) {
@@ -36,6 +38,40 @@ export class StaffRenderer {
         }
 
         this.init();
+    }
+
+    /**
+     * Check if dark mode is active
+     */
+    private isDarkMode(): boolean {
+        return document.documentElement.classList.contains('dark');
+    }
+
+    /**
+     * Get the appropriate stroke color based on theme
+     */
+    private getStrokeColor(): string {
+        return this.isDarkMode() ? '#e5e5e5' : '#000000';
+    }
+
+    /**
+     * Apply theme-aware styling to SVG
+     */
+    private applyThemeToSVG(svg: SVGElement): void {
+        const strokeColor = this.getStrokeColor();
+
+        // Style all staff lines and note elements
+        svg.style.color = strokeColor;
+
+        // Apply stroke color to all paths and lines
+        const elements = svg.querySelectorAll('path, line, rect, circle, ellipse');
+        elements.forEach(el => {
+            const element = el as SVGElement;
+            if (!element.style.fill || element.style.fill === 'black' || element.style.fill === 'rgb(0, 0, 0)') {
+                element.style.stroke = strokeColor;
+                element.style.fill = strokeColor;
+            }
+        });
     }
 
     /**
@@ -141,6 +177,12 @@ export class StaffRenderer {
 
             this.currentNote = vexflowNote;
 
+            // Apply theme styling
+            const svg = this.container?.querySelector('svg');
+            if (svg) {
+                this.applyThemeToSVG(svg);
+            }
+
             // Apply highlight if specified
             if (options.highlight) {
                 this.highlightNote();
@@ -206,6 +248,12 @@ export class StaffRenderer {
                 .format([voice], 600);
 
             voice.draw(this.context, stave);
+
+            // Apply theme styling
+            const svg = this.container?.querySelector('svg');
+            if (svg) {
+                this.applyThemeToSVG(svg);
+            }
 
         } catch (error) {
             console.error('Failed to render notes:', error);
