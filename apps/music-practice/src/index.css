@@ -1,12 +1,1 @@
 @import "@hudak/ui/styles/globals.css";
-
-/* Override theme colors for the app */
-:root {
-  --color-primary: 222 47% 55%;
-  --radius-lg: 0.75rem;
-}
-
-.dark {
-  --color-primary: 222 47% 65%;
-  --color-card: 0 0% 15%;
-}

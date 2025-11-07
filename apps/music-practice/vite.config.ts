@@ -1,8 +1,8 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
-import path from 'path';
-import { tanstackRouter } from '@tanstack/router-plugin/vite'
+import { tanstackRouter } from '@tanstack/router-plugin/vite';
+import tsconfigPaths from 'vite-tsconfig-paths';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -13,18 +13,15 @@ export default defineConfig({
     }),
     react(),
     tailwindcss(),
+    tsconfigPaths({
+      projects: ['../../packages/ui/tsconfig.json', './tsconfig.json'],
+    }),
   ],
   base: '/music-practice/',
   build: {
     outDir: '../../docs/music-practice',
     emptyOutDir: true,
     sourcemap: true,
-  },
-  resolve: {
-    alias: {
-      '@hudak/ui': path.resolve(__dirname, '../../packages/ui/src'),
-      '@': path.resolve(__dirname, './src'),
-    },
   },
   optimizeDeps: {
     include: ['@hudak/ui'],

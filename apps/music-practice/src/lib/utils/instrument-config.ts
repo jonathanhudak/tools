@@ -6,6 +6,7 @@
 // Instrument type constants
 export const InstrumentType = {
     PIANO: 'piano',
+    PIANO_VIRTUAL: 'piano-virtual',
     VIOLIN: 'violin',
     GUITAR: 'guitar'
 } as const;
@@ -15,7 +16,8 @@ export type InstrumentTypeValue = typeof InstrumentType[keyof typeof InstrumentT
 // Input method constants
 export const InputMethod = {
     MIDI: 'midi',
-    MICROPHONE: 'microphone'
+    MICROPHONE: 'microphone',
+    VIRTUAL: 'virtual'
 } as const;
 
 export type InputMethodValue = typeof InputMethod[keyof typeof InputMethod];
@@ -147,8 +149,56 @@ export const INSTRUMENTS: Record<InstrumentTypeValue, InstrumentConfig> = {
 
         // UI settings
         ui: {
-            showVirtualKeyboard: true,
+            showVirtualKeyboard: false,
             showMidiStatus: true,
+            showPitchAccuracy: false
+        }
+    },
+
+    [InstrumentType.PIANO_VIRTUAL]: {
+        id: InstrumentType.PIANO_VIRTUAL,
+        name: 'Piano (Virtual)',
+        displayName: 'Piano/Keyboard (Virtual)',
+        emoji: '🎹',
+        inputType: InputMethod.VIRTUAL,
+
+        // Range settings (MIDI note numbers)
+        range: {
+            min: 21,  // A0
+            max: 108, // C8
+            default: {
+                min: 48,  // C3
+                max: 84   // C6
+            }
+        },
+
+        // Clef settings
+        clefs: [Clef.TREBLE, Clef.BASS],
+        defaultClef: Clef.TREBLE,
+
+        // Input capabilities
+        polyphonic: true,  // Can play multiple simultaneous notes
+        requiresSustain: false,
+
+        // Validation settings
+        validation: {
+            exactMatch: true,  // Virtual keyboard gives exact notes
+            pitchTolerance: 0, // No tolerance needed
+            octaveFlexible: false,
+            minDuration: 0 // No minimum duration required
+        },
+
+        // Practice settings
+        practice: {
+            defaultNoteCount: 20,
+            adaptiveDifficulty: true,
+            supportedModes: ['sight-reading', 'scales', 'chords', 'arpeggios', 'key-signatures']
+        },
+
+        // UI settings
+        ui: {
+            showVirtualKeyboard: true,
+            showMidiStatus: false,
             showPitchAccuracy: false
         }
     },
@@ -340,6 +390,14 @@ export function requiresMicrophone(instrumentId: string): boolean {
 export function requiresMIDI(instrumentId: string): boolean {
     const instrument = getInstrument(instrumentId);
     return instrument.inputType === InputMethod.MIDI;
+}
+
+/**
+ * Check if instrument uses virtual keyboard
+ */
+export function requiresVirtualKeyboard(instrumentId: string): boolean {
+    const instrument = getInstrument(instrumentId);
+    return instrument.inputType === InputMethod.VIRTUAL;
 }
 
 /**

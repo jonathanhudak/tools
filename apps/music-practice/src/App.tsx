@@ -15,6 +15,7 @@ import {
 } from '@hudak/ui/components/sidebar';
 import { Moon, Sun, Music, Play, Square, SkipForward, Volume2 } from 'lucide-react';
 import { AppSidebar } from './components/app-sidebar';
+import { VirtualKeyboard } from './components/virtual-keyboard';
 
 // Import our ported libraries
 import { MidiManager, type NoteOnEvent, type DeviceChangeEvent } from './lib/input/midi-manager';
@@ -438,7 +439,7 @@ function App() {
               <CardContent className="space-y-6">
                 {/* MIDI Input Indicator */}
                 {lastDetectedNote && (
-                  <div className="flex items-center justify-center gap-4 p-4 border-2 rounded-lg bg-blue-50 dark:bg-blue-950/30 border-blue-300 dark:border-blue-800">
+                  <div className="flex items-center justify-center gap-4 p-4 border-2 rounded-lg bg-blue-50 dark:bg-blue-950/30 border-blue-300 dark:border-blue-700">
                     <Volume2 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                     <div className="flex items-center gap-3">
                       <span className="text-lg font-semibold text-blue-900 dark:text-blue-100">
@@ -463,19 +464,19 @@ function App() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <Card className="border-2">
                     <CardContent className="pt-6 pb-4 text-center">
-                      <div className="text-3xl font-bold text-green-600 dark:text-green-500">{stats.correct}</div>
+                      <div className="text-3xl font-bold text-green-600 dark:text-green-400">{stats.correct}</div>
                       <div className="text-sm text-muted-foreground mt-1">Correct</div>
                     </CardContent>
                   </Card>
                   <Card className="border-2">
                     <CardContent className="pt-6 pb-4 text-center">
-                      <div className="text-3xl font-bold text-red-600 dark:text-red-500">{stats.incorrect}</div>
+                      <div className="text-3xl font-bold text-red-600 dark:text-red-400">{stats.incorrect}</div>
                       <div className="text-sm text-muted-foreground mt-1">Incorrect</div>
                     </CardContent>
                   </Card>
                   <Card className="border-2">
                     <CardContent className="pt-6 pb-4 text-center">
-                      <div className="text-3xl font-bold text-blue-600 dark:text-blue-500">{stats.streak}</div>
+                      <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">{stats.streak}</div>
                       <div className="text-sm text-muted-foreground mt-1">Streak</div>
                     </CardContent>
                   </Card>
@@ -509,6 +510,24 @@ function App() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Virtual Keyboard for Testing */}
+            {instrument === 'piano' && (
+              <VirtualKeyboard
+                onNotePlay={(midiNote, noteName) => {
+                  // Simulate MIDI note on event
+                  handleMidiNoteOn({
+                    note: midiNote,
+                    noteName,
+                    velocity: 100,
+                    channel: 0
+                  });
+                }}
+                enabled={true}
+                startOctave={3}
+                octaveCount={3}
+              />
+            )}
 
             {/* Coming Soon Modules */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

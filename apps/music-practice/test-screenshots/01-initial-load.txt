@@ -1,0 +1,23 @@
+uid=1_0 RootWebArea "InstrumentPractice Pro" url="http://localhost:4173/music-practice/"
+  uid=1_1 banner
+    uid=1_2 heading "Music Practice" level="1"
+    uid=1_3 navigation
+      uid=1_4 link "Practice" url="http://localhost:4173/music-practice/"
+        uid=1_5 StaticText "Practice"
+      uid=1_6 link "About" url="http://localhost:4173/music-practice/about"
+        uid=1_7 StaticText "About"
+  uid=1_8 main
+    uid=1_9 StaticText "Practice Settings"
+    uid=1_10 StaticText "Instrument"
+    uid=1_11 combobox haspopup="listbox" value="🎹 Piano (MIDI)"
+    uid=1_12 StaticText "MIDI Device"
+    uid=1_13 StaticText "No device detected"
+    uid=1_14 combobox disableable disabled haspopup="listbox" value="No device"
+    uid=1_15 StaticText "Practice Settings"
+    uid=1_16 StaticText "Clef"
+    uid=1_17 combobox "Clef" haspopup="listbox" value="Treble"
+    uid=1_18 StaticText "Difficulty"
+    uid=1_19 combobox "Difficulty" haspopup="listbox" value="Beginner (C4-C5)"
+    uid=1_20 main
+      uid=1_21 heading "Music Practice" level="1"
+      uid=1_22 StaticText "Select your settings and start practicing!"

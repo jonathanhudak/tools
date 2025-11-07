@@ -9,18 +9,22 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "clean": "rm -rf dist node_modules"
+    "clean": "rm -rf dist node_modules",
+    "test": "node test-sight-reading.js",
+    "test:build": "npm run build && npm run test"
   },
   "keywords": [],
   "author": "Jonathan Hudak",
   "license": "ISC",
   "dependencies": {
-    "@tanstack/react-router": "^1.91.6",
     "@hudak/ui": "*",
+    "@tanstack/react-router": "^1.91.6",
     "pitchy": "^4.1.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-gauge-chart": "^0.5.1",
     "tonal": "^6.4.2",
+    "tone": "^15.1.22",
     "vexflow": "^4.2.5"
   },
   "devDependencies": {
@@ -30,6 +34,8 @@
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "eslint": "^8.57.1",
-    "typescript": "^5.9.3"
+    "puppeteer": "^24.29.1",
+    "typescript": "^5.9.3",
+    "vite-tsconfig-paths": "^5.1.4"
   }
 }
