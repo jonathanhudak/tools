@@ -10,6 +10,8 @@ import { Badge } from '@hudak/ui/components/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@hudak/ui/components/select';
 import { Label } from '@hudak/ui/components/label';
 import { Play, Square, SkipForward, Volume2, Settings } from 'lucide-react';
+import { toast } from 'sonner';
+import { motion, AnimatePresence } from 'framer-motion';
 import { VirtualKeyboard } from '../components/virtual-keyboard';
 
 // Import our libraries
@@ -21,7 +23,15 @@ import { getInstrument, requiresMIDI } from '../lib/utils/instrument-config';
 import { generateRandomNote, midiToVexflow, validateNote, midiToNoteName } from '../lib/utils/music-theory';
 import { Storage } from '../lib/utils/storage';
 import { AudioPlayback } from '../lib/utils/audio-playback';
-import { PitchGauge } from '../components/pitch-gauge';
+import { PitchGauge } from '@hudak/audio-components';
+
+// Game components
+import { useGameRound, type GameMode } from '../hooks/use-game-round';
+import { GameTimer } from '../components/game-timer';
+import { LivesDisplay } from '../components/lives-display';
+import { StreakCounter } from '../components/streak-counter';
+import { ScoreSummary } from '../components/score-summary';
+import { getStreakMilestoneMessage } from '../lib/utils/scoring';
 
 export const Route = createFileRoute('/')({
   component: PracticeRoute,
@@ -43,6 +53,12 @@ function PracticeRoute() {
   const [fallingNotesMode, setFallingNotesMode] = useState(false);
   const [showSettings, setShowSettings] = useState(true);
   const [notationScale, setNotationScale] = useState<'small' | 'medium' | 'large'>('medium');
+  const [pitchSensitivity, setPitchSensitivity] = useState(10); // Cents threshold for "in tune"
+  const [pitchSmoothing, setPitchSmoothing] = useState(0.7); // 0-1, higher = smoother dial movement
+
+  // Game mode
+  const [gameMode, setGameMode] = useState<GameMode>('practice');
+  const [showScoreSummary, setShowScoreSummary] = useState(false);
 
   // Practice session state
   const [sessionActive, setSessionActive] = useState(false);
@@ -73,6 +89,54 @@ function PracticeRoute() {
 
   // Track last incorrect feedback time to avoid spam
   const lastIncorrectFeedbackRef = useRef(0);
+  const lastErrorToastRef = useRef(0);
+  const audioInitAttemptedRef = useRef(false);
+
+  // Game round hook
+  const [roundState, roundActions] = useGameRound({
+    difficulty,
+    gameMode,
+    onRoundComplete: (state) => {
+      setShowScoreSummary(true);
+      // Save session with score
+      Storage.saveSession({
+        module: 'sightReading',
+        correct: state.correctCount,
+        incorrect: state.incorrectCount,
+        bestStreak: state.streak,
+        gameMode,
+        roundScore: state.currentScore?.finalScore,
+        timeLeft: state.timeLeft,
+        livesRemaining: state.lives,
+        instrument,
+        clef,
+        range: getNoteRange(),
+      });
+      toast.success('Round Complete! 🎉', {
+        description: `Score: ${state.currentScore?.finalScore || 0} points`,
+      });
+    },
+    onRoundFail: (state) => {
+      setShowScoreSummary(true);
+      toast.error('Round Failed', {
+        description: `You scored ${state.currentScore?.finalScore || 0} points. Try again!`,
+      });
+    },
+    onLifeLost: (livesLeft) => {
+      if (livesLeft === 1) {
+        toast.warning('Last Life! 💔', {
+          description: 'Be careful on the next note!',
+          duration: 2000,
+        });
+      }
+    },
+    onStreakMilestone: (streak) => {
+      const message = getStreakMilestoneMessage(streak);
+      if (message) {
+        toast.success(message, { duration: 2500 });
+      }
+    },
+  });
 
   // Get note range based on difficulty
   const getNoteRange = useCallback((): string => {
@@ -150,10 +214,15 @@ function PracticeRoute() {
 
       if (result.isCorrect) {
         // Correct note!
+        // Update game round if in timed mode
+        if (gameMode === 'timed' && roundState.isActive) {
+          roundActions.noteCorrect();
+        }
+
         setStats(prev => ({
           correct: prev.correct + 1,
           incorrect: prev.incorrect,
-          streak: prev.streak + 1,
+          streak: gameMode === 'timed' ? roundState.streak : prev.streak + 1,
           avgTime: prev.avgTime
         }));
         setFeedback(result.message || 'Correct! ✓');
@@ -165,12 +234,19 @@ function PracticeRoute() {
 
         // Automatically move to next note after a short delay
         setTimeout(() => {
-          nextNote();
+          if (!roundState.isComplete) {
+            nextNote();
+          }
         }, 1000);
       } else {
         // Only show incorrect feedback if not already shown recently
         const now = Date.now();
         if (now - lastIncorrectFeedbackRef.current > 1000) {
+          // Update game round if in timed mode
+          if (gameMode === 'timed' && roundState.isActive) {
+            roundActions.noteIncorrect();
+          }
+
           setStats(prev => ({
             correct: prev.correct,
             incorrect: prev.incorrect + 1,
@@ -186,7 +262,7 @@ function PracticeRoute() {
         }
       }
     }
-  }, [nextNote]);
+  }, [nextNote, gameMode, roundState.isActive, roundState.isComplete, roundState.streak, roundActions]);
 
   // Handle MIDI note input
   const handleMidiNoteOn = useCallback((event: NoteOnEvent) => {
@@ -227,10 +303,15 @@ function PracticeRoute() {
 
       if (result.isCorrect) {
         // Correct note!
+        // Update game round if in timed mode
+        if (gameMode === 'timed' && roundState.isActive) {
+          roundActions.noteCorrect();
+        }
+
         setStats(prev => ({
           correct: prev.correct + 1,
           incorrect: prev.incorrect,
-          streak: prev.streak + 1,
+          streak: gameMode === 'timed' ? roundState.streak : prev.streak + 1,
           avgTime: prev.avgTime
         }));
         setFeedback(result.message || 'Correct! ✓');
@@ -242,10 +323,17 @@ function PracticeRoute() {
 
         // Automatically move to next note after a short delay
         setTimeout(() => {
-          nextNote();
+          if (!roundState.isComplete) {
+            nextNote();
+          }
         }, 500);
       } else {
         // Incorrect note
+        // Update game round if in timed mode
+        if (gameMode === 'timed' && roundState.isActive) {
+          roundActions.noteIncorrect();
+        }
+
         setStats(prev => ({
           correct: prev.correct,
           incorrect: prev.incorrect + 1,
@@ -259,7 +347,7 @@ function PracticeRoute() {
         }
       }
     }
-  }, [nextNote]);
+  }, [nextNote, gameMode, roundState.isActive, roundState.isComplete, roundState.streak, roundActions]);
 
   // Initialize managers on mount
   useEffect(() => {
@@ -287,43 +375,19 @@ function PracticeRoute() {
         }
       }
 
-      // Initialize Audio Manager for microphone instruments
-      if (instrument === 'violin' || instrument === 'guitar') {
-        // Get available audio devices
-        const devices = await AudioManager.getAudioInputDevices();
-        setAudioDevices(devices);
+      // Audio Manager initialization is now handled by a separate useEffect
 
-        // Use selected device or first available
-        const deviceId = selectedAudioDevice || devices[0]?.deviceId;
-
-        audioManager.current = new AudioManager();
-        const success = await audioManager.current.init(deviceId);
-        setMicrophoneActive(success);
-
-        if (success) {
-          // Listen for pitch detection events
-          audioManager.current.on('pitchDetected', handlePitchDetected);
-          audioManager.current.on('statusChange', (status) => {
-            setMicrophoneActive(status.microphoneActive);
-          });
-
-          // Start listening immediately
-          audioManager.current.startListening();
-
-          // eslint-disable-next-line no-console
-          console.log('Audio Manager initialized, microphone active');
-        } else {
-          console.warn('Microphone initialization failed');
+      // Initialize renderers after a short delay to ensure DOM is ready
+      setTimeout(() => {
+        if (staffContainerRef.current && !staffRenderer.current) {
+          staffRenderer.current = new StaffRenderer('staff-display');
+          console.log('Staff renderer initialized');
         }
-      }
-
-      // Initialize renderers
-      if (staffContainerRef.current) {
-        staffRenderer.current = new StaffRenderer('staff-display');
-      }
-      if (fallingNotesContainerRef.current) {
-        fallingNotesRenderer.current = new FallingNotesRenderer('falling-notes-display');
-      }
+        if (fallingNotesContainerRef.current && !fallingNotesRenderer.current) {
+          fallingNotesRenderer.current = new FallingNotesRenderer('falling-notes-display');
+          console.log('Falling notes renderer initialized');
+        }
+      }, 100);
     };
 
     initManagers();
@@ -341,13 +405,14 @@ function PracticeRoute() {
     };
     setDifficulty(rangeToDifficulty[settings.range] || 'beginner');
 
-    // Cleanup
+    // Cleanup only on unmount
     return () => {
       midiManager.current?.disconnectDevice();
       audioManager.current?.disconnect();
       audioPlayback.current?.cleanup();
     };
-  }, [handleMidiDeviceChange, handleMidiNoteOn, handlePitchDetected, instrument, selectedAudioDevice]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount/unmount
 
   // Handle audio device change
   const handleAudioDeviceChange = async (deviceId: string) => {
@@ -368,11 +433,21 @@ function PracticeRoute() {
         setMicrophoneActive(status.microphoneActive);
       });
       audioManager.current.startListening();
+    } else {
+      toast.error('Failed to switch microphone', {
+        description: 'Could not access the selected audio device. Check browser permissions.',
+        duration: 5000,
+      });
     }
   };
 
   // Start practice session
   const startSession = () => {
+    // Start game round if in timed mode
+    if (gameMode === 'timed') {
+      roundActions.startRound();
+    }
+
     // Generate first note using difficulty-based range
     const note = generateRandomNote(getNoteRange(), clef as 'treble' | 'bass');
 
@@ -401,6 +476,11 @@ function PracticeRoute() {
 
   // Stop practice session
   const stopSession = () => {
+    // End game round if in timed mode
+    if (gameMode === 'timed' && roundState.isActive) {
+      roundActions.endRound();
+    }
+
     setSessionActive(false);
     sessionActiveRef.current = false;
     setCurrentNote(null);
@@ -410,8 +490,8 @@ function PracticeRoute() {
       fallingNotesRenderer.current.stopAnimation();
     }
 
-    // Save session data
-    if (stats.correct > 0 || stats.incorrect > 0) {
+    // Save session data (only if not in timed mode, as timed mode saves in onRoundComplete)
+    if (gameMode !== 'timed' && (stats.correct > 0 || stats.incorrect > 0)) {
       Storage.saveSession({
         module: 'sightReading',
         instrument,
@@ -432,6 +512,56 @@ function PracticeRoute() {
   useEffect(() => {
     clefRef.current = clef;
   }, [clef]);
+
+  // Handle instrument changes to microphone-based instruments
+  useEffect(() => {
+    const isMicrophoneInstrument = instrument === 'violin' || instrument === 'guitar';
+
+    if (isMicrophoneInstrument && !audioInitAttemptedRef.current) {
+      // Allow initialization for microphone instruments
+      const initAudio = async () => {
+        audioInitAttemptedRef.current = true;
+
+        // Get available audio devices
+        const devices = await AudioManager.getAudioInputDevices();
+        setAudioDevices(devices);
+
+        // Use selected device or first available
+        const deviceId = selectedAudioDevice || devices[0]?.deviceId;
+
+        audioManager.current = new AudioManager();
+        const success = await audioManager.current.init(deviceId);
+        setMicrophoneActive(success);
+
+        if (success) {
+          // Listen for pitch detection events
+          audioManager.current.on('pitchDetected', handlePitchDetected);
+          audioManager.current.on('statusChange', (status) => {
+            setMicrophoneActive(status.microphoneActive);
+          });
+
+          // Start listening immediately
+          audioManager.current.startListening();
+
+          console.log('Audio Manager initialized, microphone active');
+        } else {
+          console.warn('Microphone initialization failed');
+          toast.error('Microphone Access Required', {
+            description: 'Click the camera/microphone icon in your browser\'s address bar to allow microphone access, then reload the page.',
+            duration: 10000,
+          });
+        }
+      };
+
+      initAudio();
+    } else if (!isMicrophoneInstrument && audioManager.current) {
+      // Disconnect audio when switching away from microphone instruments
+      audioManager.current.disconnect();
+      audioManager.current = null;
+      setMicrophoneActive(false);
+      audioInitAttemptedRef.current = false; // Reset for next time
+    }
+  }, [instrument, selectedAudioDevice, handlePitchDetected]);
 
   return (
     <div className="container mx-auto p-6 space-y-6 max-w-6xl">
@@ -539,6 +669,26 @@ function PracticeRoute() {
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Game Mode Selection */}
+              <div className="space-y-2">
+                <Label htmlFor="gamemode-select">Game Mode</Label>
+                <Select
+                  value={gameMode}
+                  onValueChange={(value: GameMode) => {
+                    setGameMode(value);
+                    Storage.saveSettings({ gameMode: value });
+                  }}
+                >
+                  <SelectTrigger id="gamemode-select">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="practice">🧘 Practice Mode (No Timer)</SelectItem>
+                    <SelectItem value="timed">⏱️ Timed Challenge (Game Mode)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {/* Additional Settings Row */}
@@ -583,6 +733,53 @@ function PracticeRoute() {
                     </SelectContent>
                   </Select>
                 </div>
+              )}
+
+              {/* Pitch Sensitivity Slider (for microphone instruments) */}
+              {(instrument === 'violin' || instrument === 'guitar') && (
+                <>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <Label htmlFor="pitch-sensitivity">Pitch Sensitivity</Label>
+                      <span className="text-sm text-muted-foreground">±{pitchSensitivity} cents</span>
+                    </div>
+                    <input
+                      id="pitch-sensitivity"
+                      type="range"
+                      min="3"
+                      max="20"
+                      step="1"
+                      value={pitchSensitivity}
+                      onChange={(e) => setPitchSensitivity(Number(e.target.value))}
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                    />
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>More Strict (3¢)</span>
+                      <span>More Lenient (20¢)</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <Label htmlFor="pitch-smoothing">Dial Smoothing</Label>
+                      <span className="text-sm text-muted-foreground">{Math.round(pitchSmoothing * 100)}%</span>
+                    </div>
+                    <input
+                      id="pitch-smoothing"
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.05"
+                      value={pitchSmoothing}
+                      onChange={(e) => setPitchSmoothing(Number(e.target.value))}
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                    />
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>Instant (0%)</span>
+                      <span>Very Smooth (100%)</span>
+                    </div>
+                  </div>
+                </>
               )}
             </div>
           </CardContent>
@@ -645,10 +842,48 @@ function PracticeRoute() {
                   note={detectedPitch.note}
                   cents={detectedPitch.cents}
                   clarity={detectedPitch.clarity}
+                  inTuneThreshold={pitchSensitivity}
+                  smoothingFactor={pitchSmoothing}
                 />
               </div>
             )}
           </div>
+
+          {/* Game HUD (Timed Mode Only) */}
+          <AnimatePresence>
+            {gameMode === 'timed' && roundState.isActive && (
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+              >
+                <Card className="border-2 border-blue-500 bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-blue-950/30 dark:to-purple-950/30">
+                  <CardContent className="py-4">
+                    <div className="flex items-center justify-between flex-wrap gap-4">
+                      <GameTimer
+                        timeLeft={roundState.timeLeft}
+                        maxTime={roundState.maxTime}
+                        isActive={roundState.isActive}
+                        onTimeUp={() => toast.error('Time\'s up!')}
+                      />
+                      <LivesDisplay
+                        lives={roundState.lives}
+                        maxLives={roundState.maxLives}
+                      />
+                      <StreakCounter streak={roundState.streak} />
+                      <div className="text-center">
+                        <p className="text-sm text-muted-foreground">Progress</p>
+                        <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                          {roundState.notesCompleted}/{roundState.notesRequired}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -680,10 +915,10 @@ function PracticeRoute() {
 
           {/* Controls */}
           <div className="flex gap-3">
-            {!sessionActive ? (
+            {!sessionActive && !roundState.isActive ? (
               <Button onClick={startSession} size="lg" className="flex-1">
                 <Play className="mr-2 h-5 w-5" />
-                Start Practice
+                {gameMode === 'timed' ? 'Start Round' : 'Start Practice'}
               </Button>
             ) : (
               <>
@@ -691,10 +926,12 @@ function PracticeRoute() {
                   <Square className="mr-2 h-5 w-5" />
                   Stop
                 </Button>
-                <Button onClick={nextNote} variant="outline" size="lg" className="px-6">
-                  <SkipForward className="mr-2 h-5 w-5" />
-                  Next
-                </Button>
+                {gameMode === 'practice' && (
+                  <Button onClick={nextNote} variant="outline" size="lg" className="px-6">
+                    <SkipForward className="mr-2 h-5 w-5" />
+                    Next
+                  </Button>
+                )}
               </>
             )}
           </div>
@@ -721,6 +958,31 @@ function PracticeRoute() {
           octaveCount={3}
         />
       )}
+
+      {/* Score Summary Modal */}
+      <AnimatePresence>
+        {showScoreSummary && roundState.currentScore && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+            <ScoreSummary
+              scoreResult={roundState.currentScore}
+              correctCount={roundState.correctCount}
+              totalNotes={roundState.notesRequired}
+              isSuccessful={roundState.isSuccessful || false}
+              onContinue={() => {
+                setShowScoreSummary(false);
+                roundActions.startRound();
+                startSession();
+              }}
+              onRetry={!roundState.isSuccessful ? () => {
+                setShowScoreSummary(false);
+                roundActions.resetRound();
+                startSession();
+              } : undefined}
+              showConfetti={roundState.isSuccessful || false}
+            />
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

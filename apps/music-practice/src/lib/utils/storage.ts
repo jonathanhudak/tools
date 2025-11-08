@@ -19,6 +19,10 @@ export interface Stats {
     bestStreak: number;
     lastPracticeDate: number | null;
     byModule: Record<string, ModuleStats>;
+    // Game mode stats
+    lifetimeScore: number;
+    currentLevel: number;
+    highestStreak: number;
 }
 
 export interface SessionData {
@@ -32,6 +36,11 @@ export interface SessionData {
     range?: string;
     timestamp?: number;
     id?: string;
+    // Game mode data
+    gameMode?: 'practice' | 'timed';
+    roundScore?: number;
+    timeLeft?: number;
+    livesRemaining?: number;
     [key: string]: any; // Allow additional properties
 }
 
@@ -51,6 +60,12 @@ export interface Settings {
     virtualKeyboard: boolean;
     instrument?: string;
     pitchTolerance?: number;
+    // Game mode settings
+    gameMode?: 'practice' | 'timed';
+    soundEffectsEnabled?: boolean;
+    soundEffectsVolume?: number;
+    animationsEnabled?: boolean;
+    confettiEnabled?: boolean;
     [key: string]: any; // Allow additional settings
 }
 
@@ -213,7 +228,10 @@ export function getDefaultStats(): Stats {
         avgResponseTime: 0,
         bestStreak: 0,
         lastPracticeDate: null,
-        byModule: {}
+        byModule: {},
+        lifetimeScore: 0,
+        currentLevel: 1,
+        highestStreak: 0
     };
 }
 
@@ -266,7 +284,12 @@ export function getDefaultSettings(): Settings {
         audioDeviceId: null,
         virtualKeyboard: false,
         instrument: 'piano',
-        pitchTolerance: 50
+        pitchTolerance: 50,
+        gameMode: 'practice',
+        soundEffectsEnabled: true,
+        soundEffectsVolume: 0.7,
+        animationsEnabled: true,
+        confettiEnabled: true
     };
 }
 
