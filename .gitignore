@@ -7,18 +7,3 @@ CHANGELOG.md
 .turbo
 .vite
 *.tsbuildinfo
-
-# TypeScript build artifacts
-*.js
-*.js.map
-*.d.ts
-*.d.ts.map
-
-# Exclude certain JS files that should be tracked
-!*.config.js
-!*.config.cjs
-!*.config.mjs
-!vite.config.ts
-!tailwind.config.js
-!scripts/**/*.js
-!apps/**/vite.config.ts
