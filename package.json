@@ -10,12 +10,15 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "turbo run build",
+    "build": "turbo run build && node scripts/generate-landing.js",
+    "build:apps": "turbo run build",
+    "build:landing": "node scripts/generate-landing.js",
     "dev": "turbo run dev",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
     "clean": "turbo run clean && rm -rf node_modules",
-    "deploy": "npm run build && gh-pages -d docs -t true",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d docs -t true",
     "music": "npm run -w @hudak/music-practice --",
     "tuner": "npm run -w @hudak/instrument-tuner --",
     "ui": "npm run -w @hudak/ui --"
