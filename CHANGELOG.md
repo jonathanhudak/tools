@@ -1,3 +1,19 @@
+# [1.1.0](https://github.com/jonathanhudak/tools/compare/v1.0.3...v1.1.0) (2025-11-08)
+
+
+### Bug Fixes
+
+* configure TypeScript to output to dist directory ([dc52a09](https://github.com/jonathanhudak/tools/commit/dc52a095a1309c5daf5174524ef8e033dd00a5c9))
+* improve audio context lifecycle and VexFlow initialization ([606d428](https://github.com/jonathanhudak/tools/commit/606d4282da9fa1ac33df49d3b39c8c28418fa23a))
+
+
+### Features
+
+* add instrument tuner app with real-time pitch detection ([adb1b3d](https://github.com/jonathanhudak/tools/commit/adb1b3d2a7b2612785dbaa9afddbe2cb18723857))
+* add timed game mode with lives, scoring, and animations ([32191e6](https://github.com/jonathanhudak/tools/commit/32191e68484215719bb2dd6a9c270708166a56ad))
+* automate GitHub Pages deployment with landing page generator ([a17d18e](https://github.com/jonathanhudak/tools/commit/a17d18ef2f351d16323689a67c9f010fb3f95c61))
+* big old refactor things mostly working! ([3c0ed08](https://github.com/jonathanhudak/tools/commit/3c0ed0871baa8370288838bd574f23138faa7f9f))
+
 ## [1.0.3](https://github.com/jonathanhudak/tools/compare/v1.0.2...v1.0.3) (2025-11-05)
 
 
