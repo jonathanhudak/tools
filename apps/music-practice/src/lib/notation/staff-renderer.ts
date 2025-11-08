@@ -80,18 +80,29 @@ export class StaffRenderer {
     private init(): void {
         try {
             // Check if VexFlow is loaded
-            if (typeof Vex === 'undefined') {
-                console.error('VexFlow not loaded');
+            if (typeof Vex === 'undefined' || typeof window.Vex === 'undefined') {
+                console.error('VexFlow not loaded - waiting...');
+                // Try again after a short delay
+                setTimeout(() => this.init(), 500);
                 return;
             }
 
-            if (!this.container) return;
+            if (!this.container) {
+                console.error('Container not found, cannot initialize');
+                return;
+            }
 
             // Clear container
             this.container.innerHTML = '';
 
             // Create VexFlow renderer
             const VF = Vex.Flow;
+
+            if (!VF || !VF.Renderer) {
+                console.error('VexFlow.Renderer not available');
+                return;
+            }
+
             this.renderer = new VF.Renderer(
                 this.container,
                 VF.Renderer.Backends.SVG
@@ -103,9 +114,10 @@ export class StaffRenderer {
             // Get drawing context
             this.context = this.renderer.getContext();
 
-            console.log('StaffRenderer initialized');
+            console.log('StaffRenderer initialized successfully');
         } catch (error) {
             console.error('Failed to initialize StaffRenderer:', error);
+            this.showError('Unable to initialize music notation renderer');
         }
     }
 
@@ -124,8 +136,13 @@ export class StaffRenderer {
      */
     renderNote(vexflowNote: string, options: RenderOptions = {}): void {
         if (!this.context) {
-            console.error('Renderer not initialized');
-            return;
+            console.warn('Renderer not initialized, attempting to initialize...');
+            this.init();
+            if (!this.context) {
+                console.error('Failed to initialize renderer');
+                this.showError('Unable to display notation - please refresh');
+                return;
+            }
         }
 
         try {

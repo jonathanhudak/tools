@@ -93,12 +93,17 @@ export class AudioManager {
         try {
             // Check if getUserMedia is supported
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                this.emitError('Microphone access is not supported in this browser. Try Chrome or Edge.');
+                console.error('Microphone access is not supported in this browser');
                 return false;
             }
 
             // Create audio context
             this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+
+            if (!this.audioContext) {
+                console.error('Failed to create audio context');
+                return false;
+            }
 
             // Set up error handler for audio context
             this.setupAudioContextErrorHandlers();
@@ -124,6 +129,12 @@ export class AudioManager {
             this.stream = await navigator.mediaDevices.getUserMedia({
                 audio: audioConstraints
             });
+
+            // Verify audio context is still valid
+            if (!this.audioContext) {
+                console.error('Audio context was lost during initialization');
+                return false;
+            }
 
             // Create audio nodes
             this.microphone = this.audioContext.createMediaStreamSource(this.stream);
@@ -155,7 +166,12 @@ export class AudioManager {
             return true;
         } catch (error) {
             console.error('Failed to initialize audio:', error);
-            this.emitError('Failed to access microphone. Please check your browser permissions.', error as Error);
+            // Don't emit error event during init - let the caller handle it
+            // Clean up audio context if it was created
+            if (this.audioContext) {
+                this.audioContext.close().catch(() => {});
+                this.audioContext = null;
+            }
             return false;
         }
     }
@@ -163,23 +179,27 @@ export class AudioManager {
     /**
      * Setup error handlers for AudioContext
      */
+    private stateChangeHandler = () => {
+        if (!this.audioContext) return;
+
+        console.log('AudioContext state changed to:', this.audioContext.state);
+
+        if (this.audioContext.state === 'suspended') {
+            console.warn('AudioContext suspended, attempting to resume...');
+            this.audioContext.resume().catch(err => {
+                console.error('Failed to resume AudioContext:', err);
+            });
+        } else if (this.audioContext.state === 'closed') {
+            console.error('AudioContext closed');
+            // Don't emit error for intentional disconnects
+        }
+    };
+
     private setupAudioContextErrorHandlers(): void {
         if (!this.audioContext) return;
 
         // Handle state changes
-        this.audioContext.addEventListener('statechange', () => {
-            console.log('AudioContext state changed to:', this.audioContext?.state);
-
-            if (this.audioContext?.state === 'suspended') {
-                console.warn('AudioContext suspended, attempting to resume...');
-                this.audioContext.resume().catch(err => {
-                    console.error('Failed to resume AudioContext:', err);
-                });
-            } else if (this.audioContext?.state === 'closed') {
-                console.error('AudioContext closed unexpectedly');
-                this.emitError('Audio system closed unexpectedly. Please reconnect your microphone.');
-            }
-        });
+        this.audioContext.addEventListener('statechange', this.stateChangeHandler);
     }
 
     /**
@@ -317,6 +337,8 @@ export class AudioManager {
         }
 
         if (this.audioContext) {
+            // Remove event listener before closing to prevent statechange events
+            this.audioContext.removeEventListener('statechange', this.stateChangeHandler);
             this.audioContext.close();
             this.audioContext = null;
         }
