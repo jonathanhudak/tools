@@ -17,6 +17,7 @@
     "clean": "turbo run clean && rm -rf node_modules",
     "deploy": "npm run build && gh-pages -d docs -t true",
     "music": "npm run -w @hudak/music-practice --",
+    "tuner": "npm run -w @hudak/instrument-tuner --",
     "ui": "npm run -w @hudak/ui --"
   },
   "keywords": [

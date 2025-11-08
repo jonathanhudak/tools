@@ -1364,3 +1364,9 @@ rm -rf .turbo
 
 **Questions or Suggestions?**
 Open an issue on GitHub or reach out to the maintainer.
+
+
+## Docs
+
+Always put new documents within `./docs`
+Use sub folders to categorize like `./docs/plans` and `./docs/research`
