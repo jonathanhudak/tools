@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/jonathanhudak/tools/compare/v1.1.0...v1.1.1) (2025-11-09)
+
+
+### Bug Fixes
+
+* correct base paths for GitHub Pages deployment ([c1f8be3](https://github.com/jonathanhudak/tools/commit/c1f8be3fa0703d205c427386a0993420910696f1))
+
 # [1.1.0](https://github.com/jonathanhudak/tools/compare/v1.0.3...v1.1.0) (2025-11-08)
 
 
