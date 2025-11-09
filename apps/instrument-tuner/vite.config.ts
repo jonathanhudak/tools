@@ -9,7 +9,7 @@ export default defineConfig({
     tsconfigPaths(),
     tailwindcss(),
   ],
-  base: '/instrument-tuner/',
+  base: '/tools/instrument-tuner/',
   build: {
     outDir: '../../docs/instrument-tuner',
     emptyOutDir: true,

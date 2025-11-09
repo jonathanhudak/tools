@@ -7,7 +7,7 @@ import './index.css';
 // Create router instance
 const router = createRouter({
   routeTree,
-  basepath: '/instrument-tuner'
+  basepath: '/tools/instrument-tuner'
 });
 
 // Register router for type safety

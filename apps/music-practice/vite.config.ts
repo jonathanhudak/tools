@@ -17,7 +17,7 @@ export default defineConfig({
       projects: ['../../packages/ui/tsconfig.json', './tsconfig.json'],
     }),
   ],
-  base: '/music-practice/',
+  base: '/tools/music-practice/',
   build: {
     outDir: '../../docs/music-practice',
     emptyOutDir: true,
