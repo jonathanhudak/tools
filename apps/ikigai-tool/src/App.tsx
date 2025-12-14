@@ -31,27 +31,29 @@ interface Circles {
 }
 
 const CIRCLES: Circles = {
-  love: { cx: 250, cy: 250, r: 200, color: '#ec4899', stroke: '#f472b6', label: 'WHAT YOU\nLOVE' },
-  good: { cx: 450, cy: 250, r: 200, color: '#3b82f6', stroke: '#60a5fa', label: "WHAT YOU'RE\nGOOD AT" },
-  paid: { cx: 450, cy: 450, r: 200, color: '#22c55e', stroke: '#4ade80', label: 'WHAT YOU CAN\nBE PAID FOR' },
-  need: { cx: 250, cy: 450, r: 200, color: '#eab308', stroke: '#fbbf24', label: 'WHAT THE\nWORLD NEEDS' },
+  love: { cx: 1000, cy: 1000, r: 800, color: '#ec4899', stroke: '#f472b6', label: 'WHAT YOU\nLOVE' },
+  good: { cx: 1800, cy: 1000, r: 800, color: '#3b82f6', stroke: '#60a5fa', label: "WHAT YOU'RE\nGOOD AT" },
+  paid: { cx: 1800, cy: 1800, r: 800, color: '#22c55e', stroke: '#4ade80', label: 'WHAT YOU CAN\nBE PAID FOR' },
+  need: { cx: 1000, cy: 1800, r: 800, color: '#eab308', stroke: '#fbbf24', label: 'WHAT THE\nWORLD NEEDS' },
 };
 
 const INTERSECTIONS = [
-  { x: 350, y: 180, label: 'Passion' },
-  { x: 520, y: 350, label: 'Profession' },
-  { x: 350, y: 520, label: 'Vocation' },
-  { x: 180, y: 350, label: 'Mission' },
+  { x: 1400, y: 720, label: 'Passion' },
+  { x: 2080, y: 1400, label: 'Profession' },
+  { x: 1400, y: 2080, label: 'Vocation' },
+  { x: 720, y: 1400, label: 'Mission' },
 ];
 
-interface IkigaiItemNodeData {
+interface IkigaiItemNodeData extends Record<string, unknown> {
   label: string;
   region: keyof Circles;
 }
 
+type IkigaiNode = Node<IkigaiItemNodeData>;
+
 interface IkigaiItemNodeProps {
   data: IkigaiItemNodeData;
-  selected?: boolean;
+  selected: boolean;
 }
 
 // Custom node for user items
@@ -63,15 +65,15 @@ const IkigaiItemNode: React.FC<IkigaiItemNodeProps> = ({ data, selected }) => {
       style={{
         background: regionColor,
         color: '#fff',
-        padding: '8px 14px',
-        borderRadius: '20px',
-        fontSize: '13px',
+        padding: '16px 24px',
+        borderRadius: '40px',
+        fontSize: '24px',
         fontWeight: 500,
         boxShadow: selected
-          ? `0 0 0 2px #fff, 0 4px 12px ${regionColor}88`
-          : `0 2px 8px rgba(0,0,0,0.3)`,
+          ? `0 0 0 4px #fff, 0 8px 24px ${regionColor}88`
+          : `0 4px 16px rgba(0,0,0,0.3)`,
         cursor: 'grab',
-        maxWidth: '150px',
+        maxWidth: '300px',
         textAlign: 'center',
         wordWrap: 'break-word',
       }}
@@ -93,11 +95,11 @@ const IkigaiBackground: React.FC = () => {
         position: 'absolute',
         top: 0,
         left: 0,
-        width: '100%',
-        height: '100%',
+        width: '2800px',
+        height: '2800px',
         pointerEvents: 'none',
       }}
-      viewBox="0 0 700 700"
+      viewBox="0 0 2800 2800"
       preserveAspectRatio="xMidYMid meet"
     >
       {Object.entries(CIRCLES).map(([key, circle]) => (
@@ -109,37 +111,37 @@ const IkigaiBackground: React.FC = () => {
           fill={circle.color}
           fillOpacity={0.2}
           stroke={circle.stroke}
-          strokeWidth={2.5}
+          strokeWidth={10}
         />
       ))}
 
       {/* Main circle labels */}
-      <text x="140" y="130" textAnchor="middle" fill="#9ca3af" fontSize="14" fontWeight="700" letterSpacing="1.5">
-        <tspan x="140" dy="0">WHAT YOU</tspan>
-        <tspan x="140" dy="20">LOVE</tspan>
+      <text x="560" y="520" textAnchor="middle" fill="#9ca3af" fontSize="56" fontWeight="700" letterSpacing="1.5">
+        <tspan x="560" dy="0">WHAT YOU</tspan>
+        <tspan x="560" dy="80">LOVE</tspan>
       </text>
-      <text x="560" y="130" textAnchor="middle" fill="#9ca3af" fontSize="14" fontWeight="700" letterSpacing="1.5">
-        <tspan x="560" dy="0">WHAT YOU&apos;RE</tspan>
-        <tspan x="560" dy="20">GOOD AT</tspan>
+      <text x="2240" y="520" textAnchor="middle" fill="#9ca3af" fontSize="56" fontWeight="700" letterSpacing="1.5">
+        <tspan x="2240" dy="0">WHAT YOU&apos;RE</tspan>
+        <tspan x="2240" dy="80">GOOD AT</tspan>
       </text>
-      <text x="560" y="555" textAnchor="middle" fill="#9ca3af" fontSize="14" fontWeight="700" letterSpacing="1.5">
-        <tspan x="560" dy="0">WHAT YOU CAN</tspan>
-        <tspan x="560" dy="20">BE PAID FOR</tspan>
+      <text x="2240" y="2220" textAnchor="middle" fill="#9ca3af" fontSize="56" fontWeight="700" letterSpacing="1.5">
+        <tspan x="2240" dy="0">WHAT YOU CAN</tspan>
+        <tspan x="2240" dy="80">BE PAID FOR</tspan>
       </text>
-      <text x="140" y="555" textAnchor="middle" fill="#9ca3af" fontSize="14" fontWeight="700" letterSpacing="1.5">
-        <tspan x="140" dy="0">WHAT THE</tspan>
-        <tspan x="140" dy="20">WORLD NEEDS</tspan>
+      <text x="560" y="2220" textAnchor="middle" fill="#9ca3af" fontSize="56" fontWeight="700" letterSpacing="1.5">
+        <tspan x="560" dy="0">WHAT THE</tspan>
+        <tspan x="560" dy="80">WORLD NEEDS</tspan>
       </text>
 
       {/* Intersection labels */}
       {INTERSECTIONS.map((int, i) => (
-        <text key={i} x={int.x} y={int.y} textAnchor="middle" fill="#6b7280" fontSize="12" fontWeight="500">
+        <text key={i} x={int.x} y={int.y} textAnchor="middle" fill="#6b7280" fontSize="48" fontWeight="500">
           {int.label}
         </text>
       ))}
 
       {/* Center IKIGAI label */}
-      <text x="350" y="355" textAnchor="middle" fill="#fafafa" fontSize="18" fontWeight="800" letterSpacing="2">
+      <text x="1400" y="1420" textAnchor="middle" fill="#fafafa" fontSize="72" fontWeight="800" letterSpacing="8">
         IKIGAI
       </text>
     </svg>
@@ -292,13 +294,13 @@ interface SidebarProps {
 
 // Sidebar component
 const Sidebar: React.FC<SidebarProps> = ({ nodes, onDelete, onClear, onExport }) => {
-  const itemNodes = nodes.filter(n => n.type === 'ikigaiItem');
+  const itemNodes = nodes.filter((n): n is IkigaiNode => n.type === 'ikigaiItem');
 
   const groupedNodes = {
-    love: itemNodes.filter(n => (n.data as IkigaiItemNodeData).region === 'love'),
-    good: itemNodes.filter(n => (n.data as IkigaiItemNodeData).region === 'good'),
-    paid: itemNodes.filter(n => (n.data as IkigaiItemNodeData).region === 'paid'),
-    need: itemNodes.filter(n => (n.data as IkigaiItemNodeData).region === 'need'),
+    love: itemNodes.filter(n => n.data.region === 'love'),
+    good: itemNodes.filter(n => n.data.region === 'good'),
+    paid: itemNodes.filter(n => n.data.region === 'paid'),
+    need: itemNodes.filter(n => n.data.region === 'need'),
   };
 
   const categories = [
@@ -367,7 +369,7 @@ const Sidebar: React.FC<SidebarProps> = ({ nodes, onDelete, onClear, onExport })
                     color: '#fafafa',
                   }}
                 >
-                  <span>{(node.data as IkigaiItemNodeData).label}</span>
+                  <span>{node.data.label}</span>
                   <button
                     onClick={() => onDelete(node.id)}
                     style={{
@@ -507,12 +509,13 @@ const IkigaiFlow: React.FC = () => {
   }, [setNodes, setEdges]);
 
   const handleExport = useCallback(() => {
+    const ikigaiNodes = nodes.filter((n): n is IkigaiNode => n.type === 'ikigaiItem');
     const data = {
       exported: new Date().toISOString(),
-      nodes: nodes.filter(n => n.type === 'ikigaiItem').map(n => ({
+      nodes: ikigaiNodes.map(n => ({
         id: n.id,
-        label: (n.data as IkigaiItemNodeData).label,
-        region: (n.data as IkigaiItemNodeData).region,
+        label: n.data.label,
+        region: n.data.region,
         position: n.position,
       })),
     };
@@ -529,19 +532,6 @@ const IkigaiFlow: React.FC = () => {
   return (
     <div style={{ display: 'flex', height: '100vh', background: '#0a0a0a' }}>
       <div style={{ flex: 1, position: 'relative' }}>
-        <div style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '700px',
-          height: '700px',
-          pointerEvents: 'none',
-          zIndex: 0,
-        }}>
-          <IkigaiBackground />
-        </div>
-
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -549,14 +539,13 @@ const IkigaiFlow: React.FC = () => {
           onEdgesChange={onEdgesChange}
           onPaneClick={onPaneClick}
           nodeTypes={nodeTypes}
-          fitView
-          fitViewOptions={{ padding: 0.2 }}
-          defaultViewport={{ x: 0, y: 0, zoom: 1 }}
-          minZoom={0.5}
-          maxZoom={2}
+          minZoom={0.1}
+          maxZoom={4}
+          defaultViewport={{ x: 0, y: 0, zoom: 0.35 }}
           style={{ background: 'transparent' }}
           proOptions={{ hideAttribution: true }}
         >
+          <IkigaiBackground />
           <Controls
             style={{
               background: '#1a1a1a',
@@ -564,7 +553,7 @@ const IkigaiFlow: React.FC = () => {
               borderRadius: '8px',
             }}
           />
-          <Background color="#222" gap={20} />
+          <Background color="#222" gap={80} />
         </ReactFlow>
 
         <div style={{
@@ -572,11 +561,14 @@ const IkigaiFlow: React.FC = () => {
           bottom: '24px',
           left: '50%',
           transform: 'translateX(-50%)',
-          color: '#444',
-          fontSize: '12px',
+          color: '#666',
+          fontSize: '13px',
           pointerEvents: 'none',
+          background: '#0a0a0acc',
+          padding: '8px 16px',
+          borderRadius: '6px',
         }}>
-          Click anywhere on the diagram to add an item
+          Click anywhere on the diagram to add an item • Use mouse wheel to zoom • Drag to pan
         </div>
       </div>
 
