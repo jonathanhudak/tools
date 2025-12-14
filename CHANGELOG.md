@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/jonathanhudak/tools/compare/v1.1.1...v1.2.0) (2025-12-14)
+
+
+### Features
+
+* music practice app ([a9a1129](https://github.com/jonathanhudak/tools/commit/a9a11298112c42ed5ea1fecd17670ae4156b830f))
+
 ## [1.1.1](https://github.com/jonathanhudak/tools/compare/v1.1.0...v1.1.1) (2025-11-09)
 
 
