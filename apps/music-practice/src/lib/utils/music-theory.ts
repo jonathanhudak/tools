@@ -4,6 +4,7 @@
  */
 
 import { Note, Scale, Chord } from 'tonal';
+import { getTuning } from './instrument-config';
 
 // Type definitions
 export interface NoteInfo {
@@ -313,6 +314,93 @@ export function isFrequencyInRange(frequency: number, minFreq: number, maxFreq: 
     return frequency >= minFreq && frequency <= maxFreq;
 }
 
+/**
+ * Convert MIDI note to guitar tablature position
+ * Returns the optimal string and fret combination for a given note
+ */
+export interface TabPosition {
+    string: number; // 1-6, where 1 is highest (thinnest E) and 6 is lowest (thickest E)
+    fret: number;   // 0-24, where 0 is open string
+}
+
+export function midiToTabPosition(midiNote: number, instrumentId: string = 'guitar'): TabPosition | null {
+    // Get tuning for the instrument
+    const tuning = getTuning(instrumentId);
+    if (!tuning) {
+        console.error('No tuning information available for instrument:', instrumentId);
+        return null;
+    }
+
+    // Find all possible positions for this note
+    const possiblePositions: TabPosition[] = [];
+
+    tuning.forEach((stringInfo) => {
+        const openStringMidi = stringInfo.midi;
+        const stringNumber = stringInfo.string || 0;
+
+        // Calculate fret number (difference from open string)
+        const fret = midiNote - openStringMidi;
+
+        // Check if this is a valid position (within typical fret range 0-24)
+        if (fret >= 0 && fret <= 24) {
+            possiblePositions.push({
+                string: stringNumber,
+                fret: fret
+            });
+        }
+    });
+
+    if (possiblePositions.length === 0) {
+        console.warn('Note out of range for tablature:', midiNote);
+        return null;
+    }
+
+    // Choose the optimal position
+    // Strategy: Prefer lower frets (easier to play) and middle strings when possible
+    // Priority: 1) Lowest fret number, 2) Middle strings (strings 2-4)
+    possiblePositions.sort((a, b) => {
+        // First, compare by fret (prefer lower frets)
+        if (a.fret !== b.fret) {
+            return a.fret - b.fret;
+        }
+
+        // If same fret, prefer middle strings (2-4)
+        const aMiddleBonus = (a.string >= 2 && a.string <= 4) ? -1 : 0;
+        const bMiddleBonus = (b.string >= 2 && b.string <= 4) ? -1 : 0;
+        return aMiddleBonus - bMiddleBonus;
+    });
+
+    return possiblePositions[0];
+}
+
+/**
+ * Get all possible tab positions for a MIDI note
+ * Useful for showing alternative fingerings
+ */
+export function getAllTabPositions(midiNote: number, instrumentId: string = 'guitar'): TabPosition[] {
+    const tuning = getTuning(instrumentId);
+    if (!tuning) {
+        return [];
+    }
+
+    const positions: TabPosition[] = [];
+
+    tuning.forEach((stringInfo) => {
+        const openStringMidi = stringInfo.midi;
+        const stringNumber = stringInfo.string || 0;
+        const fret = midiNote - openStringMidi;
+
+        if (fret >= 0 && fret <= 24) {
+            positions.push({
+                string: stringNumber,
+                fret: fret
+            });
+        }
+    });
+
+    return positions;
+}
+
 // Export as namespace for backward compatibility
 export const MusicTheory = {
     noteNames,
@@ -334,7 +422,9 @@ export const MusicTheory = {
     generateChord,
     getAllKeySignatures,
     getInterval,
-    isFrequencyInRange
+    isFrequencyInRange,
+    midiToTabPosition,
+    getAllTabPositions
 };
 
 // Make available globally for legacy code
