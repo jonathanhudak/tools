@@ -1,0 +1,167 @@
+// Default categorization rules
+
+export interface DefaultRule {
+  pattern: string;
+  matchType: 'contains' | 'regex' | 'exact';
+  categoryId: string;
+  priority: number;
+}
+
+export const DEFAULT_RULES: DefaultRule[] = [
+  // Income
+  { pattern: 'payroll', matchType: 'contains', categoryId: 'salary', priority: 100 },
+  { pattern: 'direct dep', matchType: 'contains', categoryId: 'salary', priority: 100 },
+  { pattern: 'salary', matchType: 'contains', categoryId: 'salary', priority: 100 },
+  { pattern: 'paycheck', matchType: 'contains', categoryId: 'salary', priority: 100 },
+  { pattern: 'dividend', matchType: 'contains', categoryId: 'investments', priority: 90 },
+  { pattern: 'interest payment', matchType: 'contains', categoryId: 'investments', priority: 90 },
+  { pattern: 'refund', matchType: 'contains', categoryId: 'refunds', priority: 80 },
+
+  // Groceries
+  { pattern: 'whole foods', matchType: 'contains', categoryId: 'groceries', priority: 90 },
+  { pattern: 'trader joe', matchType: 'contains', categoryId: 'groceries', priority: 90 },
+  { pattern: 'safeway', matchType: 'contains', categoryId: 'groceries', priority: 90 },
+  { pattern: 'kroger', matchType: 'contains', categoryId: 'groceries', priority: 90 },
+  { pattern: 'publix', matchType: 'contains', categoryId: 'groceries', priority: 90 },
+  { pattern: 'aldi', matchType: 'contains', categoryId: 'groceries', priority: 90 },
+  { pattern: 'costco', matchType: 'contains', categoryId: 'groceries', priority: 80 },
+  { pattern: 'target', matchType: 'contains', categoryId: 'groceries', priority: 70 },
+  { pattern: 'walmart', matchType: 'contains', categoryId: 'groceries', priority: 70 },
+  { pattern: 'heb ', matchType: 'contains', categoryId: 'groceries', priority: 90 },
+  { pattern: 'sprouts', matchType: 'contains', categoryId: 'groceries', priority: 90 },
+
+  // Restaurants
+  { pattern: 'doordash', matchType: 'contains', categoryId: 'food-delivery', priority: 90 },
+  { pattern: 'ubereats', matchType: 'contains', categoryId: 'food-delivery', priority: 90 },
+  { pattern: 'uber eats', matchType: 'contains', categoryId: 'food-delivery', priority: 90 },
+  { pattern: 'grubhub', matchType: 'contains', categoryId: 'food-delivery', priority: 90 },
+  { pattern: 'postmates', matchType: 'contains', categoryId: 'food-delivery', priority: 90 },
+  { pattern: 'seamless', matchType: 'contains', categoryId: 'food-delivery', priority: 90 },
+  { pattern: 'chipotle', matchType: 'contains', categoryId: 'restaurants', priority: 85 },
+  { pattern: 'mcdonald', matchType: 'contains', categoryId: 'restaurants', priority: 85 },
+  { pattern: 'starbucks', matchType: 'contains', categoryId: 'coffee', priority: 90 },
+  { pattern: 'dunkin', matchType: 'contains', categoryId: 'coffee', priority: 90 },
+  { pattern: 'peet', matchType: 'contains', categoryId: 'coffee', priority: 90 },
+  { pattern: 'blue bottle', matchType: 'contains', categoryId: 'coffee', priority: 90 },
+
+  // Transportation
+  { pattern: 'uber', matchType: 'contains', categoryId: 'rideshare', priority: 70 },
+  { pattern: 'lyft', matchType: 'contains', categoryId: 'rideshare', priority: 90 },
+  { pattern: 'shell', matchType: 'contains', categoryId: 'gas', priority: 80 },
+  { pattern: 'chevron', matchType: 'contains', categoryId: 'gas', priority: 90 },
+  { pattern: 'exxon', matchType: 'contains', categoryId: 'gas', priority: 90 },
+  { pattern: 'mobil', matchType: 'contains', categoryId: 'gas', priority: 90 },
+  { pattern: 'bp ', matchType: 'contains', categoryId: 'gas', priority: 90 },
+  { pattern: 'texaco', matchType: 'contains', categoryId: 'gas', priority: 90 },
+  { pattern: 'parking', matchType: 'contains', categoryId: 'parking', priority: 85 },
+  { pattern: 'metro ', matchType: 'contains', categoryId: 'public-transit', priority: 80 },
+  { pattern: 'transit', matchType: 'contains', categoryId: 'public-transit', priority: 80 },
+  { pattern: 'bart', matchType: 'contains', categoryId: 'public-transit', priority: 90 },
+  { pattern: 'mta', matchType: 'contains', categoryId: 'public-transit', priority: 90 },
+
+  // Shopping
+  { pattern: 'amazon', matchType: 'contains', categoryId: 'amazon', priority: 90 },
+  { pattern: 'amzn', matchType: 'contains', categoryId: 'amazon', priority: 90 },
+  { pattern: 'best buy', matchType: 'contains', categoryId: 'electronics', priority: 90 },
+  { pattern: 'apple.com', matchType: 'contains', categoryId: 'electronics', priority: 85 },
+  { pattern: 'nordstrom', matchType: 'contains', categoryId: 'clothing', priority: 90 },
+  { pattern: 'gap ', matchType: 'contains', categoryId: 'clothing', priority: 90 },
+  { pattern: 'old navy', matchType: 'contains', categoryId: 'clothing', priority: 90 },
+  { pattern: 'uniqlo', matchType: 'contains', categoryId: 'clothing', priority: 90 },
+  { pattern: 'zara', matchType: 'contains', categoryId: 'clothing', priority: 90 },
+  { pattern: 'ikea', matchType: 'contains', categoryId: 'home-goods', priority: 90 },
+  { pattern: 'home depot', matchType: 'contains', categoryId: 'home-goods', priority: 90 },
+  { pattern: 'lowes', matchType: 'contains', categoryId: 'home-goods', priority: 90 },
+
+  // Subscriptions & Streaming
+  { pattern: 'netflix', matchType: 'contains', categoryId: 'streaming', priority: 95 },
+  { pattern: 'spotify', matchType: 'contains', categoryId: 'streaming', priority: 95 },
+  { pattern: 'hulu', matchType: 'contains', categoryId: 'streaming', priority: 95 },
+  { pattern: 'disney+', matchType: 'contains', categoryId: 'streaming', priority: 95 },
+  { pattern: 'disneyplus', matchType: 'contains', categoryId: 'streaming', priority: 95 },
+  { pattern: 'hbo max', matchType: 'contains', categoryId: 'streaming', priority: 95 },
+  { pattern: 'hbomax', matchType: 'contains', categoryId: 'streaming', priority: 95 },
+  { pattern: 'apple tv', matchType: 'contains', categoryId: 'streaming', priority: 95 },
+  { pattern: 'youtube premium', matchType: 'contains', categoryId: 'streaming', priority: 95 },
+  { pattern: 'prime video', matchType: 'contains', categoryId: 'streaming', priority: 95 },
+  { pattern: 'audible', matchType: 'contains', categoryId: 'streaming', priority: 95 },
+  { pattern: 'dropbox', matchType: 'contains', categoryId: 'cloud-storage', priority: 95 },
+  { pattern: 'icloud', matchType: 'contains', categoryId: 'cloud-storage', priority: 95 },
+  { pattern: 'google one', matchType: 'contains', categoryId: 'cloud-storage', priority: 95 },
+  { pattern: 'github', matchType: 'contains', categoryId: 'software', priority: 90 },
+  { pattern: 'adobe', matchType: 'contains', categoryId: 'software', priority: 90 },
+  { pattern: 'microsoft', matchType: 'contains', categoryId: 'software', priority: 80 },
+  { pattern: 'nytimes', matchType: 'contains', categoryId: 'news-media', priority: 95 },
+  { pattern: 'wsj', matchType: 'contains', categoryId: 'news-media', priority: 95 },
+  { pattern: 'economist', matchType: 'contains', categoryId: 'news-media', priority: 95 },
+
+  // Utilities
+  { pattern: 'electric', matchType: 'contains', categoryId: 'utilities', priority: 80 },
+  { pattern: 'gas company', matchType: 'contains', categoryId: 'utilities', priority: 80 },
+  { pattern: 'water ', matchType: 'contains', categoryId: 'utilities', priority: 70 },
+  { pattern: 'pge', matchType: 'contains', categoryId: 'utilities', priority: 90 },
+  { pattern: 'con edison', matchType: 'contains', categoryId: 'utilities', priority: 90 },
+  { pattern: 'verizon', matchType: 'contains', categoryId: 'internet', priority: 90 },
+  { pattern: 'at&t', matchType: 'contains', categoryId: 'internet', priority: 90 },
+  { pattern: 't-mobile', matchType: 'contains', categoryId: 'internet', priority: 90 },
+  { pattern: 'comcast', matchType: 'contains', categoryId: 'internet', priority: 90 },
+  { pattern: 'xfinity', matchType: 'contains', categoryId: 'internet', priority: 90 },
+  { pattern: 'spectrum', matchType: 'contains', categoryId: 'internet', priority: 90 },
+
+  // Health
+  { pattern: 'cvs', matchType: 'contains', categoryId: 'pharmacy', priority: 90 },
+  { pattern: 'walgreens', matchType: 'contains', categoryId: 'pharmacy', priority: 90 },
+  { pattern: 'rite aid', matchType: 'contains', categoryId: 'pharmacy', priority: 90 },
+  { pattern: 'pharmacy', matchType: 'contains', categoryId: 'pharmacy', priority: 80 },
+  { pattern: 'kaiser', matchType: 'contains', categoryId: 'medical', priority: 90 },
+  { pattern: 'hospital', matchType: 'contains', categoryId: 'medical', priority: 80 },
+  { pattern: 'doctor', matchType: 'contains', categoryId: 'medical', priority: 75 },
+  { pattern: 'medical', matchType: 'contains', categoryId: 'medical', priority: 75 },
+  { pattern: 'dental', matchType: 'contains', categoryId: 'medical', priority: 80 },
+  { pattern: 'gym', matchType: 'contains', categoryId: 'gym', priority: 80 },
+  { pattern: 'fitness', matchType: 'contains', categoryId: 'gym', priority: 75 },
+  { pattern: 'planet fitness', matchType: 'contains', categoryId: 'gym', priority: 95 },
+  { pattern: 'equinox', matchType: 'contains', categoryId: 'gym', priority: 95 },
+  { pattern: 'orangetheory', matchType: 'contains', categoryId: 'gym', priority: 95 },
+  { pattern: 'peloton', matchType: 'contains', categoryId: 'gym', priority: 95 },
+
+  // Travel
+  { pattern: 'airline', matchType: 'contains', categoryId: 'flights', priority: 80 },
+  { pattern: 'united air', matchType: 'contains', categoryId: 'flights', priority: 90 },
+  { pattern: 'delta air', matchType: 'contains', categoryId: 'flights', priority: 90 },
+  { pattern: 'american air', matchType: 'contains', categoryId: 'flights', priority: 90 },
+  { pattern: 'southwest', matchType: 'contains', categoryId: 'flights', priority: 90 },
+  { pattern: 'jetblue', matchType: 'contains', categoryId: 'flights', priority: 90 },
+  { pattern: 'hotel', matchType: 'contains', categoryId: 'hotels', priority: 80 },
+  { pattern: 'marriott', matchType: 'contains', categoryId: 'hotels', priority: 90 },
+  { pattern: 'hilton', matchType: 'contains', categoryId: 'hotels', priority: 90 },
+  { pattern: 'hyatt', matchType: 'contains', categoryId: 'hotels', priority: 90 },
+  { pattern: 'airbnb', matchType: 'contains', categoryId: 'hotels', priority: 95 },
+  { pattern: 'vrbo', matchType: 'contains', categoryId: 'hotels', priority: 95 },
+  { pattern: 'hertz', matchType: 'contains', categoryId: 'rental-cars', priority: 90 },
+  { pattern: 'enterprise', matchType: 'contains', categoryId: 'rental-cars', priority: 85 },
+  { pattern: 'avis', matchType: 'contains', categoryId: 'rental-cars', priority: 90 },
+
+  // Financial
+  { pattern: 'transfer', matchType: 'contains', categoryId: 'transfers', priority: 60 },
+  { pattern: 'zelle', matchType: 'contains', categoryId: 'transfers', priority: 80 },
+  { pattern: 'venmo', matchType: 'contains', categoryId: 'transfers', priority: 80 },
+  { pattern: 'paypal', matchType: 'contains', categoryId: 'transfers', priority: 75 },
+  { pattern: 'fee', matchType: 'contains', categoryId: 'fees', priority: 50 },
+  { pattern: 'atm fee', matchType: 'contains', categoryId: 'fees', priority: 90 },
+  { pattern: 'service charge', matchType: 'contains', categoryId: 'fees', priority: 90 },
+  { pattern: 'overdraft', matchType: 'contains', categoryId: 'fees', priority: 95 },
+  { pattern: 'interest charge', matchType: 'contains', categoryId: 'interest', priority: 90 },
+
+  // Entertainment
+  { pattern: 'amc ', matchType: 'contains', categoryId: 'movies', priority: 90 },
+  { pattern: 'regal', matchType: 'contains', categoryId: 'movies', priority: 90 },
+  { pattern: 'cinema', matchType: 'contains', categoryId: 'movies', priority: 80 },
+  { pattern: 'ticketmaster', matchType: 'contains', categoryId: 'events', priority: 90 },
+  { pattern: 'stubhub', matchType: 'contains', categoryId: 'events', priority: 90 },
+  { pattern: 'eventbrite', matchType: 'contains', categoryId: 'events', priority: 90 },
+  { pattern: 'steam', matchType: 'contains', categoryId: 'games', priority: 85 },
+  { pattern: 'playstation', matchType: 'contains', categoryId: 'games', priority: 90 },
+  { pattern: 'xbox', matchType: 'contains', categoryId: 'games', priority: 90 },
+  { pattern: 'nintendo', matchType: 'contains', categoryId: 'games', priority: 90 },
+];
