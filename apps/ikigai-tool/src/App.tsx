@@ -49,6 +49,11 @@ interface IkigaiItemNodeData extends Record<string, unknown> {
   region: keyof Circles;
 }
 
+interface CircleNodeData extends Record<string, unknown> {
+  circle: Circle;
+  circleKey: keyof Circles;
+}
+
 type IkigaiNode = Node<IkigaiItemNodeData>;
 
 interface IkigaiItemNodeProps {
@@ -63,15 +68,16 @@ const IkigaiItemNode: React.FC<IkigaiItemNodeProps> = ({ data, selected }) => {
   return (
     <div
       style={{
-        background: regionColor,
-        color: '#fff',
+        background: '#1a1a1a',
+        border: `2px solid ${regionColor}`,
+        color: '#fafafa',
         padding: '16px 24px',
         borderRadius: '40px',
         fontSize: '24px',
         fontWeight: 500,
         boxShadow: selected
-          ? `0 0 0 4px #fff, 0 8px 24px ${regionColor}88`
-          : `0 4px 16px rgba(0,0,0,0.3)`,
+          ? `0 0 0 4px ${regionColor}, 0 8px 24px ${regionColor}88`
+          : `0 4px 16px rgba(0,0,0,0.4)`,
         cursor: 'grab',
         maxWidth: '300px',
         textAlign: 'center',
@@ -83,69 +89,187 @@ const IkigaiItemNode: React.FC<IkigaiItemNodeProps> = ({ data, selected }) => {
   );
 };
 
-const nodeTypes = {
-  ikigaiItem: IkigaiItemNode,
-};
+// Custom node for background circles
+const CircleNode: React.FC<{ data: CircleNodeData }> = ({ data }) => {
+  const { circle } = data;
+  const r = circle.r;
+  const size = r * 2;
 
-// SVG Background with Ikigai circles
-const IkigaiBackground: React.FC = () => {
   return (
-    <svg
+    <div
       style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '2800px',
-        height: '2800px',
+        width: `${size}px`,
+        height: `${size}px`,
         pointerEvents: 'none',
+        position: 'relative',
       }}
-      viewBox="0 0 2800 2800"
-      preserveAspectRatio="xMidYMid meet"
     >
-      {Object.entries(CIRCLES).map(([key, circle]) => (
+      <svg
+        width={size}
+        height={size}
+        style={{ position: 'absolute', top: 0, left: 0 }}
+      >
         <circle
-          key={key}
-          cx={circle.cx}
-          cy={circle.cy}
-          r={circle.r}
+          cx={r}
+          cy={r}
+          r={r}
           fill={circle.color}
           fillOpacity={0.2}
           stroke={circle.stroke}
           strokeWidth={10}
         />
-      ))}
-
-      {/* Main circle labels */}
-      <text x="560" y="520" textAnchor="middle" fill="#9ca3af" fontSize="56" fontWeight="700" letterSpacing="1.5">
-        <tspan x="560" dy="0">WHAT YOU</tspan>
-        <tspan x="560" dy="80">LOVE</tspan>
-      </text>
-      <text x="2240" y="520" textAnchor="middle" fill="#9ca3af" fontSize="56" fontWeight="700" letterSpacing="1.5">
-        <tspan x="2240" dy="0">WHAT YOU&apos;RE</tspan>
-        <tspan x="2240" dy="80">GOOD AT</tspan>
-      </text>
-      <text x="2240" y="2220" textAnchor="middle" fill="#9ca3af" fontSize="56" fontWeight="700" letterSpacing="1.5">
-        <tspan x="2240" dy="0">WHAT YOU CAN</tspan>
-        <tspan x="2240" dy="80">BE PAID FOR</tspan>
-      </text>
-      <text x="560" y="2220" textAnchor="middle" fill="#9ca3af" fontSize="56" fontWeight="700" letterSpacing="1.5">
-        <tspan x="560" dy="0">WHAT THE</tspan>
-        <tspan x="560" dy="80">WORLD NEEDS</tspan>
-      </text>
-
-      {/* Intersection labels */}
-      {INTERSECTIONS.map((int, i) => (
-        <text key={i} x={int.x} y={int.y} textAnchor="middle" fill="#6b7280" fontSize="48" fontWeight="500">
-          {int.label}
-        </text>
-      ))}
-
-      {/* Center IKIGAI label */}
-      <text x="1400" y="1420" textAnchor="middle" fill="#fafafa" fontSize="72" fontWeight="800" letterSpacing="8">
-        IKIGAI
-      </text>
-    </svg>
+      </svg>
+    </div>
   );
+};
+
+// Custom node for text labels
+const LabelNode: React.FC<{ data: { text: string; fontSize: number; color: string; lines?: string[]; lineStart?: { x: number; y: number }; lineEnd?: { x: number; y: number } } }> = ({ data }) => {
+  const lines = data.lines || [data.text];
+  const hasLine = data.lineStart && data.lineEnd;
+
+  return (
+    <div style={{ pointerEvents: 'none', position: 'relative' }}>
+      {hasLine && data.lineStart && data.lineEnd && (
+        <svg
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '800px',
+            height: '200px',
+            overflow: 'visible',
+            pointerEvents: 'none',
+          }}
+        >
+          <line
+            x1={data.lineStart.x}
+            y1={data.lineStart.y}
+            x2={data.lineEnd.x}
+            y2={data.lineEnd.y}
+            stroke={data.color}
+            strokeWidth={2}
+            strokeOpacity={0.5}
+          />
+        </svg>
+      )}
+      <div
+        style={{
+          textAlign: 'center',
+          color: data.color,
+          fontSize: `${data.fontSize}px`,
+          fontWeight: 700,
+          letterSpacing: '1.5px',
+          lineHeight: 1.4,
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {lines.map((line, i) => (
+          <div key={i}>{line}</div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const nodeTypes = {
+  ikigaiItem: IkigaiItemNode,
+  circle: CircleNode,
+  label: LabelNode,
+};
+
+// Create static background nodes
+const createBackgroundNodes = (): Node[] => {
+  const nodes: Node[] = [];
+
+  // Add circle nodes
+  Object.entries(CIRCLES).forEach(([key, circle]) => {
+    nodes.push({
+      id: `circle-${key}`,
+      type: 'circle',
+      position: { x: circle.cx - circle.r, y: circle.cy - circle.r },
+      data: { circle, circleKey: key },
+      draggable: false,
+      selectable: false,
+      zIndex: -100,
+    });
+  });
+
+  // Add main circle labels (positioned outside circles with connecting lines)
+  const mainLabels = [
+    {
+      circle: CIRCLES.love,
+      text: 'WHAT YOU LOVE',
+      position: { x: 200, y: 1000 },
+      lineStart: { x: 300, y: 28 },
+      lineEnd: { x: 200, y: 28 }
+    },
+    {
+      circle: CIRCLES.good,
+      text: "WHAT YOU'RE GOOD AT",
+      position: { x: 2000, y: 1000 },
+      lineStart: { x: 0, y: 28 },
+      lineEnd: { x: 100, y: 28 }
+    },
+    {
+      circle: CIRCLES.paid,
+      text: 'WHAT YOU CAN BE PAID FOR',
+      position: { x: 2000, y: 1800 },
+      lineStart: { x: 0, y: 28 },
+      lineEnd: { x: 100, y: 28 }
+    },
+    {
+      circle: CIRCLES.need,
+      text: 'WHAT THE WORLD NEEDS',
+      position: { x: 200, y: 1800 },
+      lineStart: { x: 300, y: 28 },
+      lineEnd: { x: 200, y: 28 }
+    },
+  ];
+
+  mainLabels.forEach((label, i) => {
+    nodes.push({
+      id: `main-label-${i}`,
+      type: 'label',
+      position: label.position,
+      data: {
+        text: label.text,
+        fontSize: 56,
+        color: '#9ca3af',
+        lineStart: label.lineStart,
+        lineEnd: label.lineEnd
+      },
+      draggable: false,
+      selectable: false,
+      zIndex: -99,
+    });
+  });
+
+  // Add intersection labels
+  INTERSECTIONS.forEach((int, i) => {
+    nodes.push({
+      id: `intersection-label-${i}`,
+      type: 'label',
+      position: { x: int.x - 100, y: int.y - 24 },
+      data: { text: int.label, fontSize: 48, color: '#6b7280' },
+      draggable: false,
+      selectable: false,
+      zIndex: -98,
+    });
+  });
+
+  // Add center IKIGAI label
+  nodes.push({
+    id: 'center-label',
+    type: 'label',
+    position: { x: 1400 - 150, y: 1400 - 36 },
+    data: { text: 'IKIGAI', fontSize: 72, color: '#fafafa' },
+    draggable: false,
+    selectable: false,
+    zIndex: -97,
+  });
+
+  return nodes;
 };
 
 // Determine region from position
@@ -290,10 +414,11 @@ interface SidebarProps {
   onDelete: (id: string) => void;
   onClear: () => void;
   onExport: () => void;
+  onImport: (file: File) => void;
 }
 
 // Sidebar component
-const Sidebar: React.FC<SidebarProps> = ({ nodes, onDelete, onClear, onExport }) => {
+const Sidebar: React.FC<SidebarProps> = ({ nodes, onDelete, onClear, onExport, onImport }) => {
   const itemNodes = nodes.filter((n): n is IkigaiNode => n.type === 'ikigaiItem');
 
   const groupedNodes = {
@@ -395,28 +520,61 @@ const Sidebar: React.FC<SidebarProps> = ({ nodes, onDelete, onClear, onExport })
         paddingTop: '16px',
         borderTop: '1px solid #222',
         display: 'flex',
+        flexDirection: 'column',
         gap: '10px',
       }}>
-        <button
-          onClick={onExport}
-          style={{
-            flex: 1,
-            padding: '10px',
-            borderRadius: '6px',
-            fontSize: '12px',
-            fontWeight: 500,
-            cursor: 'pointer',
-            background: '#1a1a1a',
-            border: '1px solid #333',
-            color: '#888',
-          }}
-        >
-          Export JSON
-        </button>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button
+            onClick={onExport}
+            style={{
+              flex: 1,
+              padding: '10px',
+              borderRadius: '6px',
+              fontSize: '12px',
+              fontWeight: 500,
+              cursor: 'pointer',
+              background: '#1a1a1a',
+              border: '1px solid #333',
+              color: '#888',
+            }}
+          >
+            Export JSON
+          </button>
+          <label
+            htmlFor="import-file"
+            style={{
+              flex: 1,
+              padding: '10px',
+              borderRadius: '6px',
+              fontSize: '12px',
+              fontWeight: 500,
+              cursor: 'pointer',
+              background: '#1a1a1a',
+              border: '1px solid #333',
+              color: '#888',
+              textAlign: 'center',
+            }}
+          >
+            Import JSON
+            <input
+              id="import-file"
+              type="file"
+              accept=".json"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  onImport(file);
+                  e.target.value = '';
+                }
+              }}
+              style={{ display: 'none' }}
+            />
+          </label>
+        </div>
         <button
           onClick={onClear}
           style={{
-            flex: 1,
+            width: '100%',
             padding: '10px',
             borderRadius: '6px',
             fontSize: '12px',
@@ -441,15 +599,23 @@ interface FlowState {
 
 // Load initial state from localStorage
 const loadState = (): FlowState => {
+  const backgroundNodes = createBackgroundNodes();
+
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
-      return JSON.parse(saved) as FlowState;
+      const state = JSON.parse(saved) as FlowState;
+      // Merge saved user nodes with background nodes
+      const userNodes = state.nodes.filter(n => n.type === 'ikigaiItem');
+      return {
+        nodes: [...backgroundNodes, ...userNodes],
+        edges: state.edges
+      };
     }
   } catch (e) {
     console.error('Failed to load state:', e);
   }
-  return { nodes: [], edges: [] };
+  return { nodes: backgroundNodes, edges: [] };
 };
 
 // Main Flow component
@@ -458,13 +624,15 @@ const IkigaiFlow: React.FC = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialState.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialState.edges);
   const [modalOpen, setModalOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [clickPosition, setClickPosition] = useState<{ x: number; y: number } | null>(null);
   const [clickRegion, setClickRegion] = useState<keyof Circles | null>(null);
   const { screenToFlowPosition } = useReactFlow();
 
-  // Save to localStorage whenever nodes or edges change
+  // Save to localStorage whenever nodes or edges change (only save user nodes)
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ nodes, edges }));
+    const userNodes = nodes.filter(n => n.type === 'ikigaiItem');
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ nodes: userNodes, edges }));
   }, [nodes, edges]);
 
   const onPaneClick = useCallback((event: React.MouseEvent) => {
@@ -529,6 +697,44 @@ const IkigaiFlow: React.FC = () => {
     URL.revokeObjectURL(url);
   }, [nodes]);
 
+  const handleImport = useCallback((file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const content = e.target?.result as string;
+        const data = JSON.parse(content);
+
+        if (!data.nodes || !Array.isArray(data.nodes)) {
+          alert('Invalid JSON file format. Expected a file with a "nodes" array.');
+          return;
+        }
+
+        // Convert imported data to React Flow nodes
+        const importedNodes: Node[] = data.nodes.map((n: { id: string; label: string; region: keyof Circles; position: { x: number; y: number } }) => ({
+          id: n.id || `item-${Date.now()}-${Math.random()}`,
+          type: 'ikigaiItem',
+          position: n.position || { x: 1400, y: 1400 },
+          data: {
+            label: n.label,
+            region: n.region || 'love',
+          },
+        }));
+
+        // Get background nodes
+        const backgroundNodes = createBackgroundNodes();
+
+        // Replace all nodes with background + imported nodes
+        setNodes([...backgroundNodes, ...importedNodes]);
+
+        alert(`Successfully imported ${importedNodes.length} items!`);
+      } catch (error) {
+        console.error('Import error:', error);
+        alert('Failed to import JSON file. Please check the file format.');
+      }
+    };
+    reader.readAsText(file);
+  }, [setNodes]);
+
   return (
     <div style={{ display: 'flex', height: '100vh', background: '#0a0a0a' }}>
       <div style={{ flex: 1, position: 'relative' }}>
@@ -542,10 +748,10 @@ const IkigaiFlow: React.FC = () => {
           minZoom={0.1}
           maxZoom={4}
           defaultViewport={{ x: 0, y: 0, zoom: 0.35 }}
+          colorMode="dark"
           style={{ background: 'transparent' }}
           proOptions={{ hideAttribution: true }}
         >
-          <IkigaiBackground />
           <Controls
             style={{
               background: '#1a1a1a',
@@ -555,6 +761,30 @@ const IkigaiFlow: React.FC = () => {
           />
           <Background color="#222" gap={80} />
         </ReactFlow>
+
+        {/* Toggle Sidebar Button */}
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          style={{
+            position: 'absolute',
+            top: '24px',
+            right: '24px',
+            background: '#1a1a1a',
+            border: '1px solid #333',
+            borderRadius: '8px',
+            padding: '12px 16px',
+            color: '#fafafa',
+            fontSize: '14px',
+            fontWeight: 500,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            zIndex: 10,
+          }}
+        >
+          {sidebarOpen ? '← Hide Panel' : 'Show Panel →'}
+        </button>
 
         <div style={{
           position: 'absolute',
@@ -572,12 +802,15 @@ const IkigaiFlow: React.FC = () => {
         </div>
       </div>
 
-      <Sidebar
-        nodes={nodes}
-        onDelete={handleDeleteNode}
-        onClear={handleClear}
-        onExport={handleExport}
-      />
+      {sidebarOpen && (
+        <Sidebar
+          nodes={nodes}
+          onDelete={handleDeleteNode}
+          onClear={handleClear}
+          onExport={handleExport}
+          onImport={handleImport}
+        />
+      )}
 
       <Modal
         isOpen={modalOpen}
