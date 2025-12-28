@@ -4,11 +4,7 @@
   "description": "Collection of web-based tools and utilities",
   "private": true,
   "type": "module",
-  "packageManager": "npm@10.8.2",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+  "packageManager": "pnpm@9.15.4",
   "scripts": {
     "build": "turbo run build && node scripts/generate-landing.js",
     "build:apps": "turbo run build",
@@ -17,11 +13,11 @@
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
     "clean": "turbo run clean && rm -rf node_modules",
-    "predeploy": "npm run build",
+    "predeploy": "pnpm run build",
     "deploy": "gh-pages -d docs -t true",
-    "music": "npm run -w @hudak/music-practice --",
-    "tuner": "npm run -w @hudak/instrument-tuner --",
-    "ui": "npm run -w @hudak/ui --"
+    "music": "pnpm --filter @hudak/music-practice",
+    "tuner": "pnpm --filter @hudak/instrument-tuner",
+    "ui": "pnpm --filter @hudak/ui"
   },
   "keywords": [
     "tools",

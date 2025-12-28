@@ -25,7 +25,7 @@
     "react-gauge-chart": "^0.4.1"
   },
   "devDependencies": {
-    "@hudak/typescript-config": "file:../typescript-config",
+    "@tools/typescript-config": "workspace:*",
     "@types/react": "^18.3.18",
     "tsup": "^8.3.5",
     "typescript": "^5.7.3"

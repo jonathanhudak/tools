@@ -11,14 +11,14 @@
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "clean": "rm -rf dist node_modules",
     "test": "node test-sight-reading.js",
-    "test:build": "npm run build && npm run test"
+    "test:build": "pnpm run build && pnpm run test"
   },
   "keywords": [],
   "author": "Jonathan Hudak",
   "license": "ISC",
   "dependencies": {
-    "@hudak/audio-components": "file:../../packages/audio-components",
-    "@hudak/ui": "*",
+    "@hudak/audio-components": "workspace:*",
+    "@hudak/ui": "workspace:*",
     "@tanstack/react-router": "^1.91.6",
     "framer-motion": "^12.23.24",
     "pitchy": "^4.1.0",
@@ -32,8 +32,8 @@
   },
   "devDependencies": {
     "@tanstack/router-devtools": "^1.91.6",
-    "@tools/eslint-config": "*",
-    "@tools/typescript-config": "*",
+    "@tools/eslint-config": "workspace:*",
+    "@tools/typescript-config": "workspace:*",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "eslint": "^8.57.1",

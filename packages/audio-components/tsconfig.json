@@ -1,5 +1,5 @@
 {
-  "extends": "@hudak/typescript-config/react.json",
+  "extends": "@tools/typescript-config/react.json",
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",

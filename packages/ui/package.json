@@ -17,7 +17,7 @@
     "dev": "echo 'UI package - no dev server'",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext ts,tsx",
-    "shadcn": "npx shadcn@latest --"
+    "shadcn": "pnpm dlx shadcn@latest"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -67,8 +67,8 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
-    "@tools/eslint-config": "*",
-    "@tools/typescript-config": "*",
+    "@tools/eslint-config": "workspace:*",
+    "@tools/typescript-config": "workspace:*",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "eslint": "^8.57.1",

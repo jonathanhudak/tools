@@ -2,7 +2,7 @@
 
 A collection of small, useful tools built with AI-assisted coding. Each tool is designed to be simple, focused, and practical.
 
-This is a **monorepo** managed with [Turborepo](https://turbo.build/repo), using shared TypeScript and ESLint configurations for consistency across projects.
+This is a **monorepo** managed with [Turborepo](https://turbo.build/repo) and [pnpm](https://pnpm.io/), using shared TypeScript and ESLint configurations for consistency across projects.
 
 ## Available Tools
 
@@ -13,21 +13,37 @@ This is a **monorepo** managed with [Turborepo](https://turbo.build/repo), using
 
 ## Quick Start
 
+### Prerequisites
+
+This project uses [pnpm](https://pnpm.io/) as the package manager. Install it globally:
+
+```bash
+npm install -g pnpm
+# or
+curl -fsSL https://get.pnpm.io/install.sh | sh -
+```
+
+### Commands
+
 ```bash
 # Install all dependencies
-npm install
+pnpm install
 
 # Build all apps
-npm run build
+pnpm run build
 
 # Start development for all apps
-npm run dev
+pnpm run dev
 
 # Type check all TypeScript apps
-npm run typecheck
+pnpm run typecheck
 
 # Lint all apps
-npm run lint
+pnpm run lint
+
+# Run commands for a specific workspace
+pnpm --filter @hudak/music-practice dev
+pnpm --filter @hudak/instrument-tuner build
 ```
 
 ## Project Structure
