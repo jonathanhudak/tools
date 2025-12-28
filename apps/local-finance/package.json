@@ -1,0 +1,48 @@
+{
+  "name": "@hudak/local-finance",
+  "version": "1.0.0",
+  "description": "Privacy-first local finance analyzer with AI-powered categorization and HTML reports",
+  "type": "module",
+  "bin": {
+    "finance": "./dist/cli.js"
+  },
+  "scripts": {
+    "dev": "tsup --watch",
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext ts --report-unused-disable-directives --max-warnings 0",
+    "clean": "rm -rf dist node_modules",
+    "finance": "node dist/cli.js"
+  },
+  "keywords": [
+    "finance",
+    "budget",
+    "cli",
+    "local-first",
+    "privacy"
+  ],
+  "author": "Jonathan Hudak",
+  "license": "ISC",
+  "dependencies": {
+    "better-sqlite3": "^11.6.0",
+    "csv-parse": "^5.6.0",
+    "date-fns": "^4.1.0",
+    "commander": "^12.1.0",
+    "chalk": "^5.3.0",
+    "ora": "^8.1.0",
+    "inquirer": "^12.1.0",
+    "ollama": "^0.5.11",
+    "@anthropic-ai/sdk": "^0.32.1",
+    "@google/generative-ai": "^0.21.0",
+    "handlebars": "^4.7.8",
+    "open": "^10.1.0",
+    "nanoid": "^5.0.9"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
+    "@tools/eslint-config": "*",
+    "@tools/typescript-config": "*",
+    "typescript": "^5.9.3",
+    "tsup": "^8.3.5"
+  }
+}
