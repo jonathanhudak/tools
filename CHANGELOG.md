@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/jonathanhudak/tools/compare/v1.2.0...v1.3.0) (2025-12-28)
+
+
+### Features
+
+* add local finance analyzer CLI tool ([1f3b9b2](https://github.com/jonathanhudak/tools/commit/1f3b9b2ffefa62b1fd29d9e275b9586ca8181eda))
+
 # [1.2.0](https://github.com/jonathanhudak/tools/compare/v1.1.1...v1.2.0) (2025-12-14)
 
 
