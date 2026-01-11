@@ -185,9 +185,10 @@ export interface RecurringPaymentSummary {
   merchant: string;
   frequency: string;
   amount: number;
-  yearlyTotal: number;
+  totalSpent: number;
+  occurrences: number;
   isActive: boolean;
-  status: string;
+  confidence: number;
 }
 
 // Config types

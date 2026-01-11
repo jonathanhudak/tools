@@ -161,51 +161,51 @@ async function detectRecurring(options: { year?: string; save?: boolean }): Prom
   }
 
   console.log(chalk.bold('\nDetected Recurring Payments:\n'));
-  console.log('─'.repeat(90));
+  console.log('─'.repeat(100));
   console.log(
     chalk.bold(
       'Merchant'.padEnd(25) +
-        'Amount'.padStart(10) +
+        'Avg'.padStart(10) +
         '  ' +
         'Frequency'.padEnd(10) +
-        'Yearly'.padStart(12) +
+        'Count'.padStart(6) +
+        '  ' +
+        'Total Spent'.padStart(12) +
         '  ' +
         'Confidence'.padStart(10) +
         '  ' +
         'Active'
     )
   );
-  console.log('─'.repeat(90));
+  console.log('─'.repeat(100));
 
   for (const r of detected) {
-    const amount = `$${r.averageAmount.toFixed(2)}`;
+    const avgAmount = `$${r.averageAmount.toFixed(2)}`;
     const frequency = formatFrequency(r.frequency);
-    const yearly = `$${(r.averageAmount * getFrequencyMultiplier(r.frequency)).toFixed(2)}/yr`;
+    const totalSpent = `$${r.totalSpent.toFixed(2)}`;
+    const occurrences = `${r.occurrences}x`;
     const confidence = `${(r.confidence * 100).toFixed(0)}%`;
     const active = r.isActive ? chalk.green('Yes') : chalk.yellow('No');
 
     console.log(
-      `${r.merchant.slice(0, 24).padEnd(25)}${amount.padStart(10)}  ${frequency.padEnd(10)}${yearly.padStart(12)}  ${confidence.padStart(10)}  ${active}`
+      `${r.merchant.slice(0, 24).padEnd(25)}${avgAmount.padStart(10)}  ${frequency.padEnd(10)}${occurrences.padStart(6)}  ${totalSpent.padStart(12)}  ${confidence.padStart(10)}  ${active}`
     );
   }
 
-  console.log('─'.repeat(90));
+  console.log('─'.repeat(100));
 
-  // Calculate totals
+  // Calculate totals based on actual spending
   const activePayments = detected.filter((r) => r.isActive);
-  const monthlyTotal = activePayments.reduce(
-    (sum, r) => sum + r.averageAmount / (12 / getFrequencyMultiplier(r.frequency)),
-    0
-  );
-  const yearlyTotal = activePayments.reduce(
-    (sum, r) => sum + r.averageAmount * getFrequencyMultiplier(r.frequency),
-    0
-  );
+  const totalActualSpent = detected.reduce((sum, r) => sum + r.totalSpent, 0);
+  const activeActualSpent = activePayments.reduce((sum, r) => sum + r.totalSpent, 0);
+  const totalOccurrences = detected.reduce((sum, r) => sum + r.occurrences, 0);
 
   console.log();
+  console.log(chalk.bold(`Total Recurring Patterns: ${detected.length}`));
   console.log(chalk.bold(`Active Subscriptions: ${activePayments.length}`));
-  console.log(chalk.bold(`Estimated Monthly Cost: $${monthlyTotal.toFixed(2)}`));
-  console.log(chalk.bold(`Estimated Yearly Cost: $${yearlyTotal.toFixed(2)}`));
+  console.log(chalk.bold(`Total Transactions: ${totalOccurrences}`));
+  console.log(chalk.bold(`Total Spent (All): $${totalActualSpent.toFixed(2)}`));
+  console.log(chalk.bold(`Total Spent (Active): $${activeActualSpent.toFixed(2)}`));
 
   // Save if requested
   if (options.save) {

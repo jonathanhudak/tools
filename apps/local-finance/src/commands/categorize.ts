@@ -20,6 +20,7 @@ import { RuleEngine } from '../categorization/rule-engine.js';
 import { createAIProvider } from '../categorization/ai/index.js';
 import type { AIProvider } from '../categorization/ai/provider.js';
 import type { Transaction, Category } from '../core/types.js';
+import { BatchCategorizer } from '../categorization/ai/batch-categorizer.js';
 
 export function createCategorizeCommand(): Command {
   const cmd = new Command('categorize')
@@ -31,6 +32,8 @@ export function createCategorizeCommand(): Command {
     .option('--rules-only', 'Only use rule-based categorization (no AI)')
     .option('--init-rules', 'Initialize default categorization rules')
     .option('--normalize', 'Also normalize merchant names using AI')
+    .option('--batch', 'Use efficient batch processing (100 transactions per API call) - Anthropic only')
+    .option('--batch-size <number>', 'Transactions per batch (default: 100)', '100')
     .action(async (options) => {
       await runCategorize(options);
     });
@@ -46,6 +49,8 @@ async function runCategorize(options: {
   rulesOnly?: boolean;
   initRules?: boolean;
   normalize?: boolean;
+  batch?: boolean;
+  batchSize?: string;
 }): Promise<void> {
   ensureDataDir();
   const db = getDatabase(getDatabasePath());
@@ -104,6 +109,18 @@ async function runCategorize(options: {
     } catch (error) {
       console.log(chalk.yellow(`AI not available: ${error instanceof Error ? error.message : 'Unknown error'}`));
       aiProvider = null;
+    }
+  }
+
+  // Use batch processing if requested
+  if (options.batch && aiProvider) {
+    if (config.ai.provider !== 'anthropic') {
+      console.log(chalk.yellow('⚠️  Batch mode only supports Anthropic. Falling back to standard mode.'));
+    } else if (!config.ai.anthropic?.apiKey) {
+      console.log(chalk.red('❌ Anthropic API key not configured. Run: finance config set ai.anthropic.apiKey "YOUR_KEY"'));
+      return;
+    } else {
+      return await runBatchCategorize(transactions, categories, config.ai.anthropic.apiKey, options);
     }
   }
 
@@ -237,6 +254,58 @@ async function runCategorize(options: {
   }
   if (skipped > 0) {
     console.log(`  ${chalk.yellow('○')} Uncategorized: ${skipped}`);
+  }
+  console.log();
+}
+
+async function runBatchCategorize(
+  transactions: Transaction[],
+  categories: Category[],
+  apiKey: string,
+  options: { batchSize?: string; normalize?: boolean }
+): Promise<void> {
+  const db = getDatabase(getDatabasePath());
+  const batchSize = parseInt(options.batchSize ?? '100', 10);
+
+  console.log(chalk.bold(`\n🚀 Batch Categorization Mode\n`));
+  console.log(`Processing ${transactions.length} transactions in batches of ${batchSize}...`);
+
+  const categorizer = new BatchCategorizer(apiKey, categories, batchSize);
+
+  const spinner = ora('Processing batches...').start();
+  const results = await categorizer.categorizeMany(transactions);
+  spinner.succeed(`Batch processing complete!`);
+
+  // Apply results to database
+  let categorized = 0;
+  let normalized = 0;
+
+  const updateSpinner = ora('Updating database...').start();
+  for (const result of results) {
+    updateTransactionCategory(
+      db,
+      result.transactionId,
+      result.categoryId,
+      'ai',
+      result.confidence
+    );
+    categorized++;
+
+    if (options.normalize && result.normalizedMerchant) {
+      updateTransactionMerchant(db, result.transactionId, result.normalizedMerchant);
+      normalized++;
+    }
+  }
+  updateSpinner.succeed('Database updated!');
+
+  // Summary
+  console.log(chalk.bold('\nSummary:'));
+  console.log(`  ${chalk.blue('✓')} Categorized by AI: ${categorized}`);
+  if (options.normalize) {
+    console.log(`  ${chalk.cyan('✓')} Merchants normalized: ${normalized}`);
+  }
+  if (results.length < transactions.length) {
+    console.log(`  ${chalk.yellow('○')} Uncategorized: ${transactions.length - results.length}`);
   }
   console.log();
 }

@@ -4,12 +4,12 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import ora from 'ora';
 import open from 'open';
-import { getDatabase, getActiveRecurringPayments } from '../core/database.js';
+import { getDatabase, getTransactions } from '../core/database.js';
 import { getDatabasePath, ensureDataDir, getConfig } from '../core/config.js';
 import { generateYearReport, generateSpendingSummary, generateRuleBasedInsights } from '../insights/engine.js';
 import { generateYearSummaryHTML, generateRecurringHTML, saveReport } from '../reports/generator.js';
 import { createAIProvider } from '../categorization/ai/index.js';
-import { formatFrequency, getFrequencyMultiplier } from '../recurring/detector.js';
+import { formatFrequency, detectRecurringPayments } from '../recurring/detector.js';
 
 export function createReportCommand(): Command {
   const cmd = new Command('report')
@@ -128,17 +128,23 @@ async function generateYearSummaryReport(
 async function generateRecurringReport(db: ReturnType<typeof getDatabase>): Promise<string> {
   const spinner = ora('Generating recurring payments report...').start();
 
-  // Get recurring payments
-  const payments = getActiveRecurringPayments(db);
+  // Detect recurring payments from transactions
+  const currentYear = new Date().getFullYear();
+  const startDate = new Date(currentYear, 0, 1);
+  const endDate = new Date(currentYear, 11, 31);
+  const transactions = getTransactions(db, { from: startDate, to: endDate, limit: 50000 });
 
-  // Convert to summary format
-  const paymentSummaries = payments.map((p) => ({
-    merchant: p.merchant,
-    frequency: formatFrequency(p.frequency),
-    amount: p.expectedAmount ?? 0,
-    yearlyTotal: (p.expectedAmount ?? 0) * getFrequencyMultiplier(p.frequency),
-    isActive: p.isActive,
-    status: p.status,
+  const detected = detectRecurringPayments(transactions);
+
+  // Convert to summary format with actual totals
+  const paymentSummaries = detected.map((r) => ({
+    merchant: r.merchant,
+    frequency: formatFrequency(r.frequency),
+    amount: r.averageAmount,
+    totalSpent: r.totalSpent,
+    occurrences: r.occurrences,
+    isActive: r.isActive,
+    confidence: r.confidence,
   }));
 
   // Generate HTML

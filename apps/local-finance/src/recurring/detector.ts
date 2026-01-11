@@ -10,6 +10,8 @@ export interface RecurringAnalysis {
   confidence: number;
   averageAmount: number;
   amountVariance: number;
+  totalSpent: number;
+  occurrences: number;
   isActive: boolean;
   lastSeen: Date;
   nextExpected: Date | null;
@@ -30,13 +32,16 @@ const FREQUENCY_DAYS: Record<RecurringPayment['frequency'], number> = {
 };
 
 export function detectRecurringPayments(transactions: Transaction[]): RecurringAnalysis[] {
+  // Filter to only expenses (negative amounts)
+  const expenses = transactions.filter(tx => tx.amount < 0);
+
   // Group transactions by normalized merchant or description
-  const byMerchant = groupByMerchant(transactions);
+  const byMerchant = groupByMerchant(expenses);
   const results: RecurringAnalysis[] = [];
 
   for (const [merchant, txs] of Object.entries(byMerchant)) {
-    // Need at least 2 transactions to detect a pattern
-    if (txs.length < 2) continue;
+    // Need more than 2 transactions to detect a recurring pattern
+    if (txs.length <= 2) continue;
 
     // Sort by date
     const sorted = [...txs].sort((a, b) => a.date.getTime() - b.date.getTime());
@@ -83,7 +88,8 @@ function cleanDescription(description: string): string {
 }
 
 function analyzeFrequency(merchant: string, transactions: Transaction[]): RecurringAnalysis | null {
-  if (transactions.length < 2) return null;
+  // Require more than 2 transactions to establish a pattern
+  if (transactions.length <= 2) return null;
 
   // Calculate intervals between transactions
   const intervals: number[] = [];
@@ -96,7 +102,7 @@ function analyzeFrequency(merchant: string, transactions: Transaction[]): Recurr
   const frequencyMatch = findBestFrequency(intervals);
   if (!frequencyMatch) return null;
 
-  // Calculate amount statistics
+  // Calculate amount statistics (use absolute value since all are expenses)
   const amounts = transactions.map((t) => Math.abs(t.amount));
   const averageAmount = amounts.reduce((a, b) => a + b, 0) / amounts.length;
   const amountVariance = calculateVariance(amounts, averageAmount);
@@ -116,6 +122,9 @@ function analyzeFrequency(merchant: string, transactions: Transaction[]): Recurr
   const amountConsistency = 1 - Math.min(amountVariance / averageAmount, 1);
   const finalConfidence = frequencyMatch.score * 0.7 + amountConsistency * 0.3;
 
+  // Calculate actual total spent
+  const totalSpent = amounts.reduce((sum, amt) => sum + amt, 0);
+
   return {
     merchant: merchant.charAt(0).toUpperCase() + merchant.slice(1),
     transactions,
@@ -123,6 +132,8 @@ function analyzeFrequency(merchant: string, transactions: Transaction[]): Recurr
     confidence: finalConfidence,
     averageAmount,
     amountVariance,
+    totalSpent,
+    occurrences: transactions.length,
     isActive,
     lastSeen: lastTransaction.date,
     nextExpected,

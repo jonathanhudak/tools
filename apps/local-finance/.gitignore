@@ -1,0 +1,20 @@
+# Database files
+*.db
+*.db-shm
+*.db-wal
+
+# Financial data
+*.csv
+amazon-orders-*.json
+
+# Browser session data
+chrome-session/
+
+# Config with API keys
+.env
+.env.local
+config.json
+
+# Build output
+dist/
+*.tsbuildinfo
