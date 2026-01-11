@@ -146,7 +146,9 @@ No installation, no dependencies, no build process required. Just open and play!
 
 ### Technology Stack
 
-- **Frontend**: Vanilla JavaScript (ES6+), HTML5, CSS3
+- **Frontend**: React + TypeScript (Vite)
+- **Routing**: TanStack Router
+- **Data/Async**: TanStack React Query
 - **Input**:
   - **MIDI**: Web MIDI API (for keyboard instruments)
   - **Audio**: Web Audio API with pitch detection (for strings/bowed)
@@ -155,32 +157,24 @@ No installation, no dependencies, no build process required. Just open and play!
   - **Tonal.js**: Music theory utilities (scales, chords, intervals)
   - **Pitchy**: Real-time monophonic pitch detection (McLeod autocorrelation)
 - **Storage**: LocalStorage/IndexedDB API
-- **Graphics**: Canvas API (falling notes mode)
 
 ### Project Structure
 
 ```
 music-practice/
-├── index.html                 # Main application entry point
-├── package.json               # Dependencies (tonal, pitchy)
-├── css/
-│   └── styles.css             # All styles with CSS variables for theming
-├── js/
-│   ├── app.js                 # Main application controller
-│   ├── input/
-│   │   ├── midi-manager.js    # MIDI device handling and events
-│   │   └── audio-manager.js   # Microphone + pitch detection (NEW)
-│   ├── notation/
-│   │   ├── staff-renderer.js  # VexFlow staff notation renderer
-│   │   └── falling-notes.js   # Canvas-based falling notes renderer
-│   ├── modules/
-│   │   └── sight-reading.js   # Sight reading practice logic
-│   └── utils/
-│       ├── music-theory.js    # Music theory utilities and validation
-│       ├── pitch-detector.js  # Pitchy integration wrapper (NEW)
-│       ├── instrument-config.js # Instrument profiles and ranges (NEW)
-│       └── storage.js         # LocalStorage wrapper for persistence
-├── node_modules/              # NPM dependencies
+├── index.html                    # Vite entry
+├── package.json                  # App dependencies/scripts
+├── src/
+│   ├── main.tsx                  # App bootstrap (router + query client)
+│   ├── routes/                   # TanStack Router routes
+│   ├── components/               # UI components
+│   ├── hooks/                    # Custom React hooks
+│   ├── lib/
+│   │   ├── input/                # MIDI/audio managers
+│   │   ├── notation/             # VexFlow renderers
+│   │   ├── utils/                # Music theory + scoring utilities
+│   │   └── game/                 # Note ranges + rendering helpers
+│   └── test/                     # Test setup
 └── README.md
 ```
 
@@ -202,11 +196,11 @@ music-practice/
 
 The app is designed to be easily customizable:
 
-- **Add New Instruments**: Create profile in `js/utils/instrument-config.js`
-- **Add New Modules**: Create a new module class in `js/modules/`
-- **Modify Note Ranges**: Edit instrument configs or `MusicTheory` utilities
-- **Change Themes**: Adjust CSS variables in `:root` and `[data-theme="dark"]`
-- **Tune Pitch Detection**: Adjust tolerance, buffer size in `pitch-detector.js`
+- **Add New Instruments**: Create profile in `src/lib/utils/instrument-config.ts`
+- **Add New Modules**: Add modules under `src/lib/`
+- **Modify Note Ranges**: Update `src/lib/game/note-range.ts` or `src/lib/utils/music-theory.ts`
+- **Change Themes**: Adjust CSS variables in `src/index.css` or theme provider
+- **Tune Pitch Detection**: Update `src/lib/utils/pitch-detector.ts`
 
 ### Testing Without Physical Instruments
 

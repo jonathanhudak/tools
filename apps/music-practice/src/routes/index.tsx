@@ -4,13 +4,14 @@
 
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@hudak/ui/components/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@hudak/ui/components/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@hudak/ui/components/select';
 import { Label } from '@hudak/ui/components/label';
 import { Play, Music2, Settings2, Mic, Piano, Guitar } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { AudioManager } from '../lib/input/audio-manager';
+import { fetchAudioInputDevices } from '../lib/services/audio-devices';
 import { Storage } from '../lib/utils/storage';
 import type { GameMode } from '../hooks/use-game-round';
 
@@ -29,7 +30,6 @@ function SettingsRoute() {
   const [tabDisplayMode, setTabDisplayMode] = useState<'staff' | 'tab' | 'both'>('both');
   const [pitchSensitivity, setPitchSensitivity] = useState(10);
   const [pitchSmoothing, setPitchSmoothing] = useState(0.7);
-  const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedAudioDevice, setSelectedAudioDevice] = useState('');
 
   // Load saved settings
@@ -51,19 +51,19 @@ function SettingsRoute() {
     }
   }, []);
 
-  // Fetch audio devices for microphone instruments
+  const isMicrophoneInstrument = instrument === 'violin' || instrument === 'guitar';
+
+  const { data: audioDevices = [] } = useQuery({
+    queryKey: ['audio-devices'],
+    queryFn: fetchAudioInputDevices,
+    enabled: isMicrophoneInstrument,
+  });
+
   useEffect(() => {
-    const fetchDevices = async () => {
-      const devices = await AudioManager.getAudioInputDevices();
-      setAudioDevices(devices);
-      if (devices.length > 0 && !selectedAudioDevice) {
-        setSelectedAudioDevice(devices[0].deviceId);
-      }
-    };
-    if (instrument === 'violin' || instrument === 'guitar') {
-      fetchDevices();
+    if (audioDevices.length > 0 && !selectedAudioDevice) {
+      setSelectedAudioDevice(audioDevices[0].deviceId);
     }
-  }, [instrument, selectedAudioDevice]);
+  }, [audioDevices, selectedAudioDevice]);
 
   const handleStartGame = () => {
     // Save settings
@@ -95,8 +95,6 @@ function SettingsRoute() {
       },
     });
   };
-
-  const isMicrophoneInstrument = instrument === 'violin' || instrument === 'guitar';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center p-6">

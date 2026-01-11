@@ -3,13 +3,12 @@
  */
 
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useEffect, useState, useRef, useCallback, useLayoutEffect } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { Button } from '@hudak/ui/components/button';
-import { Card, CardContent } from '@hudak/ui/components/card';
 import { Badge } from '@hudak/ui/components/badge';
-import { X, Volume2, Trophy, Flame, Target, SkipForward } from 'lucide-react';
+import { X, SkipForward } from 'lucide-react';
 import { toast } from 'sonner';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 // Import our libraries
 import { MidiManager, type NoteOnEvent, type DeviceChangeEvent } from '../lib/input/midi-manager';
@@ -17,17 +16,20 @@ import { AudioManager, type PitchDetectedEvent } from '../lib/input/audio-manage
 import { StaffRenderer } from '../lib/notation/staff-renderer';
 import { TabRenderer } from '../lib/notation/tab-renderer';
 import { getInstrument, requiresMIDI } from '../lib/utils/instrument-config';
-import { generateRandomNote, midiToVexflow, validateNote } from '../lib/utils/music-theory';
+import { generateRandomNote, validateNote } from '../lib/utils/music-theory';
 import { Storage } from '../lib/utils/storage';
 import { AudioPlayback } from '../lib/utils/audio-playback';
-import { PitchGauge } from '@hudak/audio-components';
+import { getNoteRange } from '../lib/game/note-range';
+import { renderPracticeNote } from '../lib/game/render-note';
 
 // Game components
 import { useGameRound, type GameMode } from '../hooks/use-game-round';
-import { LivesDisplay } from '../components/lives-display';
-import { ScoreSummary } from '../components/score-summary';
 import { getStreakMilestoneMessage } from '../lib/utils/scoring';
 import { VirtualKeyboard } from '../components/virtual-keyboard';
+import { RadialTimer } from '../components/play/radial-timer';
+import { ScoreHud } from '../components/play/score-hud';
+import { NotationCard } from '../components/play/notation-card';
+import { ScoreSummaryModal } from '../components/play/score-summary-modal';
 
 // Search params for game settings
 interface PlaySearchParams {
@@ -54,65 +56,6 @@ export const Route = createFileRoute('/play')({
     selectedAudioDevice: (search.selectedAudioDevice as string) || '',
   }),
 });
-
-// Radial Timer Component
-function RadialTimer({
-  timeLeft,
-  maxTime,
-}: {
-  timeLeft: number;
-  maxTime: number;
-  isActive?: boolean;
-}) {
-  const percentage = (timeLeft / maxTime) * 100;
-  const radius = 52;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (percentage / 100) * circumference;
-
-  const isLow = percentage < 30;
-  const isMedium = percentage < 60 && percentage >= 30;
-
-  return (
-    <div className="relative">
-      <svg width="130" height="130" viewBox="0 0 130 130" className="transform -rotate-90">
-        {/* Background circle */}
-        <circle
-          cx="65"
-          cy="65"
-          r={radius}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="10"
-          className="text-muted/30"
-        />
-        {/* Progress circle */}
-        <circle
-          cx="65"
-          cy="65"
-          r={radius}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="10"
-          strokeDasharray={circumference}
-          strokeDashoffset={strokeDashoffset}
-          strokeLinecap="round"
-          className={`transition-all duration-100 ${
-            isLow ? 'text-red-500' : isMedium ? 'text-amber-500' : 'text-emerald-500'
-          }`}
-        />
-      </svg>
-      {/* Time text */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="text-center">
-          <div className={`text-3xl font-bold tabular-nums ${isLow ? 'text-red-500 animate-pulse' : ''}`}>
-            {Math.ceil(timeLeft)}
-          </div>
-          <div className="text-xs text-muted-foreground uppercase tracking-wider">sec</div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function PlayRoute() {
   const navigate = useNavigate();
@@ -165,30 +108,14 @@ function PlayRoute() {
   const lastDetectionTimeRef = useRef(0);
 
   // Get note range based on difficulty and instrument
-  const getNoteRange = useCallback((): string => {
-    const instrumentRanges: Record<string, Record<typeof difficulty, string>> = {
-      'piano': { 'beginner': 'c4-c5', 'intermediate': 'c4-g5', 'advanced': 'a3-c6' },
-      'piano-virtual': { 'beginner': 'c4-c5', 'intermediate': 'c4-g5', 'advanced': 'a3-c6' },
-      'guitar': { 'beginner': 'e2-e4', 'intermediate': 'e2-a4', 'advanced': 'e2-e5' },
-      'violin': { 'beginner': 'g3-g4', 'intermediate': 'g3-c5', 'advanced': 'g3-g5' }
-    };
-    const ranges = instrumentRanges[instrument] || instrumentRanges['piano'];
-    return ranges[difficulty];
-  }, [difficulty, instrument]);
+  const noteRange = useCallback(() => getNoteRange(instrument, difficulty), [difficulty, instrument]);
 
   // Stable callbacks for game round hook to prevent infinite re-renders
   const handleRoundComplete = useCallback((state: any) => {
     setShowScoreSummary(true);
 
     // Calculate range inline to avoid dependency cycle
-    const instrumentRanges: Record<string, Record<typeof difficulty, string>> = {
-      'piano': { 'beginner': 'c4-c5', 'intermediate': 'c4-g5', 'advanced': 'a3-c6' },
-      'piano-virtual': { 'beginner': 'c4-c5', 'intermediate': 'c4-g5', 'advanced': 'a3-c6' },
-      'guitar': { 'beginner': 'e2-e4', 'intermediate': 'e2-a4', 'advanced': 'e2-e5' },
-      'violin': { 'beginner': 'g3-g4', 'intermediate': 'g3-c5', 'advanced': 'g3-g5' }
-    };
-    const ranges = instrumentRanges[instrument] || instrumentRanges['piano'];
-    const range = ranges[difficulty];
+    const range = getNoteRange(instrument, difficulty);
 
     Storage.saveSession({
       module: 'sightReading',
@@ -242,27 +169,21 @@ function PlayRoute() {
     correctDetectionsRef.current = 0;
     lastDetectionTimeRef.current = 0;
 
-    const note = generateRandomNote(getNoteRange(), clef as 'treble' | 'bass');
+    const note = generateRandomNote(noteRange(), clef as 'treble' | 'bass');
     if (note) {
       setCurrentNote(note.midiNote);
       currentNoteRef.current = note.midiNote;
 
-      // Render based on instrument/display mode
-      if (instrument === 'guitar') {
-        if (tabDisplayMode === 'both' && tabRenderer.current) {
-          tabRenderer.current.renderStaffAndTab(note.midiNote);
-        } else if (tabDisplayMode === 'tab' && tabRenderer.current) {
-          tabRenderer.current.renderNote(note.midiNote);
-        } else if (tabDisplayMode === 'staff' && staffRenderer.current) {
-          const vexflowNote = midiToVexflow(note.midiNote, clef as 'treble' | 'bass');
-          if (vexflowNote) staffRenderer.current.renderNote(vexflowNote);
-        }
-      } else if (staffRenderer.current) {
-        const vexflowNote = midiToVexflow(note.midiNote, clef as 'treble' | 'bass');
-        if (vexflowNote) staffRenderer.current.renderNote(vexflowNote);
-      }
+      renderPracticeNote({
+        instrument,
+        tabDisplayMode,
+        clef: clef as 'treble' | 'bass',
+        midiNote: note.midiNote,
+        staffRenderer: staffRenderer.current,
+        tabRenderer: tabRenderer.current,
+      });
     }
-  }, [clef, getNoteRange, instrument, tabDisplayMode]);
+  }, [clef, instrument, noteRange, tabDisplayMode]);
 
   // Handle MIDI device changes
   const handleMidiDeviceChange = useCallback((_event: DeviceChangeEvent) => {
@@ -481,27 +402,20 @@ function PlayRoute() {
   useEffect(() => {
     const startSession = () => {
       if (gameMode === 'timed') roundActions.startRound();
-      const note = generateRandomNote(getNoteRange(), clef as 'treble' | 'bass');
+      const note = generateRandomNote(noteRange(), clef as 'treble' | 'bass');
       if (note) {
         setCurrentNote(note.midiNote);
         currentNoteRef.current = note.midiNote;
 
         setTimeout(() => {
-          if (instrument === 'guitar') {
-            if (tabDisplayMode === 'both' && tabRenderer.current) {
-              tabRenderer.current.renderStaffAndTab(note.midiNote);
-            } else if (tabDisplayMode === 'tab' && tabRenderer.current) {
-              tabRenderer.current.renderNote(note.midiNote);
-            } else if (tabDisplayMode === 'staff' && staffRenderer.current) {
-              const vexflowNote = midiToVexflow(note.midiNote, clef as 'treble' | 'bass');
-              if (vexflowNote) staffRenderer.current.renderNote(vexflowNote);
-            }
-          } else if (staffRenderer.current) {
-            const vexflowNote = midiToVexflow(note.midiNote, clef as 'treble' | 'bass');
-            if (vexflowNote) {
-              staffRenderer.current.renderNote(vexflowNote);
-            }
-          }
+          renderPracticeNote({
+            instrument,
+            tabDisplayMode,
+            clef: clef as 'treble' | 'bass',
+            midiNote: note.midiNote,
+            staffRenderer: staffRenderer.current,
+            tabRenderer: tabRenderer.current,
+          });
         }, 100);
 
         setSessionActive(true);
@@ -526,7 +440,7 @@ function PlayRoute() {
         module: 'sightReading',
         instrument,
         clef,
-        range: getNoteRange(),
+        range: noteRange(),
         ...stats,
         timestamp: Date.now()
       });
@@ -561,83 +475,18 @@ function PlayRoute() {
       {/* Main Game Area */}
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-4xl space-y-8">
-          {/* HUD Row - Score, Streak, Timer, Lives */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             className="flex items-center justify-between px-4"
           >
-            {/* Score & Streak */}
-            <div className="flex items-center gap-8">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-full bg-amber-500/20">
-                  <Trophy className="h-5 w-5 text-amber-500" />
-                </div>
-                <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wider">Score</div>
-                  <div className="text-2xl font-bold tabular-nums">
-                    {gameMode === 'timed' ? (roundState.currentScore?.finalScore || 0) : stats.correct * 10}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-full bg-orange-500/20">
-                  <Flame className="h-5 w-5 text-orange-500" />
-                </div>
-                <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wider">Streak</div>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-bold tabular-nums">
-                      {gameMode === 'timed' ? roundState.streak : stats.streak}
-                    </span>
-                    {stats.streak >= 3 && (
-                      <span className="text-xs text-orange-500">🔥</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Radial Timer (Timed Mode) or Progress */}
+            <ScoreHud gameMode={gameMode} roundState={roundState} stats={stats} />
             {gameMode === 'timed' && roundState.isActive && (
               <RadialTimer
                 timeLeft={roundState.timeLeft}
                 maxTime={roundState.maxTime}
-                isActive={roundState.isActive}
               />
             )}
-
-            {/* Lives (Timed Mode) or Stats */}
-            <div className="flex items-center gap-8">
-              {gameMode === 'timed' && roundState.isActive ? (
-                <>
-                  <LivesDisplay lives={roundState.lives} maxLives={roundState.maxLives} />
-                  <div className="text-center">
-                    <div className="text-xs text-muted-foreground uppercase tracking-wider">Progress</div>
-                    <div className="text-2xl font-bold text-blue-500">
-                      {roundState.notesCompleted}/{roundState.notesRequired}
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-full bg-emerald-500/20">
-                      <Target className="h-5 w-5 text-emerald-500" />
-                    </div>
-                    <div>
-                      <div className="text-xs text-muted-foreground uppercase tracking-wider">Correct</div>
-                      <div className="text-2xl font-bold tabular-nums text-emerald-500">{stats.correct}</div>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-muted-foreground uppercase tracking-wider">Incorrect</div>
-                    <div className="text-2xl font-bold tabular-nums text-red-500">{stats.incorrect}</div>
-                  </div>
-                </>
-              )}
-            </div>
           </motion.div>
 
           {/* Flash Card with Notation */}
@@ -646,88 +495,18 @@ function PlayRoute() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.1 }}
           >
-            <Card className="border-2 shadow-2xl bg-card/95 backdrop-blur overflow-hidden">
-              <CardContent className="p-0">
-                <div className={`flex ${isMicrophoneInstrument ? 'flex-row' : 'flex-col'} items-center justify-center`}>
-                  {/* Notation Display */}
-                  <div className={`flex-1 p-8 flex items-center justify-center ${
-                    instrument === 'guitar' && tabDisplayMode === 'both' ? 'min-h-[400px]' : 'min-h-[300px]'
-                  }`}>
-                    {/* Staff Display */}
-                    <div
-                      id="staff-display"
-                      ref={staffContainerRef}
-                      className={(instrument === 'guitar' && tabDisplayMode !== 'staff') ? 'hidden' : 'block'}
-                    />
-
-                    {/* Tab Display */}
-                    <div
-                      id="tab-display"
-                      ref={tabContainerRef}
-                      className={(instrument === 'guitar' && (tabDisplayMode === 'tab' || tabDisplayMode === 'both')) ? 'block' : 'hidden'}
-                    />
-                  </div>
-
-                  {/* Pitch Gauge for Microphone Instruments */}
-                  {isMicrophoneInstrument && (
-                    <div className="flex-shrink-0 p-6 border-l border-border bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-blue-950/30 dark:to-purple-950/30">
-                      {detectedPitch ? (
-                        <PitchGauge
-                          note={detectedPitch.note}
-                          cents={detectedPitch.cents}
-                          clarity={detectedPitch.clarity}
-                          inTuneThreshold={pitchSensitivity}
-                          smoothingFactor={pitchSmoothing}
-                        />
-                      ) : (
-                        <div className="w-56 h-56 flex items-center justify-center">
-                          <div className="text-center text-muted-foreground">
-                            <Volume2 className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                            <p className="text-sm">Waiting for audio...</p>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* Feedback Bar */}
-                <AnimatePresence mode="wait">
-                  {feedback && (
-                    <motion.div
-                      key={feedback}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className={`px-6 py-3 text-center text-sm font-medium ${
-                        feedback.includes('✓')
-                          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                          : feedback.includes('✗') || feedback.includes('Try again')
-                          ? 'bg-red-500/10 text-red-600 dark:text-red-400'
-                          : 'bg-muted/50 text-muted-foreground'
-                      }`}
-                    >
-                      {feedback}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                {/* MIDI Input Indicator for Piano */}
-                {(instrument === 'piano' || instrument === 'piano-virtual') && lastDetectedNote && (
-                  <div className="px-6 py-3 flex items-center justify-center gap-4 bg-blue-50/50 dark:bg-blue-950/30 border-t border-border">
-                    <Volume2 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                    <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
-                      Detected: {lastDetectedNote.noteName}
-                    </span>
-                    {lastDetectedNote.centsOff !== undefined && (
-                      <Badge variant={Math.abs(lastDetectedNote.centsOff) < 10 ? "default" : "secondary"}>
-                        {lastDetectedNote.centsOff > 0 ? '+' : ''}{lastDetectedNote.centsOff.toFixed(0)}¢
-                      </Badge>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <NotationCard
+              instrument={instrument}
+              tabDisplayMode={tabDisplayMode}
+              isMicrophoneInstrument={isMicrophoneInstrument}
+              staffContainerRef={staffContainerRef}
+              tabContainerRef={tabContainerRef}
+              detectedPitch={detectedPitch}
+              pitchSensitivity={pitchSensitivity}
+              pitchSmoothing={pitchSmoothing}
+              feedback={feedback}
+              lastDetectedNote={lastDetectedNote}
+            />
           </motion.div>
 
           {/* Skip Button (Practice Mode Only) */}
@@ -772,54 +551,55 @@ function PlayRoute() {
         </div>
       )}
 
-      {/* Score Summary Modal */}
-      <AnimatePresence>
-        {showScoreSummary && roundState.currentScore && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-            <ScoreSummary
-              scoreResult={roundState.currentScore}
-              correctCount={roundState.correctCount}
-              totalNotes={roundState.notesRequired}
-              isSuccessful={roundState.isSuccessful || false}
-              onContinue={() => {
-                setShowScoreSummary(false);
-                roundActions.startRound();
-                const note = generateRandomNote(getNoteRange(), clef as 'treble' | 'bass');
-                if (note) {
-                  setCurrentNote(note.midiNote);
-                  currentNoteRef.current = note.midiNote;
-                  setSessionActive(true);
-                  sessionActiveRef.current = true;
-                  setTimeout(() => {
-                    if (staffRenderer.current) {
-                      const vexflowNote = midiToVexflow(note.midiNote, clef as 'treble' | 'bass');
-                      if (vexflowNote) staffRenderer.current.renderNote(vexflowNote);
-                    }
-                  }, 100);
-                }
-              }}
-              onRetry={!roundState.isSuccessful ? () => {
-                setShowScoreSummary(false);
-                roundActions.resetRound();
-                const note = generateRandomNote(getNoteRange(), clef as 'treble' | 'bass');
-                if (note) {
-                  setCurrentNote(note.midiNote);
-                  currentNoteRef.current = note.midiNote;
-                  setSessionActive(true);
-                  sessionActiveRef.current = true;
-                  setTimeout(() => {
-                    if (staffRenderer.current) {
-                      const vexflowNote = midiToVexflow(note.midiNote, clef as 'treble' | 'bass');
-                      if (vexflowNote) staffRenderer.current.renderNote(vexflowNote);
-                    }
-                  }, 100);
-                }
-              } : undefined}
-              showConfetti={roundState.isSuccessful || false}
-            />
-          </div>
-        )}
-      </AnimatePresence>
+      <ScoreSummaryModal
+        isOpen={showScoreSummary}
+        scoreResult={roundState.currentScore}
+        correctCount={roundState.correctCount}
+        totalNotes={roundState.notesRequired}
+        isSuccessful={roundState.isSuccessful || false}
+        onContinue={() => {
+          setShowScoreSummary(false);
+          roundActions.startRound();
+          const note = generateRandomNote(noteRange(), clef as 'treble' | 'bass');
+          if (note) {
+            setCurrentNote(note.midiNote);
+            currentNoteRef.current = note.midiNote;
+            setSessionActive(true);
+            sessionActiveRef.current = true;
+            setTimeout(() => {
+              renderPracticeNote({
+                instrument,
+                tabDisplayMode,
+                clef: clef as 'treble' | 'bass',
+                midiNote: note.midiNote,
+                staffRenderer: staffRenderer.current,
+                tabRenderer: tabRenderer.current,
+              });
+            }, 100);
+          }
+        }}
+        onRetry={!roundState.isSuccessful ? () => {
+          setShowScoreSummary(false);
+          roundActions.resetRound();
+          const note = generateRandomNote(noteRange(), clef as 'treble' | 'bass');
+          if (note) {
+            setCurrentNote(note.midiNote);
+            currentNoteRef.current = note.midiNote;
+            setSessionActive(true);
+            sessionActiveRef.current = true;
+            setTimeout(() => {
+              renderPracticeNote({
+                instrument,
+                tabDisplayMode,
+                clef: clef as 'treble' | 'bass',
+                midiNote: note.midiNote,
+                staffRenderer: staffRenderer.current,
+                tabRenderer: tabRenderer.current,
+              });
+            }, 100);
+          }
+        } : undefined}
+      />
     </div>
   );
 }
