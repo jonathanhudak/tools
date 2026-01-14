@@ -1,0 +1,3 @@
+[submodule "apps/sure"]
+	path = apps/sure
+	url = https://github.com/we-promise/sure.git
