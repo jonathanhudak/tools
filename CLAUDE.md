@@ -1093,6 +1093,8 @@ jobs:
 
 ## Adding New Tools
 
+> **For AI Agents**: See `AGENTS.md` for detailed instructions on adding tools, including common pitfalls and the critical requirement to add tool metadata to `scripts/generate-landing.js`.
+
 ### Quick Start Checklist
 
 - [ ] Create directory: `apps/[tool-name]/`
@@ -1105,11 +1107,12 @@ jobs:
   - Browser compatibility
   - Architecture
 - [ ] Configure Vite build to output to `docs/[tool-name]/`
-- [ ] **Add tool card to `docs/index.html`** (REQUIRED - tool must be discoverable on landing page)
+- [ ] **CRITICAL: Add tool metadata to `scripts/generate-landing.js`** (REQUIRED - tool must be added to `toolMetadata` object with name, description, techStack, type, and hasDeployment)
 - [ ] Update root README with tool listing
 - [ ] Test build: `pnpm run build`
 - [ ] Test deploy locally: `pnpm run preview`
-- [ ] Verify tool appears on landing page at `/tools/` (GitHub Pages root)
+- [ ] Verify tool appears in build output (check console for "Found X tool(s)")
+- [ ] Verify tool card appears in `docs/index.html` after build (landing page is auto-generated)
 
 ### Template: New React + Vite Tool
 

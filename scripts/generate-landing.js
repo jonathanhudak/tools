@@ -51,6 +51,13 @@ const toolMetadata = {
     type: 'web-app',
     hasDeployment: true,
   },
+  'rsvp-reader': {
+    name: 'RSVP Reader',
+    description: 'Speed reading app with RSVP technology and zero-jiggle ORP highlighting. Read 3x faster with URL extraction, text input, and adjustable speed (100-1000 WPM). Features smart punctuation pauses and distraction-free reading mode.',
+    techStack: ['React', 'TypeScript', 'Vite', 'Tailwind v4', 'Lucide React'],
+    type: 'web-app',
+    hasDeployment: true,
+  },
   'local-finance': {
     name: 'Local Finance Analyzer',
     description: 'A privacy-first, local-only personal finance CLI tool with AI-powered transaction categorization and HTML reports. All data stays on your machine.',
