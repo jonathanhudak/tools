@@ -1,8 +1,8 @@
 {
-  "name": "@hudak/url-content-extractor",
+  "name": "@hudak/rsvp-reader",
   "version": "0.0.1",
   "type": "module",
-  "description": "Extract main content from any URL - clean, simple, mobile-optimized",
+  "description": "Speed reading app with RSVP technology and URL content extraction - read 3x faster with zero-jiggle ORP highlighting",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
-  "keywords": ["url", "content", "extractor", "web", "scraper"],
+  "keywords": ["rsvp", "speed reading", "url", "content", "extractor", "productivity"],
   "author": "Jonathan Hudak",
   "license": "ISC",
   "dependencies": {

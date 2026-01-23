@@ -4,9 +4,9 @@ import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  base: '/tools/url-content-extractor/',
+  base: '/tools/rsvp-reader/',
   build: {
-    outDir: '../../docs/url-content-extractor',
+    outDir: '../../docs/rsvp-reader',
     emptyOutDir: true,
     sourcemap: true,
   },
