@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/jonathanhudak/tools/compare/v1.8.0...v1.9.0) (2026-01-23)
+
+
+### Features
+
+* add JetBrains Mono ([8ddc21a](https://github.com/jonathanhudak/tools/commit/8ddc21a75405a3f5e72bd060869d89304b85fa7a))
+
 # [1.8.0](https://github.com/jonathanhudak/tools/compare/v1.7.0...v1.8.0) (2026-01-23)
 
 
