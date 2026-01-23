@@ -149,12 +149,12 @@ export default function RSVPReader({ text, onClose }: RSVPReaderProps) {
   return (
     <div className="fixed inset-0 bg-background z-50 flex flex-col">
       {/* Header */}
-      <div className="border-b border-border bg-card/50 backdrop-blur-sm px-4 sm:px-6 py-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
+      <div className="border-b border-border bg-card/50 backdrop-blur-sm px-6 sm:px-8 lg:px-12 py-5">
+        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <button
               onClick={onClose}
-              className="px-4 py-2 rounded-xl bg-secondary hover:bg-accent transition-colors text-sm font-medium"
+              className="min-h-[44px] px-5 py-2.5 rounded-2xl bg-secondary hover:bg-accent transition-colors text-sm font-medium"
             >
               ← Back
             </button>
@@ -167,8 +167,8 @@ export default function RSVPReader({ text, onClose }: RSVPReaderProps) {
           </div>
 
           {/* WPM Control */}
-          <div className="flex items-center gap-3">
-            <label htmlFor="wpm-slider" className="text-sm font-medium text-foreground">
+          <div className="flex items-center gap-4">
+            <label htmlFor="wpm-slider" className="text-sm font-medium text-foreground whitespace-nowrap">
               {wpm} WPM
             </label>
             <input
@@ -179,7 +179,7 @@ export default function RSVPReader({ text, onClose }: RSVPReaderProps) {
               step="50"
               value={wpm}
               onChange={(e) => setWpm(Number(e.target.value))}
-              className="w-32 accent-primary"
+              className="w-40 accent-primary"
             />
           </div>
         </div>
@@ -194,19 +194,20 @@ export default function RSVPReader({ text, onClose }: RSVPReaderProps) {
       </div>
 
       {/* Word Display - The critical zero-jiggle implementation */}
-      <div className="flex-1 flex items-center justify-center px-4">
-        <div className="w-full max-w-2xl">
+      <div className="flex-1 flex items-center justify-center px-6 sm:px-8 lg:px-16">
+        <div className="w-full max-w-4xl">
           {/* Fixed viewport for word display */}
-          <div className="relative h-32 flex items-center justify-center">
+          <div className="relative h-40 sm:h-48 flex items-center justify-center">
             {currentWord ? (
               <div
-                className="text-6xl sm:text-7xl md:text-8xl font-mono font-bold tracking-tight"
+                className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-mono font-bold tracking-tight"
                 style={{
                   display: 'inline-block',
                   position: 'relative',
                 }}
               >
                 {/* The key to zero-jiggle: align the ORP letter at the exact center */}
+                {/* Note: Monospace font is essential for RSVP - the 'ch' unit calculation relies on consistent character width */}
                 <span className="inline-block" style={{
                   transform: `translateX(calc(${transformShift} * 1ch))`,
                   transition: 'none', // No transitions to prevent jiggle
@@ -226,18 +227,19 @@ export default function RSVPReader({ text, onClose }: RSVPReaderProps) {
 
           {/* Guides - subtle vertical line to show center */}
           <div className="flex justify-center">
-            <div className="w-px h-8 bg-muted-foreground/20" />
+            <div className="w-px h-10 bg-muted-foreground/20" />
           </div>
         </div>
       </div>
 
       {/* Controls */}
-      <div className="border-t border-border bg-card/50 backdrop-blur-sm px-4 sm:px-6 py-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-center gap-3">
+      <div className="border-t border-border bg-card/50 backdrop-blur-sm px-6 sm:px-8 lg:px-12 py-8">
+        <div className="max-w-5xl mx-auto">
+          {/* Control buttons - perfectly aligned with consistent tap targets */}
+          <div className="flex items-center justify-center gap-4">
             <button
               onClick={restart}
-              className="p-3 rounded-xl bg-secondary hover:bg-accent transition-colors"
+              className="min-h-[56px] min-w-[56px] p-4 rounded-2xl bg-secondary hover:bg-accent transition-colors flex items-center justify-center"
               aria-label="Restart"
             >
               <RotateCcw className="w-6 h-6" />
@@ -245,7 +247,7 @@ export default function RSVPReader({ text, onClose }: RSVPReaderProps) {
 
             <button
               onClick={skipBackward}
-              className="p-3 rounded-xl bg-secondary hover:bg-accent transition-colors"
+              className="min-h-[56px] min-w-[56px] p-4 rounded-2xl bg-secondary hover:bg-accent transition-colors flex items-center justify-center"
               aria-label="Skip backward 10 words"
             >
               <SkipBack className="w-6 h-6" />
@@ -253,27 +255,33 @@ export default function RSVPReader({ text, onClose }: RSVPReaderProps) {
 
             <button
               onClick={togglePlayPause}
-              className="p-6 rounded-2xl bg-primary text-primary-foreground hover:opacity-90 transition-opacity shadow-lg"
+              className="min-h-[72px] min-w-[72px] p-6 rounded-3xl bg-primary text-primary-foreground hover:opacity-90 transition-opacity shadow-lg flex items-center justify-center"
               aria-label={isPlaying ? 'Pause' : 'Play'}
             >
               {isPlaying ? (
-                <Pause className="w-8 h-8" />
+                <Pause className="w-9 h-9" />
               ) : (
-                <Play className="w-8 h-8" />
+                <Play className="w-9 h-9" />
               )}
             </button>
 
             <button
               onClick={skipForward}
-              className="p-3 rounded-xl bg-secondary hover:bg-accent transition-colors"
+              className="min-h-[56px] min-w-[56px] p-4 rounded-2xl bg-secondary hover:bg-accent transition-colors flex items-center justify-center"
               aria-label="Skip forward 10 words"
             >
               <SkipForward className="w-6 h-6" />
             </button>
           </div>
 
-          <div className="mt-6 text-center text-sm text-muted-foreground">
-            <p>Press <kbd className="px-2 py-1 bg-muted rounded">Space</kbd> to play/pause • <kbd className="px-2 py-1 bg-muted rounded">←</kbd> <kbd className="px-2 py-1 bg-muted rounded">→</kbd> to navigate • <kbd className="px-2 py-1 bg-muted rounded">Esc</kbd> to exit</p>
+          {/* Keyboard shortcuts hint */}
+          <div className="mt-8 text-center text-sm text-muted-foreground">
+            <p className="leading-relaxed">
+              Press <kbd className="px-2.5 py-1.5 bg-muted rounded-lg font-mono text-xs">Space</kbd> to play/pause •
+              <kbd className="px-2.5 py-1.5 bg-muted rounded-lg font-mono text-xs ml-1">←</kbd>
+              <kbd className="px-2.5 py-1.5 bg-muted rounded-lg font-mono text-xs ml-1">→</kbd> to navigate •
+              <kbd className="px-2.5 py-1.5 bg-muted rounded-lg font-mono text-xs ml-1">Esc</kbd> to exit
+            </p>
           </div>
         </div>
       </div>
