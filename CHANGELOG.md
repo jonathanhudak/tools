@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/jonathanhudak/tools/compare/v1.7.0...v1.8.0) (2026-01-23)
+
+
+### Features
+
+* add RSVP reader to landing page and document tool index requirements ([55a8d3f](https://github.com/jonathanhudak/tools/commit/55a8d3fa121c27b9e643a9c0bc47da87b8bf7da2))
+
 # [1.7.0](https://github.com/jonathanhudak/tools/compare/v1.6.0...v1.7.0) (2026-01-23)
 
 
