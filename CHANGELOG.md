@@ -1,3 +1,10 @@
+## [1.9.2](https://github.com/jonathanhudak/tools/compare/v1.9.1...v1.9.2) (2026-01-23)
+
+
+### Bug Fixes
+
+* **rsvp-reader:** prevent mobile text clipping with font size slider ([6c4afd4](https://github.com/jonathanhudak/tools/commit/6c4afd4432b35dcdbd672ca43def96dcf50266d6))
+
 ## [1.9.1](https://github.com/jonathanhudak/tools/compare/v1.9.0...v1.9.1) (2026-01-23)
 
 
