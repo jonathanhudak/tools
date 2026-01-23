@@ -1,3 +1,23 @@
+# [1.4.0](https://github.com/jonathanhudak/tools/compare/v1.3.0...v1.4.0) (2026-01-23)
+
+
+### Bug Fixes
+
+* add lucide-react dependency to instrument-tuner ([2aff15e](https://github.com/jonathanhudak/tools/commit/2aff15eb415086661ba5cc829b6e03658a4ce603))
+* improve ikigai-tool navigation with larger circles and better zoom ([d80ef69](https://github.com/jonathanhudak/tools/commit/d80ef6918e10acccc6fd66652d097cc6d03c0e62))
+* remove pnpm version from workflow to use package.json packageManager ([9f3c76c](https://github.com/jonathanhudak/tools/commit/9f3c76c13288413b8359b83a44ddaba5e7e6d4d9))
+* resolve build failures for music-practice and instrument-tuner ([57cd115](https://github.com/jonathanhudak/tools/commit/57cd11545b06b255a1785ad33edc93515117d11c))
+
+
+### Features
+
+* add Amazon order scraper spec and script ([017f164](https://github.com/jonathanhudak/tools/commit/017f164b7caec67a50473c7be42ca0590af094c1))
+* add interactive Ikigai tool with React Flow ([1c3d27c](https://github.com/jonathanhudak/tools/commit/1c3d27c967edc448b943f6e1d1293959b9652241))
+* add URL content extractor tool ([ec4dbb8](https://github.com/jonathanhudak/tools/commit/ec4dbb82e89fd54b4ecd8f396c084c8fedacec3b))
+* ikigai updates ([5961444](https://github.com/jonathanhudak/tools/commit/5961444eb66fd43b7d4c1ad0f6eb09c25bae92d9))
+* local finance scripts ([1705e94](https://github.com/jonathanhudak/tools/commit/1705e94d881d8ec041d28e20da8aa66f4c6e192e))
+* sure submodule ([132faf6](https://github.com/jonathanhudak/tools/commit/132faf64476901464b2215890eea8e934f446b60))
+
 # [1.3.0](https://github.com/jonathanhudak/tools/compare/v1.2.0...v1.3.0) (2025-12-28)
 
 
