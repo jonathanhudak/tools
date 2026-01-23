@@ -1,5 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Play, Pause, SkipBack, SkipForward, RotateCcw } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, RotateCcw, Type } from 'lucide-react';
+import { AVAILABLE_FONTS, getDefaultFont, getFontById } from './fonts/fontConfig';
+import { loadFont } from './fonts/fontLoader';
+import type { FontConfig } from './fonts/fontConfig';
 
 interface RSVPReaderProps {
   text: string;
@@ -12,6 +15,8 @@ export default function RSVPReader({ text, onClose }: RSVPReaderProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [wpm, setWpm] = useState(400);
   const [fontSize, setFontSize] = useState(100); // Font size percentage (100 = default)
+  const [selectedFont, setSelectedFont] = useState<FontConfig>(getDefaultFont());
+  const [isFontLoading, setIsFontLoading] = useState(false);
   const intervalRef = useRef<number | null>(null);
 
   // Split text into words on component mount
@@ -22,6 +27,21 @@ export default function RSVPReader({ text, onClose }: RSVPReaderProps) {
     setWords(wordArray);
     setCurrentIndex(0);
   }, [text]);
+
+  // Load saved font preference and initialize font
+  useEffect(() => {
+    const savedFontId = localStorage.getItem('rsvp-font');
+    if (savedFontId) {
+      const font = getFontById(savedFontId);
+      if (font) {
+        setSelectedFont(font);
+        // Load font asynchronously
+        loadFont(font).catch(error => {
+          console.error('Failed to load saved font:', error);
+        });
+      }
+    }
+  }, []);
 
   // Calculate ORP (Optimal Recognition Point) index for a word
   // Returns both the ORP index and the clean word for proper alignment
@@ -132,6 +152,22 @@ export default function RSVPReader({ text, onClose }: RSVPReaderProps) {
     setCurrentIndex(prev => Math.min(words.length - 1, prev + 10));
   };
 
+  const handleFontChange = async (fontId: string) => {
+    const font = getFontById(fontId);
+    if (!font) return;
+
+    setIsFontLoading(true);
+    try {
+      await loadFont(font);
+      setSelectedFont(font);
+      localStorage.setItem('rsvp-font', fontId);
+    } catch (error) {
+      console.error('Failed to load font:', error);
+    } finally {
+      setIsFontLoading(false);
+    }
+  };
+
   const currentWord = words[currentIndex] || '';
   const { orpIndex } = getORPInfo(currentWord);
 
@@ -170,8 +206,27 @@ export default function RSVPReader({ text, onClose }: RSVPReaderProps) {
             <div className="min-w-[80px]" />
           </div>
 
-          {/* Bottom row: WPM and Font Size Controls - centered */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 w-full">
+          {/* Font, WPM, and Font Size Controls */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 w-full flex-wrap">
+            {/* Font Selector */}
+            <div className="flex items-center gap-3">
+              <Type className="w-4 h-4 text-muted-foreground" />
+              <select
+                id="font-selector"
+                value={selectedFont.id}
+                onChange={(e) => handleFontChange(e.target.value)}
+                disabled={isFontLoading}
+                className="min-h-[40px] px-3 py-2 rounded-xl border border-input bg-background text-foreground text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all disabled:opacity-50"
+                aria-label="Select font"
+              >
+                {AVAILABLE_FONTS.map(font => (
+                  <option key={font.id} value={font.id}>
+                    {font.displayName}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             {/* WPM Control */}
             <div className="flex items-center gap-3">
               <label htmlFor="wpm-slider" className="text-sm font-medium text-foreground whitespace-nowrap">
@@ -224,7 +279,7 @@ export default function RSVPReader({ text, onClose }: RSVPReaderProps) {
           <div className="relative min-h-[120px] sm:min-h-[140px] flex items-center justify-center overflow-hidden">
             {currentWord ? (
               <div
-                className="font-mono font-bold tracking-tight"
+                className={`${selectedFont.cssClass} font-bold tracking-tight`}
                 style={{
                   display: 'inline-block',
                   position: 'relative',
@@ -237,6 +292,7 @@ export default function RSVPReader({ text, onClose }: RSVPReaderProps) {
               >
                 {/* The key to zero-jiggle: align the ORP letter at the exact center */}
                 {/* Note: Monospace font is essential for RSVP - the 'ch' unit calculation relies on consistent character width */}
+                {/* Font can be changed via selector - all available fonts are monospace for consistent rendering */}
                 <span className="inline-block" style={{
                   transform: `translateX(calc(${transformShift} * 1ch))`,
                   transition: 'none', // No transitions to prevent jiggle
