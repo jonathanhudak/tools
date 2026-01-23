@@ -1,0 +1,19 @@
+@import "@hudak/ui/styles/globals.css";
+
+@theme {
+  /* Soft, rounded aesthetic with warm tones */
+  --radius-lg: 1.5rem;
+  --radius-md: 1rem;
+  --radius-sm: 0.75rem;
+}
+
+/* Override for softer, more spacious feel */
+:root {
+  --color-primary: 220 90% 56%;
+  --color-primary-foreground: 0 0% 100%;
+}
+
+.dark {
+  --color-primary: 220 90% 60%;
+  --color-primary-foreground: 0 0% 100%;
+}
