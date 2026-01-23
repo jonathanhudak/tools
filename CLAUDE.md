@@ -1105,9 +1105,11 @@ jobs:
   - Browser compatibility
   - Architecture
 - [ ] Configure Vite build to output to `docs/[tool-name]/`
+- [ ] **Add tool card to `docs/index.html`** (REQUIRED - tool must be discoverable on landing page)
 - [ ] Update root README with tool listing
 - [ ] Test build: `pnpm run build`
 - [ ] Test deploy locally: `pnpm run preview`
+- [ ] Verify tool appears on landing page at `/tools/` (GitHub Pages root)
 
 ### Template: New React + Vite Tool
 

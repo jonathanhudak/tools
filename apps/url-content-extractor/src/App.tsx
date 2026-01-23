@@ -22,6 +22,85 @@ export default function App() {
     document.documentElement.classList.toggle('dark');
   };
 
+  const extractTextFromElement = (element: Element): string => {
+    // Block-level elements that should have newlines before/after
+    const blockElements = new Set([
+      'P', 'DIV', 'SECTION', 'ARTICLE', 'ASIDE', 'HEADER', 'FOOTER', 'MAIN',
+      'H1', 'H2', 'H3', 'H4', 'H5', 'H6',
+      'UL', 'OL', 'LI',
+      'BLOCKQUOTE', 'PRE',
+      'HR', 'BR',
+      'TABLE', 'TR', 'TD', 'TH'
+    ]);
+
+    const getText = (node: Node): string => {
+      // If it's a text node, return its content
+      if (node.nodeType === Node.TEXT_NODE) {
+        return node.textContent || '';
+      }
+
+      // If it's an element node
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        const elem = node as Element;
+        const tagName = elem.tagName;
+
+        // Skip script, style, and hidden elements
+        if (['SCRIPT', 'STYLE', 'NOSCRIPT'].includes(tagName)) {
+          return '';
+        }
+
+        // Handle line breaks
+        if (tagName === 'BR') {
+          return '\n';
+        }
+
+        // Process children
+        let text = '';
+        for (const child of Array.from(node.childNodes)) {
+          text += getText(child);
+        }
+
+        // Add newlines around block elements
+        if (blockElements.has(tagName)) {
+          // Add newline before and after block elements
+          // Trim the text inside to avoid excess whitespace
+          const trimmedText = text.trim();
+          if (trimmedText) {
+            return `\n${trimmedText}\n`;
+          }
+          return '\n';
+        }
+
+        // For list items, add a bullet or number indicator
+        if (tagName === 'LI') {
+          const trimmedText = text.trim();
+          if (trimmedText) {
+            return `\n• ${trimmedText}\n`;
+          }
+        }
+
+        return text;
+      }
+
+      return '';
+    };
+
+    const rawText = getText(element);
+
+    // Clean up the extracted text
+    return rawText
+      // Replace multiple consecutive newlines with double newline
+      .replace(/\n{3,}/g, '\n\n')
+      // Remove leading/trailing whitespace from each line
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line.length > 0)
+      .join('\n')
+      // Ensure there's proper spacing after punctuation followed by a newline
+      .replace(/([.!?])\n([A-Z])/g, '$1\n\n$2')
+      .trim();
+  };
+
   const extractContent = async () => {
     if (!url.trim()) {
       setError('Please enter a URL');
@@ -51,24 +130,24 @@ export default function App() {
       const parser = new DOMParser();
       const doc = parser.parseFromString(data.contents, 'text/html');
 
+      // Try to find main content area
       const main = doc.querySelector('main');
       const article = doc.querySelector('article');
       const contentDiv = doc.querySelector('[class*="content"]');
+      const postBody = doc.querySelector('[class*="post-body"], [class*="article-body"], [class*="entry-content"]');
 
-      const targetElement = main || article || contentDiv || doc.body;
+      const targetElement = main || article || postBody || contentDiv || doc.body;
 
-      const scripts = targetElement.querySelectorAll('script, style, nav, header, footer, aside, .navigation, .menu, .sidebar, .comments');
-      scripts.forEach(el => el.remove());
+      // Remove unwanted elements
+      const unwanted = targetElement.querySelectorAll(
+        'script, style, nav, header, footer, aside, .navigation, .menu, .sidebar, .comments, .related, .share, .social, .advertisement, .ad, [role="complementary"], [role="navigation"]'
+      );
+      unwanted.forEach(el => el.remove());
 
-      let extractedText = targetElement.innerText || targetElement.textContent || '';
+      // Extract text with proper spacing
+      const extractedText = extractTextFromElement(targetElement);
 
-      extractedText = extractedText
-        .split('\n')
-        .map(line => line.trim())
-        .filter(line => line.length > 0)
-        .join('\n\n');
-
-      if (!extractedText) {
+      if (!extractedText || extractedText.length < 50) {
         throw new Error('Could not extract readable content from this page');
       }
 
