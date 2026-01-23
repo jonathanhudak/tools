@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/jonathanhudak/tools/compare/v1.5.0...v1.6.0) (2026-01-23)
+
+
+### Features
+
+* add RSVP Reader app with zero-jiggle ORP highlighting ([4ed7259](https://github.com/jonathanhudak/tools/commit/4ed7259bafb69a22a9ed6296bf22b4b23176a34d))
+
 # [1.5.0](https://github.com/jonathanhudak/tools/compare/v1.4.0...v1.5.0) (2026-01-23)
 
 
