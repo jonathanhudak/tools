@@ -1,3 +1,10 @@
+## [1.9.1](https://github.com/jonathanhudak/tools/compare/v1.9.0...v1.9.1) (2026-01-23)
+
+
+### Bug Fixes
+
+* **rsvp-reader:** improve mobile text sizing and layout ([b90b866](https://github.com/jonathanhudak/tools/commit/b90b86680d5d00ebc2c342b929fcf348ddc4bb3e))
+
 # [1.9.0](https://github.com/jonathanhudak/tools/compare/v1.8.0...v1.9.0) (2026-01-23)
 
 
