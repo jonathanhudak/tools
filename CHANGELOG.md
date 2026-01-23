@@ -1,3 +1,11 @@
+# [1.10.0](https://github.com/jonathanhudak/tools/compare/v1.9.3...v1.10.0) (2026-01-23)
+
+
+### Features
+
+* add extensible font system with lazy loading to RSVP reader ([e66844c](https://github.com/jonathanhudak/tools/commit/e66844c42a42cbaf73966b4b431ad17f1d42d3c6))
+* merge font selector with font size slider in RSVP reader ([9cf8d7e](https://github.com/jonathanhudak/tools/commit/9cf8d7e45291435adbc9dca19b17a37a83570262))
+
 ## [1.9.3](https://github.com/jonathanhudak/tools/compare/v1.9.2...v1.9.3) (2026-01-23)
 
 
