@@ -11,6 +11,7 @@ export default function RSVPReader({ text, onClose }: RSVPReaderProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [wpm, setWpm] = useState(400);
+  const [fontSize, setFontSize] = useState(100); // Font size percentage (100 = default)
   const intervalRef = useRef<number | null>(null);
 
   // Split text into words on component mount
@@ -169,21 +170,41 @@ export default function RSVPReader({ text, onClose }: RSVPReaderProps) {
             <div className="min-w-[80px]" />
           </div>
 
-          {/* Bottom row: WPM Control - centered */}
-          <div className="flex items-center justify-center gap-4">
-            <label htmlFor="wpm-slider" className="text-sm font-medium text-foreground whitespace-nowrap">
-              {wpm} WPM
-            </label>
-            <input
-              id="wpm-slider"
-              type="range"
-              min="100"
-              max="1000"
-              step="50"
-              value={wpm}
-              onChange={(e) => setWpm(Number(e.target.value))}
-              className="w-40 accent-primary"
-            />
+          {/* Bottom row: WPM and Font Size Controls - centered */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 w-full">
+            {/* WPM Control */}
+            <div className="flex items-center gap-3">
+              <label htmlFor="wpm-slider" className="text-sm font-medium text-foreground whitespace-nowrap">
+                {wpm} WPM
+              </label>
+              <input
+                id="wpm-slider"
+                type="range"
+                min="100"
+                max="1000"
+                step="50"
+                value={wpm}
+                onChange={(e) => setWpm(Number(e.target.value))}
+                className="w-32 sm:w-40 accent-primary"
+              />
+            </div>
+
+            {/* Font Size Control */}
+            <div className="flex items-center gap-3">
+              <label htmlFor="font-slider" className="text-sm font-medium text-foreground whitespace-nowrap">
+                Font {fontSize}%
+              </label>
+              <input
+                id="font-slider"
+                type="range"
+                min="50"
+                max="150"
+                step="5"
+                value={fontSize}
+                onChange={(e) => setFontSize(Number(e.target.value))}
+                className="w-32 sm:w-40 accent-primary"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -199,16 +220,19 @@ export default function RSVPReader({ text, onClose }: RSVPReaderProps) {
       {/* Word Display - The critical zero-jiggle implementation */}
       <div className="flex-1 flex items-center justify-center px-6 sm:px-8 lg:px-16">
         <div className="w-full max-w-4xl">
-          {/* Fixed viewport for word display */}
-          <div className="relative min-h-[120px] sm:min-h-[140px] flex items-center justify-center">
+          {/* Fixed viewport for word display - with overflow containment */}
+          <div className="relative min-h-[120px] sm:min-h-[140px] flex items-center justify-center overflow-hidden">
             {currentWord ? (
               <div
                 className="font-mono font-bold tracking-tight"
                 style={{
                   display: 'inline-block',
                   position: 'relative',
-                  fontSize: 'clamp(2.5rem, 12vw, 8rem)', // Responsive: 40px min, 12% of viewport width, 128px max
+                  // More conservative mobile sizing: 8vw instead of 12vw, with min/max bounds
+                  // Scale based on fontSize slider (50-150%)
+                  fontSize: `clamp(${2.0 * (fontSize / 100)}rem, ${8 * (fontSize / 100)}vw, ${6 * (fontSize / 100)}rem)`,
                   lineHeight: '1.2',
+                  maxWidth: '100%', // Ensure word doesn't exceed container
                 }}
               >
                 {/* The key to zero-jiggle: align the ORP letter at the exact center */}
