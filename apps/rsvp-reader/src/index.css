@@ -17,3 +17,16 @@
   --color-primary: 220 90% 60%;
   --color-primary-foreground: 0 0% 100%;
 }
+
+/* Font family classes for RSVP Reader */
+.font-jetbrains {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.font-cascadia {
+  font-family: 'Cascadia Code', monospace;
+}
+
+.font-special-elite {
+  font-family: 'Special Elite', monospace;
+}

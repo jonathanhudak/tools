@@ -7,3 +7,4 @@ CHANGELOG.md
 .turbo
 .vite
 *.tsbuildinfo
+package-lock.json
