@@ -1,0 +1,34 @@
+{
+  "name": "@hudak/url-content-extractor",
+  "version": "0.0.1",
+  "type": "module",
+  "description": "Extract main content from any URL - clean, simple, mobile-optimized",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+  },
+  "keywords": ["url", "content", "extractor", "web", "scraper"],
+  "author": "Jonathan Hudak",
+  "license": "ISC",
+  "dependencies": {
+    "@hudak/ui": "workspace:*",
+    "lucide-react": "^0.469.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.16",
+    "@tools/eslint-config": "workspace:*",
+    "@tools/typescript-config": "workspace:*",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.0",
+    "eslint": "^8.57.1",
+    "tailwindcss": "^4.1.16",
+    "typescript": "^5.9.3",
+    "vite": "^6.0.7"
+  }
+}
