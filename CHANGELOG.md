@@ -1,3 +1,15 @@
+# [1.5.0](https://github.com/jonathanhudak/tools/compare/v1.4.0...v1.5.0) (2026-01-23)
+
+
+### Bug Fixes
+
+* improve text extraction in url-content-extractor ([468bfea](https://github.com/jonathanhudak/tools/commit/468bfea5b595e9ef6429bad35a096e7edda4be12))
+
+
+### Features
+
+* enhance landing page with comprehensive tool cards ([1460778](https://github.com/jonathanhudak/tools/commit/1460778a5c107b7314ed46e844d6b655369f575b))
+
 # [1.4.0](https://github.com/jonathanhudak/tools/compare/v1.3.0...v1.4.0) (2026-01-23)
 
 
