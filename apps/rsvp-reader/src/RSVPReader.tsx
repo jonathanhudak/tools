@@ -150,24 +150,27 @@ export default function RSVPReader({ text, onClose }: RSVPReaderProps) {
     <div className="fixed inset-0 bg-background z-50 flex flex-col">
       {/* Header */}
       <div className="border-b border-border bg-card/50 backdrop-blur-sm px-6 sm:px-8 lg:px-12 py-5">
-        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
+        <div className="max-w-5xl mx-auto flex flex-col items-center gap-6">
+          {/* Top row: Back button and title */}
+          <div className="w-full flex items-center justify-between gap-4">
             <button
               onClick={onClose}
               className="min-h-[44px] px-5 py-2.5 rounded-2xl bg-secondary hover:bg-accent transition-colors text-sm font-medium"
             >
               ← Back
             </button>
-            <div>
+            <div className="text-center flex-1">
               <h2 className="text-lg font-semibold text-foreground">RSVP Reader</h2>
               <p className="text-sm text-muted-foreground">
                 {currentIndex + 1} / {words.length} words
               </p>
             </div>
+            {/* Spacer for symmetry */}
+            <div className="min-w-[80px]" />
           </div>
 
-          {/* WPM Control */}
-          <div className="flex items-center gap-4">
+          {/* Bottom row: WPM Control - centered */}
+          <div className="flex items-center justify-center gap-4">
             <label htmlFor="wpm-slider" className="text-sm font-medium text-foreground whitespace-nowrap">
               {wpm} WPM
             </label>
@@ -197,13 +200,15 @@ export default function RSVPReader({ text, onClose }: RSVPReaderProps) {
       <div className="flex-1 flex items-center justify-center px-6 sm:px-8 lg:px-16">
         <div className="w-full max-w-4xl">
           {/* Fixed viewport for word display */}
-          <div className="relative h-40 sm:h-48 flex items-center justify-center">
+          <div className="relative min-h-[120px] sm:min-h-[140px] flex items-center justify-center">
             {currentWord ? (
               <div
-                className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-mono font-bold tracking-tight"
+                className="font-mono font-bold tracking-tight"
                 style={{
                   display: 'inline-block',
                   position: 'relative',
+                  fontSize: 'clamp(2.5rem, 12vw, 8rem)', // Responsive: 40px min, 12% of viewport width, 128px max
+                  lineHeight: '1.2',
                 }}
               >
                 {/* The key to zero-jiggle: align the ORP letter at the exact center */}
@@ -219,7 +224,7 @@ export default function RSVPReader({ text, onClose }: RSVPReaderProps) {
                 </span>
               </div>
             ) : (
-              <div className="text-2xl text-muted-foreground">
+              <div className="text-xl sm:text-2xl text-muted-foreground text-center px-4">
                 Ready to read...
               </div>
             )}
@@ -234,9 +239,9 @@ export default function RSVPReader({ text, onClose }: RSVPReaderProps) {
 
       {/* Controls */}
       <div className="border-t border-border bg-card/50 backdrop-blur-sm px-6 sm:px-8 lg:px-12 py-8">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-5xl mx-auto flex flex-col items-center gap-6">
           {/* Control buttons - perfectly aligned with consistent tap targets */}
-          <div className="flex items-center justify-center gap-4">
+          <div className="flex items-center justify-center gap-3 sm:gap-4">
             <button
               onClick={restart}
               className="min-h-[56px] min-w-[56px] p-4 rounded-2xl bg-secondary hover:bg-accent transition-colors flex items-center justify-center"
@@ -275,13 +280,21 @@ export default function RSVPReader({ text, onClose }: RSVPReaderProps) {
           </div>
 
           {/* Keyboard shortcuts hint */}
-          <div className="mt-8 text-center text-sm text-muted-foreground">
-            <p className="leading-relaxed">
-              Press <kbd className="px-2.5 py-1.5 bg-muted rounded-lg font-mono text-xs">Space</kbd> to play/pause •
-              <kbd className="px-2.5 py-1.5 bg-muted rounded-lg font-mono text-xs ml-1">←</kbd>
-              <kbd className="px-2.5 py-1.5 bg-muted rounded-lg font-mono text-xs ml-1">→</kbd> to navigate •
-              <kbd className="px-2.5 py-1.5 bg-muted rounded-lg font-mono text-xs ml-1">Esc</kbd> to exit
-            </p>
+          <div className="text-center text-xs sm:text-sm text-muted-foreground max-w-lg">
+            <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-2 leading-relaxed">
+              <span className="whitespace-nowrap">
+                Press <kbd className="px-2 py-1 bg-muted rounded-lg font-mono text-xs">Space</kbd> to play/pause
+              </span>
+              <span className="hidden sm:inline">•</span>
+              <span className="whitespace-nowrap">
+                <kbd className="px-2 py-1 bg-muted rounded-lg font-mono text-xs">←</kbd>
+                <kbd className="px-2 py-1 bg-muted rounded-lg font-mono text-xs ml-1">→</kbd> to navigate
+              </span>
+              <span className="hidden sm:inline">•</span>
+              <span className="whitespace-nowrap">
+                <kbd className="px-2 py-1 bg-muted rounded-lg font-mono text-xs">Esc</kbd> to exit
+              </span>
+            </div>
           </div>
         </div>
       </div>
