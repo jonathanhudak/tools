@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/jonathanhudak/tools/compare/v1.6.0...v1.7.0) (2026-01-23)
+
+
+### Features
+
+* **rsvp-reader:** add URL sharing and improve design ([1b6db63](https://github.com/jonathanhudak/tools/commit/1b6db63c66395f05610286b78b93a11dc87795dd))
+
 # [1.6.0](https://github.com/jonathanhudak/tools/compare/v1.5.0...v1.6.0) (2026-01-23)
 
 
