@@ -1,3 +1,10 @@
+## [1.9.3](https://github.com/jonathanhudak/tools/compare/v1.9.2...v1.9.3) (2026-01-23)
+
+
+### Bug Fixes
+
+* add required OIDC permissions to Claude Code action ([a6a3882](https://github.com/jonathanhudak/tools/commit/a6a3882f32e2d21c5dbfb5e3378880e1f2f05dc8))
+
 ## [1.9.2](https://github.com/jonathanhudak/tools/compare/v1.9.1...v1.9.2) (2026-01-23)
 
 
