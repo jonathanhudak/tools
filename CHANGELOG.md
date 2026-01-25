@@ -1,3 +1,15 @@
+# [1.11.0](https://github.com/jonathanhudak/tools/compare/v1.10.0...v1.11.0) (2026-01-25)
+
+
+### Bug Fixes
+
+* **instrument-tuner:** address code review findings ([f30b939](https://github.com/jonathanhudak/tools/commit/f30b9394d237d4080e25ed9fcfbab02441d1d75a))
+
+
+### Features
+
+* **instrument-tuner:** add comprehensive multi-instrument tuning support ([1461f85](https://github.com/jonathanhudak/tools/commit/1461f858ce0e0d851e27a99d19485e67a33a1135))
+
 # [1.10.0](https://github.com/jonathanhudak/tools/compare/v1.9.3...v1.10.0) (2026-01-23)
 
 
