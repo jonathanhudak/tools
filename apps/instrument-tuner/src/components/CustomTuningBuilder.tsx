@@ -180,6 +180,7 @@ export function CustomTuningBuilder({ onTuningCreate, onCancel }: CustomTuningBu
                   className="h-8 w-8"
                   onClick={() => removeString(index)}
                   disabled={notes.length <= 1}
+                  aria-label={`Remove string ${notes.length - index}`}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>

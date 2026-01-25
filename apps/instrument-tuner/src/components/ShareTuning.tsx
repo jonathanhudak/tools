@@ -100,7 +100,7 @@ export function ShareTuning({ tuning }: ShareTuningProps) {
           )}
 
           {/* Native share button (mobile) */}
-          {typeof navigator !== 'undefined' && 'share' in navigator && (
+          {typeof window !== 'undefined' && typeof navigator !== 'undefined' && navigator.share && (
             <Button
               variant="outline"
               size="sm"

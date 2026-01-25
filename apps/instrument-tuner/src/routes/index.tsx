@@ -62,6 +62,7 @@ function TunerPage() {
   // Refs
   const audioManager = useRef<AudioManager | null>(null);
   const audioInitAttemptedRef = useRef(false);
+  const handlePitchDetectedRef = useRef(handlePitchDetected);
 
   // Parse tuning from URL on mount
   useEffect(() => {
@@ -133,6 +134,11 @@ function TunerPage() {
   useEffect(() => {
     if (audioInitAttemptedRef.current) return;
 
+    // Stable handler that always calls the latest callback via ref
+    const stablePitchHandler = (event: PitchDetectedEvent) => {
+      handlePitchDetectedRef.current(event);
+    };
+
     const initAudio = async () => {
       audioInitAttemptedRef.current = true;
 
@@ -141,7 +147,7 @@ function TunerPage() {
       setMicrophoneActive(success);
 
       if (success) {
-        audioManager.current.on('pitchDetected', handlePitchDetected);
+        audioManager.current.on('pitchDetected', stablePitchHandler);
         audioManager.current.on('statusChange', (status) => {
           setMicrophoneActive(status.microphoneActive);
         });
@@ -162,18 +168,25 @@ function TunerPage() {
     return () => {
       audioManager.current?.disconnect();
     };
+  }, []);
+
+  // Keep pitch detection callback ref in sync with current tuning
+  useEffect(() => {
+    handlePitchDetectedRef.current = handlePitchDetected;
   }, [handlePitchDetected]);
 
   // Toggle microphone
-  const toggleMicrophone = () => {
+  const toggleMicrophone = useCallback(() => {
+    if (!audioManager.current) return;
+
     if (microphoneActive) {
-      audioManager.current?.stopListening();
+      audioManager.current.stopListening();
       setMicrophoneActive(false);
     } else {
-      audioManager.current?.startListening();
+      audioManager.current.startListening();
       setMicrophoneActive(true);
     }
-  };
+  }, [microphoneActive]);
 
   // Sort notes by string number (high to low for display)
   const sortedNotes = useMemo(() => {
@@ -183,10 +196,14 @@ function TunerPage() {
   // Dynamic grid columns based on number of strings
   const gridCols = useMemo(() => {
     const count = currentTuning.notes.length;
-    if (count <= 4) return 'grid-cols-4';
-    if (count <= 6) return 'grid-cols-6';
+    if (count === 1) return 'grid-cols-1 max-w-[200px] mx-auto';
+    if (count === 2) return 'grid-cols-2 max-w-[400px] mx-auto';
+    if (count === 3) return 'grid-cols-3 max-w-[500px] mx-auto';
+    if (count === 4) return 'grid-cols-4';
+    if (count <= 6) return 'grid-cols-3 sm:grid-cols-6';
     if (count <= 8) return 'grid-cols-4 md:grid-cols-8';
-    return 'grid-cols-4 md:grid-cols-6 lg:grid-cols-8';
+    if (count <= 10) return 'grid-cols-5 md:grid-cols-10';
+    return 'grid-cols-4 sm:grid-cols-6 lg:grid-cols-8';
   }, [currentTuning.notes.length]);
 
   // Get tuning display
@@ -221,9 +238,14 @@ function TunerPage() {
                 <div className="text-xl font-bold">{currentTuning.name}</div>
                 <div className="text-sm text-muted-foreground font-mono">{tuningDisplay}</div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                 <ShareTuning tuning={currentTuning} />
-                <Button variant="ghost" size="icon">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowTuningSelector(!showTuningSelector)}
+                  aria-label={showTuningSelector ? 'Hide tuning selector' : 'Show tuning selector'}
+                >
                   {showTuningSelector ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
                 </Button>
               </div>

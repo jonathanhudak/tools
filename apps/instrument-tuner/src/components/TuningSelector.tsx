@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Search, ChevronDown, Music2 } from 'lucide-react';
+import { Search, Music2 } from 'lucide-react';
 import { Button } from '@hudak/ui';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@hudak/ui';
 import { Input } from '@hudak/ui';
@@ -78,12 +78,13 @@ export function TuningSelector({
 
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
           <Input
             placeholder="Search tunings..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"
+            aria-label="Search tunings"
           />
         </div>
 
@@ -105,7 +106,7 @@ export function TuningSelector({
                     <div className="text-left">
                       <div className="font-medium">{tuning.name}</div>
                       <div className="text-xs text-muted-foreground">
-                        {category.name} - {tuning.notes.map((n) => n.name).join(' ')}
+                        {category.name} - {[...tuning.notes].sort((a, b) => b.string - a.string).map((n) => n.name).join(' ')}
                       </div>
                     </div>
                   </Button>

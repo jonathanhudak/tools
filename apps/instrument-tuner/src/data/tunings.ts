@@ -67,9 +67,8 @@ export const GUITAR_TUNINGS: Tuning[] = [
   createTuning('guitar-drop-a', 'Drop A', ['A1', 'E2', 'A2', 'D3', 'F#3', 'B3'], 'AEADF#B - Very low tuning'),
 
   // Half/Full Step Down
-  createTuning('guitar-half-step-down', 'Half Step Down', ['Eb2', 'Ab2', 'Db3', 'Gb3', 'Bb3', 'Eb4'], 'Eb Ab Db Gb Bb Eb - Easier on strings'),
+  createTuning('guitar-half-step-down', 'Half Step Down (Eb Standard)', ['Eb2', 'Ab2', 'Db3', 'Gb3', 'Bb3', 'Eb4'], 'Eb Ab Db Gb Bb Eb - Hendrix, SRV, easier on strings'),
   createTuning('guitar-full-step-down', 'Full Step Down (D Standard)', ['D2', 'G2', 'C3', 'F3', 'A3', 'D4'], 'DGCFAD - One whole step down'),
-  createTuning('guitar-eb-standard', 'Eb Standard', ['Eb2', 'Ab2', 'Db3', 'Gb3', 'Bb3', 'Eb4'], 'Eb Ab Db Gb Bb Eb - Hendrix, SRV'),
 
   // Open Tunings
   createTuning('guitar-open-d', 'Open D', ['D2', 'A2', 'D3', 'F#3', 'A3', 'D4'], 'DADF#AD - Blues and slide guitar'),
@@ -81,11 +80,7 @@ export const GUITAR_TUNINGS: Tuning[] = [
 
   // DADGAD and Variants
   createTuning('guitar-dadgad', 'DADGAD', ['D2', 'A2', 'D3', 'G3', 'A3', 'D4'], 'DADGAD - Celtic, folk music'),
-  createTuning('guitar-dadgbd', 'DADGBD', ['D2', 'A2', 'D3', 'G3', 'B3', 'D4'], 'DADGBD - Variation of DADGAD'),
-  createTuning('guitar-dadfad', 'DADF#AD', ['D2', 'A2', 'D3', 'F#3', 'A3', 'D4'], 'DADF#AD - Same as Open D'),
-
-  // Double Drop D
-  createTuning('guitar-double-drop-d', 'Double Drop D', ['D2', 'A2', 'D3', 'G3', 'B3', 'D4'], 'DADGBD - Both E strings dropped to D'),
+  createTuning('guitar-double-drop-d', 'Double Drop D (DADGBD)', ['D2', 'A2', 'D3', 'G3', 'B3', 'D4'], 'DADGBD - Both E strings dropped to D'),
 
   // Nick Drake Tunings
   createTuning('guitar-nick-drake-1', 'Nick Drake Tuning 1', ['C2', 'G2', 'C3', 'F3', 'C4', 'E4'], 'CGCFCE - River Man'),
@@ -165,8 +160,7 @@ export const UKULELE_TUNINGS: Tuning[] = [
   createTuning('uke-baritone', 'Baritone', ['D3', 'G3', 'B3', 'E4'], 'DGBE - Same as guitar strings 4-1'),
   createTuning('uke-baritone-low-d', 'Baritone Low D', ['D2', 'G3', 'B3', 'E4'], 'DGBE - Very low D'),
 
-  // Soprano/Concert Variants
-  createTuning('uke-canadian', 'Canadian', ['A4', 'D4', 'F#4', 'B4'], 'ADF#B - Same as English'),
+  // 6-string Ukulele
   createTuning('uke-guitalele', 'Guitalele', ['A2', 'D3', 'G3', 'C4', 'E4', 'A4'], 'ADGCEA - 6-string ukulele'),
 ];
 
@@ -242,8 +236,7 @@ export const BANJO_4_TUNINGS: Tuning[] = [
 ];
 
 export const BANJO_6_TUNINGS: Tuning[] = [
-  createTuning('banjo6-standard', 'Standard', ['E2', 'A2', 'D3', 'G3', 'B3', 'E4'], 'EADGBE - Guitar tuning'),
-  createTuning('banjo6-banjitar', 'Banjitar', ['E2', 'A2', 'D3', 'G3', 'B3', 'E4'], 'EADGBE - 6-string banjo'),
+  createTuning('banjo6-standard', 'Standard (Banjitar)', ['E2', 'A2', 'D3', 'G3', 'B3', 'E4'], 'EADGBE - Guitar tuning on banjo'),
 ];
 
 // ============================================================================

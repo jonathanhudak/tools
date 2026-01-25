@@ -86,19 +86,6 @@ export function createShareableUrl(tuning: Tuning, baseUrl?: string): string {
 }
 
 /**
- * Copy shareable URL to clipboard
- */
-export async function copyShareableUrl(tuning: Tuning): Promise<boolean> {
-  try {
-    const url = createShareableUrl(tuning);
-    await navigator.clipboard.writeText(url);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-/**
  * Update URL with current tuning (without navigation)
  */
 export function updateUrlWithTuning(tuning: Tuning): void {
