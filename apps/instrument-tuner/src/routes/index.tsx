@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Note } from 'tonal';
 import { toast } from 'sonner';
 import { PitchGauge } from '@hudak/audio-components';
@@ -7,36 +7,37 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@huda
 import { Button } from '@hudak/ui';
 import { Badge } from '@hudak/ui';
 import { Label } from '@hudak/ui';
-import { Music, Mic, MicOff, Settings as SettingsIcon } from 'lucide-react';
+import {
+  Music,
+  Mic,
+  MicOff,
+  Settings as SettingsIcon,
+  ChevronRight,
+  ChevronLeft,
+} from 'lucide-react';
 
-// Audio detection (we'll create this utility)
+// Audio detection
 import { AudioManager, type PitchDetectedEvent } from '../utils/audio-manager';
+
+// Tuning system
+import {
+  type Tuning,
+  INSTRUMENT_CATEGORIES,
+  findTuningById,
+} from '../data/tunings';
+import { parseTuningFromUrl, getTuningFromParams, updateUrlWithTuning } from '../utils/tuning-url';
+
+// Components
+import { TuningSelector } from '../components/TuningSelector';
+import { CustomTuningBuilder } from '../components/CustomTuningBuilder';
+import { ShareTuning } from '../components/ShareTuning';
 
 export const Route = createFileRoute('/')({
   component: TunerPage,
 });
 
-// Standard guitar tuning (low to high)
-const GUITAR_TUNINGS = {
-  standard: [
-    { note: 'E2', name: 'E', string: 6, frequency: 82.41 },
-    { note: 'A2', name: 'A', string: 5, frequency: 110.00 },
-    { note: 'D3', name: 'D', string: 4, frequency: 146.83 },
-    { note: 'G3', name: 'G', string: 3, frequency: 196.00 },
-    { note: 'B3', name: 'B', string: 2, frequency: 246.94 },
-    { note: 'E4', name: 'E', string: 1, frequency: 329.63 },
-  ],
-  dropD: [
-    { note: 'D2', name: 'D', string: 6, frequency: 73.42 },
-    { note: 'A2', name: 'A', string: 5, frequency: 110.00 },
-    { note: 'D3', name: 'D', string: 4, frequency: 146.83 },
-    { note: 'G3', name: 'G', string: 3, frequency: 196.00 },
-    { note: 'B3', name: 'B', string: 2, frequency: 246.94 },
-    { note: 'E4', name: 'E', string: 1, frequency: 329.63 },
-  ],
-};
-
-type TuningType = keyof typeof GUITAR_TUNINGS;
+// Get default tuning (guitar standard)
+const DEFAULT_TUNING = findTuningById('guitar-standard') || INSTRUMENT_CATEGORIES[0].tunings[0];
 
 interface DetectedPitch {
   note: string;
@@ -49,19 +50,42 @@ function TunerPage() {
   // State
   const [microphoneActive, setMicrophoneActive] = useState(false);
   const [detectedPitch, setDetectedPitch] = useState<DetectedPitch | null>(null);
-  const [selectedTuning, setSelectedTuning] = useState<TuningType>('standard');
+  const [currentTuning, setCurrentTuning] = useState<Tuning>(DEFAULT_TUNING);
   const [pitchSensitivity, setPitchSensitivity] = useState(10);
   const [pitchSmoothing, setPitchSmoothing] = useState(0.7);
   const [showSettings, setShowSettings] = useState(false);
+  const [showTuningSelector, setShowTuningSelector] = useState(false);
+  const [showCustomBuilder, setShowCustomBuilder] = useState(false);
   const [autoDetectString, setAutoDetectString] = useState(true);
   const [highlightedString, setHighlightedString] = useState<number | null>(null);
 
   // Refs
   const audioManager = useRef<AudioManager | null>(null);
   const audioInitAttemptedRef = useRef(false);
+  const handlePitchDetectedRef = useRef(handlePitchDetected);
 
-  // Get current tuning
-  const currentTuning = GUITAR_TUNINGS[selectedTuning];
+  // Parse tuning from URL on mount
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const urlParams = parseTuningFromUrl(searchParams);
+    const urlTuning = getTuningFromParams(urlParams);
+
+    if (urlTuning) {
+      setCurrentTuning(urlTuning);
+    }
+  }, []);
+
+  // Update URL when tuning changes
+  const handleTuningChange = useCallback((tuning: Tuning) => {
+    setCurrentTuning(tuning);
+    updateUrlWithTuning(tuning);
+    setShowTuningSelector(false);
+    setShowCustomBuilder(false);
+    setHighlightedString(null);
+    toast.success('Tuning changed', {
+      description: `Now using ${tuning.name}`,
+    });
+  }, []);
 
   // Handle pitch detection
   const handlePitchDetected = useCallback((event: PitchDetectedEvent) => {
@@ -89,7 +113,7 @@ function TunerPage() {
 
     // Auto-detect which string is being played
     if (autoDetectString) {
-      const closestString = currentTuning.reduce((closest, tuning) => {
+      const closestString = currentTuning.notes.reduce((closest, tuning) => {
         const diff = Math.abs(frequency - tuning.frequency);
         const closestDiff = Math.abs(frequency - closest.frequency);
         return diff < closestDiff ? tuning : closest;
@@ -110,6 +134,11 @@ function TunerPage() {
   useEffect(() => {
     if (audioInitAttemptedRef.current) return;
 
+    // Stable handler that always calls the latest callback via ref
+    const stablePitchHandler = (event: PitchDetectedEvent) => {
+      handlePitchDetectedRef.current(event);
+    };
+
     const initAudio = async () => {
       audioInitAttemptedRef.current = true;
 
@@ -118,7 +147,7 @@ function TunerPage() {
       setMicrophoneActive(success);
 
       if (success) {
-        audioManager.current.on('pitchDetected', handlePitchDetected);
+        audioManager.current.on('pitchDetected', stablePitchHandler);
         audioManager.current.on('statusChange', (status) => {
           setMicrophoneActive(status.microphoneActive);
         });
@@ -139,18 +168,52 @@ function TunerPage() {
     return () => {
       audioManager.current?.disconnect();
     };
+  }, []);
+
+  // Keep pitch detection callback ref in sync with current tuning
+  useEffect(() => {
+    handlePitchDetectedRef.current = handlePitchDetected;
   }, [handlePitchDetected]);
 
   // Toggle microphone
-  const toggleMicrophone = () => {
+  const toggleMicrophone = useCallback(() => {
+    if (!audioManager.current) return;
+
     if (microphoneActive) {
-      audioManager.current?.stopListening();
+      audioManager.current.stopListening();
       setMicrophoneActive(false);
     } else {
-      audioManager.current?.startListening();
+      audioManager.current.startListening();
       setMicrophoneActive(true);
     }
-  };
+  }, [microphoneActive]);
+
+  // Sort notes by string number (high to low for display)
+  const sortedNotes = useMemo(() => {
+    return [...currentTuning.notes].sort((a, b) => a.string - b.string);
+  }, [currentTuning]);
+
+  // Dynamic grid columns based on number of strings
+  const gridCols = useMemo(() => {
+    const count = currentTuning.notes.length;
+    if (count === 1) return 'grid-cols-1 max-w-[200px] mx-auto';
+    if (count === 2) return 'grid-cols-2 max-w-[400px] mx-auto';
+    if (count === 3) return 'grid-cols-3 max-w-[500px] mx-auto';
+    if (count === 4) return 'grid-cols-4';
+    if (count <= 6) return 'grid-cols-3 sm:grid-cols-6';
+    if (count <= 8) return 'grid-cols-4 md:grid-cols-8';
+    if (count <= 10) return 'grid-cols-5 md:grid-cols-10';
+    return 'grid-cols-4 sm:grid-cols-6 lg:grid-cols-8';
+  }, [currentTuning.notes.length]);
+
+  // Get tuning display
+  const tuningDisplay = useMemo(() => {
+    const notes = [...currentTuning.notes]
+      .sort((a, b) => b.string - a.string)
+      .map((n) => n.name)
+      .join(' ');
+    return notes;
+  }, [currentTuning]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
@@ -165,6 +228,50 @@ function TunerPage() {
             Free online tuner with real-time pitch detection
           </p>
         </div>
+
+        {/* Current Tuning Display */}
+        <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => setShowTuningSelector(!showTuningSelector)}>
+          <CardContent className="py-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm text-muted-foreground">Current Tuning</div>
+                <div className="text-xl font-bold">{currentTuning.name}</div>
+                <div className="text-sm text-muted-foreground font-mono">{tuningDisplay}</div>
+              </div>
+              <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                <ShareTuning tuning={currentTuning} />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowTuningSelector(!showTuningSelector)}
+                  aria-label={showTuningSelector ? 'Hide tuning selector' : 'Show tuning selector'}
+                >
+                  {showTuningSelector ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Tuning Selector (collapsible) */}
+        {showTuningSelector && !showCustomBuilder && (
+          <TuningSelector
+            currentTuning={currentTuning}
+            onTuningSelect={handleTuningChange}
+            onCustomTuningClick={() => {
+              setShowCustomBuilder(true);
+              setShowTuningSelector(false);
+            }}
+          />
+        )}
+
+        {/* Custom Tuning Builder */}
+        {showCustomBuilder && (
+          <CustomTuningBuilder
+            onTuningCreate={handleTuningChange}
+            onCancel={() => setShowCustomBuilder(false)}
+          />
+        )}
 
         {/* Microphone Status */}
         <div className="flex justify-center">
@@ -206,28 +313,9 @@ function TunerPage() {
           <Card>
             <CardHeader>
               <CardTitle>Tuner Settings</CardTitle>
-              <CardDescription>Customize sensitivity and tuning</CardDescription>
+              <CardDescription>Customize sensitivity and behavior</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Tuning Selection */}
-              <div className="space-y-2">
-                <Label>Tuning</Label>
-                <div className="flex gap-2">
-                  <Button
-                    variant={selectedTuning === 'standard' ? 'default' : 'outline'}
-                    onClick={() => setSelectedTuning('standard')}
-                  >
-                    Standard (E A D G B E)
-                  </Button>
-                  <Button
-                    variant={selectedTuning === 'dropD' ? 'default' : 'outline'}
-                    onClick={() => setSelectedTuning('dropD')}
-                  >
-                    Drop D (D A D G B E)
-                  </Button>
-                </div>
-              </div>
-
               {/* Auto Detect String */}
               <div className="flex items-center justify-between">
                 <Label htmlFor="auto-detect">Auto-detect string</Label>
@@ -244,7 +332,7 @@ function TunerPage() {
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <Label htmlFor="pitch-sensitivity">Pitch Sensitivity</Label>
-                  <span className="text-sm text-muted-foreground">±{pitchSensitivity} cents</span>
+                  <span className="text-sm text-muted-foreground">+/-{pitchSensitivity} cents</span>
                 </div>
                 <input
                   id="pitch-sensitivity"
@@ -257,8 +345,8 @@ function TunerPage() {
                   className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
                 />
                 <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>More Strict (3¢)</span>
-                  <span>More Lenient (20¢)</span>
+                  <span>More Strict (3 cents)</span>
+                  <span>More Lenient (20 cents)</span>
                 </div>
               </div>
 
@@ -287,17 +375,18 @@ function TunerPage() {
           </Card>
         )}
 
-        {/* Guitar Strings Display */}
+        {/* Strings Display */}
         <Card>
           <CardHeader>
-            <CardTitle>Guitar Strings</CardTitle>
+            <CardTitle>Strings</CardTitle>
             <CardDescription>
-              {selectedTuning === 'standard' ? 'Standard Tuning' : 'Drop D Tuning'}
+              {currentTuning.name} - {currentTuning.notes.length} strings
+              {currentTuning.description && ` - ${currentTuning.description}`}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-6 gap-3">
-              {currentTuning.map((tuning) => {
+            <div className={`grid ${gridCols} gap-3`}>
+              {sortedNotes.map((tuning) => {
                 const isHighlighted = highlightedString === tuning.string;
                 const isInTune =
                   detectedPitch &&
@@ -322,13 +411,16 @@ function TunerPage() {
                     <div className="text-xs text-muted-foreground mt-1">
                       {tuning.note}
                     </div>
+                    <div className="text-xs text-muted-foreground">
+                      {tuning.frequency.toFixed(1)} Hz
+                    </div>
                     {isHighlighted && detectedPitch && (
                       <Badge
                         variant={isInTune ? 'default' : 'secondary'}
                         className="mt-2 text-xs"
                       >
                         {detectedPitch.cents > 0 ? '+' : ''}
-                        {detectedPitch.cents.toFixed(0)}¢
+                        {detectedPitch.cents.toFixed(0)} cents
                       </Badge>
                     )}
                   </div>
@@ -366,7 +458,7 @@ function TunerPage() {
               <div className="text-center space-y-2">
                 <Music className="h-12 w-12 text-muted-foreground mx-auto" />
                 <p className="text-muted-foreground">
-                  Play any string on your guitar to start tuning
+                  Play any string on your instrument to start tuning
                 </p>
                 <p className="text-sm text-muted-foreground">
                   The tuner will automatically detect which string you're playing
@@ -375,6 +467,17 @@ function TunerPage() {
             </CardContent>
           </Card>
         )}
+
+        {/* Footer */}
+        <div className="text-center text-sm text-muted-foreground pb-6">
+          <p>
+            Supports {INSTRUMENT_CATEGORIES.length} instrument types with{' '}
+            {INSTRUMENT_CATEGORIES.reduce((sum, cat) => sum + cat.tunings.length, 0)}+ preset tunings
+          </p>
+          <p className="mt-1">
+            Create custom tunings and share them via URL
+          </p>
+        </div>
       </div>
     </div>
   );
