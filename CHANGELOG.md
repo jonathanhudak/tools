@@ -1,3 +1,10 @@
+## [1.11.1](https://github.com/jonathanhudak/tools/compare/v1.11.0...v1.11.1) (2026-01-25)
+
+
+### Bug Fixes
+
+* **instrument-tuner:** use new tuning system in routes.tsx ([779e0ec](https://github.com/jonathanhudak/tools/commit/779e0ece389acdb4bada7eb775962e1b1835f541))
+
 # [1.11.0](https://github.com/jonathanhudak/tools/compare/v1.10.0...v1.11.0) (2026-01-25)
 
 
