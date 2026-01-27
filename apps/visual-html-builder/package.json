@@ -4,9 +4,9 @@
   "description": "A visual HTML editor with real-time preview",
   "private": true,
   "scripts": {
-    "build": "echo 'Static app - no build needed' && exit 0",
+    "build": "mkdir -p ../../docs/visual-html-builder && cp index.html ../../docs/visual-html-builder/",
     "dev": "echo 'Open index.html in browser'",
-    "clean": "echo 'Nothing to clean'"
+    "clean": "rm -rf ../../docs/visual-html-builder"
   },
   "keywords": ["html", "editor", "visual", "builder"],
   "author": "Jonathan Hudak",

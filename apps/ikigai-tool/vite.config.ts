@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  base: '/ikigai-tool/',
+  base: '/tools/ikigai-tool/',
   build: {
     outDir: '../../docs/ikigai-tool',
     emptyOutDir: true,
