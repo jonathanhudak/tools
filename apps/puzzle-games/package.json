@@ -1,0 +1,33 @@
+{
+  "name": "@hudak/puzzle-games",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Touch-friendly puzzle games for Theodore. Black and white design optimized for Daylight Computer e-ink display.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": ["puzzles", "sokoban", "word-search", "nonogram", "touch-friendly"],
+  "author": "Jonathan Hudak",
+  "license": "ISC",
+  "dependencies": {
+    "@hudak/ui": "workspace:*",
+    "@tanstack/react-router": "^1.91.6",
+    "lucide-react": "^0.468.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@tanstack/router-devtools": "^1.91.6",
+    "@tools/eslint-config": "workspace:*",
+    "@tools/typescript-config": "workspace:*",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "typescript": "^5.9.3",
+    "vite": "^6.3.5",
+    "vite-tsconfig-paths": "^5.1.4",
+    "@vitejs/plugin-react": "^4.5.2"
+  }
+}
