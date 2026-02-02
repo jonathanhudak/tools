@@ -1,0 +1,33 @@
+{
+  "name": "@hudak/word-search",
+  "version": "0.0.1",
+  "type": "module",
+  "description": "Generate and solve word search puzzles with custom word lists, touch-optimized for Daylight Computer. Black and white design for e-ink displays.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+  },
+  "keywords": ["word-search", "puzzle", "game", "touch", "e-ink"],
+  "author": "Jonathan Hudak",
+  "license": "ISC",
+  "dependencies": {
+    "@hudak/ui": "workspace:*",
+    "lucide-react": "^0.468.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@tools/eslint-config": "workspace:*",
+    "@tools/typescript-config": "workspace:*",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.0",
+    "eslint": "^8.57.1",
+    "typescript": "^5.9.3",
+    "vite": "^5.4.0",
+    "vite-tsconfig-paths": "^5.1.4"
+  }
+}

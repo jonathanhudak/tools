@@ -65,6 +65,13 @@ const toolMetadata = {
     type: 'cli-tool',
     hasDeployment: false,
   },
+  'word-search': {
+    name: 'Word Search Generator',
+    description: 'Generate and solve word search puzzles with custom word lists. Touch-optimized with black and white design for e-ink displays like Daylight Computer. Features preset themes and difficulty levels.',
+    techStack: ['React', 'TypeScript', 'Vite', 'Tailwind v4'],
+    type: 'web-app',
+    hasDeployment: true,
+  },
 };
 
 async function checkDeployment(appName) {
