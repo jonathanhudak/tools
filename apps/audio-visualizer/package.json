@@ -1,0 +1,40 @@
+{
+  "name": "@hudak/audio-visualizer",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Audio visualization tool with radial waveform display and complementary color palettes. Upload multiple audio files to create beautiful visualizations.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+  },
+  "keywords": ["audio", "visualization", "waveform", "p5js"],
+  "author": "Jonathan Hudak",
+  "license": "ISC",
+  "dependencies": {
+    "@hudak/audio-viz-core": "workspace:*",
+    "@hudak/ui": "workspace:*",
+    "chroma-js": "^3.1.2",
+    "framer-motion": "^12.23.24",
+    "lucide-react": "^0.468.0",
+    "p5": "^1.11.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "sonner": "^2.0.7"
+  },
+  "devDependencies": {
+    "@tools/eslint-config": "workspace:*",
+    "@tools/typescript-config": "workspace:*",
+    "@types/chroma-js": "^2.4.4",
+    "@types/p5": "^1.7.6",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.3",
+    "eslint": "^8.57.1",
+    "typescript": "^5.9.3",
+    "vite": "^6.0.11",
+    "vite-tsconfig-paths": "^5.1.4"
+  }
+}
