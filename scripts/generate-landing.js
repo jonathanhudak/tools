@@ -65,6 +65,13 @@ const toolMetadata = {
     type: 'cli-tool',
     hasDeployment: false,
   },
+  'puzzle-games': {
+    name: 'Puzzle Games',
+    description: 'Classic puzzle games including Sokoban, optimized for touch devices and e-ink displays. Features 10 levels, undo functionality, and progress tracking. Black and white design for maximum readability.',
+    techStack: ['React', 'TypeScript', 'Vite', 'Tailwind v4'],
+    type: 'web-app',
+    hasDeployment: true,
+  },
 };
 
 async function checkDeployment(appName) {
