@@ -1,3 +1,10 @@
+# [1.12.0](https://github.com/jonathanhudak/tools/compare/v1.11.1...v1.12.0) (2026-02-02)
+
+
+### Features
+
+* add trade-journal CLI app ([d455b4b](https://github.com/jonathanhudak/tools/commit/d455b4b2d9c749a48124bf989ee6b762991a8853)), closes [#19](https://github.com/jonathanhudak/tools/issues/19)
+
 ## [1.11.1](https://github.com/jonathanhudak/tools/compare/v1.11.0...v1.11.1) (2026-01-25)
 
 
