@@ -5,6 +5,7 @@ export interface PlayerData {
   sokoban: { completedLevels: number[] };
   wordSearch: { completed: string[]; bestTimes: Record<string, number> };
   nonogram: { completed: string[] };
+  crossword?: { completed: string[]; bestTimes: Record<string, number> };
 }
 
 interface PlayerContextType {
@@ -26,6 +27,7 @@ function createNewPlayer(name: string): PlayerData {
     sokoban: { completedLevels: [] },
     wordSearch: { completed: [], bestTimes: {} },
     nonogram: { completed: [] },
+    crossword: { completed: [], bestTimes: {} },
   };
 }
 

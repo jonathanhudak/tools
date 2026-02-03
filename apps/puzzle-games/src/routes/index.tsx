@@ -20,7 +20,7 @@ function Home() {
             <small>Push boxes to targets</small>
           </button>
         </Link>
-        
+
         <Link to="/word-search" className="link-button">
           <button style={{ width: "100%" }}>
             🔤 Word Search
@@ -28,7 +28,15 @@ function Home() {
             <small>Find hidden words</small>
           </button>
         </Link>
-        
+
+        <Link to="/crossword" className="link-button">
+          <button style={{ width: "100%" }}>
+            📝 Crossword
+            <br />
+            <small>Advanced vocabulary puzzles</small>
+          </button>
+        </Link>
+
         <Link to="/nonogram" className="link-button">
           <button style={{ width: "100%" }}>
             🖼️ Nonogram
