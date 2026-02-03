@@ -36,10 +36,10 @@ export function generateRandomPalette(count: number): string[] {
 
   for (let i = 0; i < count; i++) {
     const hue = (baseHue + (i * 360) / count) % 360;
-    const lightness = 40 + Math.random() * 40; // 40-80 range
-    const chroma = 60 + Math.random() * 40; // 60-100 range
+    const l = 40 + Math.random() * 40; // 40-80 range
+    const c = 60 + Math.random() * 40; // 60-100 range
 
-    colors.push(chroma.lch(lightness, chroma, hue).hex());
+    colors.push(chroma.lch(l, c, hue).hex());
   }
 
   return colors;
