@@ -1,3 +1,24 @@
+# [1.16.0](https://github.com/jonathanhudak/tools/compare/v1.15.0...v1.16.0) (2026-02-03)
+
+
+### Bug Fixes
+
+* add DOM lib to audio-viz-core tsconfig ([f1fae29](https://github.com/jonathanhudak/tools/commit/f1fae29aeacdfa7d92725311a366ca93fba4a4ee))
+* add missing @hudak/rsvp-core dependency to rsvp-reader ([8155bd8](https://github.com/jonathanhudak/tools/commit/8155bd8f3cc5b06748660ca2e5831300008da05d))
+* prefix unused audioContext param with underscore ([d3c433c](https://github.com/jonathanhudak/tools/commit/d3c433c5238b15baf6377a1601450d610988706c))
+* **puzzle-games:** Improve Nonogram for 9-year-old players ([#57](https://github.com/jonathanhudak/tools/issues/57)) ([84d5fa1](https://github.com/jonathanhudak/tools/commit/84d5fa199400ed784a2358d00741481500b63fd2)), closes [#54](https://github.com/jonathanhudak/tools/issues/54)
+* **puzzle-games:** Word Search touch support for drag selection ([#56](https://github.com/jonathanhudak/tools/issues/56)) ([d50195e](https://github.com/jonathanhudak/tools/commit/d50195ea4e9e78d8c89b8d8535ad749cdf3b5383)), closes [#53](https://github.com/jonathanhudak/tools/issues/53)
+* rename chroma import to chromaJs to avoid shadowing ([32e5119](https://github.com/jonathanhudak/tools/commit/32e511903760f57ccb2405c0bf915e7d899c0220))
+* rename shadowed variable in audio-viz-core colors.ts ([6eefdf0](https://github.com/jonathanhudak/tools/commit/6eefdf0bb7b4c228d5d77672de718a34af3100ee))
+* **rsvp-core:** add DOM lib to tsconfig for browser globals ([#60](https://github.com/jonathanhudak/tools/issues/60)) ([aaa63a7](https://github.com/jonathanhudak/tools/commit/aaa63a7277c16fe8ce401a54644c4a0aba240f70)), closes [#59](https://github.com/jonathanhudak/tools/issues/59)
+
+
+### Features
+
+* extract core RSVP logic into @hudak/rsvp-core package ([#49](https://github.com/jonathanhudak/tools/issues/49)) ([6f3822e](https://github.com/jonathanhudak/tools/commit/6f3822e6a92b4f95a7cacb402739b96996aca15d))
+* Migrate visualize-audio into tools monorepo ([#51](https://github.com/jonathanhudak/tools/issues/51)) ([44ebae8](https://github.com/jonathanhudak/tools/commit/44ebae83009fdc5a5a05dcdf9a678b42ccbd56ab))
+* **puzzle-games:** add crossword puzzle with advanced vocabulary ([#58](https://github.com/jonathanhudak/tools/issues/58)) ([501420e](https://github.com/jonathanhudak/tools/commit/501420e64392a36da4821b4edb3c455b2db31a23)), closes [#55](https://github.com/jonathanhudak/tools/issues/55)
+
 # [1.15.0](https://github.com/jonathanhudak/tools/compare/v1.14.2...v1.15.0) (2026-02-03)
 
 
