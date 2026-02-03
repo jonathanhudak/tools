@@ -1,3 +1,10 @@
+# [1.13.0](https://github.com/jonathanhudak/tools/compare/v1.12.0...v1.13.0) (2026-02-03)
+
+
+### Features
+
+* add Chord-Scale Matrix Game Phase 1 (Degree Quiz) ([#32](https://github.com/jonathanhudak/tools/issues/32)) ([aab0c58](https://github.com/jonathanhudak/tools/commit/aab0c585f3652aa865592cce099a11b04c39141c))
+
 # [1.12.0](https://github.com/jonathanhudak/tools/compare/v1.11.1...v1.12.0) (2026-02-02)
 
 
