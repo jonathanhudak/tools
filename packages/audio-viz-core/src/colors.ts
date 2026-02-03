@@ -2,7 +2,7 @@
  * Color palette generation utilities using LCH color space
  */
 
-import chroma from 'chroma-js';
+import chromaJs from 'chroma-js';
 import type { ColorPaletteOptions } from './types';
 
 const DEFAULT_OPTIONS: Required<ColorPaletteOptions> = {
@@ -20,11 +20,11 @@ export function generateComplementaryPalette(
   options: ColorPaletteOptions = {}
 ): string[] {
   const opts = { ...DEFAULT_OPTIONS, ...options };
-  const { baseHue, chroma, lightness, strategy } = opts;
+  const { baseHue, chroma: chromaVal, lightness, strategy } = opts;
 
   const hues = getHuesForStrategy(baseHue, count, strategy);
 
-  return hues.map((hue) => chroma.lch(lightness, chroma, hue).hex());
+  return hues.map((hue) => chromaJs.lch(lightness, chromaVal, hue).hex());
 }
 
 /**
@@ -39,7 +39,7 @@ export function generateRandomPalette(count: number): string[] {
     const l = 40 + Math.random() * 40; // 40-80 range
     const c = 60 + Math.random() * 40; // 60-100 range
 
-    colors.push(chroma.lch(l, c, hue).hex());
+    colors.push(chromaJs.lch(l, c, hue).hex());
   }
 
   return colors;
@@ -53,7 +53,7 @@ export function generateGradient(
   color2: string,
   steps: number
 ): string[] {
-  return chroma.scale([color1, color2]).mode('lch').colors(steps);
+  return chromaJs.scale([color1, color2]).mode('lch').colors(steps);
 }
 
 /**
@@ -93,7 +93,7 @@ function getHuesForStrategy(
  */
 export function isValidColor(color: string): boolean {
   try {
-    chroma(color);
+    chromaJs(color);
     return true;
   } catch {
     return false;
@@ -104,6 +104,6 @@ export function isValidColor(color: string): boolean {
  * Converts hex color to LCH components
  */
 export function hexToLch(hex: string): { l: number; c: number; h: number } {
-  const [l, c, h] = chroma(hex).lch();
+  const [l, c, h] = chromaJs(hex).lch();
   return { l, c, h: h || 0 };
 }
