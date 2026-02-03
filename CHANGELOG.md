@@ -1,3 +1,10 @@
+## [1.14.1](https://github.com/jonathanhudak/tools/compare/v1.14.0...v1.14.1) (2026-02-03)
+
+
+### Bug Fixes
+
+* puzzle-games GitHub Pages deployment config ([#40](https://github.com/jonathanhudak/tools/issues/40)) ([5b97016](https://github.com/jonathanhudak/tools/commit/5b97016308c0c36ffd57a8610bf057e83774014f)), closes [#39](https://github.com/jonathanhudak/tools/issues/39)
+
 # [1.14.0](https://github.com/jonathanhudak/tools/compare/v1.13.0...v1.14.0) (2026-02-03)
 
 
