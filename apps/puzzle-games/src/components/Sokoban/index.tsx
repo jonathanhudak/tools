@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { LEVELS, Level } from "./levels";
+import { usePlayer } from "../../contexts/PlayerContext";
 
 type Cell = "wall" | "floor" | "target" | "box" | "boxOnTarget" | "player" | "playerOnTarget";
 type Direction = "up" | "down" | "left" | "right";
@@ -77,6 +78,8 @@ function checkWin(grid: Cell[][]): boolean {
 }
 
 export function Sokoban() {
+  const { currentPlayer, updatePlayerProgress } = usePlayer();
+  
   const [currentLevelIndex, setCurrentLevelIndex] = useState(() => {
     const saved = localStorage.getItem("sokoban-level");
     return saved ? parseInt(saved, 10) : 0;
@@ -99,6 +102,24 @@ export function Sokoban() {
   useEffect(() => {
     initLevel(currentLevelIndex);
   }, [currentLevelIndex, initLevel]);
+
+  const handleWin = useCallback(() => {
+    setWon(true);
+    localStorage.setItem("sokoban-level", String(Math.min(currentLevelIndex + 1, LEVELS.length - 1)));
+    
+    // Update player progress
+    if (currentPlayer) {
+      const levelId = LEVELS[currentLevelIndex].id;
+      updatePlayerProgress((p) => ({
+        ...p,
+        sokoban: {
+          completedLevels: p.sokoban.completedLevels.includes(levelId)
+            ? p.sokoban.completedLevels
+            : [...p.sokoban.completedLevels, levelId],
+        },
+      }));
+    }
+  }, [currentLevelIndex, currentPlayer, updatePlayerProgress]);
 
   const move = useCallback(
     (direction: Direction) => {
@@ -144,19 +165,19 @@ export function Sokoban() {
       }
 
       // Move player
-      setGameState({
+      const newState = {
         grid: newGrid,
         playerPos: { row: newRow, col: newCol },
         moves: moves + 1,
         history: [...history, { grid: cloneGrid(grid), playerPos }],
-      });
+      };
+      setGameState(newState);
 
       if (checkWin(newGrid)) {
-        setWon(true);
-        localStorage.setItem("sokoban-level", String(Math.min(currentLevelIndex + 1, LEVELS.length - 1)));
+        handleWin();
       }
     },
-    [gameState, won, currentLevelIndex]
+    [gameState, won, handleWin]
   );
 
   const undo = useCallback(() => {
@@ -226,6 +247,7 @@ export function Sokoban() {
 
   const level = LEVELS[currentLevelIndex];
   const cellSize = Math.min(44, Math.floor((window.innerWidth - 64) / gameState.grid[0].length));
+  const completedLevels = currentPlayer?.sokoban.completedLevels ?? [];
 
   return (
     <div>
@@ -258,12 +280,10 @@ export function Sokoban() {
               rowIndex === gameState.playerPos.row && colIndex === gameState.playerPos.col;
 
             let content = "";
-            let bg = "#fff";
+            const isWall = cell === "wall";
 
             if (isPlayer) {
               content = "😊";
-            } else if (cell === "wall") {
-              bg = "#000";
             } else if (cell === "box") {
               content = "📦";
             } else if (cell === "boxOnTarget") {
@@ -275,11 +295,11 @@ export function Sokoban() {
             return (
               <div
                 key={`${rowIndex}-${colIndex}`}
-                className="game-cell"
+                className={`game-cell ${isWall ? "game-cell-wall" : ""}`}
                 style={{
                   width: cellSize,
                   height: cellSize,
-                  background: bg,
+                  background: isWall ? "var(--fg)" : "var(--cell-bg)",
                   fontSize: cellSize * 0.6,
                 }}
                 onClick={() => handleCellClick(rowIndex, colIndex)}
@@ -299,11 +319,11 @@ export function Sokoban() {
         <select
           value={currentLevelIndex}
           onChange={(e) => setCurrentLevelIndex(parseInt(e.target.value))}
-          style={{ padding: "12px", fontSize: "1rem", border: "2px solid #000" }}
+          style={{ padding: "12px", fontSize: "1rem" }}
         >
           {LEVELS.map((l, i) => (
             <option key={l.id} value={i}>
-              Level {l.id}: {l.name}
+              {completedLevels.includes(l.id) ? "✓ " : ""}Level {l.id}: {l.name}
             </option>
           ))}
         </select>

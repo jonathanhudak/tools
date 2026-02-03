@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { PUZZLES, Puzzle, calculateClues } from "./puzzles";
+import { usePlayer } from "../../contexts/PlayerContext";
 
 type CellState = "empty" | "filled" | "marked";
 
@@ -29,6 +30,8 @@ function checkWin(gameState: GameState, puzzle: Puzzle): boolean {
 }
 
 export function Nonogram() {
+  const { currentPlayer, updatePlayerProgress } = usePlayer();
+  
   const [currentPuzzleIndex, setCurrentPuzzleIndex] = useState(() => {
     const saved = localStorage.getItem("nonogram-puzzle");
     return saved ? parseInt(saved, 10) : 0;
@@ -50,6 +53,27 @@ export function Nonogram() {
     initPuzzle(currentPuzzleIndex);
   }, [currentPuzzleIndex, initPuzzle]);
 
+  const handleWin = useCallback(() => {
+    setWon(true);
+    localStorage.setItem(
+      "nonogram-puzzle",
+      String(Math.min(currentPuzzleIndex + 1, PUZZLES.length - 1))
+    );
+    
+    // Update player progress
+    if (currentPlayer) {
+      const puzzleId = `puzzle-${puzzle.id}`;
+      updatePlayerProgress((p) => ({
+        ...p,
+        nonogram: {
+          completed: p.nonogram.completed.includes(puzzleId)
+            ? p.nonogram.completed
+            : [...p.nonogram.completed, puzzleId],
+        },
+      }));
+    }
+  }, [currentPuzzleIndex, currentPlayer, puzzle.id, updatePlayerProgress]);
+
   const handleCellClick = (row: number, col: number) => {
     if (!gameState || won) return;
 
@@ -68,11 +92,7 @@ export function Nonogram() {
     setGameState(newState);
 
     if (checkWin(newState, puzzle)) {
-      setWon(true);
-      localStorage.setItem(
-        "nonogram-puzzle",
-        String(Math.min(currentPuzzleIndex + 1, PUZZLES.length - 1))
-      );
+      handleWin();
     }
   };
 
@@ -82,6 +102,7 @@ export function Nonogram() {
   const maxColClues = Math.max(...colClues.map((c) => c.length));
   const cellSize = Math.min(32, Math.floor((window.innerWidth - 64 - maxRowClues * 24) / puzzle.size));
   const clueSize = Math.min(24, cellSize);
+  const completedPuzzles = currentPlayer?.nonogram.completed ?? [];
 
   return (
     <div>
@@ -109,8 +130,8 @@ export function Nonogram() {
         <button
           onClick={() => setFillMode("fill")}
           style={{
-            background: fillMode === "fill" ? "#000" : "#fff",
-            color: fillMode === "fill" ? "#fff" : "#000",
+            background: fillMode === "fill" ? "var(--fg)" : "var(--bg)",
+            color: fillMode === "fill" ? "var(--bg)" : "var(--fg)",
           }}
         >
           ■ Fill
@@ -118,8 +139,8 @@ export function Nonogram() {
         <button
           onClick={() => setFillMode("mark")}
           style={{
-            background: fillMode === "mark" ? "#000" : "#fff",
-            color: fillMode === "mark" ? "#fff" : "#000",
+            background: fillMode === "mark" ? "var(--fg)" : "var(--bg)",
+            color: fillMode === "mark" ? "var(--bg)" : "var(--fg)",
           }}
         >
           ✕ Mark
@@ -133,21 +154,21 @@ export function Nonogram() {
           gridTemplateColumns: `${maxRowClues * clueSize}px repeat(${puzzle.size}, ${cellSize}px)`,
           gridTemplateRows: `${maxColClues * clueSize}px repeat(${puzzle.size}, ${cellSize}px)`,
           gap: 1,
-          background: "#000",
-          border: "2px solid #000",
+          background: "var(--border)",
+          border: "2px solid var(--border)",
           margin: "0 auto",
           width: "fit-content",
         }}
       >
         {/* Empty corner */}
-        <div style={{ background: "#fff" }} />
+        <div style={{ background: "var(--bg)" }} />
 
         {/* Column clues */}
         {colClues.map((clues, col) => (
           <div
             key={`col-${col}`}
             style={{
-              background: "#fff",
+              background: "var(--bg)",
               display: "flex",
               flexDirection: "column",
               justifyContent: "flex-end",
@@ -169,7 +190,7 @@ export function Nonogram() {
             <div
               key={`row-${rowIndex}`}
               style={{
-                background: "#fff",
+                background: "var(--bg)",
                 display: "flex",
                 justifyContent: "flex-end",
                 alignItems: "center",
@@ -191,12 +212,13 @@ export function Nonogram() {
                 style={{
                   width: cellSize,
                   height: cellSize,
-                  background: cell === "filled" ? "#000" : "#fff",
+                  background: cell === "filled" ? "var(--cell-found)" : "var(--cell-bg)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   cursor: "pointer",
                   fontSize: cellSize * 0.6,
+                  color: "var(--fg)",
                 }}
               >
                 {cell === "marked" && "✕"}
@@ -211,10 +233,11 @@ export function Nonogram() {
         <select
           value={currentPuzzleIndex}
           onChange={(e) => setCurrentPuzzleIndex(parseInt(e.target.value))}
-          style={{ padding: "12px", fontSize: "1rem", border: "2px solid #000" }}
+          style={{ padding: "12px", fontSize: "1rem" }}
         >
           {PUZZLES.map((p, i) => (
             <option key={p.id} value={i}>
+              {completedPuzzles.includes(`puzzle-${p.id}`) ? "✓ " : ""}
               {p.id}. {p.name} ({p.size}×{p.size})
             </option>
           ))}

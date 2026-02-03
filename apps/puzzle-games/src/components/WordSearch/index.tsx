@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { THEMES, Theme, Difficulty } from "./themes";
 import { generatePuzzle, GeneratedPuzzle, PlacedWord } from "./generator";
+import { usePlayer } from "../../contexts/PlayerContext";
 
 interface Selection {
   startRow: number;
@@ -56,12 +57,14 @@ function wordMatchesCells(word: PlacedWord, cells: Array<{ row: number; col: num
 }
 
 export function WordSearch() {
+  const { currentPlayer, updatePlayerProgress } = usePlayer();
   const [theme, setTheme] = useState<Theme>(THEMES[0]);
   const [difficulty, setDifficulty] = useState<Difficulty>("easy");
   const [puzzle, setPuzzle] = useState<GeneratedPuzzle | null>(null);
   const [foundWords, setFoundWords] = useState<Set<string>>(new Set());
   const [selection, setSelection] = useState<Selection | null>(null);
   const [foundCells, setFoundCells] = useState<Set<string>>(new Set());
+  const [startTime, setStartTime] = useState<number>(0);
   const gridRef = useRef<HTMLDivElement>(null);
 
   const startNewGame = useCallback(() => {
@@ -70,6 +73,7 @@ export function WordSearch() {
     setFoundWords(new Set());
     setFoundCells(new Set());
     setSelection(null);
+    setStartTime(Date.now());
   }, [theme, difficulty]);
 
   useEffect(() => {
@@ -104,6 +108,31 @@ export function WordSearch() {
         const newFoundCells = new Set(foundCells);
         placedWord.cells.forEach((c) => newFoundCells.add(`${c.row}-${c.col}`));
         setFoundCells(newFoundCells);
+
+        // Check for win
+        if (newFoundWords.size === puzzle.placedWords.length) {
+          const timeMs = Date.now() - startTime;
+          const puzzleId = `${theme.name}-${difficulty}`;
+          
+          if (currentPlayer) {
+            updatePlayerProgress((p) => {
+              const newCompleted = p.wordSearch.completed.includes(puzzleId)
+                ? p.wordSearch.completed
+                : [...p.wordSearch.completed, puzzleId];
+              
+              const currentBest = p.wordSearch.bestTimes[puzzleId] ?? Infinity;
+              const newBestTimes = {
+                ...p.wordSearch.bestTimes,
+                [puzzleId]: Math.min(currentBest, timeMs),
+              };
+              
+              return {
+                ...p,
+                wordSearch: { completed: newCompleted, bestTimes: newBestTimes },
+              };
+            });
+          }
+        }
         break;
       }
     }
@@ -112,6 +141,7 @@ export function WordSearch() {
   };
 
   const isWon = puzzle && foundWords.size === puzzle.placedWords.length;
+  const elapsedTime = isWon ? Math.floor((Date.now() - startTime) / 1000) : 0;
 
   if (!puzzle) return null;
 
@@ -131,6 +161,7 @@ export function WordSearch() {
       {isWon && (
         <div className="success-message">
           <h2>🎉 All Words Found!</h2>
+          <p>Completed in {elapsedTime} seconds</p>
           <button onClick={startNewGame}>Play Again</button>
         </div>
       )}
@@ -154,14 +185,14 @@ export function WordSearch() {
             return (
               <div
                 key={key}
-                className="game-cell"
+                className={`game-cell ${isFound ? "game-cell-filled" : ""} ${isSelecting ? "game-cell-selecting" : ""}`}
                 style={{
                   width: cellSize,
                   height: cellSize,
                   fontSize: cellSize * 0.5,
                   fontFamily: "monospace",
-                  background: isFound ? "#000" : isSelecting ? "#ccc" : "#fff",
-                  color: isFound ? "#fff" : "#000",
+                  background: isFound ? "var(--cell-found)" : isSelecting ? "var(--cell-active)" : "var(--cell-bg)",
+                  color: isFound ? "var(--cell-found-text)" : "var(--fg)",
                 }}
                 onPointerDown={() => handlePointerDown(rowIndex, colIndex)}
                 onPointerEnter={() => handlePointerMove(rowIndex, colIndex)}
@@ -188,7 +219,7 @@ export function WordSearch() {
             const newTheme = THEMES.find((t) => t.name === e.target.value)!;
             setTheme(newTheme);
           }}
-          style={{ padding: "12px", fontSize: "1rem", border: "2px solid #000" }}
+          style={{ padding: "12px", fontSize: "1rem" }}
         >
           {THEMES.map((t) => (
             <option key={t.name} value={t.name}>
@@ -200,7 +231,7 @@ export function WordSearch() {
         <select
           value={difficulty}
           onChange={(e) => setDifficulty(e.target.value as Difficulty)}
-          style={{ padding: "12px", fontSize: "1rem", border: "2px solid #000" }}
+          style={{ padding: "12px", fontSize: "1rem" }}
         >
           <option value="easy">Easy (8×8)</option>
           <option value="medium">Medium (10×10)</option>
