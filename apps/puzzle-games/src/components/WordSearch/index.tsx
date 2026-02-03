@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { THEMES, Theme, Difficulty } from "./themes";
 import { generatePuzzle, GeneratedPuzzle, PlacedWord } from "./generator";
+import { usePlayer } from "../../contexts/PlayerContext";
 
 interface Selection {
   startRow: number;
@@ -56,12 +57,14 @@ function wordMatchesCells(word: PlacedWord, cells: Array<{ row: number; col: num
 }
 
 export function WordSearch() {
+  const { currentPlayer, updatePlayer } = usePlayer();
   const [theme, setTheme] = useState<Theme>(THEMES[0]);
   const [difficulty, setDifficulty] = useState<Difficulty>("easy");
   const [puzzle, setPuzzle] = useState<GeneratedPuzzle | null>(null);
   const [foundWords, setFoundWords] = useState<Set<string>>(new Set());
   const [selection, setSelection] = useState<Selection | null>(null);
   const [foundCells, setFoundCells] = useState<Set<string>>(new Set());
+  const [startTime, setStartTime] = useState<number>(Date.now());
   const gridRef = useRef<HTMLDivElement>(null);
 
   const startNewGame = useCallback(() => {
@@ -70,6 +73,7 @@ export function WordSearch() {
     setFoundWords(new Set());
     setFoundCells(new Set());
     setSelection(null);
+    setStartTime(Date.now());
   }, [theme, difficulty]);
 
   useEffect(() => {
@@ -113,6 +117,35 @@ export function WordSearch() {
 
   const isWon = puzzle && foundWords.size === puzzle.placedWords.length;
 
+  // Track completion and best time
+  useEffect(() => {
+    if (isWon && currentPlayer && puzzle) {
+      const completionTime = Math.floor((Date.now() - startTime) / 1000);
+      const puzzleId = `${theme.name}-${difficulty}`;
+
+      const currentBestTime = currentPlayer.wordSearch.bestTimes[puzzleId];
+      const isNewBest = !currentBestTime || completionTime < currentBestTime;
+
+      const completedSet = new Set(currentPlayer.wordSearch.completed);
+      const isNewCompletion = !completedSet.has(puzzleId);
+
+      if (isNewCompletion || isNewBest) {
+        updatePlayer({
+          wordSearch: {
+            ...currentPlayer.wordSearch,
+            completed: isNewCompletion
+              ? [...currentPlayer.wordSearch.completed, puzzleId]
+              : currentPlayer.wordSearch.completed,
+            bestTimes: {
+              ...currentPlayer.wordSearch.bestTimes,
+              [puzzleId]: isNewBest ? completionTime : currentBestTime,
+            },
+          },
+        });
+      }
+    }
+  }, [isWon, currentPlayer, puzzle, theme.name, difficulty, startTime, updatePlayer]);
+
   if (!puzzle) return null;
 
   const cellSize = Math.min(36, Math.floor((window.innerWidth - 64) / puzzle.size));
@@ -131,6 +164,11 @@ export function WordSearch() {
       {isWon && (
         <div className="success-message">
           <h2>🎉 All Words Found!</h2>
+          {currentPlayer && (() => {
+            const puzzleId = `${theme.name}-${difficulty}`;
+            const bestTime = currentPlayer.wordSearch.bestTimes[puzzleId];
+            return bestTime ? <p>Best time: {bestTime}s</p> : null;
+          })()}
           <button onClick={startNewGame}>Play Again</button>
         </div>
       )}

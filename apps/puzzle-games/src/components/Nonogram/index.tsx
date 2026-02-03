@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { PUZZLES, Puzzle, calculateClues } from "./puzzles";
+import { usePlayer } from "../../contexts/PlayerContext";
 
 type CellState = "empty" | "filled" | "marked";
 
@@ -29,10 +30,8 @@ function checkWin(gameState: GameState, puzzle: Puzzle): boolean {
 }
 
 export function Nonogram() {
-  const [currentPuzzleIndex, setCurrentPuzzleIndex] = useState(() => {
-    const saved = localStorage.getItem("nonogram-puzzle");
-    return saved ? parseInt(saved, 10) : 0;
-  });
+  const { currentPlayer, updatePlayer } = usePlayer();
+  const [currentPuzzleIndex, setCurrentPuzzleIndex] = useState(0);
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [won, setWon] = useState(false);
   const [fillMode, setFillMode] = useState<"fill" | "mark">("fill");
@@ -69,10 +68,17 @@ export function Nonogram() {
 
     if (checkWin(newState, puzzle)) {
       setWon(true);
-      localStorage.setItem(
-        "nonogram-puzzle",
-        String(Math.min(currentPuzzleIndex + 1, PUZZLES.length - 1))
-      );
+      if (currentPlayer) {
+        const puzzleId = `${puzzle.id}`;
+        const completed = currentPlayer.nonogram.completed;
+        if (!completed.includes(puzzleId)) {
+          updatePlayer({
+            nonogram: {
+              completed: [...completed, puzzleId],
+            },
+          });
+        }
+      }
     }
   };
 

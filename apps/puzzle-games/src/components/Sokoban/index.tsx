@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { LEVELS, Level } from "./levels";
+import { usePlayer } from "../../contexts/PlayerContext";
 
 type Cell = "wall" | "floor" | "target" | "box" | "boxOnTarget" | "player" | "playerOnTarget";
 type Direction = "up" | "down" | "left" | "right";
@@ -77,9 +78,9 @@ function checkWin(grid: Cell[][]): boolean {
 }
 
 export function Sokoban() {
+  const { currentPlayer, updatePlayer } = usePlayer();
   const [currentLevelIndex, setCurrentLevelIndex] = useState(() => {
-    const saved = localStorage.getItem("sokoban-level");
-    return saved ? parseInt(saved, 10) : 0;
+    return currentPlayer?.sokoban.currentLevel ?? 0;
   });
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [won, setWon] = useState(false);
@@ -99,6 +100,18 @@ export function Sokoban() {
   useEffect(() => {
     initLevel(currentLevelIndex);
   }, [currentLevelIndex, initLevel]);
+
+  // Save current level to player data
+  useEffect(() => {
+    if (currentPlayer && currentPlayer.sokoban.currentLevel !== currentLevelIndex) {
+      updatePlayer({
+        sokoban: {
+          ...currentPlayer.sokoban,
+          currentLevel: currentLevelIndex,
+        },
+      });
+    }
+  }, [currentLevelIndex, currentPlayer, updatePlayer]);
 
   const move = useCallback(
     (direction: Direction) => {
@@ -153,7 +166,19 @@ export function Sokoban() {
 
       if (checkWin(newGrid)) {
         setWon(true);
-        localStorage.setItem("sokoban-level", String(Math.min(currentLevelIndex + 1, LEVELS.length - 1)));
+        const nextLevel = Math.min(currentLevelIndex + 1, LEVELS.length - 1);
+        if (currentPlayer) {
+          const completedLevels = currentPlayer.sokoban.completedLevels;
+          if (!completedLevels.includes(currentLevelIndex)) {
+            updatePlayer({
+              sokoban: {
+                ...currentPlayer.sokoban,
+                completedLevels: [...completedLevels, currentLevelIndex],
+                currentLevel: nextLevel,
+              },
+            });
+          }
+        }
       }
     },
     [gameState, won, currentLevelIndex]
