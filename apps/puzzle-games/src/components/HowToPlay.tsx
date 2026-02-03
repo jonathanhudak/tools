@@ -28,14 +28,29 @@ Tip: Start with the longest words!`,
   },
   nonogram: {
     title: "🖼️ How to Play Nonogram",
-    content: `Fill in squares to reveal a hidden picture!
+    content: `🎯 GOAL: Fill in squares to reveal a hidden picture!
 
-• Numbers show how many squares to fill
-• "3 1" means: 3 filled, gap, then 1 filled
-• Use Fill mode to color squares black
-• Use Mark mode (✕) for squares you know are empty
+📐 WHAT THE NUMBERS MEAN:
+The numbers on the edge tell you how many squares to fill in that row or column.
 
-Tip: Start with rows that have big numbers!`,
+Examples:
+• "5" = fill 5 squares in a row
+• "2 3" = fill 2 squares, leave a gap, then fill 3 more
+• "1 1 1" = fill 1, gap, fill 1, gap, fill 1
+
+🎮 HOW TO PLAY:
+1. Tap "■ Fill" button to turn on fill mode
+2. Tap squares to fill them in black
+3. Tap "✕ Mark" to mark squares you know are empty
+4. Use the numbers as clues to figure out which squares to fill
+
+💡 BEGINNER TIPS:
+• Start with rows/columns that have the biggest numbers
+• If you see "5" in a 5-square row, fill the whole row!
+• Mark empty squares with ✕ so you don't forget
+• Complete rows and columns one at a time
+
+🔄 Made a mistake? Hit the Reset button to start over!`,
   },
 };
 
