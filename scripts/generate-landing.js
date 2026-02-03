@@ -65,6 +65,13 @@ const toolMetadata = {
     type: 'cli-tool',
     hasDeployment: false,
   },
+  'puzzle-games': {
+    name: 'Puzzle Games',
+    description: 'Touch-friendly puzzle games (Sokoban, Word Search, Nonogram) for Theodore, optimized for Daylight Computer e-ink display. Black & white design with large touch targets.',
+    techStack: ['React', 'TypeScript', 'Vite', 'TanStack Router'],
+    type: 'web-app',
+    hasDeployment: true,
+  },
 };
 
 async function checkDeployment(appName) {
