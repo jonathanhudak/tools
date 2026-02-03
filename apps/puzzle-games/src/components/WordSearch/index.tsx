@@ -67,6 +67,9 @@ export function WordSearch() {
   const [startTime, setStartTime] = useState<number>(0);
   const gridRef = useRef<HTMLDivElement>(null);
 
+  // Calculate cell size (needed in callbacks)
+  const cellSize = puzzle ? Math.min(36, Math.floor((window.innerWidth - 64) / puzzle.size)) : 36;
+
   const startNewGame = useCallback(() => {
     const newPuzzle = generatePuzzle(theme.words, difficulty);
     setPuzzle(newPuzzle);
@@ -80,15 +83,35 @@ export function WordSearch() {
     startNewGame();
   }, [startNewGame]);
 
+  const getCellFromPoint = useCallback((clientX: number, clientY: number): { row: number; col: number } | null => {
+    if (!gridRef.current || !puzzle) return null;
+
+    const gridRect = gridRef.current.getBoundingClientRect();
+    const x = clientX - gridRect.left;
+    const y = clientY - gridRect.top;
+
+    const col = Math.floor(x / cellSize);
+    const row = Math.floor(y / cellSize);
+
+    if (row >= 0 && row < puzzle.size && col >= 0 && col < puzzle.size) {
+      return { row, col };
+    }
+
+    return null;
+  }, [puzzle, cellSize]);
+
   const handlePointerDown = (row: number, col: number) => {
     setSelection({ startRow: row, startCol: col, endRow: row, endCol: col });
   };
 
-  const handlePointerMove = (row: number, col: number) => {
-    if (selection) {
-      setSelection({ ...selection, endRow: row, endCol: col });
+  const handleGridPointerMove = useCallback((e: React.PointerEvent) => {
+    if (!selection) return;
+
+    const cell = getCellFromPoint(e.clientX, e.clientY);
+    if (cell) {
+      setSelection({ ...selection, endRow: cell.row, endCol: cell.col });
     }
-  };
+  }, [selection, getCellFromPoint]);
 
   const handlePointerUp = () => {
     if (!selection || !puzzle) {
@@ -113,19 +136,19 @@ export function WordSearch() {
         if (newFoundWords.size === puzzle.placedWords.length) {
           const timeMs = Date.now() - startTime;
           const puzzleId = `${theme.name}-${difficulty}`;
-          
+
           if (currentPlayer) {
             updatePlayerProgress((p) => {
               const newCompleted = p.wordSearch.completed.includes(puzzleId)
                 ? p.wordSearch.completed
                 : [...p.wordSearch.completed, puzzleId];
-              
+
               const currentBest = p.wordSearch.bestTimes[puzzleId] ?? Infinity;
               const newBestTimes = {
                 ...p.wordSearch.bestTimes,
                 [puzzleId]: Math.min(currentBest, timeMs),
               };
-              
+
               return {
                 ...p,
                 wordSearch: { completed: newCompleted, bestTimes: newBestTimes },
@@ -145,7 +168,6 @@ export function WordSearch() {
 
   if (!puzzle) return null;
 
-  const cellSize = Math.min(36, Math.floor((window.innerWidth - 64) / puzzle.size));
   const selectionCells = selection ? getCellsInSelection(selection) : [];
   const selectionSet = new Set(selectionCells.map((c) => `${c.row}-${c.col}`));
 
@@ -173,6 +195,7 @@ export function WordSearch() {
           gridTemplateColumns: `repeat(${puzzle.size}, ${cellSize}px)`,
           touchAction: "none",
         }}
+        onPointerMove={handleGridPointerMove}
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerUp}
       >
@@ -195,7 +218,6 @@ export function WordSearch() {
                   color: isFound ? "var(--cell-found-text)" : "var(--fg)",
                 }}
                 onPointerDown={() => handlePointerDown(rowIndex, colIndex)}
-                onPointerEnter={() => handlePointerMove(rowIndex, colIndex)}
               >
                 {letter}
               </div>
