@@ -1,3 +1,10 @@
+# [1.15.0](https://github.com/jonathanhudak/tools/compare/v1.14.2...v1.15.0) (2026-02-03)
+
+
+### Features
+
+* **puzzle-games:** dark mode, player profiles, and how-to-play ([#46](https://github.com/jonathanhudak/tools/issues/46)) ([df2aff3](https://github.com/jonathanhudak/tools/commit/df2aff331138ab72a37db708dd8f018b2bc34f7c))
+
 ## [1.14.2](https://github.com/jonathanhudak/tools/compare/v1.14.1...v1.14.2) (2026-02-03)
 
 
