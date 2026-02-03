@@ -58,6 +58,13 @@ const toolMetadata = {
     type: 'web-app',
     hasDeployment: true,
   },
+  'puzzle-games': {
+    name: 'Puzzle Games',
+    description: 'Touch-friendly puzzle games (Sokoban, Word Search, Nonogram) for Theodore, optimized for Daylight Computer e-ink display. Black & white design with large touch targets.',
+    techStack: ['React', 'TypeScript', 'Vite', 'TanStack Router'],
+    type: 'web-app',
+    hasDeployment: true,
+  },
   'local-finance': {
     name: 'Local Finance Analyzer',
     description: 'A privacy-first, local-only personal finance CLI tool with AI-powered transaction categorization and HTML reports. All data stays on your machine.',
