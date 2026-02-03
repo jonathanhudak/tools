@@ -13,7 +13,7 @@ interface GameState {
   grid: Cell[][];
   playerPos: Position;
   moves: number;
-  history: Cell[][][];
+  history: { grid: Cell[][]; playerPos: Position }[];
 }
 
 function parseLevel(level: Level): { grid: Cell[][]; playerPos: Position } {
@@ -148,7 +148,7 @@ export function Sokoban() {
         grid: newGrid,
         playerPos: { row: newRow, col: newCol },
         moves: moves + 1,
-        history: [...history, cloneGrid(grid)],
+        history: [...history, { grid: cloneGrid(grid), playerPos }],
       });
 
       if (checkWin(newGrid)) {
@@ -163,17 +163,15 @@ export function Sokoban() {
     if (!gameState || gameState.history.length === 0) return;
 
     const newHistory = [...gameState.history];
-    const previousGrid = newHistory.pop()!;
-
-    // Find player position in previous grid
+    const previousState = newHistory.pop()!;
 
     setGameState({
-      grid: previousGrid,
-      playerPos: findPlayerFromGrid(previousGrid, LEVELS[currentLevelIndex]),
+      grid: previousState.grid,
+      playerPos: previousState.playerPos,
       moves: gameState.moves - 1,
       history: newHistory,
     });
-  }, [gameState, currentLevelIndex]);
+  }, [gameState]);
 
   const handleCellClick = (row: number, col: number) => {
     if (!gameState || won) return;
@@ -312,17 +310,4 @@ export function Sokoban() {
       </div>
     </div>
   );
-}
-
-function findPlayerFromGrid(_grid: Cell[][], level: Level): Position {
-  // Player position must be tracked separately since grid doesn't store it
-  // For undo, we re-parse and simulate forward
-  const lines = level.map.split("\n");
-  for (let row = 0; row < lines.length; row++) {
-    const col = lines[row].indexOf("@");
-    const colPlus = lines[row].indexOf("+");
-    if (col !== -1) return { row, col };
-    if (colPlus !== -1) return { row, col: colPlus };
-  }
-  return { row: 0, col: 0 };
 }

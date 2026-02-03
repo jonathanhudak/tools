@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { PUZZLES, Puzzle, calculateClues } from "./puzzles";
 
 type CellState = "empty" | "filled" | "marked";
@@ -164,7 +164,7 @@ export function Nonogram() {
 
         {/* Rows with clues and cells */}
         {gameState.cells.map((row, rowIndex) => (
-          <>
+          <React.Fragment key={rowIndex}>
             {/* Row clues */}
             <div
               key={`row-${rowIndex}`}
@@ -202,7 +202,7 @@ export function Nonogram() {
                 {cell === "marked" && "✕"}
               </div>
             ))}
-          </>
+          </React.Fragment>
         ))}
       </div>
 
