@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { LEVELS, Level } from "./levels";
+import { HowToPlay } from "../HowToPlay";
 
 type Cell = "wall" | "floor" | "target" | "box" | "boxOnTarget" | "player" | "playerOnTarget";
 type Direction = "up" | "down" | "left" | "right";
@@ -228,7 +229,8 @@ export function Sokoban() {
   const cellSize = Math.min(44, Math.floor((window.innerWidth - 64) / gameState.grid[0].length));
 
   return (
-    <div>
+    <div className="relative">
+      <HowToPlay game="sokoban" />
       <div className="game-header">
         <span>Level {level.id}: {level.name}</span>
         <span>Moves: {gameState.moves}</span>

@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { THEMES, Theme, Difficulty } from "./themes";
 import { generatePuzzle, GeneratedPuzzle, PlacedWord } from "./generator";
+import { HowToPlay } from "../HowToPlay";
 
 interface Selection {
   startRow: number;
@@ -120,7 +121,8 @@ export function WordSearch() {
   const selectionSet = new Set(selectionCells.map((c) => `${c.row}-${c.col}`));
 
   return (
-    <div>
+    <div className="relative">
+      <HowToPlay game="word-search" />
       <div className="game-header">
         <span>{theme.name}</span>
         <span>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { PUZZLES, Puzzle, calculateClues } from "./puzzles";
+import { HowToPlay } from "../HowToPlay";
 
 type CellState = "empty" | "filled" | "marked";
 
@@ -84,7 +85,8 @@ export function Nonogram() {
   const clueSize = Math.min(24, cellSize);
 
   return (
-    <div>
+    <div className="relative">
+      <HowToPlay game="nonogram" />
       <div className="game-header">
         <span>
           {puzzle.id}. {puzzle.name}
