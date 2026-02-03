@@ -10,10 +10,18 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
-  "keywords": ["rsvp", "speed reading", "url", "content", "extractor", "productivity"],
+  "keywords": [
+    "rsvp",
+    "speed reading",
+    "url",
+    "content",
+    "extractor",
+    "productivity"
+  ],
   "author": "Jonathan Hudak",
   "license": "ISC",
   "dependencies": {
+    "@hudak/rsvp-core": "workspace:^",
     "@hudak/ui": "workspace:*",
     "lucide-react": "^0.469.0",
     "react": "^18.3.1",
