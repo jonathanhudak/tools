@@ -72,6 +72,13 @@ const toolMetadata = {
     type: 'cli-tool',
     hasDeployment: false,
   },
+  'audio-visualizer': {
+    name: 'Audio Visualizer',
+    description: 'Create beautiful radial waveform visualizations with complementary color palettes. Upload multiple audio files for stunning visual displays using p5.js graphics.',
+    techStack: ['React', 'TypeScript', 'p5.js', 'chroma.js', 'Vite', 'Tailwind v4'],
+    type: 'web-app',
+    hasDeployment: true,
+  },
 };
 
 async function checkDeployment(appName) {
