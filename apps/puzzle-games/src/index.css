@@ -7,6 +7,12 @@
   --radius: 4px;
 }
 
+.dark {
+  --bg: #000000;
+  --fg: #ffffff;
+  --border: #ffffff;
+}
+
 * {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
@@ -114,6 +120,10 @@ h2 {
 
 .game-cell:active {
   background: #ddd;
+}
+
+.dark .game-cell:active {
+  background: #333;
 }
 
 .link-button {

@@ -6,3 +6,4 @@ export * from "./lib/utils"
 
 // Export hooks
 export * from "./hooks/use-mobile"
+export * from "./hooks/use-theme"
