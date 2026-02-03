@@ -17,6 +17,7 @@ import { Route as rootRoute } from './routes/__root'
 import { Route as WordSearchImport } from './routes/word-search'
 import { Route as SokobanImport } from './routes/sokoban'
 import { Route as NonogramImport } from './routes/nonogram'
+import { Route as CrosswordImport } from './routes/crossword'
 import { Route as IndexImport } from './routes/index'
 
 // Create Virtual Routes
@@ -38,6 +39,11 @@ const NonogramRoute = NonogramImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const CrosswordRoute = CrosswordImport.update({
+  path: '/crossword',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const IndexRoute = IndexImport.update({
   path: '/',
   getParentRoute: () => rootRoute,
@@ -49,6 +55,10 @@ declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
     '/': {
       preLoaderRoute: typeof IndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/crossword': {
+      preLoaderRoute: typeof CrosswordImport
       parentRoute: typeof rootRoute
     }
     '/nonogram': {
@@ -70,6 +80,7 @@ declare module '@tanstack/react-router' {
 
 export const routeTree = rootRoute.addChildren([
   IndexRoute,
+  CrosswordRoute,
   NonogramRoute,
   SokobanRoute,
   WordSearchRoute,
