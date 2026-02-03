@@ -1,3 +1,10 @@
+## [1.14.2](https://github.com/jonathanhudak/tools/compare/v1.14.1...v1.14.2) (2026-02-03)
+
+
+### Bug Fixes
+
+* **puzzle-games:** add TanStack Router basepath for GitHub Pages ([#42](https://github.com/jonathanhudak/tools/issues/42)) ([6760ef7](https://github.com/jonathanhudak/tools/commit/6760ef77c6705f51961aaee0ee1e6744c8091a4c)), closes [#41](https://github.com/jonathanhudak/tools/issues/41)
+
 ## [1.14.1](https://github.com/jonathanhudak/tools/compare/v1.14.0...v1.14.1) (2026-02-03)
 
 
