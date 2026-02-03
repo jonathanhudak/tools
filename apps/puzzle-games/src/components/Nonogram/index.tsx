@@ -29,6 +29,24 @@ function checkWin(gameState: GameState, puzzle: Puzzle): boolean {
   return true;
 }
 
+function isRowComplete(gameState: GameState, puzzle: Puzzle, rowIndex: number): boolean {
+  for (let col = 0; col < gameState.size; col++) {
+    const expected = puzzle.grid[rowIndex][col] === 1;
+    const actual = gameState.cells[rowIndex][col] === "filled";
+    if (expected !== actual) return false;
+  }
+  return true;
+}
+
+function isColComplete(gameState: GameState, puzzle: Puzzle, colIndex: number): boolean {
+  for (let row = 0; row < gameState.size; row++) {
+    const expected = puzzle.grid[row][colIndex] === 1;
+    const actual = gameState.cells[row][colIndex] === "filled";
+    if (expected !== actual) return false;
+  }
+  return true;
+}
+
 export function Nonogram() {
   const { currentPlayer, updatePlayerProgress } = usePlayer();
   
@@ -100,8 +118,9 @@ export function Nonogram() {
 
   const maxRowClues = Math.max(...rowClues.map((r) => r.length));
   const maxColClues = Math.max(...colClues.map((c) => c.length));
-  const cellSize = Math.min(32, Math.floor((window.innerWidth - 64 - maxRowClues * 24) / puzzle.size));
-  const clueSize = Math.min(24, cellSize);
+  // Increased cell size from 32px to 48px for better touch targets (9-year-old friendly)
+  const cellSize = Math.min(48, Math.floor((window.innerWidth - 64 - maxRowClues * 32) / puzzle.size));
+  const clueSize = Math.min(32, cellSize);
   const completedPuzzles = currentPlayer?.nonogram.completed ?? [];
 
   return (
@@ -164,24 +183,30 @@ export function Nonogram() {
         <div style={{ background: "var(--bg)" }} />
 
         {/* Column clues */}
-        {colClues.map((clues, col) => (
-          <div
-            key={`col-${col}`}
-            style={{
-              background: "var(--bg)",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "flex-end",
-              alignItems: "center",
-              fontSize: clueSize * 0.5,
-              padding: 2,
-            }}
-          >
-            {clues.map((clue, i) => (
-              <div key={i}>{clue}</div>
-            ))}
-          </div>
-        ))}
+        {colClues.map((clues, col) => {
+          const isComplete = isColComplete(gameState, puzzle, col);
+          return (
+            <div
+              key={`col-${col}`}
+              style={{
+                background: isComplete ? "var(--cell-found)" : "var(--bg)",
+                color: isComplete ? "var(--cell-found-text)" : "var(--fg)",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "flex-end",
+                alignItems: "center",
+                fontSize: clueSize * 0.5,
+                padding: 2,
+                fontWeight: isComplete ? "bold" : "normal",
+                transition: "all 0.3s ease",
+              }}
+            >
+              {clues.map((clue, i) => (
+                <div key={i}>{clue}</div>
+              ))}
+            </div>
+          );
+        })}
 
         {/* Rows with clues and cells */}
         {gameState.cells.map((row, rowIndex) => (
@@ -190,13 +215,16 @@ export function Nonogram() {
             <div
               key={`row-${rowIndex}`}
               style={{
-                background: "var(--bg)",
+                background: isRowComplete(gameState, puzzle, rowIndex) ? "var(--cell-found)" : "var(--bg)",
+                color: isRowComplete(gameState, puzzle, rowIndex) ? "var(--cell-found-text)" : "var(--fg)",
                 display: "flex",
                 justifyContent: "flex-end",
                 alignItems: "center",
                 gap: 4,
                 fontSize: clueSize * 0.5,
                 padding: "0 4px",
+                fontWeight: isRowComplete(gameState, puzzle, rowIndex) ? "bold" : "normal",
+                transition: "all 0.3s ease",
               }}
             >
               {rowClues[rowIndex].map((clue, i) => (
@@ -217,8 +245,12 @@ export function Nonogram() {
                   alignItems: "center",
                   justifyContent: "center",
                   cursor: "pointer",
-                  fontSize: cellSize * 0.6,
-                  color: "var(--fg)",
+                  fontSize: cellSize * 0.7,
+                  fontWeight: "bold",
+                  color: cell === "filled" ? "var(--cell-found-text)" : "var(--fg)",
+                  border: cell === "empty" ? "1px solid var(--border)" : "none",
+                  transition: "all 0.15s ease",
+                  opacity: cell === "marked" ? 0.6 : 1,
                 }}
               >
                 {cell === "marked" && "✕"}
