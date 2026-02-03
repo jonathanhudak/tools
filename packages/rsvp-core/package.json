@@ -1,0 +1,28 @@
+{
+  "name": "@hudak/rsvp-core",
+  "version": "0.0.1",
+  "type": "module",
+  "description": "Core RSVP reading engine - framework-agnostic TypeScript library for speed reading with ORP highlighting",
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": ["rsvp", "speed reading", "orp", "optimal recognition point"],
+  "author": "Jonathan Hudak",
+  "license": "ISC",
+  "devDependencies": {
+    "@tools/typescript-config": "workspace:*",
+    "tsup": "^8.0.0",
+    "typescript": "^5.9.3"
+  }
+}
