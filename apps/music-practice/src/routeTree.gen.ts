@@ -10,12 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PlayRouteImport } from './routes/play'
+import { Route as ChordScaleRouteImport } from './routes/chord-scale'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 
 const PlayRoute = PlayRouteImport.update({
   id: '/play',
   path: '/play',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChordScaleRoute = ChordScaleRouteImport.update({
+  id: '/chord-scale',
+  path: '/chord-scale',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -32,30 +38,34 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/chord-scale': typeof ChordScaleRoute
   '/play': typeof PlayRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/chord-scale': typeof ChordScaleRoute
   '/play': typeof PlayRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/chord-scale': typeof ChordScaleRoute
   '/play': typeof PlayRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/play'
+  fullPaths: '/' | '/about' | '/chord-scale' | '/play'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/play'
-  id: '__root__' | '/' | '/about' | '/play'
+  to: '/' | '/about' | '/chord-scale' | '/play'
+  id: '__root__' | '/' | '/about' | '/chord-scale' | '/play'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  ChordScaleRoute: typeof ChordScaleRoute
   PlayRoute: typeof PlayRoute
 }
 
@@ -66,6 +76,13 @@ declare module '@tanstack/react-router' {
       path: '/play'
       fullPath: '/play'
       preLoaderRoute: typeof PlayRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/chord-scale': {
+      id: '/chord-scale'
+      path: '/chord-scale'
+      fullPath: '/chord-scale'
+      preLoaderRoute: typeof ChordScaleRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -88,6 +105,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  ChordScaleRoute: ChordScaleRoute,
   PlayRoute: PlayRoute,
 }
 export const routeTree = rootRouteImport
