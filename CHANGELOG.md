@@ -1,3 +1,10 @@
+# [1.14.0](https://github.com/jonathanhudak/tools/compare/v1.13.0...v1.14.0) (2026-02-03)
+
+
+### Features
+
+* Puzzle Games App (Sokoban, Word Search, Nonogram) ([#38](https://github.com/jonathanhudak/tools/issues/38)) ([58dfabd](https://github.com/jonathanhudak/tools/commit/58dfabd8e9ef2bd4b148ec2642d591f34f2be3f7)), closes [#35](https://github.com/jonathanhudak/tools/issues/35) [#36](https://github.com/jonathanhudak/tools/issues/36) [#37](https://github.com/jonathanhudak/tools/issues/37)
+
 # [1.13.0](https://github.com/jonathanhudak/tools/compare/v1.12.0...v1.13.0) (2026-02-03)
 
 
