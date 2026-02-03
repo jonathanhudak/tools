@@ -102,7 +102,7 @@ export function normalizeAmplitude(data: number[] | Float32Array): number[] {
  * Extracts frequency data from an audio buffer using FFT
  */
 export function extractFrequencyData(
-  audioContext: AudioContext,
+  _audioContext: AudioContext,
   audioBuffer: AudioBuffer,
   fftSize: number = 2048
 ): Uint8Array {
