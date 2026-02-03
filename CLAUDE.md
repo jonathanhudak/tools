@@ -710,6 +710,330 @@ src/
 
 ---
 
+## Workflow Orchestration for AI Agents
+
+> **For AI Agents**: This section outlines the workflow orchestration principles and strategies for working effectively on this codebase.
+
+### Core Principles
+
+#### Simplicity First
+
+- **Prefer minimal solutions**: Choose the simplest approach that solves the problem
+- **Avoid over-engineering**: Don't add features, abstractions, or complexity that isn't explicitly needed
+- **Question complexity**: If a solution feels complex, step back and find a simpler path
+- **Incremental improvements**: Make small, focused changes rather than large refactors
+
+```typescript
+// ❌ Over-engineered
+class ConfigurationManager {
+  private static instance: ConfigurationManager;
+  private config: Map<string, unknown>;
+
+  private constructor() {
+    this.config = new Map();
+  }
+
+  static getInstance(): ConfigurationManager {
+    if (!ConfigurationManager.instance) {
+      ConfigurationManager.instance = new ConfigurationManager();
+    }
+    return ConfigurationManager.instance;
+  }
+
+  set(key: string, value: unknown): void {
+    this.config.set(key, value);
+  }
+
+  get<T>(key: string): T | undefined {
+    return this.config.get(key) as T | undefined;
+  }
+}
+
+// ✅ Simple and sufficient
+const config = {
+  maxRetries: 3,
+  timeout: 5000,
+} as const;
+```
+
+#### No Laziness
+
+- **Complete implementations**: Never use placeholders, TODOs, or stub implementations
+- **Write real code**: Every function must have a complete, working implementation
+- **No shortcuts**: Avoid cutting corners or deferring work to "later"
+- **Test as you go**: Verify functionality immediately, don't defer testing
+
+```typescript
+// ❌ Lazy implementation
+async function processData(data: Data): Promise<Result> {
+  // TODO: Implement data processing
+  throw new Error('Not implemented');
+}
+
+// ✅ Complete implementation
+async function processData(data: Data): Promise<Result> {
+  const validated = validateData(data);
+  const transformed = transformData(validated);
+  return await saveResult(transformed);
+}
+```
+
+#### Minimal Impact
+
+- **Surgical changes**: Modify only what's necessary to achieve the goal
+- **Preserve working code**: Don't refactor or "improve" code that isn't broken
+- **Respect existing patterns**: Follow the established conventions in the codebase
+- **Avoid scope creep**: Stick to the task at hand, don't expand the scope
+
+```typescript
+// Task: Add error logging to the save function
+
+// ❌ Too much impact - unnecessary refactoring
+async function saveData(data: Data): Promise<void> {
+  // Refactored entire function to use new patterns
+  try {
+    const repository = new DataRepository();
+    const entity = DataMapper.toEntity(data);
+    await repository.save(entity);
+    logger.info('Data saved successfully');
+  } catch (error) {
+    logger.error('Failed to save data', error);
+    throw error;
+  }
+}
+
+// ✅ Minimal impact - only adds logging
+async function saveData(data: Data): Promise<void> {
+  try {
+    await database.save(data);
+    console.error('Data saved successfully'); // Added
+  } catch (error) {
+    console.error('Failed to save data:', error); // Added
+    throw error;
+  }
+}
+```
+
+### Workflow Orchestration Strategies
+
+#### Plan Mode
+
+Use plan mode for complex tasks that require:
+- Multiple file modifications
+- Architectural decisions
+- Understanding unfamiliar code
+- Coordinating changes across the codebase
+
+**When to use plan mode:**
+```
+✅ Adding a new feature with multiple components
+✅ Refactoring a significant portion of code
+✅ Implementing a complex algorithm
+✅ Making changes that affect multiple systems
+
+❌ Fixing a simple typo
+❌ Adding a single function
+❌ Updating documentation
+❌ Making trivial configuration changes
+```
+
+**Plan mode workflow:**
+1. **Explore**: Use Glob/Grep to understand the codebase structure
+2. **Design**: Create a step-by-step plan with clear objectives
+3. **Review**: Present the plan for approval
+4. **Execute**: Implement the plan methodically
+5. **Verify**: Test and validate each step
+
+#### Subagent Strategy
+
+Delegate specialized tasks to focused subagents:
+
+- **Explore agent**: For finding files, searching code, understanding architecture
+- **General-purpose agent**: For complex multi-step research tasks
+- **Task agent**: For autonomous execution of well-defined tasks
+
+**Example delegation:**
+```markdown
+Task: Optimize database queries in the API layer
+
+Main agent:
+1. Use Explore agent to find all API endpoints
+2. Use Grep to identify database query patterns
+3. Use Task agent to implement query optimizations
+4. Verify improvements with benchmarks
+```
+
+#### Self-Improvement Loop
+
+Continuously refine your approach:
+
+1. **Execute**: Implement the current task
+2. **Observe**: Note what worked well and what didn't
+3. **Reflect**: Identify patterns and anti-patterns
+4. **Adapt**: Adjust your approach for the next task
+5. **Document**: Record lessons learned in `tasks/lessons.md`
+
+**Example reflection:**
+```markdown
+## Lesson: Always read the full file before editing
+
+### What happened:
+Made an edit to a function without reading the entire file, missed that
+the function was called with different parameter types in other locations.
+
+### Impact:
+Introduced a type error that broke the build.
+
+### Improvement:
+Always use Read tool to view the complete file before making edits.
+Check for all usages with Grep when modifying function signatures.
+```
+
+#### Verification Strategy
+
+Always verify changes before marking tasks complete:
+
+**Pre-commit verification:**
+- [ ] Code compiles/builds without errors
+- [ ] Type checking passes (`pnpm run typecheck`)
+- [ ] Linting passes (`pnpm run lint`)
+- [ ] Tests pass (if applicable)
+- [ ] Changes match the original request
+- [ ] No unintended side effects
+
+**Post-commit verification:**
+- [ ] CI/CD pipeline succeeds
+- [ ] Deployed changes work as expected
+- [ ] No regressions in existing functionality
+
+#### Demand Elegance
+
+Strive for code that is:
+- **Readable**: Clear variable names, logical structure
+- **Maintainable**: Easy to modify and extend
+- **Robust**: Handles edge cases and errors gracefully
+- **Efficient**: Performs well without premature optimization
+
+```typescript
+// ❌ Not elegant
+const f = (d: any) => {
+  let r = [];
+  for (let i = 0; i < d.length; i++) {
+    if (d[i].t === 'a' && d[i].v > 10) {
+      r.push(d[i]);
+    }
+  }
+  return r;
+};
+
+// ✅ Elegant
+function filterActiveItems(items: Item[]): Item[] {
+  return items.filter(item =>
+    item.type === 'active' && item.value > 10
+  );
+}
+```
+
+#### Autonomous Bug Fixing
+
+When you encounter errors:
+
+1. **Read the error**: Understand the complete error message and stack trace
+2. **Locate the cause**: Use Grep/Read to find the source of the issue
+3. **Fix immediately**: Don't defer or report back - fix it
+4. **Verify the fix**: Rebuild and test to ensure it's resolved
+5. **Continue**: Resume the original task
+
+**Example workflow:**
+```markdown
+Task: Add new API endpoint
+
+1. Create endpoint handler [Done]
+2. Add routing [Done]
+3. Run build
+   → Error: Type 'string' is not assignable to type 'number'
+   → Fixed: Corrected type in request validator
+   → Re-run build: Success
+4. Add tests [In Progress]
+```
+
+### Task Management Workflow
+
+#### Using TodoWrite
+
+Use the TodoWrite tool to:
+- Track multi-step tasks
+- Maintain focus and context
+- Provide transparency to users
+- Avoid forgetting critical steps
+
+**Best practices:**
+```markdown
+✅ Break down tasks into specific, actionable items
+✅ Mark tasks in_progress before starting them
+✅ Complete tasks immediately after finishing
+✅ Add new tasks as you discover them
+✅ Remove tasks that are no longer relevant
+
+❌ Don't batch completions (mark done immediately)
+❌ Don't leave tasks in_progress when switching
+❌ Don't mark incomplete work as complete
+❌ Don't create vague tasks like "Fix everything"
+```
+
+**Example task list:**
+```markdown
+- [x] Read existing authentication code
+- [x] Design JWT token structure
+- [ ] Implement token generation
+- [ ] Add token validation middleware
+- [ ] Update login endpoint
+- [ ] Add refresh token logic
+- [ ] Write authentication tests
+- [ ] Update API documentation
+```
+
+#### Task Breakdown Strategy
+
+**Complex task → Small, manageable steps:**
+
+```markdown
+Task: Implement user authentication
+
+Too broad:
+- [ ] Add authentication
+
+Better breakdown:
+- [ ] Install JWT library
+- [ ] Create token generation utility
+- [ ] Add password hashing function
+- [ ] Create authentication middleware
+- [ ] Update user model with password field
+- [ ] Add login endpoint
+- [ ] Add logout endpoint
+- [ ] Add password reset flow
+- [ ] Write unit tests for auth utilities
+- [ ] Write integration tests for auth endpoints
+- [ ] Update API documentation
+```
+
+#### Progress Tracking
+
+Update task status in real-time:
+
+- **pending**: Task not started
+- **in_progress**: Currently working on (only ONE at a time)
+- **completed**: Finished and verified
+
+**Workflow:**
+1. Start task → Mark as `in_progress`
+2. Complete task → Immediately mark as `completed`
+3. Discover new requirement → Add as `pending`
+4. Hit blocker → Add subtask to resolve blocker
+5. Finish all tasks → Provide summary
+
+---
+
 ## Migration Plan: React + Vite + Turborepo
 
 ### Goals
