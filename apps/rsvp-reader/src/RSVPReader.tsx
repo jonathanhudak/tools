@@ -1,5 +1,7 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Play, Pause, SkipBack, SkipForward, RotateCcw, Type } from 'lucide-react';
+import { splitWordByORP, calculateORPShift } from '@hudak/rsvp-core';
+import { useRSVPEngine } from './hooks/useRSVPEngine';
 import { AVAILABLE_FONTS, getDefaultFont, getFontById } from './fonts/fontConfig';
 import { loadFont } from './fonts/fontLoader';
 import type { FontConfig } from './fonts/fontConfig';
@@ -10,23 +12,26 @@ interface RSVPReaderProps {
 }
 
 export default function RSVPReader({ text, onClose }: RSVPReaderProps) {
-  const [words, setWords] = useState<string[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
   const [wpm, setWpm] = useState(400);
   const [fontSize, setFontSize] = useState(100); // Font size percentage (100 = default)
   const [selectedFont, setSelectedFont] = useState<FontConfig>(getDefaultFont());
   const [isFontLoading, setIsFontLoading] = useState(false);
-  const intervalRef = useRef<number | null>(null);
 
-  // Split text into words on component mount
-  useEffect(() => {
-    const wordArray = text
-      .split(/\s+/)
-      .filter(word => word.length > 0);
-    setWords(wordArray);
-    setCurrentIndex(0);
-  }, [text]);
+  // Use the RSVP engine hook
+  const {
+    currentIndex,
+    currentWord,
+    isPlaying,
+    wordCount,
+    togglePlayPause,
+    skipForward,
+    skipBackward,
+    restart,
+    updateConfig,
+  } = useRSVPEngine({
+    text,
+    initialConfig: { wpm },
+  });
 
   // Load saved font preference and initialize font
   useEffect(() => {
@@ -43,85 +48,23 @@ export default function RSVPReader({ text, onClose }: RSVPReaderProps) {
     }
   }, []);
 
-  // Calculate ORP (Optimal Recognition Point) index for a word
-  // Returns both the ORP index and the clean word for proper alignment
-  const getORPInfo = (word: string): { orpIndex: number; leadingPunctCount: number } => {
-    // Find leading punctuation
-    const leadingMatch = word.match(/^[^\w]+/);
-    const leadingPunctCount = leadingMatch ? leadingMatch[0].length : 0;
-
-    // Remove leading/trailing punctuation for ORP calculation
-    const cleanWord = word.replace(/^[^\w]+|[^\w]+$/g, '');
-    if (cleanWord.length === 0) {
-      return { orpIndex: 0, leadingPunctCount: 0 };
-    }
-
-    // ORP is typically at 1/3 of the word length (floored)
-    // For "example" (7 letters), ORP is at index 2 (the 'a')
-    const cleanOrpIndex = Math.floor(cleanWord.length / 3);
-
-    // Adjust for leading punctuation to get the correct index in the original word
-    const actualOrpIndex = cleanOrpIndex + leadingPunctCount;
-
-    return { orpIndex: actualOrpIndex, leadingPunctCount };
-  };
-
-  // Calculate delay based on word characteristics
-  const getWordDelay = useCallback((word: string): number => {
-    const baseDelay = 60000 / wpm; // milliseconds per word
-
-    // Check for punctuation at the end
-    const hasPeriod = /[.!?]$/.test(word);
-    const hasComma = /[,;:]$/.test(word);
-
-    // Longer pause for sentence endings
-    if (hasPeriod) return baseDelay * 2.5;
-    // Medium pause for commas
-    if (hasComma) return baseDelay * 1.5;
-
-    // Default delay
-    return baseDelay;
-  }, [wpm]);
-
-  // Playback effect
+  // Update engine config when WPM changes
   useEffect(() => {
-    if (!isPlaying || currentIndex >= words.length) {
-      if (intervalRef.current) {
-        clearTimeout(intervalRef.current);
-        intervalRef.current = null;
-      }
-      if (currentIndex >= words.length && isPlaying) {
-        setIsPlaying(false);
-      }
-      return;
-    }
-
-    const currentWord = words[currentIndex];
-    const delay = getWordDelay(currentWord);
-
-    intervalRef.current = window.setTimeout(() => {
-      setCurrentIndex(prev => prev + 1);
-    }, delay);
-
-    return () => {
-      if (intervalRef.current) {
-        clearTimeout(intervalRef.current);
-      }
-    };
-  }, [isPlaying, currentIndex, words, getWordDelay]);
+    updateConfig({ wpm });
+  }, [wpm, updateConfig]);
 
   // Keyboard controls
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (e.code === 'Space') {
         e.preventDefault();
-        setIsPlaying(prev => !prev);
+        togglePlayPause();
       } else if (e.code === 'ArrowLeft') {
         e.preventDefault();
-        setCurrentIndex(prev => Math.max(0, prev - 1));
+        skipBackward(1);
       } else if (e.code === 'ArrowRight') {
         e.preventDefault();
-        setCurrentIndex(prev => Math.min(words.length - 1, prev + 1));
+        skipForward(1);
       } else if (e.code === 'Escape') {
         e.preventDefault();
         onClose();
@@ -130,27 +73,7 @@ export default function RSVPReader({ text, onClose }: RSVPReaderProps) {
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [words.length, onClose]);
-
-  const togglePlayPause = () => {
-    if (currentIndex >= words.length) {
-      setCurrentIndex(0);
-    }
-    setIsPlaying(!isPlaying);
-  };
-
-  const restart = () => {
-    setCurrentIndex(0);
-    setIsPlaying(false);
-  };
-
-  const skipBackward = () => {
-    setCurrentIndex(prev => Math.max(0, prev - 10));
-  };
-
-  const skipForward = () => {
-    setCurrentIndex(prev => Math.min(words.length - 1, prev + 10));
-  };
+  }, [onClose, togglePlayPause, skipBackward, skipForward]);
 
   const handleFontChange = async (fontId: string) => {
     const font = getFontById(fontId);
@@ -168,20 +91,10 @@ export default function RSVPReader({ text, onClose }: RSVPReaderProps) {
     }
   };
 
-  const currentWord = words[currentIndex] || '';
-  const { orpIndex } = getORPInfo(currentWord);
-
-  // Split word into three parts: before ORP, ORP letter, after ORP
-  const beforeORP = currentWord.slice(0, orpIndex);
-  const orpLetter = currentWord[orpIndex] || '';
-  const afterORP = currentWord.slice(orpIndex + 1);
-
-  // Calculate transform to center the ORP letter
-  // Formula: shift = (wordLength / 2) - orpIndex - 0.5
-  // The -0.5 accounts for character center positioning
-  const transformShift = (currentWord.length / 2) - orpIndex - 0.5;
-
-  const progress = words.length > 0 ? (currentIndex / words.length) * 100 : 0;
+  // Use core library functions for ORP calculation
+  const wordParts = splitWordByORP(currentWord);
+  const transformShift = calculateORPShift(currentWord, wordParts.beforeORP.length);
+  const progress = wordCount > 0 ? (currentIndex / wordCount) * 100 : 0;
 
   return (
     <div className="fixed inset-0 bg-background z-50 flex flex-col">
@@ -199,7 +112,7 @@ export default function RSVPReader({ text, onClose }: RSVPReaderProps) {
             <div className="text-center flex-1">
               <h2 className="text-lg font-semibold text-foreground">RSVP Reader</h2>
               <p className="text-sm text-muted-foreground">
-                {currentIndex + 1} / {words.length} words
+                {currentIndex + 1} / {wordCount} words
               </p>
             </div>
             {/* Spacer for symmetry */}
@@ -298,9 +211,9 @@ export default function RSVPReader({ text, onClose }: RSVPReaderProps) {
                   transition: 'none', // No transitions to prevent jiggle
                   willChange: 'transform', // Optimize for transform changes
                 }}>
-                  <span className="text-foreground">{beforeORP}</span>
-                  <span className="text-red-600 dark:text-red-500">{orpLetter}</span>
-                  <span className="text-foreground">{afterORP}</span>
+                  <span className="text-foreground">{wordParts.beforeORP}</span>
+                  <span className="text-red-600 dark:text-red-500">{wordParts.orpLetter}</span>
+                  <span className="text-foreground">{wordParts.afterORP}</span>
                 </span>
               </div>
             ) : (
