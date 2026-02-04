@@ -79,6 +79,13 @@ const toolMetadata = {
     type: 'web-app',
     hasDeployment: true,
   },
+  'gap-scanner': {
+    name: 'Gap Scanner CLI',
+    description: 'Pre-market gap scanner for Gap & Go trading strategy using Finnhub API. Scan stocks for significant gaps with customizable filters (gap %, volume, float, price range). Features watch mode and JSON export.',
+    techStack: ['TypeScript', 'Node.js', 'Commander.js', 'Finnhub API'],
+    type: 'cli-tool',
+    hasDeployment: false,
+  },
 };
 
 async function checkDeployment(appName) {
