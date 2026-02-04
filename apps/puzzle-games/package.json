@@ -5,9 +5,10 @@
   "description": "Touch-friendly puzzle games for Theodore. Black and white design optimized for Daylight Computer e-ink display.",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "node generate-icons.js && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "generate-icons": "node generate-icons.js"
   },
   "keywords": ["puzzles", "sokoban", "word-search", "nonogram", "touch-friendly"],
   "author": "Jonathan Hudak",
@@ -27,6 +28,7 @@
     "@types/react-dom": "^18.3.1",
     "typescript": "^5.9.3",
     "vite": "^6.3.5",
+    "vite-plugin-pwa": "^0.21.1",
     "vite-tsconfig-paths": "^5.1.4",
     "@vitejs/plugin-react": "^4.5.2"
   }
