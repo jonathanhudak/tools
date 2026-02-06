@@ -1,3 +1,17 @@
+# [1.17.0](https://github.com/jonathanhudak/tools/compare/v1.16.0...v1.17.0) (2026-02-06)
+
+
+### Bug Fixes
+
+* **puzzle-games:** PWA files deployment and CommonJS icon script ([#66](https://github.com/jonathanhudak/tools/issues/66)) ([9b5674c](https://github.com/jonathanhudak/tools/commit/9b5674c53632e2323548978fee3246fe93af4ccd))
+* rename generate-icons.js to .cjs for CommonJS compatibility ([#65](https://github.com/jonathanhudak/tools/issues/65)) ([495e9f5](https://github.com/jonathanhudak/tools/commit/495e9f502175a292827e5809b34576dafe89889b))
+
+
+### Features
+
+* **gap-scanner:** add Phase 1 CLI tool with Finnhub API ([#63](https://github.com/jonathanhudak/tools/issues/63)) ([c1f7c1c](https://github.com/jonathanhudak/tools/commit/c1f7c1cdd1aa838489fb7a71ba646f3e88014b0b)), closes [#22](https://github.com/jonathanhudak/tools/issues/22)
+* **puzzle-games:** add PWA support with offline capability ([#62](https://github.com/jonathanhudak/tools/issues/62)) ([cfbf0a9](https://github.com/jonathanhudak/tools/commit/cfbf0a9a7865fec08ddda3761de6b9e37fafd67a)), closes [#61](https://github.com/jonathanhudak/tools/issues/61)
+
 # [1.16.0](https://github.com/jonathanhudak/tools/compare/v1.15.0...v1.16.0) (2026-02-03)
 
 
