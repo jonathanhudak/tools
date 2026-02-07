@@ -1,3 +1,10 @@
+# [1.18.0](https://github.com/jonathanhudak/tools/compare/v1.17.0...v1.18.0) (2026-02-07)
+
+
+### Features
+
+* enable experimental agent teams in Claude Code settings ([#67](https://github.com/jonathanhudak/tools/issues/67)) ([1069dab](https://github.com/jonathanhudak/tools/commit/1069dabe540ece07cccf608c37ec637bfb92a132))
+
 # [1.17.0](https://github.com/jonathanhudak/tools/compare/v1.16.0...v1.17.0) (2026-02-06)
 
 
