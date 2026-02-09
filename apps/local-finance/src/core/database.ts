@@ -321,6 +321,21 @@ export function getRule(database: Database.Database, id: string): Categorization
   return row ? mapRowToRule(row) : null;
 }
 
+export function listAllRules(database: Database.Database): CategorizationRule[] {
+  const rows = database
+    .prepare('SELECT * FROM categorization_rules ORDER BY priority DESC')
+    .all() as Record<string, unknown>[];
+  return rows.map(mapRowToRule);
+}
+
+export function deleteRule(database: Database.Database, id: string): void {
+  database.prepare('DELETE FROM categorization_rules WHERE id = ?').run(id);
+}
+
+export function updateRuleStatus(database: Database.Database, id: string, isActive: boolean): void {
+  database.prepare('UPDATE categorization_rules SET is_active = ? WHERE id = ?').run(isActive ? 1 : 0, id);
+}
+
 function mapRowToRule(row: Record<string, unknown>): CategorizationRule {
   return {
     id: row.id as string,

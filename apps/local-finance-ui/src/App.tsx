@@ -7,6 +7,8 @@ import {
   RefreshCw,
   Landmark,
   BarChart3,
+  Settings,
+  Upload,
   Sun,
   Moon,
 } from 'lucide-react'
@@ -18,6 +20,8 @@ import Accounts from '@/pages/Accounts'
 import Reports from '@/pages/Reports'
 import RecurringPayments from '@/pages/RecurringPayments'
 import AccountDetail from '@/pages/AccountDetail'
+import Rules from '@/pages/Rules'
+import Import from '@/pages/Import'
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -26,6 +30,8 @@ const navItems = [
   { to: '/recurring', label: 'Recurring', icon: RefreshCw },
   { to: '/accounts', label: 'Accounts', icon: Landmark },
   { to: '/reports', label: 'Reports', icon: BarChart3 },
+  { to: '/rules', label: 'Rules', icon: Settings },
+  { to: '/import', label: 'Import', icon: Upload },
 ]
 
 export default function App() {
@@ -100,6 +106,8 @@ export default function App() {
           <Route path="/accounts" element={<Accounts />} />
           <Route path="/accounts/:accountId" element={<AccountDetail />} />
           <Route path="/reports" element={<Reports />} />
+          <Route path="/rules" element={<Rules />} />
+          <Route path="/import" element={<Import />} />
         </Routes>
       </main>
     </div>

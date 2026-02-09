@@ -1,4 +1,4 @@
-import { ipcMain } from 'electron'
+import { ipcMain, dialog } from 'electron'
 import type Database from 'better-sqlite3'
 import {
   getDatabase,
@@ -13,7 +13,16 @@ import {
   getMerchantSummary,
   updateTransactionCategory,
   updateTransactionMerchant,
+  transactionExists,
+  insertTransaction,
+  createImport,
+  createAccount,
+  listAllRules,
+  createRule,
+  deleteRule,
+  updateRuleStatus,
 } from '../../local-finance/src/core/database'
+import { parseCSVFile, generateImportHash } from '../../local-finance/src/import/csv-parser'
 import {
   getAllBudgets,
   getBudget as getBudgetById,
@@ -31,7 +40,7 @@ import {
   getBudgetVsActual,
   suggestAllocations,
 } from '../../local-finance/src/core/budget'
-import { generateYearReport } from '../../local-finance/src/insights/engine'
+import { generateYearReport, generateSpendingSummary, generateRuleBasedInsights } from '../../local-finance/src/insights/engine'
 import { getDatabasePath, ensureDataDir } from '../../local-finance/src/core/config'
 import type { TransactionFilters } from './preload'
 
@@ -210,5 +219,121 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle('snapshots:latest', (_event, accountId: string) => {
     return getLatestSnapshot(getDb(), accountId)
+  })
+
+  // ─── Insights methods ────────────────────────────────────────
+  ipcMain.handle('insights:spending-summary', (_event, year: number, month?: number) => {
+    return generateSpendingSummary(getDb(), year, month)
+  })
+
+  ipcMain.handle('insights:generate', (_event, year: number) => {
+    const report = generateYearReport(getDb(), year)
+    return generateRuleBasedInsights(report)
+  })
+
+  // ─── Categorization Rules methods ───────────────────────────
+  ipcMain.handle('rules:list', () => {
+    return listAllRules(getDb())
+  })
+
+  ipcMain.handle('rules:create', (_event, pattern: string, matchType: string, categoryId: string, priority: number) => {
+    return createRule(getDb(), pattern, matchType as 'contains' | 'regex' | 'exact', categoryId, priority)
+  })
+
+  ipcMain.handle('rules:delete', (_event, id: string) => {
+    deleteRule(getDb(), id)
+    return { success: true }
+  })
+
+  ipcMain.handle('rules:toggle', (_event, id: string, isActive: boolean) => {
+    updateRuleStatus(getDb(), id, isActive)
+    return { success: true }
+  })
+
+  // ─── CSV Import methods ────────────────────────────────────
+  ipcMain.handle('import:open-file-dialog', async () => {
+    const result = await dialog.showOpenDialog({
+      properties: ['openFile'],
+      filters: [{ name: 'CSV', extensions: ['csv'] }],
+    })
+    if (result.canceled || result.filePaths.length === 0) return null
+    return result.filePaths[0]
+  })
+
+  ipcMain.handle('import:parse-file', (_event, filePath: string) => {
+    const result = parseCSVFile(filePath)
+    return {
+      transactions: result.transactions.map(tx => ({
+        date: tx.date.toISOString().split('T')[0],
+        description: tx.description,
+        amount: tx.amount,
+        rawRow: tx.rawRow,
+      })),
+      detectedProfile: result.detectedProfile
+        ? { id: result.detectedProfile.id, name: result.detectedProfile.name }
+        : null,
+      errors: result.errors,
+      totalRows: result.totalRows,
+    }
+  })
+
+  ipcMain.handle('import:check-duplicates', (_event, transactions: { date: string; description: string; amount: number; accountId: string }[]) => {
+    const database = getDb()
+    return transactions.map(tx => {
+      const hash = generateImportHash(new Date(tx.date), tx.description, tx.amount, tx.accountId)
+      return transactionExists(database, hash)
+    })
+  })
+
+  ipcMain.handle('import:execute', (_event, payload: {
+    transactions: { date: string; description: string; amount: number; rawRow: Record<string, string> }[]
+    accountId: string
+    filename: string
+  }) => {
+    const database = getDb()
+    let imported = 0
+    let skipped = 0
+
+    for (const tx of payload.transactions) {
+      const date = new Date(tx.date)
+      const hash = generateImportHash(date, tx.description, tx.amount, payload.accountId)
+
+      if (transactionExists(database, hash)) {
+        skipped++
+        continue
+      }
+
+      insertTransaction(database, {
+        accountId: payload.accountId,
+        date,
+        description: tx.description,
+        normalizedMerchant: null,
+        amount: tx.amount,
+        categoryId: null,
+        categorySource: null,
+        categoryConfidence: null,
+        isRecurring: false,
+        recurringId: null,
+        notes: null,
+        rawCsvRow: JSON.stringify(tx.rawRow),
+        importHash: hash,
+      })
+      imported++
+    }
+
+    createImport(database, {
+      filename: payload.filename,
+      bankProfile: null,
+      accountId: payload.accountId,
+      rowCount: payload.transactions.length,
+      importedCount: imported,
+      skippedCount: skipped,
+    })
+
+    return { imported, skipped }
+  })
+
+  ipcMain.handle('import:create-account', (_event, name: string, institution: string, type: string) => {
+    return createAccount(getDb(), name, institution, type as 'checking' | 'savings' | 'credit' | 'brokerage')
   })
 }

@@ -5,6 +5,9 @@ import {
   TrendingUp,
   CreditCard,
   Wallet,
+  Lightbulb,
+  AlertTriangle,
+  Info,
 } from 'lucide-react'
 import {
   BarChart,
@@ -36,6 +39,31 @@ function formatCurrency(value: number): string {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   })
+}
+
+function classifyInsight(text: string): {
+  icon: React.ElementType
+  iconColor: string
+  bg: string
+} {
+  const lower = text.toLowerCase()
+  if (
+    lower.includes('great job') ||
+    lower.includes('saved') && !lower.includes('consider')
+  ) {
+    return { icon: TrendingUp, iconColor: 'text-emerald-600', bg: 'bg-emerald-50' }
+  }
+  if (
+    lower.includes('unusually high') ||
+    lower.includes('spent more than you earned') ||
+    lower.includes('consider reviewing')
+  ) {
+    return { icon: AlertTriangle, iconColor: 'text-amber-600', bg: 'bg-amber-50' }
+  }
+  if (lower.includes('subscription') || lower.includes('recurring')) {
+    return { icon: TrendingDown, iconColor: 'text-rose-500', bg: 'bg-rose-50' }
+  }
+  return { icon: Info, iconColor: 'text-blue-500', bg: 'bg-blue-50' }
 }
 
 function StatCard({
@@ -107,6 +135,14 @@ interface CatSummary {
   count: number
 }
 
+interface SpendingSummary {
+  period: string
+  totalIncome: number
+  totalExpenses: number
+  byCategory: { categoryId: string; categoryName: string; amount: number }[]
+  topMerchants: { merchant: string; amount: number; count: number }[]
+}
+
 interface Budget {
   id: string
   name: string
@@ -143,6 +179,13 @@ export default function Dashboard() {
     currentYear,
   )
   const { data: budgets } = useIPC<Budget[]>('getBudgets')
+  const { data: insights, loading: insightsLoading } = useIPC<string[]>(
+    'getInsights',
+    currentYear,
+  )
+  const currentMonth = now.getMonth() + 1
+  const { data: spendingSummary, loading: summaryLoading } =
+    useIPC<SpendingSummary>('getSpendingSummary', currentYear, currentMonth)
 
   const [monthTxns, setMonthTxns] = useState<Transaction[] | null>(null)
   const [recentTxns, setRecentTxns] = useState<Transaction[] | null>(null)
@@ -369,6 +412,59 @@ export default function Dashboard() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Insights */}
+      <div className="rounded-xl bg-white p-5 shadow-sm border border-border mb-8">
+        <div className="flex items-center gap-2 mb-4">
+          <Lightbulb size={20} className="text-amber-500" />
+          <h2 className="text-lg font-semibold text-slate-900">Insights</h2>
+        </div>
+
+        {/* Spending summary one-liner */}
+        {summaryLoading ? (
+          <div className="h-5 bg-slate-100 rounded w-64 animate-pulse mb-4" />
+        ) : spendingSummary ? (
+          <p className="text-sm text-slate-600 mb-4">
+            You spent {formatCurrency(Math.abs(spendingSummary.totalExpenses))} in{' '}
+            {spendingSummary.period}, earning{' '}
+            {formatCurrency(spendingSummary.totalIncome)} in income.
+          </p>
+        ) : null}
+
+        {/* Insight cards */}
+        {insightsLoading ? (
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="h-12 bg-slate-100 rounded-lg animate-pulse"
+              />
+            ))}
+          </div>
+        ) : !insights || insights.length === 0 ? (
+          <div className="text-sm text-slate-400 py-6 text-center">
+            No insights available yet. Add more transactions to see spending patterns.
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {insights.map((text, i) => {
+              const sentiment = classifyInsight(text)
+              return (
+                <div
+                  key={i}
+                  className={`flex items-start gap-3 rounded-lg px-4 py-3 ${sentiment.bg}`}
+                >
+                  <sentiment.icon
+                    size={16}
+                    className={`mt-0.5 shrink-0 ${sentiment.iconColor}`}
+                  />
+                  <span className="text-sm text-slate-700">{text}</span>
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
 
       {/* Recent Transactions */}
