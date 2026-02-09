@@ -12,6 +12,7 @@ import {
 import { cn } from '@/lib/utils'
 import { AmountDisplay } from './AmountDisplay'
 import { CategoryBadge } from './CategoryBadge'
+import { useToast } from './Toast'
 
 interface Transaction {
   id: string
@@ -86,6 +87,7 @@ export function TransactionDetail({
   onClose,
   onUpdate,
 }: TransactionDetailProps) {
+  const { toast } = useToast()
   const [editingMerchant, setEditingMerchant] = useState(false)
   const [merchantValue, setMerchantValue] = useState(
     transaction.normalizedMerchant || transaction.description,
@@ -136,9 +138,10 @@ export function TransactionDetail({
         transaction.id,
         newCategoryId,
       )
+      toast('Category updated', 'success')
       onUpdate()
     } catch {
-      // revert on error
+      toast('Failed to update category', 'error')
       setSelectedCategoryId(transaction.categoryId || '')
     }
   }
@@ -155,13 +158,15 @@ export function TransactionDetail({
     }
     try {
       await window.api.updateTransactionMerchant(transaction.id, trimmed)
+      toast('Merchant updated', 'success')
       onUpdate()
     } catch {
+      toast('Failed to update merchant', 'error')
       setMerchantValue(transaction.normalizedMerchant || transaction.description)
     } finally {
       savingRef.current = false
     }
-  }, [merchantValue, transaction.id, transaction.normalizedMerchant, transaction.description, onUpdate])
+  }, [merchantValue, transaction.id, transaction.normalizedMerchant, transaction.description, onUpdate, toast])
 
   const handleMerchantKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {

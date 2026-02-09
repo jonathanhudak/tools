@@ -7,7 +7,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useIPC } from '@/hooks/useIPC'
-import { CategoryBadge } from '@/components'
+import { CategoryBadge, useToast } from '@/components'
 
 interface RecurringPayment {
   id: string
@@ -127,6 +127,7 @@ function ToggleSwitch({
 }
 
 export default function RecurringPayments() {
+  const { toast } = useToast()
   const { data: payments, loading, refetch } = useIPC<RecurringPayment[]>('getRecurringPayments')
   const { data: categories } = useIPC<Category[]>('getCategories')
 
@@ -151,7 +152,7 @@ export default function RecurringPayments() {
       await window.api.updateRecurringStatus(id, !currentlyActive)
       refetch()
     } catch {
-      // toggle failed silently — data unchanged
+      toast('Failed to update status', 'error')
     }
   }
 
