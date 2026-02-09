@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Search, Filter, ChevronDown, X } from 'lucide-react'
 import { useIPC } from '@/hooks/useIPC'
-import { TransactionList, DateRangePicker } from '@/components'
+import { TransactionList, DateRangePicker, TransactionDetail } from '@/components'
 import { cn } from '@/lib/utils'
 
 interface DateRange {
@@ -32,6 +32,8 @@ export default function Transactions() {
   const [offset, setOffset] = useState(0)
   const [hasMore, setHasMore] = useState(false)
   const [loading, setLoading] = useState(true)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [selectedTransaction, setSelectedTransaction] = useState<any>(null)
 
   const { data: categories } = useIPC<{ id: string; name: string; parentId: string | null; color: string | null; icon: string | null }[]>('getCategories')
   const { data: accounts } = useIPC<{ id: string; name: string; institution: string; type: string }[]>('getAccounts')
@@ -173,6 +175,7 @@ export default function Transactions() {
         categories={categories ?? []}
         accounts={accounts ?? []}
         loading={loading && transactions.length === 0}
+        onTransactionClick={(tx) => setSelectedTransaction(tx)}
       />
 
       {/* Load more */}
@@ -188,6 +191,19 @@ export default function Transactions() {
       )}
       {loading && transactions.length > 0 && (
         <div className="mt-4 text-center text-sm text-slate-400">Loading...</div>
+      )}
+
+      {selectedTransaction != null && (
+        <TransactionDetail
+          transaction={selectedTransaction}
+          categories={categories ?? []}
+          accounts={accounts ?? []}
+          onClose={() => setSelectedTransaction(null)}
+          onUpdate={() => {
+            setSelectedTransaction(null)
+            fetchTransactions(0, false)
+          }}
+        />
       )}
     </div>
   )

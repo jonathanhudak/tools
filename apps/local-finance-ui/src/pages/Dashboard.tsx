@@ -16,7 +16,7 @@ import {
   Cell,
 } from 'recharts'
 import { useIPC } from '@/hooks/useIPC'
-import { TransactionList, BudgetProgress } from '@/components'
+import { TransactionList, BudgetProgress, TransactionDetail } from '@/components'
 
 const CHART_COLORS = [
   '#3b82f6',
@@ -147,6 +147,7 @@ export default function Dashboard() {
   const [monthTxns, setMonthTxns] = useState<Transaction[] | null>(null)
   const [recentTxns, setRecentTxns] = useState<Transaction[] | null>(null)
   const [recentLoading, setRecentLoading] = useState(true)
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null)
   const [budgetItems, setBudgetItems] = useState<BudgetActualItem[] | null>(
     null,
   )
@@ -161,7 +162,7 @@ export default function Dashboard() {
   }, [monthStart, monthEnd])
 
   // Fetch recent transactions
-  useEffect(() => {
+  const fetchRecentTxns = () => {
     if (!window.api) return
     setRecentLoading(true)
     window.api
@@ -174,6 +175,10 @@ export default function Dashboard() {
         setRecentTxns([])
         setRecentLoading(false)
       })
+  }
+
+  useEffect(() => {
+    fetchRecentTxns()
   }, [])
 
   // Fetch budget vs actual for first budget
@@ -389,9 +394,23 @@ export default function Dashboard() {
             transactions={recentTxns}
             categories={categories || []}
             accounts={accounts || []}
+            onTransactionClick={(tx) => setSelectedTransaction(tx as Transaction)}
           />
         )}
       </div>
+
+      {selectedTransaction && (
+        <TransactionDetail
+          transaction={selectedTransaction}
+          categories={categories || []}
+          accounts={accounts || []}
+          onClose={() => setSelectedTransaction(null)}
+          onUpdate={() => {
+            setSelectedTransaction(null)
+            fetchRecentTxns()
+          }}
+        />
+      )}
     </div>
   )
 }

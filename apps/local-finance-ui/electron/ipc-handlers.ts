@@ -8,8 +8,11 @@ import {
   getAccount,
   getAllCategories,
   getAllRecurringPayments,
+  updateRecurringPaymentStatus,
   getCategorySummary,
   getMerchantSummary,
+  updateTransactionCategory,
+  updateTransactionMerchant,
 } from '../../local-finance/src/core/database'
 import {
   getAllBudgets,
@@ -85,6 +88,11 @@ export function registerIpcHandlers(): void {
     return getAllRecurringPayments(database)
   })
 
+  ipcMain.handle('recurring:update-status', (_event, id: string, isActive: boolean) => {
+    updateRecurringPaymentStatus(getDb(), id, isActive)
+    return { success: true }
+  })
+
   // Database stats
   ipcMain.handle('db:stats', () => {
     const database = getDb()
@@ -120,6 +128,17 @@ export function registerIpcHandlers(): void {
       balances[row.account_id] = row.balance
     }
     return balances
+  })
+
+  // ─── Transaction editing ─────────────────────────────────────
+  ipcMain.handle('transaction:update-category', (_event, id: string, categoryId: string) => {
+    updateTransactionCategory(getDb(), id, categoryId, 'manual', null)
+    return { success: true }
+  })
+
+  ipcMain.handle('transaction:update-merchant', (_event, id: string, merchant: string) => {
+    updateTransactionMerchant(getDb(), id, merchant)
+    return { success: true }
   })
 
   // ─── Budget channels ───────────────────────────────────────

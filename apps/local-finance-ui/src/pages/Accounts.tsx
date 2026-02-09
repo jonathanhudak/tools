@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import { useIPC } from '@/hooks/useIPC'
 import { AccountCard } from '@/components'
 
@@ -17,6 +18,7 @@ const typeLabels: Record<string, string> = {
 }
 
 export default function Accounts() {
+  const navigate = useNavigate()
   const { data: accounts, loading: accountsLoading } = useIPC<Account[]>('getAccounts')
   const { data: balances, loading: balancesLoading } = useIPC<Record<string, number>>('getAccountBalances')
 
@@ -81,6 +83,7 @@ export default function Accounts() {
                       key={account.id}
                       account={account}
                       balance={balances?.[account.id]}
+                      onClick={() => navigate(`/accounts/${account.id}`)}
                     />
                   ))}
                 </div>

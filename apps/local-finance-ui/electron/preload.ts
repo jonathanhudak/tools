@@ -36,6 +36,8 @@ const api = {
   // Recurring payments
   getRecurringPayments: () =>
     ipcRenderer.invoke('recurring:list'),
+  updateRecurringStatus: (id: string, isActive: boolean) =>
+    ipcRenderer.invoke('recurring:update-status', id, isActive),
 
   // Account balances
   getAccountBalances: () =>
@@ -86,6 +88,12 @@ const api = {
     ipcRenderer.invoke('snapshots:list', accountId),
   getLatestSnapshot: (accountId: string) =>
     ipcRenderer.invoke('snapshots:latest', accountId),
+
+  // ─── Transaction editing ────────────────────────────────────
+  updateTransactionCategory: (id: string, categoryId: string) =>
+    ipcRenderer.invoke('transaction:update-category', id, categoryId),
+  updateTransactionMerchant: (id: string, merchant: string) =>
+    ipcRenderer.invoke('transaction:update-merchant', id, merchant),
 }
 
 export type Api = typeof api

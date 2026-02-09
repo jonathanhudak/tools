@@ -29,3 +29,83 @@
   height: 100vh;
   width: 100vw;
 }
+
+/* Dark mode */
+[data-theme="dark"] {
+  --color-surface: #0f172a;
+  --color-border: #334155;
+  --color-sidebar-bg: #0c0f1a;
+  --color-sidebar-hover: #1e293b;
+  --toast-bg: #1e293b;
+  --toast-text: #e2e8f0;
+}
+
+[data-theme="dark"] body {
+  color: #e2e8f0;
+}
+
+/* Override hardcoded Tailwind colors for dark mode */
+[data-theme="dark"] .bg-white {
+  background-color: #1e293b;
+}
+
+[data-theme="dark"] .text-slate-900 {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .text-slate-700 {
+  color: #cbd5e1;
+}
+
+[data-theme="dark"] .text-slate-600 {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .text-slate-500 {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .text-slate-400 {
+  color: #64748b;
+}
+
+[data-theme="dark"] .bg-slate-50,
+[data-theme="dark"] .hover\:bg-slate-50:hover {
+  background-color: #334155;
+}
+
+[data-theme="dark"] .bg-slate-100 {
+  background-color: #334155;
+}
+
+[data-theme="dark"] .bg-slate-200 {
+  background-color: #475569;
+}
+
+[data-theme="dark"] .hover\:bg-slate-100:hover {
+  background-color: #334155;
+}
+
+[data-theme="dark"] .hover\:bg-white\/50:hover {
+  background-color: rgba(30, 41, 59, 0.5);
+}
+
+[data-theme="dark"] .placeholder\:text-slate-400::placeholder {
+  color: #64748b;
+}
+
+/* Dark mode for select/input elements */
+[data-theme="dark"] select,
+[data-theme="dark"] input[type="text"],
+[data-theme="dark"] input[type="number"],
+[data-theme="dark"] input[type="date"],
+[data-theme="dark"] input[type="search"] {
+  background-color: #1e293b;
+  color: #e2e8f0;
+  border-color: #334155;
+}
+
+[data-theme="dark"] select option {
+  background-color: #1e293b;
+  color: #e2e8f0;
+}
