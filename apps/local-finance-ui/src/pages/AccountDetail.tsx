@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Landmark, PiggyBank, CreditCard, TrendingUp } from 'lucide-react'
 import {
   XAxis,
   YAxis,
@@ -11,7 +11,6 @@ import {
 } from 'recharts'
 import { useIPC } from '@/hooks/useIPC'
 import { TransactionList, AmountDisplay } from '@/components'
-import { Landmark, PiggyBank, CreditCard, TrendingUp } from 'lucide-react'
 
 interface Account {
   id: string

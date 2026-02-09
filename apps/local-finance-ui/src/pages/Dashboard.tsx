@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import {
   DollarSign,
   TrendingDown,
@@ -162,7 +162,7 @@ export default function Dashboard() {
   }, [monthStart, monthEnd])
 
   // Fetch recent transactions
-  const fetchRecentTxns = () => {
+  const fetchRecentTxns = useCallback(() => {
     if (!window.api) return
     setRecentLoading(true)
     window.api
@@ -175,11 +175,11 @@ export default function Dashboard() {
         setRecentTxns([])
         setRecentLoading(false)
       })
-  }
+  }, [])
 
   useEffect(() => {
     fetchRecentTxns()
-  }, [])
+  }, [fetchRecentTxns])
 
   // Fetch budget vs actual for first budget
   useEffect(() => {

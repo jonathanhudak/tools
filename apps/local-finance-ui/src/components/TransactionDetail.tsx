@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import {
   X,
   Calendar,
@@ -94,7 +94,7 @@ export function TransactionDetail({
     transaction.categoryId || '',
   )
   const merchantInputRef = useRef<HTMLInputElement>(null)
-  const panelRef = useRef<HTMLDivElement>(null)
+  const savingRef = useRef(false)
 
   const accountName =
     accounts.find((a) => a.id === transaction.accountId)?.name ||
@@ -120,14 +120,14 @@ export function TransactionDetail({
     setEditingMerchant(false)
   }, [transaction.id, transaction.normalizedMerchant, transaction.description, transaction.categoryId])
 
-  // Close on Escape
+  // Close on Escape (but not while editing merchant — let merchant handler cancel first)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
+      if (e.key === 'Escape' && !editingMerchant) onClose()
     }
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [onClose])
+  }, [onClose, editingMerchant])
 
   const handleCategoryChange = async (newCategoryId: string) => {
     setSelectedCategoryId(newCategoryId)
@@ -143,11 +143,14 @@ export function TransactionDetail({
     }
   }
 
-  const handleMerchantSave = async () => {
+  const handleMerchantSave = useCallback(async () => {
+    if (savingRef.current) return
+    savingRef.current = true
     setEditingMerchant(false)
     const trimmed = merchantValue.trim()
     if (!trimmed || trimmed === (transaction.normalizedMerchant || transaction.description)) {
       setMerchantValue(transaction.normalizedMerchant || transaction.description)
+      savingRef.current = false
       return
     }
     try {
@@ -155,8 +158,10 @@ export function TransactionDetail({
       onUpdate()
     } catch {
       setMerchantValue(transaction.normalizedMerchant || transaction.description)
+    } finally {
+      savingRef.current = false
     }
-  }
+  }, [merchantValue, transaction.id, transaction.normalizedMerchant, transaction.description, onUpdate])
 
   const handleMerchantKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -177,8 +182,7 @@ export function TransactionDetail({
 
       {/* Panel */}
       <div
-        ref={panelRef}
-        className="relative w-[420px] max-w-full h-full bg-white shadow-xl flex flex-col animate-in slide-in-from-right duration-200"
+        className="relative w-[420px] max-w-full h-full bg-white shadow-xl flex flex-col"
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border">

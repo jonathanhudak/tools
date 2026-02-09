@@ -147,8 +147,12 @@ export default function RecurringPayments() {
   }, [active])
 
   async function handleToggle(id: string, currentlyActive: boolean) {
-    await window.api.updateRecurringStatus(id, !currentlyActive)
-    refetch()
+    try {
+      await window.api.updateRecurringStatus(id, !currentlyActive)
+      refetch()
+    } catch {
+      // toggle failed silently — data unchanged
+    }
   }
 
   function renderRow(payment: RecurringPayment) {

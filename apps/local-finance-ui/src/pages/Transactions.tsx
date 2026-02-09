@@ -32,8 +32,12 @@ export default function Transactions() {
   const [offset, setOffset] = useState(0)
   const [hasMore, setHasMore] = useState(false)
   const [loading, setLoading] = useState(true)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [selectedTransaction, setSelectedTransaction] = useState<any>(null)
+  const [selectedTransaction, setSelectedTransaction] = useState<{
+    id: string; accountId: string; date: string | Date; description: string;
+    normalizedMerchant: string | null; amount: number; categoryId: string | null;
+    categorySource: 'rule' | 'ai' | 'manual' | null; categoryConfidence: number | null;
+    isRecurring: boolean; recurringId: string | null; notes: string | null;
+  } | null>(null)
 
   const { data: categories } = useIPC<{ id: string; name: string; parentId: string | null; color: string | null; icon: string | null }[]>('getCategories')
   const { data: accounts } = useIPC<{ id: string; name: string; institution: string; type: string }[]>('getAccounts')
@@ -193,7 +197,7 @@ export default function Transactions() {
         <div className="mt-4 text-center text-sm text-slate-400">Loading...</div>
       )}
 
-      {selectedTransaction != null && (
+      {selectedTransaction && (
         <TransactionDetail
           transaction={selectedTransaction}
           categories={categories ?? []}
