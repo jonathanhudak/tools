@@ -8,7 +8,8 @@
     "dev": "vite",
     "build": "vite build && tsc -p tsconfig.node.json",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit && tsc -p tsconfig.node.json --noEmit"
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.node.json --noEmit",
+    "postinstall": "electron-rebuild -f -w better-sqlite3"
   },
   "dependencies": {
     "better-sqlite3": "^11.6.0",
@@ -22,6 +23,7 @@
     "tailwind-merge": "^2.6.0"
   },
   "devDependencies": {
+    "@electron/rebuild": "^4.0.3",
     "@tailwindcss/vite": "^4.0.0",
     "@types/better-sqlite3": "^7.6.12",
     "@types/react": "^18.3.18",
