@@ -11,7 +11,7 @@ import type {
   AICache,
   Import,
 } from './types.js';
-import { CREATE_TABLES, DEFAULT_CATEGORIES, INSERT_CATEGORY, SCHEMA_VERSION } from './schema.js';
+import { CREATE_TABLES, DEFAULT_CATEGORIES, INSERT_CATEGORY, SCHEMA_VERSION, runMigrations } from './schema.js';
 
 let db: Database.Database | null = null;
 
@@ -45,6 +45,9 @@ function initializeDatabase(database: Database.Database): void {
     database.prepare('INSERT INTO schema_version (version) VALUES (?)').run(SCHEMA_VERSION);
     insertDefaultCategories(database);
   }
+
+  // Run any pending migrations
+  runMigrations(database);
 }
 
 function insertDefaultCategories(database: Database.Database): void {

@@ -1,0 +1,19 @@
+appId: com.localfinance.app
+productName: Local Finance
+directories:
+  output: release
+  buildResources: build
+files:
+  - dist
+  - dist-electron
+mac:
+  target:
+    - dmg
+    - zip
+  artifactName: ${productName}-${version}-${arch}.${ext}
+win:
+  target:
+    - nsis
+linux:
+  target:
+    - AppImage

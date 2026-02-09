@@ -17,6 +17,7 @@
     "deploy": "gh-pages -d docs -t true",
     "music": "pnpm --filter @hudak/music-practice",
     "tuner": "pnpm --filter @hudak/instrument-tuner",
+    "fin:ui": "pnpm --filter @hudak/local-finance-ui",
     "ui": "pnpm --filter @hudak/ui"
   },
   "keywords": [

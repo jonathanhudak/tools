@@ -214,6 +214,40 @@ export interface AIConfig {
   };
 }
 
+// Budget types
+export interface Budget {
+  id: string;
+  name: string;
+  periodType: 'monthly' | 'weekly' | 'yearly';
+  startDate: string;
+  createdAt: string;
+}
+
+export interface BudgetAllocation {
+  id: string;
+  budgetId: string;
+  categoryId: string;
+  amount: number;
+  rollover: boolean;
+}
+
+export interface BudgetPeriod {
+  id: string;
+  budgetId: string;
+  startDate: string;
+  endDate: string;
+  status: 'open' | 'closed';
+}
+
+export interface BalanceSnapshot {
+  id: string;
+  accountId: string;
+  date: string;
+  balance: number;
+  source: 'import' | 'manual' | 'calculated';
+  createdAt: string;
+}
+
 // CSV parsing types
 export interface ParsedTransaction {
   date: Date;

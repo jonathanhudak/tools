@@ -1,5 +1,7 @@
 // Database schema and migrations
 
+export { runMigrations } from './migrations.js';
+
 export const SCHEMA_VERSION = 1;
 
 export const CREATE_TABLES = `
