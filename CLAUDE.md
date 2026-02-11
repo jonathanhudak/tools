@@ -1433,3 +1433,8 @@ Open an issue on GitHub or reach out to the maintainer.
 
 Always put new documents within `./docs`
 Use sub folders to categorize like `./docs/plans` and `./docs/research`
+
+---
+
+## Elegance Principle
+For each proposed change, examine the existing system and redesign it into the most elegant solution that would have emerged if the change had been a foundational assumption from the start.
