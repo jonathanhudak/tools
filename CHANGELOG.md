@@ -1,3 +1,19 @@
+# [1.19.0](https://github.com/jonathanhudak/tools/compare/v1.18.0...v1.19.0) (2026-02-12)
+
+
+### Bug Fixes
+
+* align RecurringPaymentSummary mapping with type and add chord-scale nav link ([#68](https://github.com/jonathanhudak/tools/issues/68)) ([e833572](https://github.com/jonathanhudak/tools/commit/e83357282d0a0876475a030314d2d94c15791b05))
+* **local-finance-ui:** address code review findings across Phase 3 ([f5ef80d](https://github.com/jonathanhudak/tools/commit/f5ef80d5d38db502d2597867b56dea63dc91f865))
+* **local-finance-ui:** wire toast notifications into mutation operations ([cab51aa](https://github.com/jonathanhudak/tools/commit/cab51aa1d3f5615abd1c2ddd8dafd81b22c9095c))
+
+
+### Features
+
+* **local-finance-ui:** Electron + React finance dashboard (Phases 1-2) ([9f4dfc6](https://github.com/jonathanhudak/tools/commit/9f4dfc68723270e1e02290b64e93f474a78345ad))
+* **local-finance-ui:** Phase 3 — transaction editing, recurring payments, dark mode, account detail ([6ebbe7e](https://github.com/jonathanhudak/tools/commit/6ebbe7e712bcf84ea43eee3433a9b1e6a67e07de))
+* **local-finance-ui:** Phase 4 — CSV import wizard, categorization rules, insights dashboard ([b38c411](https://github.com/jonathanhudak/tools/commit/b38c4118abd5b80c48c9ef6430c594b42310681b))
+
 # [1.18.0](https://github.com/jonathanhudak/tools/compare/v1.17.0...v1.18.0) (2026-02-07)
 
 
