@@ -16,6 +16,9 @@ export function AppHeader() {
         <Link to="/about" className="[&.active]:font-bold">
           About
         </Link>
+        <Link to="/chord-scale" className="[&.active]:font-bold">
+          Chord Scale
+        </Link>
         <ThemeToggle />
       </nav>
     </header>
