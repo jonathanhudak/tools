@@ -507,7 +507,7 @@ const YEAR_SUMMARY_TEMPLATE = `
         <td>{{merchant}}</td>
         <td>{{frequency}}</td>
         <td class="text-right">{{formatMoney amount}}</td>
-        <td class="text-right">{{formatMoney yearlyTotal}}</td>
+        <td class="text-right">{{formatMoney totalSpent}}</td>
         <td class="text-center">
           <span class="status-badge status-{{#if isActive}}active{{else}}inactive{{/if}}">
             {{#if isActive}}Active{{else}}Inactive{{/if}}

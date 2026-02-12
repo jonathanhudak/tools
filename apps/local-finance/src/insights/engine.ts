@@ -88,9 +88,10 @@ export function generateYearReport(db: Database.Database, year: number): YearRep
     merchant: rp.merchant,
     frequency: formatFrequency(rp.frequency),
     amount: rp.expectedAmount ?? 0,
-    yearlyTotal: (rp.expectedAmount ?? 0) * getFrequencyMultiplier(rp.frequency),
+    totalSpent: (rp.expectedAmount ?? 0) * getFrequencyMultiplier(rp.frequency),
+    occurrences: getFrequencyMultiplier(rp.frequency),
     isActive: rp.isActive,
-    status: rp.status,
+    confidence: 1.0,
   }));
 
   return {
@@ -241,7 +242,7 @@ export function generateRuleBasedInsights(report: YearReport): string[] {
   // Insight: Subscriptions
   if (report.recurringPayments.length > 0) {
     const activeSubscriptions = report.recurringPayments.filter(r => r.isActive);
-    const totalMonthly = activeSubscriptions.reduce((sum, r) => sum + r.yearlyTotal / 12, 0);
+    const totalMonthly = activeSubscriptions.reduce((sum, r) => sum + r.totalSpent / 12, 0);
     if (totalMonthly > 100) {
       insights.push(
         `You have ${activeSubscriptions.length} active subscriptions costing ~$${totalMonthly.toFixed(2)}/month ($${(totalMonthly * 12).toFixed(2)}/year).`

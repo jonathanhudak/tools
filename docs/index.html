@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A collection of small, useful tools built with AI-assisted coding. Each tool is designed to be simple, focused, and practical.">
+  <title>Tools Monorepo - AI-Assisted Development</title>
+  <style>
+    :root {
+      --color-primary: #667eea;
+      --color-primary-dark: #5568d3;
+      --color-secondary: #764ba2;
+      --color-success: #10b981;
+      --color-bg: #f8f9fa;
+      --color-surface: #ffffff;
+      --color-text: #2c3e50;
+      --color-text-muted: #7f8c8d;
+      --color-border: #e1e4e8;
+      --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.15);
+      --border-radius: 12px;
+      --transition: 250ms ease;
+    }
+
+    [data-theme="dark"] {
+      --color-bg: #1a1a1a;
+      --color-surface: #2d2d2d;
+      --color-text: #e4e4e7;
+      --color-text-muted: #a1a1aa;
+      --color-border: #404040;
+      --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background-color: var(--color-bg);
+      color: var(--color-text);
+      line-height: 1.6;
+      transition: background-color var(--transition), color var(--transition);
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+      color: white;
+      padding: 3rem 2rem;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+
+    header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      font-weight: 700;
+    }
+
+    header p {
+      font-size: 1.125rem;
+      opacity: 0.95;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all var(--transition);
+      backdrop-filter: blur(10px);
+      z-index: 1000;
+    }
+
+    .theme-toggle:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(1.05);
+    }
+
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 3rem 2rem;
+    }
+
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+
+    .tool-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--border-radius);
+      padding: 2rem;
+      box-shadow: var(--shadow);
+      transition: all var(--transition);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tool-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--color-primary);
+    }
+
+    .tool-card h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.75rem;
+      color: var(--color-primary);
+    }
+
+    .tool-card .description {
+      color: var(--color-text-muted);
+      margin-bottom: 1rem;
+      flex-grow: 1;
+      line-height: 1.5;
+    }
+
+    .tool-card .tech-stack {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .tech-badge {
+      background: var(--color-bg);
+      color: var(--color-text-muted);
+      padding: 0.25rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      border: 1px solid var(--color-border);
+    }
+
+    .tool-card .actions {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: auto;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      text-decoration: none;
+      text-align: center;
+      transition: all var(--transition);
+      font-weight: 500;
+    }
+
+    .btn-primary {
+      background: var(--color-primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--color-primary-dark);
+      transform: scale(1.02);
+    }
+
+    .btn-secondary {
+      background: var(--color-bg);
+      color: var(--color-text);
+      border: 1px solid var(--color-border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--color-border);
+    }
+
+    .tool-card.cli-tool {
+      border-left: 4px solid var(--color-secondary);
+    }
+
+    .tool-card.web-app {
+      border-left: 4px solid var(--color-success);
+    }
+
+    .tool-type-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+      letter-spacing: 0.5px;
+    }
+
+    .cli-tool .tool-type-badge {
+      background: rgba(118, 75, 162, 0.1);
+      color: var(--color-secondary);
+    }
+
+    .web-app .tool-type-badge {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--color-success);
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--color-text-muted);
+      border-top: 1px solid var(--color-border);
+    }
+
+    footer a {
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+      header h1 {
+        font-size: 2rem;
+      }
+
+      header p {
+        font-size: 1rem;
+      }
+
+      .tools-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+
+      main {
+        padding: 2rem 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()">
+    <span id="theme-icon">🌙</span> Toggle Theme
+  </button>
+
+  <header>
+    <h1>Tools Monorepo</h1>
+    <p>A collection of small, useful tools built with AI-assisted coding. Each tool is designed to be simple, focused, and practical.</p>
+  </header>
+
+  <main>
+    <div class="tools-grid">
+      <!-- Audio Visualizer -->
+      <div class="tool-card web-app">
+        <span class="tool-type-badge">Web App</span>
+        <h2>Audio Visualizer</h2>
+        <p class="description">
+          Create beautiful radial waveform visualizations with complementary color palettes. Upload multiple audio files for stunning visual displays using p5.js graphics.
+        </p>
+        <div class="tech-stack">
+          <span class="tech-badge">React</span>
+          <span class="tech-badge">TypeScript</span>
+          <span class="tech-badge">p5.js</span>
+          <span class="tech-badge">chroma.js</span>
+          <span class="tech-badge">Vite</span>
+          <span class="tech-badge">Tailwind v4</span>
+        </div>
+        <div class="actions">
+          <a href="./audio-visualizer/" class="btn btn-primary">Launch App</a>
+          <a href="https://github.com/jonathanhudak/tools/tree/main/apps/audio-visualizer" class="btn btn-secondary">View Code</a>
+        </div>
+      </div>
+
+      <!-- Gap Scanner CLI -->
+      <div class="tool-card cli-tool">
+        <span class="tool-type-badge">CLI Tool</span>
+        <h2>Gap Scanner CLI</h2>
+        <p class="description">
+          Pre-market gap scanner for Gap & Go trading strategy using Finnhub API. Scan stocks for significant gaps with customizable filters (gap %, volume, float, price range). Features watch mode and JSON export.
+        </p>
+        <div class="tech-stack">
+          <span class="tech-badge">TypeScript</span>
+          <span class="tech-badge">Node.js</span>
+          <span class="tech-badge">Commander.js</span>
+          <span class="tech-badge">Finnhub API</span>
+        </div>
+        <div class="actions">
+          <a href="https://github.com/jonathanhudak/tools/tree/main/apps/gap-scanner" class="btn btn-primary">View README</a>
+          <a href="https://github.com/jonathanhudak/tools/tree/main/apps/gap-scanner" class="btn btn-secondary">View Code</a>
+        </div>
+      </div>
+
+      <!-- Ikigai Tool -->
+      <div class="tool-card web-app">
+        <span class="tool-type-badge">Web App</span>
+        <h2>Ikigai Tool</h2>
+        <p class="description">
+          Discover your Ikigai - your reason for being. Interactive diagram to map what you love, what you're good at, what you can be paid for, and what the world needs.
+        </p>
+        <div class="tech-stack">
+          <span class="tech-badge">React</span>
+          <span class="tech-badge">TypeScript</span>
+          <span class="tech-badge">React Flow</span>
+          <span class="tech-badge">Vite</span>
+        </div>
+        <div class="actions">
+          <a href="./ikigai-tool/" class="btn btn-primary">Launch App</a>
+          <a href="https://github.com/jonathanhudak/tools/tree/main/apps/ikigai-tool" class="btn btn-secondary">View Code</a>
+        </div>
+      </div>
+
+      <!-- Instrument Tuner -->
+      <div class="tool-card web-app">
+        <span class="tool-type-badge">Web App</span>
+        <h2>Instrument Tuner</h2>
+        <p class="description">
+          Free online instrument tuner with real-time pitch detection. Perfect for guitar, bass, violin, and more. Features visual feedback and multiple tunings.
+        </p>
+        <div class="tech-stack">
+          <span class="tech-badge">React</span>
+          <span class="tech-badge">TypeScript</span>
+          <span class="tech-badge">Vite</span>
+          <span class="tech-badge">shadcn/ui</span>
+          <span class="tech-badge">Tailwind v4</span>
+        </div>
+        <div class="actions">
+          <a href="./instrument-tuner/" class="btn btn-primary">Launch App</a>
+          <a href="https://github.com/jonathanhudak/tools/tree/main/apps/instrument-tuner" class="btn btn-secondary">View Code</a>
+        </div>
+      </div>
+
+      <!-- Local Finance Analyzer -->
+      <div class="tool-card cli-tool">
+        <span class="tool-type-badge">CLI Tool</span>
+        <h2>Local Finance Analyzer</h2>
+        <p class="description">
+          A privacy-first, local-only personal finance CLI tool with AI-powered transaction categorization and HTML reports. All data stays on your machine.
+        </p>
+        <div class="tech-stack">
+          <span class="tech-badge">TypeScript</span>
+          <span class="tech-badge">Node.js</span>
+          <span class="tech-badge">SQLite</span>
+          <span class="tech-badge">AI Integration</span>
+        </div>
+        <div class="actions">
+          <a href="https://github.com/jonathanhudak/tools/tree/main/apps/local-finance" class="btn btn-primary">View README</a>
+          <a href="https://github.com/jonathanhudak/tools/tree/main/apps/local-finance" class="btn btn-secondary">View Code</a>
+        </div>
+      </div>
+
+      <!-- InstrumentPractice Pro -->
+      <div class="tool-card web-app">
+        <span class="tool-type-badge">Web App</span>
+        <h2>InstrumentPractice Pro</h2>
+        <p class="description">
+          A comprehensive instrument practice app with MIDI/microphone support for sight reading, scales, and music theory training. Supports Piano, Violin, and Guitar.
+        </p>
+        <div class="tech-stack">
+          <span class="tech-badge">React</span>
+          <span class="tech-badge">TypeScript</span>
+          <span class="tech-badge">Vite</span>
+          <span class="tech-badge">Web MIDI</span>
+          <span class="tech-badge">Web Audio</span>
+        </div>
+        <div class="actions">
+          <a href="./music-practice/" class="btn btn-primary">Launch App</a>
+          <a href="https://github.com/jonathanhudak/tools/tree/main/apps/music-practice" class="btn btn-secondary">View Code</a>
+        </div>
+      </div>
+
+      <!-- Puzzle Games -->
+      <div class="tool-card web-app">
+        <span class="tool-type-badge">Web App</span>
+        <h2>Puzzle Games</h2>
+        <p class="description">
+          Touch-friendly puzzle games (Sokoban, Word Search, Nonogram) for Theodore, optimized for Daylight Computer e-ink display. Black & white design with large touch targets.
+        </p>
+        <div class="tech-stack">
+          <span class="tech-badge">React</span>
+          <span class="tech-badge">TypeScript</span>
+          <span class="tech-badge">Vite</span>
+          <span class="tech-badge">TanStack Router</span>
+        </div>
+        <div class="actions">
+          <a href="./puzzle-games/" class="btn btn-primary">Launch App</a>
+          <a href="https://github.com/jonathanhudak/tools/tree/main/apps/puzzle-games" class="btn btn-secondary">View Code</a>
+        </div>
+      </div>
+
+      <!-- RSVP Reader -->
+      <div class="tool-card web-app">
+        <span class="tool-type-badge">Web App</span>
+        <h2>RSVP Reader</h2>
+        <p class="description">
+          Speed reading app with RSVP technology and zero-jiggle ORP highlighting. Read 3x faster with URL extraction, text input, and adjustable speed (100-1000 WPM). Features smart punctuation pauses and distraction-free reading mode.
+        </p>
+        <div class="tech-stack">
+          <span class="tech-badge">React</span>
+          <span class="tech-badge">TypeScript</span>
+          <span class="tech-badge">Vite</span>
+          <span class="tech-badge">Tailwind v4</span>
+          <span class="tech-badge">Lucide React</span>
+        </div>
+        <div class="actions">
+          <a href="./rsvp-reader/" class="btn btn-primary">Launch App</a>
+          <a href="https://github.com/jonathanhudak/tools/tree/main/apps/rsvp-reader" class="btn btn-secondary">View Code</a>
+        </div>
+      </div>
+
+      <!-- Visual HTML Builder -->
+      <div class="tool-card web-app">
+        <span class="tool-type-badge">Web App</span>
+        <h2>Visual HTML Builder</h2>
+        <p class="description">
+          A visual HTML editor with real-time preview, inline editing, and full style customization. Build web pages without writing code.
+        </p>
+        <div class="tech-stack">
+          <span class="tech-badge">Vanilla JS</span>
+          <span class="tech-badge">HTML</span>
+          <span class="tech-badge">CSS</span>
+        </div>
+        <div class="actions">
+          <a href="https://github.com/jonathanhudak/tools/tree/main/apps/visual-html-builder" class="btn btn-primary">View README</a>
+          <a href="https://github.com/jonathanhudak/tools/tree/main/apps/visual-html-builder" class="btn btn-secondary">View Code</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>
+      Built with AI-assisted development using <a href="https://claude.ai" target="_blank">Claude</a>
+      <br>
+      <a href="https://github.com/jonathanhudak/tools" target="_blank">View on GitHub</a>
+    </p>
+  </footer>
+
+  <script>
+    // Theme toggle functionality
+    function toggleTheme() {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      updateThemeIcon(newTheme);
+    }
+
+    function updateThemeIcon(theme) {
+      const icon = document.getElementById('theme-icon');
+      icon.textContent = theme === 'dark' ? '☀️' : '🌙';
+    }
+
+    // Initialize theme
+    function initTheme() {
+      const savedTheme = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+      updateThemeIcon(theme);
+    }
+
+    initTheme();
+
+    // Listen for system theme changes
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+      if (!localStorage.getItem('theme')) {
+        const theme = e.matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+        updateThemeIcon(theme);
+      }
+    });
+  </script>
+</body>
+</html>
