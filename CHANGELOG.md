@@ -1,3 +1,10 @@
+# [1.20.0](https://github.com/jonathanhudak/tools/compare/v1.19.0...v1.20.0) (2026-02-13)
+
+
+### Features
+
+* **instrument-tuner:** UX overhaul — layout, gauge, mic, reference tones ([0acad6d](https://github.com/jonathanhudak/tools/commit/0acad6d538b9719f291b6ade3d28e75302e7355f))
+
 # [1.19.0](https://github.com/jonathanhudak/tools/compare/v1.18.0...v1.19.0) (2026-02-12)
 
 
