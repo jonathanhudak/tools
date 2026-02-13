@@ -9,3 +9,10 @@
 .dark {
   --color-primary: 139 92% 56%;
 }
+
+/* In-tune pulse animation (3.3) */
+@keyframes in-tune-pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}

@@ -56,11 +56,9 @@ export function ShareTuning({ tuning }: ShareTuningProps) {
 
   return (
     <Popover>
-      <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
-          <Share2 className="h-4 w-4" />
-          Share
-        </Button>
+      <PopoverTrigger className="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-1.5 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer">
+        <Share2 className="h-4 w-4" />
+        Share
       </PopoverTrigger>
       <PopoverContent className="w-80" align="end">
         <div className="space-y-3">

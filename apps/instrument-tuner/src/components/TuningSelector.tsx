@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Search, Music2 } from 'lucide-react';
 import { Button } from '@hudak/ui';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@hudak/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@hudak/ui';
 import { Input } from '@hudak/ui';
 import {
   Select,
@@ -20,7 +20,6 @@ import { ScrollArea } from '@hudak/ui';
 import {
   INSTRUMENT_CATEGORIES,
   type Tuning,
-  type InstrumentCategory,
   searchTunings,
 } from '../data/tunings';
 
@@ -44,37 +43,28 @@ export function TuningSelector({
     return searchTunings(searchQuery);
   }, [searchQuery]);
 
-  // Get display text for current tuning
-  const currentTuningDisplay = useMemo(() => {
-    const noteNames = [...currentTuning.notes]
-      .sort((a, b) => b.string - a.string)
-      .map((n) => n.name)
-      .join(' ');
-    return `${currentTuning.name} (${noteNames})`;
-  }, [currentTuning]);
-
   const handleTuningSelect = (tuning: Tuning) => {
     onTuningSelect(tuning);
     setSearchQuery('');
   };
 
+  // Selected tuning button styles (3.5)
+  const tuningButtonClass = (tuningId: string) =>
+    currentTuning.id === tuningId
+      ? 'w-full justify-start h-auto py-2 border-l-2 border-primary'
+      : 'w-full justify-start h-auto py-2';
+
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-base">
           <Music2 className="h-5 w-5" />
           Select Tuning
         </CardTitle>
-        <CardDescription>
-          Choose a preset tuning or create your own
-        </CardDescription>
+        {/* 2.5: Removed CardDescription — search box and filters make it self-evident */}
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Current Tuning Display */}
-        <div className="p-3 bg-primary/10 rounded-md border border-primary/20">
-          <div className="text-sm text-muted-foreground">Current Tuning</div>
-          <div className="font-medium">{currentTuningDisplay}</div>
-        </div>
+        {/* 1.5: Removed redundant "Current Tuning" display */}
 
         {/* Search */}
         <div className="relative">
@@ -100,7 +90,7 @@ export function TuningSelector({
                   <Button
                     key={tuning.id}
                     variant={currentTuning.id === tuning.id ? 'secondary' : 'ghost'}
-                    className="w-full justify-start h-auto py-2"
+                    className={tuningButtonClass(tuning.id)}
                     onClick={() => handleTuningSelect(tuning)}
                   >
                     <div className="text-left">
@@ -151,22 +141,20 @@ export function TuningSelector({
                       <Button
                         key={tuning.id}
                         variant={currentTuning.id === tuning.id ? 'secondary' : 'ghost'}
-                        className="w-full justify-start h-auto py-2"
+                        className={tuningButtonClass(tuning.id)}
                         onClick={() => handleTuningSelect(tuning)}
                       >
                         <div className="text-left w-full">
                           <div className="font-medium">{tuning.name}</div>
-                          <div className="text-xs text-muted-foreground flex justify-between">
-                            <span>
-                              {[...tuning.notes]
-                                .sort((a, b) => b.string - a.string)
-                                .map((n) => n.name)
-                                .join(' ')}
-                            </span>
-                            <span>{tuning.notes.length} strings</span>
+                          <div className="text-xs text-muted-foreground">
+                            {[...tuning.notes]
+                              .sort((a, b) => b.string - a.string)
+                              .map((n) => n.name)
+                              .join(' ')}
+                            {/* 2.4: Hide string count when category already implies it */}
                           </div>
                           {tuning.description && (
-                            <div className="text-xs text-muted-foreground/70 mt-0.5">
+                            <div className="text-xs text-muted-foreground/50 mt-0.5 truncate">
                               {tuning.description}
                             </div>
                           )}
@@ -193,7 +181,8 @@ export function TuningSelector({
                       </span>
                     </AccordionTrigger>
                     <AccordionContent>
-                      <div className="space-y-1 pl-6">
+                      {/* 2.3: Scroll constraint on accordion content */}
+                      <div className="space-y-1 pl-6 max-h-64 overflow-y-auto">
                         {category.tunings.slice(0, 5).map((tuning) => (
                           <Button
                             key={tuning.id}
@@ -201,7 +190,7 @@ export function TuningSelector({
                               currentTuning.id === tuning.id ? 'secondary' : 'ghost'
                             }
                             size="sm"
-                            className="w-full justify-start"
+                            className={`w-full justify-start ${currentTuning.id === tuning.id ? 'border-l-2 border-primary' : ''}`}
                             onClick={() => handleTuningSelect(tuning)}
                           >
                             {tuning.name}

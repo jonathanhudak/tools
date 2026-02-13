@@ -1,19 +1,19 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createRoute } from '@tanstack/react-router';
+import { Route as rootRoute } from './__root';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Note } from 'tonal';
 import { toast } from 'sonner';
 import { PitchGauge } from '@hudak/audio-components';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@hudak/ui';
+import { Card, CardContent } from '@hudak/ui';
 import { Button } from '@hudak/ui';
-import { Badge } from '@hudak/ui';
 import { Label } from '@hudak/ui';
 import {
   Music,
   Mic,
   MicOff,
   Settings as SettingsIcon,
-  ChevronRight,
-  ChevronLeft,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 
 // Audio detection
@@ -32,7 +32,9 @@ import { TuningSelector } from '../components/TuningSelector';
 import { CustomTuningBuilder } from '../components/CustomTuningBuilder';
 import { ShareTuning } from '../components/ShareTuning';
 
-export const Route = createFileRoute('/')({
+export const Route = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/',
   component: TunerPage,
 });
 
@@ -58,11 +60,19 @@ function TunerPage() {
   const [showCustomBuilder, setShowCustomBuilder] = useState(false);
   const [autoDetectString, setAutoDetectString] = useState(true);
   const [highlightedString, setHighlightedString] = useState<number | null>(null);
+  const [isStale, setIsStale] = useState(false);
 
   // Refs
   const audioManager = useRef<AudioManager | null>(null);
-  const audioInitAttemptedRef = useRef(false);
-  const handlePitchDetectedRef = useRef(handlePitchDetected);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handlePitchDetectedRef = useRef<(event: PitchDetectedEvent) => void>(null as any);
+  const lastPitchUpdateRef = useRef(0);
+  const lastPitchTimeRef = useRef(0);
+  const highlightedStringRef = useRef<number | null>(null);
+  const stringsRef = useRef<HTMLDivElement>(null);
+  const toneContextRef = useRef<AudioContext | null>(null);
+  const toneOscRef = useRef<OscillatorNode | null>(null);
+  const toneGainRef = useRef<GainNode | null>(null);
 
   // Parse tuning from URL on mount
   useEffect(() => {
@@ -75,21 +85,83 @@ function TunerPage() {
     }
   }, []);
 
-  // Update URL when tuning changes
+  // Stale pitch detection — fade gauge after 2s of silence (3.2)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (lastPitchTimeRef.current && Date.now() - lastPitchTimeRef.current > 2000) {
+        setIsStale(true);
+      }
+    }, 500);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Update URL when tuning changes + scroll to strings (3.7)
   const handleTuningChange = useCallback((tuning: Tuning) => {
     setCurrentTuning(tuning);
     updateUrlWithTuning(tuning);
     setShowTuningSelector(false);
     setShowCustomBuilder(false);
     setHighlightedString(null);
+    highlightedStringRef.current = null;
     toast.success('Tuning changed', {
       description: `Now using ${tuning.name}`,
     });
+    // Scroll to strings after selection
+    setTimeout(() => {
+      stringsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
   }, []);
 
-  // Handle pitch detection
+  // Handle pitch detection with throttling (1.1) and hysteresis (1.2)
   const handlePitchDetected = useCallback((event: PitchDetectedEvent) => {
     const { frequency, clarity } = event;
+
+    // Track last pitch time for stale detection (3.2)
+    lastPitchTimeRef.current = Date.now();
+    setIsStale(false);
+
+    // Auto-detect which string with hysteresis (1.2)
+    if (autoDetectString) {
+      const closestString = currentTuning.notes.reduce((closest, tuning) => {
+        const diff = Math.abs(frequency - tuning.frequency);
+        const closestDiff = Math.abs(frequency - closest.frequency);
+        return diff < closestDiff ? tuning : closest;
+      });
+
+      const freqDiff = Math.abs(frequency - closestString.frequency);
+      const percentDiff = freqDiff / closestString.frequency;
+      const currentHighlight = highlightedStringRef.current;
+
+      if (currentHighlight === null) {
+        // No current highlight — use 3% threshold for initial detection
+        if (percentDiff < 0.03) {
+          highlightedStringRef.current = closestString.string;
+          setHighlightedString(closestString.string);
+        }
+      } else if (closestString.string === currentHighlight) {
+        // Still nearest to the highlighted string — use wider 5% to keep (hysteresis)
+        if (percentDiff >= 0.05) {
+          highlightedStringRef.current = null;
+          setHighlightedString(null);
+        }
+      } else {
+        // Closest string differs from highlighted — require drift >5% from current
+        // AND <3% to new string before switching
+        const currentStringData = currentTuning.notes.find(n => n.string === currentHighlight);
+        if (currentStringData) {
+          const driftFromCurrent = Math.abs(frequency - currentStringData.frequency) / currentStringData.frequency;
+          if (driftFromCurrent > 0.05 && percentDiff < 0.03) {
+            highlightedStringRef.current = closestString.string;
+            setHighlightedString(closestString.string);
+          }
+        }
+      }
+    }
+
+    // Throttle UI display updates to ~10/sec (1.1)
+    const now = Date.now();
+    if (now - lastPitchUpdateRef.current < 100) return;
+    lastPitchUpdateRef.current = now;
 
     // Get note info
     const noteInfo = Note.fromFreq(frequency);
@@ -106,67 +178,46 @@ function TunerPage() {
 
     setDetectedPitch({
       note: noteName,
-      cents: Math.round(cents * 10) / 10,
+      cents: Math.round(cents),
       frequency,
       clarity,
     });
-
-    // Auto-detect which string is being played
-    if (autoDetectString) {
-      const closestString = currentTuning.notes.reduce((closest, tuning) => {
-        const diff = Math.abs(frequency - tuning.frequency);
-        const closestDiff = Math.abs(frequency - closest.frequency);
-        return diff < closestDiff ? tuning : closest;
-      });
-
-      // Only highlight if within reasonable range (within 50 cents / ~3% frequency difference)
-      const freqDiff = Math.abs(frequency - closestString.frequency);
-      const percentDiff = freqDiff / closestString.frequency;
-      if (percentDiff < 0.03) {
-        setHighlightedString(closestString.string);
-      } else {
-        setHighlightedString(null);
-      }
-    }
   }, [autoDetectString, currentTuning]);
 
-  // Initialize audio on mount
+  // Stable pitch handler that always calls the latest callback via ref
+  const stablePitchHandler = useCallback((event: PitchDetectedEvent) => {
+    handlePitchDetectedRef.current(event);
+  }, []);
+
+  // Initialize audio — called on user gesture (mic button click)
+  const initAudio = useCallback(async () => {
+    // Already initialized and connected
+    if (audioManager.current) return true;
+
+    const manager = new AudioManager();
+    const success = await manager.init();
+
+    if (success) {
+      manager.on('pitchDetected', stablePitchHandler);
+      manager.on('statusChange', (status) => {
+        setMicrophoneActive(status.microphoneActive);
+      });
+      audioManager.current = manager;
+      return true;
+    } else {
+      toast.error('Microphone Access Required', {
+        description: 'Click the camera/microphone icon in your browser\'s address bar to allow microphone access, then reload the page.',
+        duration: 10000,
+      });
+      return false;
+    }
+  }, [stablePitchHandler]);
+
+  // Cleanup audio on unmount
   useEffect(() => {
-    if (audioInitAttemptedRef.current) return;
-
-    // Stable handler that always calls the latest callback via ref
-    const stablePitchHandler = (event: PitchDetectedEvent) => {
-      handlePitchDetectedRef.current(event);
-    };
-
-    const initAudio = async () => {
-      audioInitAttemptedRef.current = true;
-
-      audioManager.current = new AudioManager();
-      const success = await audioManager.current.init();
-      setMicrophoneActive(success);
-
-      if (success) {
-        audioManager.current.on('pitchDetected', stablePitchHandler);
-        audioManager.current.on('statusChange', (status) => {
-          setMicrophoneActive(status.microphoneActive);
-        });
-        audioManager.current.startListening();
-        toast.success('Microphone connected', {
-          description: 'Start playing to tune your instrument',
-        });
-      } else {
-        toast.error('Microphone Access Required', {
-          description: 'Click the camera/microphone icon in your browser\'s address bar to allow microphone access, then reload the page.',
-          duration: 10000,
-        });
-      }
-    };
-
-    initAudio();
-
     return () => {
       audioManager.current?.disconnect();
+      audioManager.current = null;
     };
   }, []);
 
@@ -175,18 +226,73 @@ function TunerPage() {
     handlePitchDetectedRef.current = handlePitchDetected;
   }, [handlePitchDetected]);
 
-  // Toggle microphone
-  const toggleMicrophone = useCallback(() => {
-    if (!audioManager.current) return;
-
-    if (microphoneActive) {
+  // Toggle microphone — initializes audio on first click (requires user gesture)
+  const toggleMicrophone = useCallback(async () => {
+    if (microphoneActive && audioManager.current) {
       audioManager.current.stopListening();
       setMicrophoneActive(false);
-    } else {
+      return;
+    }
+
+    // Init audio if needed (first click or after disconnect)
+    const success = await initAudio();
+    if (success && audioManager.current) {
       audioManager.current.startListening();
       setMicrophoneActive(true);
+      toast.success('Microphone connected', {
+        description: 'Start playing to tune your instrument',
+      });
     }
-  }, [microphoneActive]);
+  }, [microphoneActive, initAudio]);
+
+  // Play a reference tone at a given frequency (user gesture context)
+  const playReferenceTone = useCallback((frequency: number) => {
+    // Stop any currently playing tone
+    if (toneOscRef.current) {
+      toneOscRef.current.stop();
+      toneOscRef.current = null;
+    }
+
+    // Create or reuse AudioContext for tone playback
+    if (!toneContextRef.current || toneContextRef.current.state === 'closed') {
+      toneContextRef.current = new AudioContext();
+    }
+    const ctx = toneContextRef.current;
+    if (ctx.state === 'suspended') ctx.resume();
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = frequency;
+    gain.gain.value = 0;
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    // Fade in over 50ms, sustain for 1.5s, fade out over 200ms
+    const now = ctx.currentTime;
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.3, now + 0.05);
+    gain.gain.setValueAtTime(0.3, now + 1.5);
+    gain.gain.linearRampToValueAtTime(0, now + 1.7);
+
+    osc.start(now);
+    osc.stop(now + 1.75);
+    toneOscRef.current = osc;
+    toneGainRef.current = gain;
+
+    osc.onended = () => {
+      toneOscRef.current = null;
+      toneGainRef.current = null;
+    };
+  }, []);
+
+  // Cleanup tone context on unmount
+  useEffect(() => {
+    return () => {
+      toneOscRef.current?.stop();
+      toneContextRef.current?.close();
+    };
+  }, []);
 
   // Sort notes by string number (high to low for display)
   const sortedNotes = useMemo(() => {
@@ -217,41 +323,46 @@ function TunerPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
-      <div className="container mx-auto p-6 space-y-6 max-w-4xl">
-        {/* Header */}
-        <div className="text-center space-y-2 pt-6">
-          <div className="flex items-center justify-center gap-3">
-            <Music className="h-10 w-10 text-primary" />
-            <h1 className="text-4xl font-bold">Instrument Tuner</h1>
+      <div className="container mx-auto px-4 py-3 space-y-3 max-w-5xl">
+        {/* Compact header bar: title + tuning + controls all in one row */}
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2">
+            <Music className="h-6 w-6 text-primary" />
+            <h1 className="text-lg font-bold">Instrument Tuner</h1>
           </div>
-          <p className="text-muted-foreground text-lg">
-            Free online tuner with real-time pitch detection
-          </p>
+          <div className="h-5 w-px bg-border hidden sm:block" />
+          {/* Tuning selector trigger */}
+          <button
+            onClick={() => setShowTuningSelector(!showTuningSelector)}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-accent transition-colors cursor-pointer"
+          >
+            <span className="font-semibold">{currentTuning.name}</span>
+            <span className="text-sm text-muted-foreground font-mono hidden sm:inline">{tuningDisplay}</span>
+            {showTuningSelector ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+          </button>
+          {/* Right-side controls */}
+          <div className="flex items-center gap-1 ml-auto">
+            <ShareTuning tuning={currentTuning} />
+            <Button
+              onClick={toggleMicrophone}
+              variant={microphoneActive ? 'default' : 'outline'}
+              size="sm"
+              className="gap-1.5"
+            >
+              {microphoneActive ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
+              <span className="hidden sm:inline">{microphoneActive ? 'Mic On' : 'Mic Off'}</span>
+            </Button>
+            <Button
+              onClick={() => setShowSettings(!showSettings)}
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              aria-label={showSettings ? 'Hide settings' : 'Show settings'}
+            >
+              <SettingsIcon className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
-
-        {/* Current Tuning Display */}
-        <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => setShowTuningSelector(!showTuningSelector)}>
-          <CardContent className="py-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-sm text-muted-foreground">Current Tuning</div>
-                <div className="text-xl font-bold">{currentTuning.name}</div>
-                <div className="text-sm text-muted-foreground font-mono">{tuningDisplay}</div>
-              </div>
-              <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                <ShareTuning tuning={currentTuning} />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setShowTuningSelector(!showTuningSelector)}
-                  aria-label={showTuningSelector ? 'Hide tuning selector' : 'Show tuning selector'}
-                >
-                  {showTuningSelector ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Tuning Selector (collapsible) */}
         {showTuningSelector && !showCustomBuilder && (
@@ -273,49 +384,10 @@ function TunerPage() {
           />
         )}
 
-        {/* Microphone Status */}
-        <div className="flex justify-center">
-          <Button
-            onClick={toggleMicrophone}
-            variant={microphoneActive ? 'default' : 'outline'}
-            size="lg"
-            className="gap-2"
-          >
-            {microphoneActive ? (
-              <>
-                <Mic className="h-5 w-5" />
-                Microphone Active
-              </>
-            ) : (
-              <>
-                <MicOff className="h-5 w-5" />
-                Microphone Off
-              </>
-            )}
-          </Button>
-        </div>
-
-        {/* Settings Toggle */}
-        <div className="flex justify-center">
-          <Button
-            onClick={() => setShowSettings(!showSettings)}
-            variant="ghost"
-            size="sm"
-            className="gap-2"
-          >
-            <SettingsIcon className="h-4 w-4" />
-            {showSettings ? 'Hide' : 'Show'} Settings
-          </Button>
-        </div>
-
         {/* Settings Panel */}
         {showSettings && (
           <Card>
-            <CardHeader>
-              <CardTitle>Tuner Settings</CardTitle>
-              <CardDescription>Customize sensitivity and behavior</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="pt-4 pb-4 space-y-3">
               {/* Auto Detect String */}
               <div className="flex items-center justify-between">
                 <Label htmlFor="auto-detect">Auto-detect string</Label>
@@ -375,16 +447,10 @@ function TunerPage() {
           </Card>
         )}
 
-        {/* Strings Display */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Strings</CardTitle>
-            <CardDescription>
-              {currentTuning.name} - {currentTuning.notes.length} strings
-              {currentTuning.description && ` - ${currentTuning.description}`}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+        {/* Unified Tuning View: Strings + Gauge (1.4) */}
+        <div ref={stringsRef} className="lg:flex lg:gap-6 space-y-4 lg:space-y-0">
+          {/* Strings Grid */}
+          <div className="lg:flex-1 min-w-0">
             <div className={`grid ${gridCols} gap-3`}>
               {sortedNotes.map((tuning) => {
                 const isHighlighted = highlightedString === tuning.string;
@@ -396,87 +462,56 @@ function TunerPage() {
                 return (
                   <div
                     key={tuning.string}
-                    className={`p-4 rounded-lg border-2 text-center transition-all ${
+                    onClick={() => playReferenceTone(tuning.frequency)}
+                    className={`p-3 rounded-lg border-2 text-center transition-colors duration-150 ease-in-out cursor-pointer select-none ${
                       isHighlighted
                         ? isInTune
-                          ? 'border-green-500 bg-green-50 dark:bg-green-950/30'
+                          ? 'border-green-500 bg-green-50 dark:bg-green-950/30 ring-2 ring-green-500/30 animate-[in-tune-pulse_300ms_ease-out]'
                           : 'border-blue-500 bg-blue-50 dark:bg-blue-950/30'
-                        : 'border-gray-200 dark:border-gray-700'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                     }`}
                   >
                     <div className="text-xs text-muted-foreground mb-1">
                       String {tuning.string}
                     </div>
-                    <div className="text-3xl font-bold">{tuning.name}</div>
+                    <div className="text-2xl font-bold">{tuning.name}</div>
                     <div className="text-xs text-muted-foreground mt-1">
-                      {tuning.note}
+                      {tuning.frequency.toFixed(0)} Hz
                     </div>
-                    <div className="text-xs text-muted-foreground">
-                      {tuning.frequency.toFixed(1)} Hz
-                    </div>
-                    {isHighlighted && detectedPitch && (
-                      <Badge
-                        variant={isInTune ? 'default' : 'secondary'}
-                        className="mt-2 text-xs"
-                      >
-                        {detectedPitch.cents > 0 ? '+' : ''}
-                        {detectedPitch.cents.toFixed(0)} cents
-                      </Badge>
-                    )}
                   </div>
                 );
               })}
             </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        {/* Pitch Gauge */}
-        {detectedPitch && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Live Tuner</CardTitle>
-              <CardDescription>
-                Play a string to see real-time tuning feedback
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex justify-center">
-              <PitchGauge
-                note={detectedPitch.note}
-                cents={detectedPitch.cents}
-                clarity={detectedPitch.clarity}
-                inTuneThreshold={pitchSensitivity}
-                smoothingFactor={pitchSmoothing}
-              />
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Instructions */}
-        {!detectedPitch && microphoneActive && (
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center space-y-2">
-                <Music className="h-12 w-12 text-muted-foreground mx-auto" />
-                <p className="text-muted-foreground">
-                  Play any string on your instrument to start tuning
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  The tuner will automatically detect which string you're playing
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+          {/* Pitch Gauge — always rendered (1.3), stale fade (3.2), subdued note (3.6) */}
+          <div className={`lg:w-80 flex-shrink-0 flex flex-col items-center justify-start transition-opacity duration-300 ${
+            !detectedPitch ? 'opacity-40' : isStale ? 'opacity-40 saturate-50' : 'opacity-100'
+          }`}>
+            <PitchGauge
+              note={detectedPitch?.note ?? '—'}
+              cents={detectedPitch?.cents ?? 0}
+              clarity={detectedPitch?.clarity}
+              inTuneThreshold={pitchSensitivity}
+              smoothingFactor={pitchSmoothing}
+              subdueNote={highlightedString !== null}
+            />
+            {!detectedPitch && microphoneActive && (
+              <p className="text-sm text-muted-foreground text-center mt-2">
+                Play a string to start tuning
+              </p>
+            )}
+            {!microphoneActive && (
+              <p className="text-sm text-muted-foreground text-center mt-2">
+                Enable microphone to begin
+              </p>
+            )}
+          </div>
+        </div>
 
         {/* Footer */}
-        <div className="text-center text-sm text-muted-foreground pb-6">
-          <p>
-            Supports {INSTRUMENT_CATEGORIES.length} instrument types with{' '}
-            {INSTRUMENT_CATEGORIES.reduce((sum, cat) => sum + cat.tunings.length, 0)}+ preset tunings
-          </p>
-          <p className="mt-1">
-            Create custom tunings and share them via URL
-          </p>
+        <div className="text-center text-xs text-muted-foreground/70 pb-4">
+          {INSTRUMENT_CATEGORIES.reduce((sum, cat) => sum + cat.tunings.length, 0)}+ tunings across {INSTRUMENT_CATEGORIES.length} instruments · Share via URL
         </div>
       </div>
     </div>
