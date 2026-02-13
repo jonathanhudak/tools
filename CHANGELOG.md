@@ -1,3 +1,10 @@
+# [1.21.0](https://github.com/jonathanhudak/tools/compare/v1.20.0...v1.21.0) (2026-02-13)
+
+
+### Features
+
+* **instrument-tuner:** dark mode support and press-to-play string buttons ([1b3b049](https://github.com/jonathanhudak/tools/commit/1b3b049ac4c9cdbf9a966ed044c68ffdad4ae7fa))
+
 # [1.20.0](https://github.com/jonathanhudak/tools/compare/v1.19.0...v1.20.0) (2026-02-13)
 
 
