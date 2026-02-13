@@ -14,6 +14,9 @@ import {
   Settings as SettingsIcon,
   ChevronDown,
   ChevronUp,
+  Sun,
+  Moon,
+  Monitor,
 } from 'lucide-react';
 
 // Audio detection
@@ -31,6 +34,7 @@ import { parseTuningFromUrl, getTuningFromParams, updateUrlWithTuning } from '..
 import { TuningSelector } from '../components/TuningSelector';
 import { CustomTuningBuilder } from '../components/CustomTuningBuilder';
 import { ShareTuning } from '../components/ShareTuning';
+import { useTheme } from '../hooks/use-theme';
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
@@ -49,6 +53,9 @@ interface DetectedPitch {
 }
 
 function TunerPage() {
+  // Theme
+  const { theme, setTheme } = useTheme();
+
   // State
   const [microphoneActive, setMicrophoneActive] = useState(false);
   const [detectedPitch, setDetectedPitch] = useState<DetectedPitch | null>(null);
@@ -61,6 +68,7 @@ function TunerPage() {
   const [autoDetectString, setAutoDetectString] = useState(true);
   const [highlightedString, setHighlightedString] = useState<number | null>(null);
   const [isStale, setIsStale] = useState(false);
+  const [playingString, setPlayingString] = useState<number | null>(null);
 
   // Refs
   const audioManager = useRef<AudioManager | null>(null);
@@ -245,8 +253,9 @@ function TunerPage() {
     }
   }, [microphoneActive, initAudio]);
 
-  // Play a reference tone at a given frequency (user gesture context)
-  const playReferenceTone = useCallback((frequency: number) => {
+  // Start a reference tone (plays until stopTone is called)
+  const startTone = useCallback((frequency: number, stringNum?: number) => {
+    if (stringNum !== undefined) setPlayingString(stringNum);
     // Stop any currently playing tone
     if (toneOscRef.current) {
       toneOscRef.current.stop();
@@ -268,15 +277,12 @@ function TunerPage() {
     osc.connect(gain);
     gain.connect(ctx.destination);
 
-    // Fade in over 50ms, sustain for 1.5s, fade out over 200ms
+    // Fade in over 50ms, sustain indefinitely
     const now = ctx.currentTime;
     gain.gain.setValueAtTime(0, now);
     gain.gain.linearRampToValueAtTime(0.3, now + 0.05);
-    gain.gain.setValueAtTime(0.3, now + 1.5);
-    gain.gain.linearRampToValueAtTime(0, now + 1.7);
 
     osc.start(now);
-    osc.stop(now + 1.75);
     toneOscRef.current = osc;
     toneGainRef.current = gain;
 
@@ -284,6 +290,21 @@ function TunerPage() {
       toneOscRef.current = null;
       toneGainRef.current = null;
     };
+  }, []);
+
+  // Stop the current reference tone with a smooth fade-out
+  const stopTone = useCallback(() => {
+    setPlayingString(null);
+    if (!toneGainRef.current || !toneOscRef.current || !toneContextRef.current) return;
+    const ctx = toneContextRef.current;
+    const gain = toneGainRef.current;
+    const osc = toneOscRef.current;
+
+    const now = ctx.currentTime;
+    gain.gain.cancelScheduledValues(now);
+    gain.gain.setValueAtTime(gain.gain.value, now);
+    gain.gain.linearRampToValueAtTime(0, now + 0.15);
+    osc.stop(now + 0.2);
   }, []);
 
   // Cleanup tone context on unmount
@@ -443,6 +464,30 @@ function TunerPage() {
                   <span>Very Smooth (100%)</span>
                 </div>
               </div>
+
+              {/* Theme */}
+              <div className="flex items-center justify-between">
+                <Label>Theme</Label>
+                <div className="flex gap-1">
+                  {([
+                    { value: 'system' as const, icon: Monitor, label: 'System' },
+                    { value: 'light' as const, icon: Sun, label: 'Light' },
+                    { value: 'dark' as const, icon: Moon, label: 'Dark' },
+                  ]).map(({ value, icon: Icon, label }) => (
+                    <Button
+                      key={value}
+                      variant={theme === value ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setTheme(value)}
+                      className="gap-1.5 h-8"
+                      aria-label={label}
+                    >
+                      <Icon className="h-3.5 w-3.5" />
+                      <span className="hidden sm:inline text-xs">{label}</span>
+                    </Button>
+                  ))}
+                </div>
+              </div>
             </CardContent>
           </Card>
         )}
@@ -454,6 +499,7 @@ function TunerPage() {
             <div className={`grid ${gridCols} gap-3`}>
               {sortedNotes.map((tuning) => {
                 const isHighlighted = highlightedString === tuning.string;
+                const isPlaying = playingString === tuning.string;
                 const isInTune =
                   detectedPitch &&
                   isHighlighted &&
@@ -462,8 +508,19 @@ function TunerPage() {
                 return (
                   <div
                     key={tuning.string}
-                    onClick={() => playReferenceTone(tuning.frequency)}
-                    className={`p-3 rounded-lg border-2 text-center transition-colors duration-150 ease-in-out cursor-pointer select-none ${
+                    onMouseDown={(e) => { e.preventDefault(); startTone(tuning.frequency, tuning.string); }}
+                    onMouseUp={stopTone}
+                    onMouseLeave={stopTone}
+                    onTouchStart={(e) => { e.preventDefault(); startTone(tuning.frequency, tuning.string); }}
+                    onTouchEnd={stopTone}
+                    onTouchCancel={stopTone}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); startTone(tuning.frequency, tuning.string); } }}
+                    onKeyUp={(e) => { if (e.key === ' ' || e.key === 'Enter') stopTone(); }}
+                    className={`p-3 rounded-lg border-2 text-center transition-all duration-150 ease-in-out cursor-pointer select-none ${
+                      isPlaying ? 'scale-95 brightness-110 ' : ''
+                    }${
                       isHighlighted
                         ? isInTune
                           ? 'border-green-500 bg-green-50 dark:bg-green-950/30 ring-2 ring-green-500/30 animate-[in-tune-pulse_300ms_ease-out]'

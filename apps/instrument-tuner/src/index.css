@@ -4,10 +4,24 @@
 :root {
   --color-primary: 139 92% 46%;
   --radius-lg: 0.75rem;
+
+  /* Pitch gauge SVG colors (light mode) */
+  --gauge-track: #e5e7eb;
+  --gauge-tick: #4b5563;
+  --gauge-tick-minor: #6b7280;
+  --gauge-label: #4b5563;
+  --gauge-needle: #374151;
 }
 
 .dark {
   --color-primary: 139 92% 56%;
+
+  /* Pitch gauge SVG colors (dark mode) */
+  --gauge-track: #4b5563;
+  --gauge-tick: #9ca3af;
+  --gauge-tick-minor: #9ca3af;
+  --gauge-label: #9ca3af;
+  --gauge-needle: #d1d5db;
 }
 
 /* In-tune pulse animation (3.3) */

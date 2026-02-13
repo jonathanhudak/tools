@@ -56,7 +56,7 @@ const describeArcBand = (cx: number, cy: number, rOuter: number, rInner: number,
   ].join(' ');
 };
 
-// Gauge SVG component
+// Gauge SVG component — uses CSS variables for theme-aware colors
 const GaugeSVG = React.memo(({ percent }: { percent: number }) => {
   const cx = 100, cy = 100, rOuter = 85, rInner = 68;
   // Arc spans 180° (left) to 0° (right)
@@ -77,7 +77,7 @@ const GaugeSVG = React.memo(({ percent }: { percent: number }) => {
   return (
     <svg viewBox="0 0 200 115" className="w-full h-full">
       {/* Background track */}
-      <path d={trackBand} fill="#e5e7eb" opacity={0.3} />
+      <path d={trackBand} fill="var(--gauge-track, #e5e7eb)" opacity={0.3} />
 
       {/* Color zones as filled bands */}
       <path d={flatBand} fill={FLAT_COLOR} opacity={0.75} />
@@ -89,7 +89,7 @@ const GaugeSVG = React.memo(({ percent }: { percent: number }) => {
         const inner = polarToCartesian(cx, cy, rInner - 5, 90);
         const outer = polarToCartesian(cx, cy, rOuter + 5, 90);
         return <line x1={inner.x} y1={inner.y} x2={outer.x} y2={outer.y}
-          stroke="#4b5563" strokeWidth={2.5} />;
+          stroke="var(--gauge-tick, #4b5563)" strokeWidth={2.5} />;
       })()}
 
       {/* Minor tick marks at ±25 cents (45° and 135°) */}
@@ -98,21 +98,21 @@ const GaugeSVG = React.memo(({ percent }: { percent: number }) => {
         const outer = polarToCartesian(cx, cy, rOuter + 3, angle);
         return (
           <line key={angle} x1={inner.x} y1={inner.y} x2={outer.x} y2={outer.y}
-            stroke="#6b7280" strokeWidth={1.5} />
+            stroke="var(--gauge-tick-minor, #6b7280)" strokeWidth={1.5} />
         );
       })}
 
       {/* Flat / Sharp labels */}
-      <text x="22" y={cy + 14} fontSize="10" fill="#4b5563" fontWeight="500" textAnchor="middle">♭</text>
-      <text x="178" y={cy + 14} fontSize="10" fill="#4b5563" fontWeight="500" textAnchor="middle">♯</text>
+      <text x="22" y={cy + 14} fontSize="10" fill="var(--gauge-label, #4b5563)" fontWeight="500" textAnchor="middle">♭</text>
+      <text x="178" y={cy + 14} fontSize="10" fill="var(--gauge-label, #4b5563)" fontWeight="500" textAnchor="middle">♯</text>
 
       {/* Needle */}
       <polygon
         points={`${needleTip.x},${needleTip.y} ${needleBase1.x},${needleBase1.y} ${needleBase2.x},${needleBase2.y}`}
-        fill="#374151"
+        fill="var(--gauge-needle, #374151)"
       />
-      <circle cx={cx} cy={cy} r={6} fill="#374151" />
-      <circle cx={cx} cy={cy} r={3} fill="#6b7280" />
+      <circle cx={cx} cy={cy} r={6} fill="var(--gauge-needle, #374151)" />
+      <circle cx={cx} cy={cy} r={3} fill="var(--gauge-tick-minor, #6b7280)" />
     </svg>
   );
 });
