@@ -1,3 +1,10 @@
+## [1.21.1](https://github.com/jonathanhudak/tools/compare/v1.21.0...v1.21.1) (2026-02-14)
+
+
+### Bug Fixes
+
+* **instrument-tuner:** prevent stuck tones on touch devices ([f24a419](https://github.com/jonathanhudak/tools/commit/f24a41955ab56a6105728da5566a10f189adc4af))
+
 # [1.21.0](https://github.com/jonathanhudak/tools/compare/v1.20.0...v1.21.0) (2026-02-13)
 
 
