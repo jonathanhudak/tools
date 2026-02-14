@@ -81,6 +81,7 @@ function TunerPage() {
   const toneContextRef = useRef<AudioContext | null>(null);
   const toneOscRef = useRef<OscillatorNode | null>(null);
   const toneGainRef = useRef<GainNode | null>(null);
+  const toneTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Parse tuning from URL on mount
   useEffect(() => {
@@ -253,14 +254,40 @@ function TunerPage() {
     }
   }, [microphoneActive, initAudio]);
 
-  // Start a reference tone (plays until stopTone is called)
+  // Stop the current reference tone with a smooth fade-out
+  const stopTone = useCallback(() => {
+    if (toneTimeoutRef.current) {
+      clearTimeout(toneTimeoutRef.current);
+      toneTimeoutRef.current = null;
+    }
+    setPlayingString(null);
+
+    const gain = toneGainRef.current;
+    const osc = toneOscRef.current;
+    const ctx = toneContextRef.current;
+    if (!gain || !osc || !ctx) return;
+
+    // Clear refs immediately to prevent double-stop
+    toneGainRef.current = null;
+    toneOscRef.current = null;
+
+    try {
+      const now = ctx.currentTime;
+      gain.gain.cancelScheduledValues(now);
+      gain.gain.setValueAtTime(gain.gain.value, now);
+      gain.gain.linearRampToValueAtTime(0, now + 0.15);
+      osc.stop(now + 0.2);
+    } catch {
+      // Oscillator already stopped — ignore
+    }
+  }, []);
+
+  // Start a reference tone (plays until stopTone, max 5s safety)
   const startTone = useCallback((frequency: number, stringNum?: number) => {
     if (stringNum !== undefined) setPlayingString(stringNum);
-    // Stop any currently playing tone
-    if (toneOscRef.current) {
-      toneOscRef.current.stop();
-      toneOscRef.current = null;
-    }
+
+    // Stop any currently playing tone first
+    stopTone();
 
     // Create or reuse AudioContext for tone playback
     if (!toneContextRef.current || toneContextRef.current.state === 'closed') {
@@ -277,7 +304,7 @@ function TunerPage() {
     osc.connect(gain);
     gain.connect(ctx.destination);
 
-    // Fade in over 50ms, sustain indefinitely
+    // Fade in over 50ms, sustain until release
     const now = ctx.currentTime;
     gain.gain.setValueAtTime(0, now);
     gain.gain.linearRampToValueAtTime(0.3, now + 0.05);
@@ -286,30 +313,30 @@ function TunerPage() {
     toneOscRef.current = osc;
     toneGainRef.current = gain;
 
-    osc.onended = () => {
-      toneOscRef.current = null;
-      toneGainRef.current = null;
+    // Safety timeout — auto-stop after 5s in case release event is lost
+    toneTimeoutRef.current = setTimeout(stopTone, 5000);
+  }, [stopTone]);
+
+  // Global safety net: stop tone if pointer/touch released anywhere on the page
+  useEffect(() => {
+    const handleGlobalRelease = () => {
+      if (toneOscRef.current) stopTone();
     };
-  }, []);
-
-  // Stop the current reference tone with a smooth fade-out
-  const stopTone = useCallback(() => {
-    setPlayingString(null);
-    if (!toneGainRef.current || !toneOscRef.current || !toneContextRef.current) return;
-    const ctx = toneContextRef.current;
-    const gain = toneGainRef.current;
-    const osc = toneOscRef.current;
-
-    const now = ctx.currentTime;
-    gain.gain.cancelScheduledValues(now);
-    gain.gain.setValueAtTime(gain.gain.value, now);
-    gain.gain.linearRampToValueAtTime(0, now + 0.15);
-    osc.stop(now + 0.2);
-  }, []);
+    window.addEventListener('pointerup', handleGlobalRelease);
+    window.addEventListener('pointercancel', handleGlobalRelease);
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) handleGlobalRelease();
+    });
+    return () => {
+      window.removeEventListener('pointerup', handleGlobalRelease);
+      window.removeEventListener('pointercancel', handleGlobalRelease);
+    };
+  }, [stopTone]);
 
   // Cleanup tone context on unmount
   useEffect(() => {
     return () => {
+      if (toneTimeoutRef.current) clearTimeout(toneTimeoutRef.current);
       toneOscRef.current?.stop();
       toneContextRef.current?.close();
     };
@@ -508,16 +535,15 @@ function TunerPage() {
                 return (
                   <div
                     key={tuning.string}
-                    onMouseDown={(e) => { e.preventDefault(); startTone(tuning.frequency, tuning.string); }}
-                    onMouseUp={stopTone}
-                    onMouseLeave={stopTone}
-                    onTouchStart={(e) => { e.preventDefault(); startTone(tuning.frequency, tuning.string); }}
-                    onTouchEnd={stopTone}
-                    onTouchCancel={stopTone}
+                    onPointerDown={(e) => { e.preventDefault(); startTone(tuning.frequency, tuning.string); }}
+                    onPointerUp={stopTone}
+                    onPointerLeave={stopTone}
+                    onPointerCancel={stopTone}
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); startTone(tuning.frequency, tuning.string); } }}
                     onKeyUp={(e) => { if (e.key === ' ' || e.key === 'Enter') stopTone(); }}
+                    style={{ touchAction: 'none' }}
                     className={`p-3 rounded-lg border-2 text-center transition-all duration-150 ease-in-out cursor-pointer select-none ${
                       isPlaying ? 'scale-95 brightness-110 ' : ''
                     }${
