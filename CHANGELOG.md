@@ -1,3 +1,11 @@
+# [1.22.0](https://github.com/jonathanhudak/tools/compare/v1.21.1...v1.22.0) (2026-02-16)
+
+
+### Features
+
+* chord learning & quiz system - all acceptance criteria met ([#70](https://github.com/jonathanhudak/tools/issues/70)) ([9864ec0](https://github.com/jonathanhudak/tools/commit/9864ec08ec36d2e29234a3d1d381b8902a37510b))
+* **music-practice:** Scales & Modes Quiz System ([#69](https://github.com/jonathanhudak/tools/issues/69)) ([b048b2f](https://github.com/jonathanhudak/tools/commit/b048b2f1af17843f6189130a7055d07275c78152))
+
 ## [1.21.1](https://github.com/jonathanhudak/tools/compare/v1.21.0...v1.21.1) (2026-02-14)
 
 
