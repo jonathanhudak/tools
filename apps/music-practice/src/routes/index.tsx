@@ -1,326 +1,145 @@
 /**
- * Settings Route - Game configuration and start screen
+ * Landing Route - Music Practice Suite Hub
+ * Shows all available practice modules
  */
 
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { Button } from '@hudak/ui/components/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@hudak/ui/components/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@hudak/ui/components/select';
-import { Label } from '@hudak/ui/components/label';
-import { Play, Music2, Settings2, Mic, Piano, Guitar } from 'lucide-react';
+import { Music, Zap, BookOpen, Grid3x3 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { fetchAudioInputDevices } from '../lib/services/audio-devices';
-import { Storage } from '../lib/utils/storage';
-import type { GameMode } from '../hooks/use-game-round';
 
-export const Route = createFileRoute('/')(
-  { component: SettingsRoute }
-);
+export const Route = createFileRoute('/')({
+  component: LandingRoute,
+});
 
-function SettingsRoute() {
+function LandingRoute() {
   const navigate = useNavigate();
 
-  // Settings state
-  const [instrument, setInstrument] = useState('piano');
-  const [clef, setClef] = useState('treble');
-  const [difficulty, setDifficulty] = useState<'beginner' | 'intermediate' | 'advanced'>('beginner');
-  const [gameMode, setGameMode] = useState<GameMode>('practice');
-  const [tabDisplayMode, setTabDisplayMode] = useState<'staff' | 'tab' | 'both'>('both');
-  const [pitchSensitivity, setPitchSensitivity] = useState(10);
-  const [pitchSmoothing, setPitchSmoothing] = useState(0.7);
-  const [selectedAudioDevice, setSelectedAudioDevice] = useState('');
-
-  // Load saved settings
-  useEffect(() => {
-    const settings = Storage.getSettings();
-    if (settings.instrument) setInstrument(settings.instrument);
-    if (settings.clef) setClef(settings.clef);
-    if (settings.gameMode) setGameMode(settings.gameMode as GameMode);
-    if (settings.tabDisplayMode) setTabDisplayMode(settings.tabDisplayMode as 'staff' | 'tab' | 'both');
-
-    // Map range to difficulty
-    const rangeToDifficulty: Record<string, 'beginner' | 'intermediate' | 'advanced'> = {
-      'c4-c5': 'beginner',
-      'c4-g5': 'intermediate',
-      'a3-c6': 'advanced'
-    };
-    if (settings.range && rangeToDifficulty[settings.range]) {
-      setDifficulty(rangeToDifficulty[settings.range]);
-    }
-  }, []);
-
-  const isMicrophoneInstrument = instrument === 'violin' || instrument === 'guitar';
-
-  const { data: audioDevices = [] } = useQuery({
-    queryKey: ['audio-devices'],
-    queryFn: fetchAudioInputDevices,
-    enabled: isMicrophoneInstrument,
-  });
-
-  useEffect(() => {
-    if (audioDevices.length > 0 && !selectedAudioDevice) {
-      setSelectedAudioDevice(audioDevices[0].deviceId);
-    }
-  }, [audioDevices, selectedAudioDevice]);
-
-  const handleStartGame = () => {
-    // Save settings
-    const difficultyToRange: Record<typeof difficulty, string> = {
-      'beginner': 'c4-c5',
-      'intermediate': 'c4-g5',
-      'advanced': 'a3-c6'
-    };
-    Storage.saveSettings({
-      instrument,
-      clef: clef as 'treble' | 'bass',
-      range: difficultyToRange[difficulty],
-      gameMode,
-      tabDisplayMode,
-    });
-
-    // Navigate to game with settings as search params
-    navigate({
-      to: '/play',
-      search: {
-        instrument,
-        clef,
-        difficulty,
-        gameMode,
-        tabDisplayMode,
-        pitchSensitivity,
-        pitchSmoothing,
-        selectedAudioDevice,
-      },
-    });
-  };
+  const modules = [
+    {
+      id: 'scales-quiz',
+      title: '🎸 Scales Quiz',
+      description: 'Practice major and minor scales with guitar and piano',
+      details: 'Learn scale theory through interactive identification practice. Toggle between guitar fretboard and piano keyboard.',
+      icon: Music,
+      color: 'from-blue-500 to-blue-600',
+      borderColor: 'hover:border-blue-500',
+      buttonText: 'Start Quiz',
+    },
+    {
+      id: 'chord-quiz',
+      title: '🎹 Chord Recognition',
+      description: 'Learn and identify chords with visual reference',
+      details: 'Master chord theory with interactive learning. Browse chord diagrams and audio, then test yourself with quizzes. Supports guitar and piano.',
+      icon: BookOpen,
+      color: 'from-purple-500 to-purple-600',
+      borderColor: 'hover:border-purple-500',
+      buttonText: 'Start Quiz',
+    },
+    {
+      id: 'chord-scale',
+      title: '🔗 Chord-Scale Matrix',
+      description: 'Understand which scales work with which chords',
+      details: 'Learn the relationships between chords and scales. Interactive matrix game shows you which scales contain which chords.',
+      icon: Grid3x3,
+      color: 'from-green-500 to-green-600',
+      borderColor: 'hover:border-green-500',
+      buttonText: 'Play Game',
+    },
+    {
+      id: 'play',
+      title: '📖 Sight Reading',
+      description: 'Practice reading sheet music in real-time',
+      details: 'Become a fluent music reader. See a note on staff, identify it on your instrument. Supports MIDI, microphone, and virtual keyboard.',
+      icon: Zap,
+      color: 'from-orange-500 to-orange-600',
+      borderColor: 'hover:border-orange-500',
+      buttonText: 'Start Practice',
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center p-6">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-2xl"
-      >
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800">
+      <div className="container mx-auto py-12 px-4">
         {/* Header */}
-        <div className="text-center mb-10">
-          <motion.div
-            initial={{ scale: 0.9 }}
-            animate={{ scale: 1 }}
-            className="inline-flex items-center gap-3 mb-4"
-          >
-            <div className="p-3 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg">
-              <Music2 className="h-8 w-8 text-white" />
-            </div>
-          </motion.div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
-            Sight Reading Practice
-          </h1>
-          <p className="text-muted-foreground mt-2 text-lg">
-            Master music notation with instant feedback
-          </p>
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-16"
+        >
+          <h1 className="text-5xl font-bold text-white mb-4">Music Practice Suite</h1>
+          <p className="text-slate-300 text-xl">Master your music theory, scales, chords, and sight-reading</p>
+        </motion.div>
+
+        {/* Module Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+          {modules.map((module, idx) => {
+            const Icon = module.icon;
+            return (
+              <motion.div
+                key={module.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.1 }}
+              >
+                <Card
+                  onClick={() => navigate({ to: `/${module.id}` })}
+                  className={`bg-slate-800/50 border-slate-700 ${module.borderColor} cursor-pointer transition-all hover:shadow-2xl hover:scale-105`}
+                >
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="text-xl text-white">{module.title}</CardTitle>
+                        <CardDescription className="text-slate-400 mt-1">{module.description}</CardDescription>
+                      </div>
+                      <div className={`p-3 rounded-lg bg-gradient-to-br ${module.color} text-white`}>
+                        <Icon className="w-6 h-6" />
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-slate-300 mb-4">{module.details}</p>
+                    <Button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate({ to: `/${module.id}` });
+                      }}
+                      className={`w-full bg-gradient-to-r ${module.color} hover:opacity-90 text-white`}
+                    >
+                      {module.buttonText} →
+                    </Button>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            );
+          })}
         </div>
 
-        {/* Settings Card */}
-        <Card className="border-2 shadow-xl">
-          <CardHeader className="pb-4">
-            <div className="flex items-center gap-2">
-              <Settings2 className="h-5 w-5 text-muted-foreground" />
-              <CardTitle>Practice Settings</CardTitle>
+        {/* Features */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="bg-slate-800/50 border border-slate-700 rounded-lg p-8 text-center max-w-2xl mx-auto"
+        >
+          <h2 className="text-2xl font-bold text-white mb-4">Why Choose Music Practice?</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
+            <div>
+              <h3 className="font-semibold text-blue-400 mb-2">🎵 Guitar & Piano</h3>
+              <p className="text-slate-400 text-sm">Practice on your preferred instrument</p>
             </div>
-            <CardDescription>Configure your practice session</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-8">
-            {/* Instrument Selection */}
-            <div className="space-y-3">
-              <Label className="text-base font-medium">Instrument</Label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {[
-                  { id: 'piano', label: 'Piano', icon: Piano, desc: 'MIDI' },
-                  { id: 'piano-virtual', label: 'Piano', icon: Piano, desc: 'Virtual' },
-                  { id: 'violin', label: 'Violin', icon: Mic, desc: 'Mic' },
-                  { id: 'guitar', label: 'Guitar', icon: Guitar, desc: 'Mic' },
-                ].map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => setInstrument(item.id)}
-                    className={`relative p-4 rounded-xl border-2 transition-all ${
-                      instrument === item.id
-                        ? 'border-violet-500 bg-violet-50 dark:bg-violet-950/30'
-                        : 'border-border hover:border-muted-foreground/50'
-                    }`}
-                  >
-                    <item.icon className={`h-6 w-6 mx-auto mb-2 ${
-                      instrument === item.id ? 'text-violet-600' : 'text-muted-foreground'
-                    }`} />
-                    <div className="text-sm font-medium">{item.label}</div>
-                    <div className="text-xs text-muted-foreground">{item.desc}</div>
-                  </button>
-                ))}
-              </div>
+            <div>
+              <h3 className="font-semibold text-purple-400 mb-2">📊 Instant Feedback</h3>
+              <p className="text-slate-400 text-sm">Real-time validation and detailed results</p>
             </div>
-
-            {/* Two-column layout for main settings */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Clef */}
-              <div className="space-y-2">
-                <Label htmlFor="clef">Clef</Label>
-                <Select value={clef} onValueChange={setClef}>
-                  <SelectTrigger id="clef">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="treble">Treble Clef</SelectItem>
-                    <SelectItem value="bass">Bass Clef</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Difficulty */}
-              <div className="space-y-2">
-                <Label htmlFor="difficulty">Difficulty</Label>
-                <Select value={difficulty} onValueChange={(v) => setDifficulty(v as typeof difficulty)}>
-                  <SelectTrigger id="difficulty">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="beginner">Beginner (C4-C5)</SelectItem>
-                    <SelectItem value="intermediate">Intermediate (C4-G5)</SelectItem>
-                    <SelectItem value="advanced">Advanced (A3-C6)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Game Mode */}
-              <div className="space-y-2">
-                <Label htmlFor="gameMode">Game Mode</Label>
-                <Select value={gameMode} onValueChange={(v) => setGameMode(v as GameMode)}>
-                  <SelectTrigger id="gameMode">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="practice">Practice (No Timer)</SelectItem>
-                    <SelectItem value="timed">Timed Challenge</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Tab Display Mode (Guitar only) */}
-              {instrument === 'guitar' && (
-                <div className="space-y-2">
-                  <Label htmlFor="tabDisplayMode">Notation Display</Label>
-                  <Select value={tabDisplayMode} onValueChange={(v) => setTabDisplayMode(v as typeof tabDisplayMode)}>
-                    <SelectTrigger id="tabDisplayMode">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="both">Staff + Tab</SelectItem>
-                      <SelectItem value="tab">Tablature Only</SelectItem>
-                      <SelectItem value="staff">Staff Only</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
+            <div>
+              <h3 className="font-semibold text-green-400 mb-2">🎯 Comprehensive</h3>
+              <p className="text-slate-400 text-sm">Theory, sight-reading, and ear training</p>
             </div>
-
-            {/* Microphone Settings */}
-            {isMicrophoneInstrument && (
-              <div className="space-y-6 p-4 rounded-xl bg-muted/50">
-                <div className="flex items-center gap-2 text-sm font-medium">
-                  <Mic className="h-4 w-4" />
-                  Microphone Settings
-                </div>
-
-                {audioDevices.length > 0 && (
-                  <div className="space-y-2">
-                    <Label htmlFor="audioDevice">Audio Input</Label>
-                    <Select value={selectedAudioDevice} onValueChange={setSelectedAudioDevice}>
-                      <SelectTrigger id="audioDevice">
-                        <SelectValue placeholder="Select microphone..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {audioDevices.map((device) => (
-                          <SelectItem key={device.deviceId} value={device.deviceId}>
-                            {device.label || `Microphone ${device.deviceId.substring(0, 8)}`}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <Label htmlFor="pitchSensitivity">Pitch Sensitivity</Label>
-                      <span className="text-sm text-muted-foreground">±{pitchSensitivity}¢</span>
-                    </div>
-                    <input
-                      id="pitchSensitivity"
-                      type="range"
-                      min="3"
-                      max="20"
-                      value={pitchSensitivity}
-                      onChange={(e) => setPitchSensitivity(Number(e.target.value))}
-                      className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer"
-                    />
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>Strict</span>
-                      <span>Lenient</span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <Label htmlFor="pitchSmoothing">Dial Smoothing</Label>
-                      <span className="text-sm text-muted-foreground">{Math.round(pitchSmoothing * 100)}%</span>
-                    </div>
-                    <input
-                      id="pitchSmoothing"
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.05"
-                      value={pitchSmoothing}
-                      onChange={(e) => setPitchSmoothing(Number(e.target.value))}
-                      className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer"
-                    />
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>Instant</span>
-                      <span>Smooth</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Start Button */}
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Button
-                onClick={handleStartGame}
-                size="lg"
-                className="w-full h-16 text-lg font-semibold bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 shadow-lg"
-              >
-                <Play className="mr-3 h-6 w-6" />
-                {gameMode === 'timed' ? 'Start Challenge' : 'Start Practice'}
-              </Button>
-            </motion.div>
-
-            {/* Game Mode Info */}
-            <div className="text-center text-sm text-muted-foreground">
-              {gameMode === 'timed' ? (
-                <p>Complete notes against the clock with limited lives!</p>
-              ) : (
-                <p>Practice at your own pace with no time pressure.</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
+          </div>
+        </motion.div>
+      </div>
     </div>
   );
 }
