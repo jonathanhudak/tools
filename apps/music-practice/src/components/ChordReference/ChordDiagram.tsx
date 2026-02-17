@@ -3,17 +3,27 @@
  * Displays fingering positions on a guitar fretboard
  */
 
-import type { Chord } from '@/lib/chord-library';
+import type { Chord, ChordVoicing } from '@/lib/chord-library';
 import { motion } from 'framer-motion';
 
 interface ChordDiagramProps {
   chord: Chord;
+  voicing?: ChordVoicing;
   interactive?: boolean;
   size?: 'small' | 'medium' | 'large';
 }
 
-export function ChordDiagram({ chord, interactive = false, size = 'medium' }: ChordDiagramProps): JSX.Element {
-  const guitarFingerings = chord.fingerings.guitar;
+export function ChordDiagram({ chord, voicing, interactive = false, size = 'medium' }: ChordDiagramProps): JSX.Element {
+  // Use voicing if provided, otherwise use first voicing from chord
+  const guitarData = voicing?.guitar || chord.voicings[0]?.guitar;
+  const guitarFingerings = guitarData ? [
+    { string: 1, fret: guitarData.frets[0] },
+    { string: 2, fret: guitarData.frets[1] },
+    { string: 3, fret: guitarData.frets[2] },
+    { string: 4, fret: guitarData.frets[3] },
+    { string: 5, fret: guitarData.frets[4] },
+    { string: 6, fret: guitarData.frets[5] },
+  ] : chord.fingerings.guitar;
   const isOpen = guitarFingerings.every(f => f.fret <= 0);
   const maxFret = Math.max(...guitarFingerings.map(f => (f.fret > 0 ? f.fret : 0)), 4);
 
