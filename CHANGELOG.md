@@ -1,3 +1,10 @@
+# [1.26.0](https://github.com/jonathanhudak/tools/compare/v1.25.0...v1.26.0) (2026-02-17)
+
+
+### Features
+
+* **music-practice:** Phase 1 - Expand chord library to 50 beginner chords with piano support ([111d10e](https://github.com/jonathanhudak/tools/commit/111d10e3552c2f9d054c4f51bdadf39a93ffa26b)), closes [hi#neck](https://github.com/hi/issues/neck)
+
 # [1.25.0](https://github.com/jonathanhudak/tools/compare/v1.24.2...v1.25.0) (2026-02-17)
 
 
