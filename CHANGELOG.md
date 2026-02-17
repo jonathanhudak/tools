@@ -1,3 +1,10 @@
+## [1.26.2](https://github.com/jonathanhudak/tools/compare/v1.26.1...v1.26.2) (2026-02-17)
+
+
+### Bug Fixes
+
+* **music-practice:** implement deep link redirect from 404.html to SPA router ([a7e1139](https://github.com/jonathanhudak/tools/commit/a7e11398e8a446ea930d17c8e295e543e5974a7d))
+
 ## [1.26.1](https://github.com/jonathanhudak/tools/compare/v1.26.0...v1.26.1) (2026-02-17)
 
 
