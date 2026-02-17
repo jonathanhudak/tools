@@ -1,3 +1,10 @@
+## [1.26.1](https://github.com/jonathanhudak/tools/compare/v1.26.0...v1.26.1) (2026-02-17)
+
+
+### Bug Fixes
+
+* **music-practice:** fix InstrumentToggle prop name (onChange not onInstrumentChange) ([836bf96](https://github.com/jonathanhudak/tools/commit/836bf969789ddcb1ce8425c381c39909db66c218))
+
 # [1.26.0](https://github.com/jonathanhudak/tools/compare/v1.25.0...v1.26.0) (2026-02-17)
 
 
