@@ -47,11 +47,23 @@ export function PianoChordDiagram({ voicing, size = 'large' }: PianoChordDiagram
   const notes = voicing.piano.notes;
   const highlightedMidiNumbers = notes.map(noteNameToMidiNumber);
 
+  // Calculate the octave range needed for the chord
+  const minMidi = Math.min(...highlightedMidiNumbers);
+  const maxMidi = Math.max(...highlightedMidiNumbers);
+  
+  // Get starting octave (one octave below minimum, rounded down to C)
+  const minOctave = Math.floor(minMidi / 12);
+  const maxOctave = Math.floor(maxMidi / 12);
+  
+  // Start from the C of the octave below, end at B of the octave above
+  const startMidiKey = Math.max(12, (minOctave - 1) * 12); // Start from C, but not below C0 (12)
+  const endMidiKey = Math.min(108, (maxOctave + 2) * 12); // End at B of octave above
+
   // Piano keyboard dimensions
   const sizeConfig = {
-    small: { whiteKeyWidth: 25, whiteKeyHeight: 100, startKey: 21 }, // A0
-    medium: { whiteKeyWidth: 32, whiteKeyHeight: 140, startKey: 21 },
-    large: { whiteKeyWidth: 40, whiteKeyHeight: 180, startKey: 12 }, // C0
+    small: { whiteKeyWidth: 25, whiteKeyHeight: 100 },
+    medium: { whiteKeyWidth: 32, whiteKeyHeight: 140 },
+    large: { whiteKeyWidth: 40, whiteKeyHeight: 180 },
   };
 
   const config = sizeConfig[size];
@@ -59,8 +71,6 @@ export function PianoChordDiagram({ voicing, size = 'large' }: PianoChordDiagram
   const whiteKeyHeight = config.whiteKeyHeight;
   const blackKeyHeight = (whiteKeyHeight * 2) / 3;
   const blackKeyWidth = (whiteKeyWidth * 2) / 3;
-  const startMidiKey = config.startKey;
-  const endMidiKey = startMidiKey + 52; // Show ~52 keys (4 octaves)
 
   // Calculate white key positions
   const whiteKeys: Array<{ midiNum: number; x: number }> = [];
