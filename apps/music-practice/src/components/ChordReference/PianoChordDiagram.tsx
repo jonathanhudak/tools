@@ -55,15 +55,22 @@ export function PianoChordDiagram({ voicing, size = 'large' }: PianoChordDiagram
   const minOctave = Math.floor(minMidi / 12);
   const maxOctave = Math.floor(maxMidi / 12);
   
-  // Start from the C of the octave below, end at B of the octave above
-  const startMidiKey = Math.max(12, (minOctave - 1) * 12); // Start from C, but not below C0 (12)
-  const endMidiKey = Math.min(108, (maxOctave + 2) * 12); // End at B of octave above
+  // Intelligent octave range: show only 2-3 octaves spanning the chord
+  // Start from C of minOctave-1, but cap total width for mobile responsiveness
+  const octaveSpan = maxOctave - minOctave + 1; // How many octaves the chord spans
+  const displayOctaves = Math.max(2, Math.min(3, octaveSpan + 1)); // Show 2-3 octaves
+  const startOctave = Math.max(0, minOctave - Math.ceil((displayOctaves - octaveSpan) / 2));
+  const endOctave = Math.min(8, startOctave + displayOctaves);
+  
+  // Convert to MIDI numbers: C = 0 of octave, B = 11
+  const startMidiKey = Math.max(12, startOctave * 12);
+  const endMidiKey = Math.min(108, (endOctave + 1) * 12);
 
-  // Piano keyboard dimensions
+  // Piano keyboard dimensions - responsive based on size
   const sizeConfig = {
-    small: { whiteKeyWidth: 25, whiteKeyHeight: 100 },
-    medium: { whiteKeyWidth: 32, whiteKeyHeight: 140 },
-    large: { whiteKeyWidth: 40, whiteKeyHeight: 180 },
+    small: { whiteKeyWidth: 20, whiteKeyHeight: 80 },
+    medium: { whiteKeyWidth: 28, whiteKeyHeight: 120 },
+    large: { whiteKeyWidth: 32, whiteKeyHeight: 140 },
   };
 
   const config = sizeConfig[size];
@@ -89,14 +96,16 @@ export function PianoChordDiagram({ voicing, size = 'large' }: PianoChordDiagram
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="flex flex-col items-center gap-4"
+      className="flex flex-col items-center gap-4 w-full"
     >
-      {/* Piano Keyboard SVG */}
-      <svg
-        width={totalWidth + 4}
-        height={whiteKeyHeight + 50}
-        className="border-2 rounded-lg bg-slate-900 border-slate-700 shadow-2xl"
-      >
+      {/* Piano Keyboard SVG - Responsive Container */}
+      <div className="w-full overflow-x-auto rounded-lg border border-slate-700">
+        <svg
+          width={totalWidth + 4}
+          height={whiteKeyHeight + 50}
+          className="border-2 bg-slate-900 border-slate-700 shadow-2xl"
+          style={{ minWidth: totalWidth + 4, display: 'block', margin: '0 auto' }}
+        >
         {/* White keys */}
         {whiteKeys.map(({ midiNum, x }) => {
           const isHighlighted = highlightedMidiNumbers.includes(midiNum);
@@ -180,7 +189,8 @@ export function PianoChordDiagram({ voicing, size = 'large' }: PianoChordDiagram
           }
           return null;
         })}
-      </svg>
+        </svg>
+      </div>
 
       {/* Chord Notes Info */}
       <div className="text-center">
