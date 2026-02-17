@@ -90,11 +90,11 @@ export const CHORD_LIBRARY: Chord[] = [
         voicingName: 'Open Position (Most Common)',
         position: 1,
         guitar: {
-          frets: [0, 3, 2, 0, 3, -1],
-          fingers: ['open', '3', '2', 'open', '3', 'muted'],
-          muted: [6],
+          frets: [-1, 3, 2, 0, 1, 0],
+          fingers: ['muted', '3', '2', 'open', '1', 'open'],
+          muted: [1],
           barred: false,
-          description: 'Classic open C. Bright, resonant. Perfect for beginners.',
+          description: 'Classic open C. Mute low E, play A-3rd, D-2nd, G open, B-1st, E open. Bright, resonant. Perfect for beginners.',
         },
         piano: {
           notes: ['C4', 'E4', 'G4'],
