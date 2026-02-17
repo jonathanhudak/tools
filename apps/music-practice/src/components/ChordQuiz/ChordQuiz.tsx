@@ -17,7 +17,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@hudak/ui/components/c
 import { Button } from '@hudak/ui/components/button';
 import { Badge } from '@hudak/ui/components/badge';
 import { ChordDiagram } from '../ChordReference/ChordDiagram';
+import { PianoKeyboard } from '../ChordReference/PianoKeyboard';
 import { ChordPlayer } from '../ChordReference/ChordPlayer';
+import { InstrumentSelector, type Instrument } from '../InstrumentSelector';
 import { ResultsSummary } from './ResultsSummary';
 import { Progress } from '@hudak/ui/components/progress';
 import { motion } from 'framer-motion';
@@ -37,6 +39,7 @@ export function ChordQuiz({ mode, difficulty, questionCount = 10, onBack }: Chor
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [answered, setAnswered] = useState(false);
   const [timeLeft, setTimeLeft] = useState(30);
+  const [selectedInstrument, setSelectedInstrument] = useState<Instrument>('guitar');
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const currentQuestion = quizState.questions[quizState.currentQuestionIndex];
@@ -148,9 +151,22 @@ export function ChordQuiz({ mode, difficulty, questionCount = 10, onBack }: Chor
           <CardHeader className="text-center">
             <CardTitle className="mb-4">What chord is this?</CardTitle>
 
-            {/* Chord diagram */}
+            {/* Instrument Selector */}
+            <div className="flex justify-center my-4">
+              <InstrumentSelector
+                selected={selectedInstrument}
+                onChange={setSelectedInstrument}
+                size="sm"
+              />
+            </div>
+
+            {/* Chord diagram or piano keyboard */}
             <div className="flex justify-center my-6">
-              <ChordDiagram chord={currentQuestion.chord} size="large" />
+              {selectedInstrument === 'guitar' ? (
+                <ChordDiagram chord={currentQuestion.chord} size="large" />
+              ) : (
+                <PianoKeyboard chord={currentQuestion.chord} size="large" />
+              )}
             </div>
 
             {/* Play button */}

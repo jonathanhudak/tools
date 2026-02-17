@@ -9,8 +9,10 @@ import { getRandomChord } from '@/lib/chord-library';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@hudak/ui/components/card';
 import { Button } from '@hudak/ui/components/button';
 import { ChordDiagram } from './ChordDiagram';
+import { PianoKeyboard } from './PianoKeyboard';
 import { ChordPlayer } from './ChordPlayer';
 import { ChordSearch } from './ChordSearch';
+import { InstrumentSelector, type Instrument } from '../InstrumentSelector';
 import { Shuffle, BookOpen } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -20,6 +22,7 @@ interface ChordReferenceProps {
 
 export function ChordReference({ onStartQuiz }: ChordReferenceProps): JSX.Element {
   const [selectedChord, setSelectedChord] = useState<Chord | null>(() => getRandomChord());
+  const [selectedInstrument, setSelectedInstrument] = useState<Instrument>('guitar');
 
   const handleRandomChord = () => {
     setSelectedChord(getRandomChord());
@@ -71,9 +74,22 @@ export function ChordReference({ onStartQuiz }: ChordReferenceProps): JSX.Elemen
                     <CardDescription>{selectedChord.description}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
-                    {/* Chord Diagram */}
+                    {/* Instrument Selector */}
                     <div className="flex justify-center">
-                      <ChordDiagram chord={selectedChord} size="large" />
+                      <InstrumentSelector
+                        selected={selectedInstrument}
+                        onChange={setSelectedInstrument}
+                        size="default"
+                      />
+                    </div>
+
+                    {/* Chord Diagram - Guitar or Piano */}
+                    <div className="flex justify-center">
+                      {selectedInstrument === 'guitar' ? (
+                        <ChordDiagram chord={selectedChord} size="large" />
+                      ) : (
+                        <PianoKeyboard chord={selectedChord} size="large" />
+                      )}
                     </div>
 
                     {/* Audio Player */}
