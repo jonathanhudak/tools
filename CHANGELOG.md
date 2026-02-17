@@ -1,3 +1,10 @@
+# [1.27.0](https://github.com/jonathanhudak/tools/compare/v1.26.2...v1.27.0) (2026-02-17)
+
+
+### Features
+
+* **music-practice:** implement professional piano chord diagram visualization ([62dd105](https://github.com/jonathanhudak/tools/commit/62dd105dcb781b36387246f8990640aa5649666b)), closes [C#4](https://github.com/C/issues/4)
+
 ## [1.26.2](https://github.com/jonathanhudak/tools/compare/v1.26.1...v1.26.2) (2026-02-17)
 
 
