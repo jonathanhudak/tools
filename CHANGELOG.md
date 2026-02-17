@@ -1,3 +1,10 @@
+## [1.28.1](https://github.com/jonathanhudak/tools/compare/v1.28.0...v1.28.1) (2026-02-17)
+
+
+### Bug Fixes
+
+* **music-practice:** optimize piano chord diagram to show only relevant octaves + responsive layout ([50c98c0](https://github.com/jonathanhudak/tools/commit/50c98c032e9b052e813e2e46487fd2066cb5dcdd))
+
 # [1.28.0](https://github.com/jonathanhudak/tools/compare/v1.27.1...v1.28.0) (2026-02-17)
 
 
