@@ -1,3 +1,19 @@
+# [1.28.0](https://github.com/jonathanhudak/tools/compare/v1.27.1...v1.28.0) (2026-02-17)
+
+
+### Bug Fixes
+
+* **music-practice:** correct C major chord voicing (X32010, not open-A-D-muted-E) ([438d22f](https://github.com/jonathanhudak/tools/commit/438d22f81ae851b339f0e1b9c0f8961074482dbb))
+
+
+### Features
+
+* **music-practice:** add 100 intermediate chords (extended, dominant, sus, minmaj, slash, jazz) ([fb24655](https://github.com/jonathanhudak/tools/commit/fb246552ad635eb369cd0747e15538c13eb03006))
+* **music-practice:** Phase 2 - add 100 intermediate chords ([ebe438d](https://github.com/jonathanhudak/tools/commit/ebe438dcf8e08f6f619f4689bbecbde5cd6a3d9d)), closes [#9](https://github.com/jonathanhudak/tools/issues/9) [#5](https://github.com/jonathanhudak/tools/issues/5) [7#9](https://github.com/7/issues/9) [7#5](https://github.com/7/issues/5) [Cmaj7#11](https://github.com/Cmaj7/issues/11) [Amaj7#11](https://github.com/Amaj7/issues/11)
+* **music-practice:** Phase 2-4 - add 180 piano voicings for intermediate/jazz chords ([3251a4c](https://github.com/jonathanhudak/tools/commit/3251a4ced583e44885a9393b7832fae8a4789afb))
+* **music-practice:** Phase 2-4 - add 180 piano voicings for intermediate/jazz chords ([fb7b480](https://github.com/jonathanhudak/tools/commit/fb7b48036d48ab3263844ca815f9a6eb561d88d1))
+* **music-practice:** Phase 2-4 - add chord tier filtering, search, and advanced discovery UI ([dafc188](https://github.com/jonathanhudak/tools/commit/dafc188fdf9a6beae1fdaf08f6a49dcb843b87e8))
+
 ## [1.27.1](https://github.com/jonathanhudak/tools/compare/v1.27.0...v1.27.1) (2026-02-17)
 
 
