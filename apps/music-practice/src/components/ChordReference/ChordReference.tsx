@@ -9,10 +9,10 @@ import { CHORD_LIBRARY } from '@/lib/chord-library';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@hudak/ui/components/card';
 import { Button } from '@hudak/ui/components/button';
 import { ChordDiagram } from './ChordDiagram';
+import { PianoChordDiagram } from './PianoChordDiagram';
 import { ChordPlayer } from './ChordPlayer';
 import { ChordSearch } from './ChordSearch';
 import { InstrumentToggle } from '../Piano/InstrumentToggle';
-import { PianoKeyboard } from '../Piano/PianoKeyboard';
 import { Shuffle, BookOpen, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -207,36 +207,13 @@ export function ChordReference({ onStartQuiz }: ChordReferenceProps): JSX.Elemen
                       </>
                     ) : selectedInstrument === 'piano' && currentVoicing?.piano ? (
                       <>
-                        {/* Piano Keyboard Display */}
-                        <div className="flex flex-col items-center gap-4">
-                          <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4 w-full overflow-x-auto">
-                            <div className="inline-flex gap-0.5">
-                              {currentVoicing.piano.notes.map((note, idx) => {
-                                const noteNum = note.charCodeAt(0) - 'C'.charCodeAt(0);
-                                const octave = parseInt(note.slice(1));
-                                const noteClass = note.includes('#') ? 'bg-black' : 'bg-white';
-                                const isBlackKey = note.includes('#');
-
-                                return (
-                                  <div key={idx} className="flex flex-col items-center gap-1">
-                                    <div
-                                      className={`${
-                                        isBlackKey
-                                          ? 'w-8 h-20 rounded-b'
-                                          : 'w-10 h-24 rounded-b border-2 border-gray-400'
-                                      } ${noteClass} shadow-md flex items-end justify-center pb-2`}
-                                    >
-                                      <span className="text-xs font-bold">{note}</span>
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                          <p className="text-sm text-muted-foreground text-center">
-                            {currentVoicing.piano.description}
-                          </p>
+                        {/* Piano Keyboard Diagram */}
+                        <div className="flex flex-col items-center gap-4 py-4">
+                          <PianoChordDiagram voicing={currentVoicing} size="large" />
                         </div>
+                        <p className="text-sm text-muted-foreground text-center">
+                          {currentVoicing.piano.description}
+                        </p>
                       </>
                     ) : null}
 
