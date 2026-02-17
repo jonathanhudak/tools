@@ -1,3 +1,10 @@
+# [1.25.0](https://github.com/jonathanhudak/tools/compare/v1.24.2...v1.25.0) (2026-02-17)
+
+
+### Features
+
+* **music-practice:** add configurable guitar tab orientation for left-handed users ([e281a9d](https://github.com/jonathanhudak/tools/commit/e281a9d30256bbcefca173b3d3f5c660db76826c))
+
 ## [1.24.2](https://github.com/jonathanhudak/tools/compare/v1.24.1...v1.24.2) (2026-02-17)
 
 
