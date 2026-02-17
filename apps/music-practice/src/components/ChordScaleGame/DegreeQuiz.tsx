@@ -18,6 +18,7 @@ import {
   type ScaleType,
   type Degree,
 } from '../../data/chord-scale-matrix';
+import { ChordVoicingDisplay } from './ChordVoicingDisplay';
 
 interface DegreeQuizProps {
   /** Difficulty level - determines which scale types to include */
@@ -226,6 +227,12 @@ export function DegreeQuiz({ difficulty }: DegreeQuizProps): JSX.Element {
                     </div>
                   </div>
                 )}
+
+                {/* Voicing display — shown after every answer */}
+                <ChordVoicingDisplay
+                  chordQuality={question.correctAnswer}
+                  label={`${getDegreeInfo(question.scaleType, question.degree)?.romanNumeral ?? question.correctAnswer} — ${getDegreeInfo(question.scaleType, question.degree)?.modeName ?? ''}`}
+                />
 
                 <Button onClick={nextQuestion} size="lg" className="w-full">
                   Next Question →
