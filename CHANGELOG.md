@@ -1,3 +1,10 @@
+# [1.31.0](https://github.com/jonathanhudak/tools/compare/v1.30.0...v1.31.0) (2026-02-17)
+
+
+### Features
+
+* **music-practice:** Add Guitar & Piano Voicing Display to Chord-Scale Matrix ([0c806c6](https://github.com/jonathanhudak/tools/commit/0c806c6683273426a6b426b028df7e10862a32f3)), closes [bIIIMaj7#5](https://github.com/bIIIMaj7/issues/5) [bIIIMaj7#5](https://github.com/bIIIMaj7/issues/5)
+
 # [1.30.0](https://github.com/jonathanhudak/tools/compare/v1.29.0...v1.30.0) (2026-02-17)
 
 
