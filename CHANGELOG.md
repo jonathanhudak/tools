@@ -1,3 +1,10 @@
+# [1.29.0](https://github.com/jonathanhudak/tools/compare/v1.28.1...v1.29.0) (2026-02-17)
+
+
+### Features
+
+* **music-practice:** add 40 advanced chords (polychords, tritone subs, modal interchange, diminished cycle, aug variations) ([146204c](https://github.com/jonathanhudak/tools/commit/146204ce60337d7a950cb8c83074ef434b1b34d4))
+
 ## [1.28.1](https://github.com/jonathanhudak/tools/compare/v1.28.0...v1.28.1) (2026-02-17)
 
 
