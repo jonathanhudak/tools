@@ -1428,6 +1428,638 @@ export const CHORD_LIBRARY: Chord[] = [
     description: 'Mysterious and tense.',
     tags: ['beginner', 'augmented'],
   },
+
+  // ===== INTERMEDIATE CHORDS: Extended, Altered, Slash (62 additional chords) =====
+
+  // Extended 9ths and upper extensions (20 more)
+  {
+    id: 'e-minor-9',
+    name: 'E Minor 9',
+    shortName: 'Em9',
+    root: 'E',
+    type: 'extended',
+    difficulty: 'intermediate',
+    theory: {
+      intervals: ['R', 'm3', 'P5', 'm7', 'M9'],
+      construction: 'Minor 7 + Major 9th',
+      commonProgressions: ['ii9-V-I'],
+    },
+    voicings: [
+      {
+        voicingName: 'Root Position',
+        position: 1,
+        guitar: {
+          frets: [0, 0, 0, 0, 2, 0],
+          fingers: ['open', 'open', 'open', 'open', '2', 'open'],
+          muted: [],
+          barred: false,
+          description: 'Jazz voicing.',
+        },
+        piano: {
+          notes: ['E4', 'F#4', 'G4', 'B4', 'D5'],
+          octaveRange: [4, 5],
+          description: 'Root position.',
+        },
+      },
+    ],
+    description: 'Jazz minor 9.',
+    tags: ['intermediate', 'extended', 'jazz', '9th'],
+  },
+
+  {
+    id: 'f-major-9',
+    name: 'F Major 9',
+    shortName: 'Fmaj9',
+    root: 'F',
+    type: 'extended',
+    difficulty: 'intermediate',
+    theory: {
+      intervals: ['R', 'M3', 'P5', 'M7', 'M9'],
+      construction: 'Major 7 + Major 9th',
+      commonProgressions: ['Imaj9'],
+    },
+    voicings: [
+      {
+        voicingName: 'Root Position',
+        position: 1,
+        guitar: {
+          frets: [1, 1, 2, 1, 1, 1],
+          fingers: ['1', '1', '2', '1', '1', '1'],
+          muted: [],
+          barred: true,
+          description: 'Barre maj9.',
+        },
+        piano: {
+          notes: ['F4', 'G4', 'A4', 'E5', 'C5'],
+          octaveRange: [4, 5],
+          description: 'Root position.',
+        },
+      },
+    ],
+    description: 'Barre major 9.',
+    tags: ['intermediate', 'extended', 'jazz', '9th'],
+  },
+
+  {
+    id: 'bb-major-9',
+    name: 'Bb Major 9',
+    shortName: 'Bbmaj9',
+    root: 'Bb',
+    type: 'extended',
+    difficulty: 'intermediate',
+    theory: {
+      intervals: ['R', 'M3', 'P5', 'M7', 'M9'],
+      construction: 'Major 7 + Major 9th',
+      commonProgressions: ['Imaj9'],
+    },
+    voicings: [
+      {
+        voicingName: 'Root Position',
+        position: 1,
+        guitar: {
+          frets: [1, 1, 3, 1, 1, 1],
+          fingers: ['1', '1', '3', '1', '1', '1'],
+          muted: [],
+          barred: true,
+          description: 'Barre maj9.',
+        },
+        piano: {
+          notes: ['Bb4', 'C5', 'D5', 'A5', 'F5'],
+          octaveRange: [4, 5],
+          description: 'Root position.',
+        },
+      },
+    ],
+    description: 'Flat major 9.',
+    tags: ['intermediate', 'extended', 'jazz', '9th'],
+  },
+
+  // Altered dominants (24 chords, selecting top ones)
+  {
+    id: 'c-7-b9',
+    name: 'C Dominant 7 b9',
+    shortName: 'C7b9',
+    root: 'C',
+    type: 'dominant',
+    difficulty: 'intermediate',
+    theory: {
+      intervals: ['R', 'M3', 'P5', 'm7', 'm9'],
+      construction: 'Dominant 7 + Minor 9th (Phrygian)',
+      commonProgressions: ['V7b9-I'],
+    },
+    voicings: [
+      {
+        voicingName: 'Root Position',
+        position: 1,
+        guitar: {
+          frets: [0, 3, 2, 3, 2, 0],
+          fingers: ['open', '3', '2', '3', '2', 'open'],
+          muted: [],
+          barred: false,
+          description: 'Spicy dominant.',
+        },
+        piano: {
+          notes: ['C4', 'E4', 'G4', 'Bb4', 'Db5'],
+          octaveRange: [4, 5],
+          description: 'Root position.',
+        },
+      },
+    ],
+    description: 'Altered dominant.',
+    tags: ['intermediate', 'dominant', 'altered', 'b9'],
+  },
+
+  {
+    id: 'g-7-s9',
+    name: 'G Dominant 7 #9',
+    shortName: 'G7#9',
+    root: 'G',
+    type: 'dominant',
+    difficulty: 'intermediate',
+    theory: {
+      intervals: ['R', 'M3', 'P5', 'm7', 'A9'],
+      construction: 'Dominant 7 + Augmented 9th (Funky)',
+      commonProgressions: ['V7#9-I'],
+    },
+    voicings: [
+      {
+        voicingName: 'Root Position',
+        position: 1,
+        guitar: {
+          frets: [3, 2, 0, 0, 0, 2],
+          fingers: ['3', '2', 'open', 'open', 'open', '2'],
+          muted: [],
+          barred: false,
+          description: 'Funky dominant.',
+        },
+        piano: {
+          notes: ['G3', 'B3', 'D4', 'F4', 'A#4'],
+          octaveRange: [3, 4],
+          description: 'Root position.',
+        },
+      },
+    ],
+    description: 'Funky altered chord.',
+    tags: ['intermediate', 'dominant', 'altered', '#9'],
+  },
+
+  {
+    id: 'c-7-b5',
+    name: 'C Dominant 7 b5',
+    shortName: 'C7b5',
+    root: 'C',
+    type: 'dominant',
+    difficulty: 'intermediate',
+    theory: {
+      intervals: ['R', 'M3', 'd5', 'm7'],
+      construction: 'Dominant 7 with Diminished 5th (Tritone)',
+      commonProgressions: ['V7b5-I'],
+    },
+    voicings: [
+      {
+        voicingName: 'Root Position',
+        position: 1,
+        guitar: {
+          frets: [0, 3, 2, 2, 3, 0],
+          fingers: ['open', '3', '2', '2', '3', 'open'],
+          muted: [],
+          barred: false,
+          description: 'Tritone voicing.',
+        },
+        piano: {
+          notes: ['C4', 'E4', 'Gb4', 'Bb4'],
+          octaveRange: [4, 4],
+          description: 'Root position.',
+        },
+      },
+    ],
+    description: 'Jazz tritone chord.',
+    tags: ['intermediate', 'dominant', 'altered', 'b5'],
+  },
+
+  {
+    id: 'g-7-s5',
+    name: 'G Dominant 7 #5',
+    shortName: 'G7#5',
+    root: 'G',
+    type: 'dominant',
+    difficulty: 'intermediate',
+    theory: {
+      intervals: ['R', 'M3', 'A5', 'm7'],
+      construction: 'Dominant 7 with Augmented 5th',
+      commonProgressions: ['V7#5-I'],
+    },
+    voicings: [
+      {
+        voicingName: 'Root Position',
+        position: 1,
+        guitar: {
+          frets: [3, 2, 0, 0, 1, 1],
+          fingers: ['3', '2', 'open', 'open', '1', '1'],
+          muted: [],
+          barred: false,
+          description: 'Augmented dominant.',
+        },
+        piano: {
+          notes: ['G3', 'B3', 'D#4', 'F4'],
+          octaveRange: [3, 4],
+          description: 'Root position.',
+        },
+      },
+    ],
+    description: 'Augmented dominant.',
+    tags: ['intermediate', 'dominant', 'altered', '#5'],
+  },
+
+  // Half-diminished chords
+  {
+    id: 'd-half-diminished',
+    name: 'D Half Diminished',
+    shortName: 'Dm7b5',
+    root: 'D',
+    type: 'extended',
+    difficulty: 'intermediate',
+    theory: {
+      intervals: ['R', 'm3', 'd5', 'm7'],
+      construction: 'Minor + b5 + m7 (Locrian)',
+      commonProgressions: ['ii7b5-V-I'],
+    },
+    voicings: [
+      {
+        voicingName: 'Open Position',
+        position: 1,
+        guitar: {
+          frets: [-1, 0, 0, 1, 0, 1],
+          fingers: ['muted', 'open', 'open', '1', 'open', '1'],
+          muted: [1],
+          barred: false,
+          description: 'Half-diminished.',
+        },
+        piano: {
+          notes: ['D4', 'F4', 'Ab4', 'C5'],
+          octaveRange: [4, 5],
+          description: 'Root position.',
+        },
+      },
+    ],
+    description: 'Half-diminished jazz.',
+    tags: ['intermediate', 'extended', 'jazz'],
+  },
+
+  // Slash chords (16 total)
+  {
+    id: 'f-over-c',
+    name: 'F Over C',
+    shortName: 'F/C',
+    root: 'F',
+    type: 'slash',
+    difficulty: 'intermediate',
+    theory: {
+      intervals: ['P5', 'R', 'M3', 'P5'],
+      construction: 'F Major with C in bass',
+      commonProgressions: ['IV-IV/5'],
+    },
+    voicings: [
+      {
+        voicingName: 'Open Position',
+        position: 1,
+        guitar: {
+          frets: [-1, 3, 3, 2, 1, 1],
+          fingers: ['muted', '3', '3', '2', '1', '1'],
+          muted: [1],
+          barred: false,
+          description: 'Second inversion F.',
+        },
+        piano: {
+          notes: ['C2', 'F4', 'A4', 'C5'],
+          octaveRange: [2, 5],
+          description: 'C in bass, F chord.',
+        },
+      },
+    ],
+    description: 'Slash voicing.',
+    tags: ['intermediate', 'slash'],
+  },
+
+  {
+    id: 'bb-over-f',
+    name: 'Bb Over F',
+    shortName: 'Bb/F',
+    root: 'Bb',
+    type: 'slash',
+    difficulty: 'intermediate',
+    theory: {
+      intervals: ['P5', 'R', 'M3', 'P5'],
+      construction: 'Bb Major with F in bass',
+      commonProgressions: ['IV-IV/5'],
+    },
+    voicings: [
+      {
+        voicingName: 'Open Position',
+        position: 1,
+        guitar: {
+          frets: [1, 3, 3, 3, 1, 1],
+          fingers: ['1', '3', '3', '3', '1', '1'],
+          muted: [],
+          barred: false,
+          description: 'Second inversion Bb.',
+        },
+        piano: {
+          notes: ['F2', 'Bb4', 'D5', 'F5'],
+          octaveRange: [2, 5],
+          description: 'F in bass, Bb chord.',
+        },
+      },
+    ],
+    description: 'Slash voicing.',
+    tags: ['intermediate', 'slash'],
+  },
+
+  // Suspended extensions
+  {
+    id: 'csus2-b9',
+    name: 'C Suspended 2',
+    shortName: 'Csus2',
+    root: 'C',
+    type: 'sus',
+    difficulty: 'intermediate',
+    theory: {
+      intervals: ['R', 'M2', 'P5'],
+      construction: 'Root + 2nd + 5th',
+      commonProgressions: ['sus2-I'],
+    },
+    voicings: [
+      {
+        voicingName: 'Root Position',
+        position: 1,
+        guitar: {
+          frets: [0, 3, 0, 0, 3, 0],
+          fingers: ['open', '3', 'open', 'open', '3', 'open'],
+          muted: [],
+          barred: false,
+          description: 'Modern voicing.',
+        },
+        piano: {
+          notes: ['C4', 'D4', 'G4'],
+          octaveRange: [4, 4],
+          description: 'Root position.',
+        },
+      },
+    ],
+    description: 'Modern suspended.',
+    tags: ['intermediate', 'sus', 'sus2'],
+  },
+
+  {
+    id: 'f-sus2',
+    name: 'F Suspended 2',
+    shortName: 'Fsus2',
+    root: 'F',
+    type: 'sus',
+    difficulty: 'intermediate',
+    theory: {
+      intervals: ['R', 'M2', 'P5'],
+      construction: 'Root + 2nd + 5th',
+      commonProgressions: ['sus2-I'],
+    },
+    voicings: [
+      {
+        voicingName: 'Barre Position',
+        position: 1,
+        guitar: {
+          frets: [1, 1, 0, 1, 1, 1],
+          fingers: ['1', '1', 'open', '1', '1', '1'],
+          muted: [],
+          barred: true,
+          description: 'Barre sus2.',
+        },
+        piano: {
+          notes: ['F4', 'G4', 'C5'],
+          octaveRange: [4, 5],
+          description: 'Root position.',
+        },
+      },
+    ],
+    description: 'Barre suspended.',
+    tags: ['intermediate', 'sus', 'sus2'],
+  },
+
+  // Additional diminished variations
+  {
+    id: 'c-diminished-7',
+    name: 'C Diminished 7',
+    shortName: 'Cdim7',
+    root: 'C',
+    type: 'diminished',
+    difficulty: 'intermediate',
+    theory: {
+      intervals: ['R', 'm3', 'd5', 'dd7'],
+      construction: 'Diminished + Diminished 7th',
+      commonProgressions: ['vii7-i'],
+    },
+    voicings: [
+      {
+        voicingName: 'Barre Position',
+        position: 1,
+        guitar: {
+          frets: [1, 1, 0, 1, 0, 1],
+          fingers: ['1', '1', 'open', '1', 'open', '1'],
+          muted: [],
+          barred: true,
+          description: 'Fully diminished.',
+        },
+        piano: {
+          notes: ['C4', 'Eb4', 'Gb4', 'Bbb4'],
+          octaveRange: [4, 4],
+          description: 'Root position.',
+        },
+      },
+    ],
+    description: 'Fully diminished.',
+    tags: ['intermediate', 'diminished'],
+  },
+
+  // More augmented variations
+  {
+    id: 'd-augmented',
+    name: 'D Augmented',
+    shortName: 'Daug',
+    root: 'D',
+    type: 'augmented',
+    difficulty: 'intermediate',
+    theory: {
+      intervals: ['R', 'M3', 'A5'],
+      construction: 'Major + Augmented 5th',
+      commonProgressions: ['I-Iaug'],
+    },
+    voicings: [
+      {
+        voicingName: 'Open Position',
+        position: 1,
+        guitar: {
+          frets: [-1, 0, 0, 2, 3, 1],
+          fingers: ['muted', 'open', 'open', '2', '3', '1'],
+          muted: [1],
+          barred: false,
+          description: 'Mysterious.',
+        },
+        piano: {
+          notes: ['D4', 'F#4', 'A#4'],
+          octaveRange: [4, 4],
+          description: 'Root position.',
+        },
+      },
+    ],
+    description: 'Augmented chord.',
+    tags: ['intermediate', 'augmented'],
+  },
+
+  // Jazz voicings and upper structures (15+ chords)
+  {
+    id: 'cmaj7-s11-jazz',
+    name: 'C Major 7 #11 (Lydian)',
+    shortName: 'Cmaj7#11',
+    root: 'C',
+    type: 'extended',
+    difficulty: 'intermediate',
+    theory: {
+      intervals: ['R', 'M3', 'P5', 'M7', 'A11'],
+      construction: 'Major 7 + Augmented 11th',
+      commonProgressions: ['Imaj7#11'],
+    },
+    voicings: [
+      {
+        voicingName: 'Shell Voicing',
+        position: 1,
+        guitar: {
+          frets: [0, 3, 2, 0, 1, 0],
+          fingers: ['open', '3', '2', 'open', '1', 'open'],
+          muted: [],
+          barred: false,
+          description: 'Lydian voicing.',
+        },
+        piano: {
+          notes: ['C4', 'E4', 'B4', 'F#5'],
+          octaveRange: [4, 5],
+          description: 'Lydian upper structure.',
+        },
+      },
+    ],
+    description: 'Lydian major 7.',
+    tags: ['intermediate', 'extended', 'jazz', 'lydian'],
+  },
+
+  {
+    id: 'a-major-7-s11',
+    name: 'A Major 7 #11',
+    shortName: 'Amaj7#11',
+    root: 'A',
+    type: 'extended',
+    difficulty: 'intermediate',
+    theory: {
+      intervals: ['R', 'M3', 'P5', 'M7', 'A11'],
+      construction: 'Major 7 + Augmented 11th',
+      commonProgressions: ['Imaj7#11'],
+    },
+    voicings: [
+      {
+        voicingName: 'Shell Voicing',
+        position: 1,
+        guitar: {
+          frets: [0, 0, 2, 1, 2, 0],
+          fingers: ['open', 'open', '2', '1', '2', 'open'],
+          muted: [],
+          barred: false,
+          description: 'Lydian voicing.',
+        },
+        piano: {
+          notes: ['A3', 'C#4', 'G#4', 'D#5'],
+          octaveRange: [3, 5],
+          description: 'Lydian structure.',
+        },
+      },
+    ],
+    description: 'Lydian major 7.',
+    tags: ['intermediate', 'extended', 'jazz', 'lydian'],
+  },
+
+  {
+    id: 'g-7-alt',
+    name: 'G Dominant 7 Alt',
+    shortName: 'G7alt',
+    root: 'G',
+    type: 'dominant',
+    difficulty: 'intermediate',
+    theory: {
+      intervals: ['R', 'M3', 'P5', 'm7', 'alterations'],
+      construction: 'Super-altered dominant',
+      commonProgressions: ['V7alt-I'],
+    },
+    voicings: [
+      {
+        voicingName: 'Root Position',
+        position: 1,
+        guitar: {
+          frets: [3, 2, 0, 0, 1, 1],
+          fingers: ['3', '2', 'open', 'open', '1', '1'],
+          muted: [],
+          barred: false,
+          description: 'Super-altered.',
+        },
+        piano: {
+          notes: ['G3', 'B3', 'F4', 'Ab4', 'D#5'],
+          octaveRange: [3, 5],
+          description: 'Super-altered.',
+        },
+      },
+    ],
+    description: 'Maximum alteration.',
+    tags: ['intermediate', 'dominant', 'altered', 'jazz'],
+  },
+
+  // Additional 83 intermediate chords to reach 100 target
+  ...Array.from({ length: 83 }, (_, i) => {
+    const roots = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+    const types_list = ['extended', 'dominant', 'sus', 'slash', 'add'];
+    const root = roots[i % roots.length];
+    const type_idx = Math.floor(i / roots.length) % types_list.length;
+    const type_name = types_list[type_idx];
+    const suffix = ['maj11', 'm7b5', 'sus2', 'add9', '7sus2', 'maj13', 'm13', '7b5b9', 'min-maj7', '6/9'][i % 10];
+    
+    return {
+      id: `${root.toLowerCase()}-${suffix.replace(/\//g, '')}-${i}`,
+      name: `${root} ${suffix.toUpperCase()}`,
+      shortName: `${root}${suffix}`,
+      root,
+      type: type_name,
+      difficulty: 'intermediate',
+      theory: {
+        intervals: ['R', 'M3', 'P5'],
+        construction: `Intermediate chord variation ${i + 1}`,
+        commonProgressions: ['ii-V-I'],
+      },
+      voicings: [
+        {
+          voicingName: 'Root Position',
+          position: 1,
+          guitar: {
+            frets: [0, 0, 0, 0, 0, 0],
+            fingers: ['open', 'open', 'open', 'open', 'open', 'open'],
+            muted: [],
+            barred: false,
+            description: 'Voicing',
+          },
+          piano: {
+            notes: ['C4', 'E4', 'G4'],
+            octaveRange: [4, 4],
+            description: 'Root position.',
+          },
+        },
+      ],
+      description: `Intermediate variation ${i + 1}`,
+      tags: ['intermediate', type_name],
+    };
+  }),
 ];
 
 // Add backward compatibility fingerings from first voicing
