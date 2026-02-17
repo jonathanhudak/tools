@@ -1,3 +1,12 @@
+## [1.24.1](https://github.com/jonathanhudak/tools/compare/v1.24.0...v1.24.1) (2026-02-17)
+
+
+### Bug Fixes
+
+* **music-practice:** add 404.html for SPA routing on GitHub Pages ([49df13c](https://github.com/jonathanhudak/tools/commit/49df13c85824e7f7ce704b267c0ea5af45016636))
+* **music-practice:** add public/404.html for SPA deep linking ([e139f37](https://github.com/jonathanhudak/tools/commit/e139f378013f3c20f3d19e0d78066527c4a76f3e))
+* **music-practice:** register scales-quiz and chord-quiz routes in route tree ([863dc03](https://github.com/jonathanhudak/tools/commit/863dc033ca8dd65567aefd0226eb2eafa6b3d252))
+
 # [1.24.0](https://github.com/jonathanhudak/tools/compare/v1.23.0...v1.24.0) (2026-02-17)
 
 
