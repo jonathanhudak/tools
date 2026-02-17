@@ -1,3 +1,11 @@
+## [1.24.2](https://github.com/jonathanhudak/tools/compare/v1.24.1...v1.24.2) (2026-02-17)
+
+
+### Bug Fixes
+
+* landing page update ([e44f993](https://github.com/jonathanhudak/tools/commit/e44f993af847c294a48788653922c3bb2a9c5e7d))
+* **music-practice:** replace landing page with Music Practice Suite hub ([22926b5](https://github.com/jonathanhudak/tools/commit/22926b5ae196da50f04b2810232d7fb8aa8bf173))
+
 ## [1.24.1](https://github.com/jonathanhudak/tools/compare/v1.24.0...v1.24.1) (2026-02-17)
 
 
