@@ -19,6 +19,12 @@ export interface ChordScaleEntry {
   chordQuality: string;
   modeName: string;
   romanNumeral: string;
+  
+  // Reference chord from library for voicing display
+  // Format: "chord-id" (e.g., "c-major", "d-minor-7")
+  chordId?: string;
+  // If chord has multiple voicings, which one to use (0-indexed)
+  voicingIndex?: number;
 }
 
 /**
@@ -36,49 +42,63 @@ export const CHORD_SCALE_MATRIX: ChordScaleEntry[] = [
     degree: 1,
     chordQuality: "Maj7",
     modeName: "Ionian",
-    romanNumeral: "IMaj7"
+    romanNumeral: "IMaj7",
+    chordId: "c-major-7",
+    voicingIndex: 0
   },
   {
     scaleType: "major",
     degree: 2,
     chordQuality: "m7",
     modeName: "Dorian",
-    romanNumeral: "iim7"
+    romanNumeral: "iim7",
+    chordId: "d-minor-7",
+    voicingIndex: 0
   },
   {
     scaleType: "major",
     degree: 3,
     chordQuality: "m7",
     modeName: "Phrygian",
-    romanNumeral: "iiim7"
+    romanNumeral: "iiim7",
+    chordId: "e-minor-7",
+    voicingIndex: 0
   },
   {
     scaleType: "major",
     degree: 4,
     chordQuality: "Maj7",
     modeName: "Lydian",
-    romanNumeral: "IVMaj7"
+    romanNumeral: "IVMaj7",
+    chordId: "f-major-7",
+    voicingIndex: 0
   },
   {
     scaleType: "major",
     degree: 5,
     chordQuality: "7",
     modeName: "Mixolydian",
-    romanNumeral: "V7"
+    romanNumeral: "V7",
+    chordId: "g-dominant-7",
+    voicingIndex: 0
   },
   {
     scaleType: "major",
     degree: 6,
     chordQuality: "m7",
     modeName: "Aeolian",
-    romanNumeral: "vim7"
+    romanNumeral: "vim7",
+    chordId: "a-minor-7",
+    voicingIndex: 0
   },
   {
     scaleType: "major",
     degree: 7,
     chordQuality: "m7b5",
     modeName: "Locrian",
-    romanNumeral: "viim7b5"
+    romanNumeral: "viim7b5",
+    chordId: "b-minor-7b5",
+    voicingIndex: 0
   },
 
   // ============ NATURAL MINOR SCALE ============
@@ -87,49 +107,63 @@ export const CHORD_SCALE_MATRIX: ChordScaleEntry[] = [
     degree: 1,
     chordQuality: "m7",
     modeName: "Aeolian",
-    romanNumeral: "im7"
+    romanNumeral: "im7",
+    chordId: "a-minor-7",
+    voicingIndex: 0
   },
   {
     scaleType: "naturalMinor",
     degree: 2,
     chordQuality: "m7b5",
     modeName: "Locrian",
-    romanNumeral: "iim7b5"
+    romanNumeral: "iim7b5",
+    chordId: "b-minor-7b5",
+    voicingIndex: 0
   },
   {
     scaleType: "naturalMinor",
     degree: 3,
     chordQuality: "Maj7",
     modeName: "Ionian",
-    romanNumeral: "bIIIMaj7"
+    romanNumeral: "bIIIMaj7",
+    chordId: "c-major-7",
+    voicingIndex: 0
   },
   {
     scaleType: "naturalMinor",
     degree: 4,
     chordQuality: "m7",
     modeName: "Dorian",
-    romanNumeral: "ivm7"
+    romanNumeral: "ivm7",
+    chordId: "d-minor-7",
+    voicingIndex: 0
   },
   {
     scaleType: "naturalMinor",
     degree: 5,
     chordQuality: "m7",
     modeName: "Phrygian",
-    romanNumeral: "vm7"
+    romanNumeral: "vm7",
+    chordId: "e-minor-7",
+    voicingIndex: 0
   },
   {
     scaleType: "naturalMinor",
     degree: 6,
     chordQuality: "Maj7",
     modeName: "Lydian",
-    romanNumeral: "bVIMaj7"
+    romanNumeral: "bVIMaj7",
+    chordId: "f-major-7",
+    voicingIndex: 0
   },
   {
     scaleType: "naturalMinor",
     degree: 7,
     chordQuality: "7",
     modeName: "Mixolydian",
-    romanNumeral: "bVII7"
+    romanNumeral: "bVII7",
+    chordId: "g-dominant-7",
+    voicingIndex: 0
   },
 
   // ============ MELODIC MINOR SCALE ============
@@ -138,49 +172,63 @@ export const CHORD_SCALE_MATRIX: ChordScaleEntry[] = [
     degree: 1,
     chordQuality: "mMaj7",
     modeName: "Melodic Minor",
-    romanNumeral: "imMaj7"
+    romanNumeral: "imMaj7",
+    chordId: "a-minor-major-7",
+    voicingIndex: 0
   },
   {
     scaleType: "melodicMinor",
     degree: 2,
     chordQuality: "m7",
     modeName: "Dorian b2",
-    romanNumeral: "iim7"
+    romanNumeral: "iim7",
+    chordId: "b-minor-7",
+    voicingIndex: 0
   },
   {
     scaleType: "melodicMinor",
     degree: 3,
     chordQuality: "Maj7#5",
     modeName: "Lydian Augmented",
-    romanNumeral: "bIIIMaj7#5"
+    romanNumeral: "bIIIMaj7#5",
+    chordId: "c-augmented-major-7",
+    voicingIndex: 0
   },
   {
     scaleType: "melodicMinor",
     degree: 4,
     chordQuality: "7",
     modeName: "Lydian Dominant",
-    romanNumeral: "IV7"
+    romanNumeral: "IV7",
+    chordId: "d-dominant-7",
+    voicingIndex: 0
   },
   {
     scaleType: "melodicMinor",
     degree: 5,
     chordQuality: "7",
     modeName: "Mixolydian b6",
-    romanNumeral: "V7"
+    romanNumeral: "V7",
+    chordId: "e-dominant-7",
+    voicingIndex: 0
   },
   {
     scaleType: "melodicMinor",
     degree: 6,
     chordQuality: "m7b5",
     modeName: "Locrian #2",
-    romanNumeral: "vim7b5"
+    romanNumeral: "vim7b5",
+    chordId: "f-sharp-minor-7b5",
+    voicingIndex: 0
   },
   {
     scaleType: "melodicMinor",
     degree: 7,
     chordQuality: "m7b5",
     modeName: "Super Locrian (Altered)",
-    romanNumeral: "viim7b5"
+    romanNumeral: "viim7b5",
+    chordId: "g-sharp-minor-7b5",
+    voicingIndex: 0
   },
 
   // ============ HARMONIC MINOR SCALE ============
@@ -189,49 +237,63 @@ export const CHORD_SCALE_MATRIX: ChordScaleEntry[] = [
     degree: 1,
     chordQuality: "mMaj7",
     modeName: "Harmonic Minor",
-    romanNumeral: "imMaj7"
+    romanNumeral: "imMaj7",
+    chordId: "a-minor-major-7",
+    voicingIndex: 0
   },
   {
     scaleType: "harmonicMinor",
     degree: 2,
     chordQuality: "m7b5",
     modeName: "Locrian #6",
-    romanNumeral: "iim7b5"
+    romanNumeral: "iim7b5",
+    chordId: "b-minor-7b5",
+    voicingIndex: 0
   },
   {
     scaleType: "harmonicMinor",
     degree: 3,
     chordQuality: "Maj7#5",
     modeName: "Ionian #5",
-    romanNumeral: "bIIIMaj7#5"
+    romanNumeral: "bIIIMaj7#5",
+    chordId: "c-augmented-major-7",
+    voicingIndex: 0
   },
   {
     scaleType: "harmonicMinor",
     degree: 4,
     chordQuality: "m7",
     modeName: "Dorian #4",
-    romanNumeral: "ivm7"
+    romanNumeral: "ivm7",
+    chordId: "d-minor-7",
+    voicingIndex: 0
   },
   {
     scaleType: "harmonicMinor",
     degree: 5,
     chordQuality: "7",
     modeName: "Phrygian Dominant",
-    romanNumeral: "V7"
+    romanNumeral: "V7",
+    chordId: "e-dominant-7",
+    voicingIndex: 0
   },
   {
     scaleType: "harmonicMinor",
     degree: 6,
     chordQuality: "Maj7",
     modeName: "Lydian #2",
-    romanNumeral: "bVIMaj7"
+    romanNumeral: "bVIMaj7",
+    chordId: "f-major-7",
+    voicingIndex: 0
   },
   {
     scaleType: "harmonicMinor",
     degree: 7,
     chordQuality: "dim7",
     modeName: "Super Locrian bb7",
-    romanNumeral: "viidim7"
+    romanNumeral: "viidim7",
+    chordId: "g-sharp-diminished-7",
+    voicingIndex: 0
   },
 ];
 
@@ -310,3 +372,20 @@ export const SCALE_TYPE_NAMES: Record<ScaleType, string> = {
   melodicMinor: "Melodic Minor",
   harmonicMinor: "Harmonic Minor",
 };
+
+/**
+ * Helper to get a chord from the library by ID
+ * Used for displaying voicings in the matrix trainer
+ *
+ * @param chordId - The chord ID (e.g., "c-major-7")
+ * @returns The Chord object or null if not found
+ *
+ * @example
+ * const chord = getChordFromLibrary("c-major-7");
+ * // Can then display chord.voicings[0] in ChordVoicingDisplay
+ */
+export async function getChordFromLibrary(chordId: string) {
+  // Lazy import to avoid circular dependency
+  const { CHORD_LIBRARY } = await import('@/lib/chord-library');
+  return CHORD_LIBRARY.find(c => c.id === chordId);
+}

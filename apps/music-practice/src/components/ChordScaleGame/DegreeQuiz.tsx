@@ -10,6 +10,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@huda
 import { Button } from '@hudak/ui/components/button';
 import { Badge } from '@hudak/ui/components/badge';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ChordVoicingDisplay } from './ChordVoicingDisplay';
+import { getChordById } from '@/lib/chord-library';
+import type { Chord } from '@/lib/chord-library';
 import {
   CHORD_SCALE_MATRIX,
   getDegreeInfo,
@@ -74,17 +77,34 @@ function generateQuestion(difficulty: 'major' | 'majorMinor' | 'allScales'): Qui
   };
 }
 
+type Instrument = 'guitar' | 'piano';
+
 export function DegreeQuiz({ difficulty }: DegreeQuizProps): JSX.Element {
   const [question, setQuestion] = useState<QuizQuestion | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [score, setScore] = useState({ correct: 0, total: 0 });
   const [streak, setStreak] = useState(0);
+  const [currentChord, setCurrentChord] = useState<Chord | null>(null);
+  const [selectedInstrument, setSelectedInstrument] = useState<Instrument>('guitar');
 
   // Generate initial question
   useEffect(() => {
     setQuestion(generateQuestion(difficulty));
   }, [difficulty]);
+
+  // Fetch chord when question is answered
+  useEffect(() => {
+    if (selectedAnswer && question) {
+      const entry = getDegreeInfo(question.scaleType, question.degree);
+      if (entry?.chordId) {
+        const chord = getChordById(entry.chordId);
+        if (chord) {
+          setCurrentChord(chord);
+        }
+      }
+    }
+  }, [selectedAnswer, question]);
 
   const handleAnswer = (answer: string): void => {
     if (selectedAnswer) return; // Already answered
@@ -105,6 +125,8 @@ export function DegreeQuiz({ difficulty }: DegreeQuizProps): JSX.Element {
     setQuestion(generateQuestion(difficulty));
     setSelectedAnswer(null);
     setIsCorrect(null);
+    setCurrentChord(null);
+    setSelectedInstrument('guitar');
   };
 
   if (!question) {
@@ -224,6 +246,17 @@ export function DegreeQuiz({ difficulty }: DegreeQuizProps): JSX.Element {
                       The correct answer is <strong>{question.correctAnswer}</strong> (
                       {getDegreeInfo(question.scaleType, question.degree)?.modeName})
                     </div>
+                  </div>
+                )}
+
+                {/* Chord Voicing Display */}
+                {currentChord && (
+                  <div className="py-4">
+                    <ChordVoicingDisplay
+                      chord={currentChord}
+                      voicingIndex={0}
+                      onInstrumentChange={setSelectedInstrument}
+                    />
                   </div>
                 )}
 
