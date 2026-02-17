@@ -4,15 +4,24 @@
     <meta charset="utf-8" />
     <title>Music Practice</title>
     <script>
-      // Redirect all 404s to index.html so the SPA router can handle the route
-      // Get the path that was requested
-      var path = window.location.pathname;
+      // Handle SPA routing for deep links
+      // When a user visits /tools/music-practice/chord-quiz directly,
+      // GitHub Pages returns 404 and serves this file
+      // We capture the original path and redirect to index with it as a param
       
-      // Store the path in sessionStorage so index.html can access it
-      sessionStorage.redirect = path;
+      var originalPath = window.location.pathname;
+      var searchParams = window.location.search;
       
-      // Redirect to music-practice index
-      window.location.replace('/tools/music-practice/');
+      // Extract the route after /tools/music-practice/
+      // e.g., /tools/music-practice/chord-quiz → /chord-quiz
+      var basePath = '/tools/music-practice';
+      var route = originalPath.substring(basePath.length) || '/';
+      
+      // Store in sessionStorage for the app to pick up
+      sessionStorage.redirectRoute = route;
+      
+      // Redirect to index.html - the SPA will handle the navigation
+      window.location.replace(basePath + '/?redirect=' + encodeURIComponent(route));
     </script>
   </head>
   <body></body>
