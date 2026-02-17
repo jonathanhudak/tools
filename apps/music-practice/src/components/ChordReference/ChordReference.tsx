@@ -162,7 +162,7 @@ export function ChordReference({ onStartQuiz }: ChordReferenceProps): JSX.Elemen
                 <div className="flex justify-center">
                   <InstrumentToggle
                     instrument={selectedInstrument}
-                    onInstrumentChange={handleInstrumentChange}
+                    onChange={handleInstrumentChange}
                   />
                 </div>
 
