@@ -1,3 +1,10 @@
+# [1.23.0](https://github.com/jonathanhudak/tools/compare/v1.22.0...v1.23.0) (2026-02-17)
+
+
+### Features
+
+* **music-practice:** add piano support to scales and chord quiz systems ([#72](https://github.com/jonathanhudak/tools/issues/72)) ([b8c8dbd](https://github.com/jonathanhudak/tools/commit/b8c8dbd5a3e41e683de9de9a3a0063a6f58deb25))
+
 # [1.22.0](https://github.com/jonathanhudak/tools/compare/v1.21.1...v1.22.0) (2026-02-16)
 
 
