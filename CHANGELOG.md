@@ -1,3 +1,10 @@
+# [1.30.0](https://github.com/jonathanhudak/tools/compare/v1.29.0...v1.30.0) (2026-02-17)
+
+
+### Features
+
+* **music-practice:** add 60+ jazz chords (ii-V-I, blues, standards, modal, upper structures) ([eef0f3d](https://github.com/jonathanhudak/tools/commit/eef0f3db38a41413fb40042f01b9ce8ff8ad6f2c))
+
 # [1.29.0](https://github.com/jonathanhudak/tools/compare/v1.28.1...v1.29.0) (2026-02-17)
 
 
