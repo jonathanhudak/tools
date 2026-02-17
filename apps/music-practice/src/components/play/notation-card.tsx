@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { Volume2 } from 'lucide-react';
+import { Volume2, Zap } from 'lucide-react';
 import { Badge } from '@hudak/ui/components/badge';
+import { Button } from '@hudak/ui/components/button';
 import { Card, CardContent } from '@hudak/ui/components/card';
 import { PitchGauge } from '@hudak/audio-components';
 import type { RefObject } from 'react';
@@ -28,6 +29,8 @@ interface NotationCardProps {
   pitchSmoothing: number;
   feedback: string;
   lastDetectedNote: DetectedNote | null;
+  tabOrientation?: 'standard' | 'leftHanded';
+  onTabOrientationChange?: (orientation: 'standard' | 'leftHanded') => void;
 }
 
 export function NotationCard({
@@ -41,9 +44,41 @@ export function NotationCard({
   pitchSmoothing,
   feedback,
   lastDetectedNote,
+  tabOrientation = 'standard',
+  onTabOrientationChange,
 }: NotationCardProps) {
+  const showTabOrientationToggle = instrument === 'guitar' && (tabDisplayMode === 'tab' || tabDisplayMode === 'both');
+
   return (
     <Card className="border-2 shadow-2xl bg-card/95 backdrop-blur overflow-hidden">
+      {/* Tab Orientation Toggle for Guitar */}
+      {showTabOrientationToggle && onTabOrientationChange && (
+        <div className="px-4 py-2 bg-muted/50 border-b border-border flex items-center justify-between">
+          <span className="text-xs font-medium text-muted-foreground">Tab Layout</span>
+          <div className="flex gap-2">
+            <Button
+              variant={tabOrientation === 'standard' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => onTabOrientationChange('standard')}
+              className="h-7 text-xs"
+              title="Standard orientation: Low string on bottom"
+            >
+              Standard
+            </Button>
+            <Button
+              variant={tabOrientation === 'leftHanded' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => onTabOrientationChange('leftHanded')}
+              className="h-7 text-xs gap-1"
+              title="Left-handed: Low string on top"
+            >
+              <Zap className="h-3 w-3" />
+              Lefty
+            </Button>
+          </div>
+        </div>
+      )}
+
       <CardContent className="p-0">
         <div className={`flex ${isMicrophoneInstrument ? 'flex-row' : 'flex-col'} items-center justify-center`}>
           <div className={`flex-1 p-8 flex items-center justify-center ${

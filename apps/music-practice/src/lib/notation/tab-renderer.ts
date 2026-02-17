@@ -25,9 +25,11 @@ export class TabRenderer {
     private context: any = null;
     private currentNote: number | null = null;
     private instrumentId: string = 'guitar';
+    private tabOrientation: 'standard' | 'leftHanded' = 'standard';
 
-    constructor(containerId: string, instrumentId: string = 'guitar') {
+    constructor(containerId: string, instrumentId: string = 'guitar', tabOrientation: 'standard' | 'leftHanded' = 'standard') {
         this.instrumentId = instrumentId;
+        this.tabOrientation = tabOrientation;
         this.container = document.getElementById(containerId);
 
         if (!this.container) {
@@ -36,6 +38,29 @@ export class TabRenderer {
         }
 
         this.init();
+    }
+
+    /**
+     * Set the tab orientation (standard or left-handed)
+     * @param orientation - 'standard' (low E on bottom) or 'leftHanded' (low E on top)
+     */
+    setTabOrientation(orientation: 'standard' | 'leftHanded'): void {
+        this.tabOrientation = orientation;
+    }
+
+    /**
+     * Convert string number based on orientation
+     * Standard: 1=high E (top), 6=low E (bottom)
+     * LeftHanded: reverse the strings so 6 appears on top, 1 on bottom
+     * @param stringNumber - VexFlow string number (1-6)
+     * @returns Adjusted string number for current orientation
+     */
+    private getOrientedString(stringNumber: number): number {
+        if (this.tabOrientation === 'leftHanded') {
+            // Reverse: 1→6, 2→5, 3→4, 4→3, 5→2, 6→1
+            return 7 - stringNumber;
+        }
+        return stringNumber;
     }
 
     /**
@@ -192,8 +217,10 @@ export class TabRenderer {
             // Create tab note
             // TabNote format: positions array where each element is {str: string_number, fret: fret_number}
             // String 1 is the highest (thinnest), string 6 is the lowest (thickest)
+            // Apply orientation for left-handed users
+            const orientedString = this.getOrientedString(tabPosition.string);
             const tabNote = new VF.TabNote({
-                positions: [{ str: tabPosition.string, fret: tabPosition.fret }],
+                positions: [{ str: orientedString, fret: tabPosition.fret }],
                 duration: 'w' // Whole note
             });
 
@@ -272,10 +299,11 @@ export class TabRenderer {
             tabStave.addTabGlyph();
             tabStave.setContext(this.context).draw();
 
-            // Create tab notes
+            // Create tab notes with orientation applied
             const tabNotes = tabPositions.map(pos => {
+                const orientedString = this.getOrientedString(pos.string);
                 return new VF.TabNote({
-                    positions: [{ str: pos.string, fret: pos.fret }],
+                    positions: [{ str: orientedString, fret: pos.fret }],
                     duration: 'q' // Quarter note
                 });
             });
@@ -378,9 +406,10 @@ export class TabRenderer {
                 staffNote.addModifier(new VF.Accidental('#'), 0);
             }
 
-            // Create tab note
+            // Create tab note with orientation applied
+            const orientedString = this.getOrientedString(tabPosition.string);
             const tabNote = new VF.TabNote({
-                positions: [{ str: tabPosition.string, fret: tabPosition.fret }],
+                positions: [{ str: orientedString, fret: tabPosition.fret }],
                 duration: 'w'
             });
 

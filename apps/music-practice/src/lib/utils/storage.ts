@@ -66,6 +66,8 @@ export interface Settings {
     soundEffectsVolume?: number;
     animationsEnabled?: boolean;
     confettiEnabled?: boolean;
+    // Tab notation settings
+    tabOrientation?: 'standard' | 'leftHanded'; // standard: high E left, low E right; leftHanded: low E left, high E right
     [key: string]: any; // Allow additional settings
 }
 
@@ -289,7 +291,8 @@ export function getDefaultSettings(): Settings {
         soundEffectsEnabled: true,
         soundEffectsVolume: 0.7,
         animationsEnabled: true,
-        confettiEnabled: true
+        confettiEnabled: true,
+        tabOrientation: 'standard'
     };
 }
 

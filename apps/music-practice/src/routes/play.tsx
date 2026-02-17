@@ -86,6 +86,12 @@ function PlayRoute() {
   // Pitch detection state
   const [detectedPitch, setDetectedPitch] = useState<{ note: string; cents: number; clarity: number } | null>(null);
 
+  // Tab orientation for left-handed guitarists
+  const [tabOrientation, setTabOrientation] = useState<'standard' | 'leftHanded'>(() => {
+    const settings = Storage.getSettings();
+    return settings.tabOrientation || 'standard';
+  });
+
   // Refs
   const sessionActiveRef = useRef(false);
   const currentNoteRef = useRef<number | null>(null);
@@ -337,9 +343,18 @@ function PlayRoute() {
   useEffect(() => {
     instrumentRef.current = instrument;
     if (tabRenderer.current && tabContainerRef.current) {
-      tabRenderer.current = new TabRenderer('tab-display', instrument);
+      tabRenderer.current = new TabRenderer('tab-display', instrument, tabOrientation);
     }
-  }, [instrument]);
+  }, [instrument, tabOrientation]);
+
+  useEffect(() => {
+    // Update TabRenderer's tab orientation when setting changes
+    if (tabRenderer.current) {
+      tabRenderer.current.setTabOrientation(tabOrientation);
+    }
+    // Persist setting to storage
+    Storage.saveSettings({ tabOrientation });
+  }, [tabOrientation]);
 
   useEffect(() => { clefRef.current = clef; }, [clef]);
   useEffect(() => { gameModeRef.current = gameMode; }, [gameMode]);
@@ -506,6 +521,8 @@ function PlayRoute() {
               pitchSmoothing={pitchSmoothing}
               feedback={feedback}
               lastDetectedNote={lastDetectedNote}
+              tabOrientation={tabOrientation}
+              onTabOrientationChange={setTabOrientation}
             />
           </motion.div>
 

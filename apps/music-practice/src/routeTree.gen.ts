@@ -9,13 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ScalesQuizRouteImport } from './routes/scales-quiz'
 import { Route as PlayRouteImport } from './routes/play'
 import { Route as ChordScaleRouteImport } from './routes/chord-scale'
+import { Route as ChordQuizRouteImport } from './routes/chord-quiz'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ScalesQuizRouteImport } from './routes/scales-quiz'
-import { Route as ChordQuizRouteImport } from './routes/chord-quiz'
 
+const ScalesQuizRoute = ScalesQuizRouteImport.update({
+  id: '/scales-quiz',
+  path: '/scales-quiz',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PlayRoute = PlayRouteImport.update({
   id: '/play',
   path: '/play',
@@ -24,6 +29,11 @@ const PlayRoute = PlayRouteImport.update({
 const ChordScaleRoute = ChordScaleRouteImport.update({
   id: '/chord-scale',
   path: '/chord-scale',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChordQuizRoute = ChordQuizRouteImport.update({
+  id: '/chord-quiz',
+  path: '/chord-quiz',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -36,61 +46,71 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ScalesQuizRoute = ScalesQuizRouteImport.update({
-  id: '/scales-quiz',
-  path: '/scales-quiz',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ChordQuizRoute = ChordQuizRouteImport.update({
-  id: '/chord-quiz',
-  path: '/chord-quiz',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/chord-quiz': typeof ChordQuizRoute
   '/chord-scale': typeof ChordScaleRoute
   '/play': typeof PlayRoute
   '/scales-quiz': typeof ScalesQuizRoute
-  '/chord-quiz': typeof ChordQuizRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/chord-quiz': typeof ChordQuizRoute
   '/chord-scale': typeof ChordScaleRoute
   '/play': typeof PlayRoute
   '/scales-quiz': typeof ScalesQuizRoute
-  '/chord-quiz': typeof ChordQuizRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/chord-quiz': typeof ChordQuizRoute
   '/chord-scale': typeof ChordScaleRoute
   '/play': typeof PlayRoute
   '/scales-quiz': typeof ScalesQuizRoute
-  '/chord-quiz': typeof ChordQuizRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/chord-scale' | '/play' | '/scales-quiz' | '/chord-quiz'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/chord-quiz'
+    | '/chord-scale'
+    | '/play'
+    | '/scales-quiz'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/chord-scale' | '/play' | '/scales-quiz' | '/chord-quiz'
-  id: '__root__' | '/' | '/about' | '/chord-scale' | '/play' | '/scales-quiz' | '/chord-quiz'
+  to: '/' | '/about' | '/chord-quiz' | '/chord-scale' | '/play' | '/scales-quiz'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/chord-quiz'
+    | '/chord-scale'
+    | '/play'
+    | '/scales-quiz'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  ChordQuizRoute: typeof ChordQuizRoute
   ChordScaleRoute: typeof ChordScaleRoute
   PlayRoute: typeof PlayRoute
   ScalesQuizRoute: typeof ScalesQuizRoute
-  ChordQuizRoute: typeof ChordQuizRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/scales-quiz': {
+      id: '/scales-quiz'
+      path: '/scales-quiz'
+      fullPath: '/scales-quiz'
+      preLoaderRoute: typeof ScalesQuizRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/play': {
       id: '/play'
       path: '/play'
@@ -103,6 +123,13 @@ declare module '@tanstack/react-router' {
       path: '/chord-scale'
       fullPath: '/chord-scale'
       preLoaderRoute: typeof ChordScaleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/chord-quiz': {
+      id: '/chord-quiz'
+      path: '/chord-quiz'
+      fullPath: '/chord-quiz'
+      preLoaderRoute: typeof ChordQuizRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -119,30 +146,16 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/scales-quiz': {
-      id: '/scales-quiz'
-      path: '/scales-quiz'
-      fullPath: '/scales-quiz'
-      preLoaderRoute: typeof ScalesQuizRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/chord-quiz': {
-      id: '/chord-quiz'
-      path: '/chord-quiz'
-      fullPath: '/chord-quiz'
-      preLoaderRoute: typeof ChordQuizRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  ChordQuizRoute: ChordQuizRoute,
   ChordScaleRoute: ChordScaleRoute,
   PlayRoute: PlayRoute,
   ScalesQuizRoute: ScalesQuizRoute,
-  ChordQuizRoute: ChordQuizRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
