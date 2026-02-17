@@ -57,6 +57,10 @@ export function getChordsByDifficulty(difficulty: 'beginner' | 'intermediate' | 
   return CHORD_LIBRARY.filter(c => c.difficulty === difficulty);
 }
 
+export function getChordsByType(type: string): Chord[] {
+  return CHORD_LIBRARY.filter(c => c.type === type);
+}
+
 export function searchChords(query: string): Chord[] {
   const q = query.toLowerCase().trim();
   if (!q) return CHORD_LIBRARY;
@@ -68,6 +72,10 @@ export function searchChords(query: string): Chord[] {
     chord.description.toLowerCase().includes(q) ||
     chord.tags.some(tag => tag.toLowerCase().includes(q))
   );
+}
+
+export function getChordById(id: string): Chord | undefined {
+  return CHORD_LIBRARY.find(c => c.id === id);
 }
 
 // PHASE 1: 50 BEGINNER CHORDS
