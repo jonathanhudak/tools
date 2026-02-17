@@ -1,3 +1,10 @@
+# [1.24.0](https://github.com/jonathanhudak/tools/compare/v1.23.0...v1.24.0) (2026-02-17)
+
+
+### Features
+
+* **music-practice:** integrate scales & chord quiz into app ui ([#73](https://github.com/jonathanhudak/tools/issues/73)) ([4927e88](https://github.com/jonathanhudak/tools/commit/4927e88b0d4da24bfeb513c83254b07450fc0247))
+
 # [1.23.0](https://github.com/jonathanhudak/tools/compare/v1.22.0...v1.23.0) (2026-02-17)
 
 
