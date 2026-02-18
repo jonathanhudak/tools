@@ -1,3 +1,10 @@
+## [1.31.1](https://github.com/jonathanhudak/tools/compare/v1.31.0...v1.31.1) (2026-02-18)
+
+
+### Bug Fixes
+
+* **music-practice:** Piano keyboard - taller keys, proper black key positioning ([417554a](https://github.com/jonathanhudak/tools/commit/417554a253dcf6e53503c21496779602c33d6818))
+
 # [1.31.0](https://github.com/jonathanhudak/tools/compare/v1.30.0...v1.31.0) (2026-02-17)
 
 
