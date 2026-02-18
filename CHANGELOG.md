@@ -1,3 +1,10 @@
+## [1.31.2](https://github.com/jonathanhudak/tools/compare/v1.31.1...v1.31.2) (2026-02-18)
+
+
+### Bug Fixes
+
+* **music-practice:** Fix black key positioning - overlay properly on white keys ([632952c](https://github.com/jonathanhudak/tools/commit/632952c5b292b201c6c15692048d62f42e40eda1))
+
 ## [1.31.1](https://github.com/jonathanhudak/tools/compare/v1.31.0...v1.31.1) (2026-02-18)
 
 
