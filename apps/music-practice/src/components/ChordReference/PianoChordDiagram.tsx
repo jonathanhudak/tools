@@ -106,21 +106,21 @@ export function PianoChordDiagram({ voicing, chordName }: PianoChordDiagramProps
   const whiteKeys = allKeys.filter((k) => k.isWhite);
   const blackKeys = allKeys.filter((k) => !k.isWhite);
 
-  // Calculate black key positions (based on white key spacing)
-  const getBlackKeyOffset = (blackKey: KeyPosition): number => {
-    // Find which white key this black key sits between
+  // Calculate which white key index each black key falls between
+  const getBlackKeyWhiteKeyIndex = (blackKey: KeyPosition): number => {
     const noteIndex = blackKey.midiNum % 12;
-
-    // Black keys sit between: C-D, D-E, F-G, G-A, A-B
-    const offsets: Record<number, number> = {
-      1: 0.65, // C# between C and D
-      3: 1.65, // D# between D and E
-      6: 3.65, // F# between F and G
-      8: 4.65, // G# between G and A
-      10: 5.65, // A# between A and B
+    
+    // Map note indices to white key positions
+    // White keys: C(0), D(1), E(2), F(3), G(4), A(5), B(6)
+    const positions: Record<number, number> = {
+      1: 0.5, // C# between white keys 0(C) and 1(D)
+      3: 1.5, // D# between white keys 1(D) and 2(E)
+      6: 3.5, // F# between white keys 3(F) and 4(G)
+      8: 4.5, // G# between white keys 4(G) and 5(A)
+      10: 5.5, // A# between white keys 5(A) and 6(B)
     };
-
-    return offsets[noteIndex] || 0;
+    
+    return positions[noteIndex] || 0;
   };
 
   return (
@@ -155,15 +155,15 @@ export function PianoChordDiagram({ voicing, chordName }: PianoChordDiagramProps
           </div>
 
           {/* BLACK KEYS */}
-          <div
-            className="black-keys-container"
-            style={{
-              width: `${whiteKeys.length * (100 / whiteKeys.length)}%`,
-            }}
-          >
+          <div className="black-keys-container">
             <div className="black-keys-wrapper">
               {blackKeys.map((key) => {
-                const offsetPercent = (getBlackKeyOffset(key) / whiteKeys.length) * 100;
+                // Calculate position as percentage of total width
+                // Each white key takes up (100 / whiteKeys.length) percent
+                const whiteKeyPercent = 100 / whiteKeys.length;
+                const blackKeyPosition = getBlackKeyWhiteKeyIndex(key);
+                const leftPercent = blackKeyPosition * whiteKeyPercent;
+                
                 return (
                   <motion.button
                     key={`black-${key.midiNum}`}
@@ -172,8 +172,7 @@ export function PianoChordDiagram({ voicing, chordName }: PianoChordDiagramProps
                     transition={{ duration: 0.2, delay: 0.1 }}
                     className={`piano-key black ${key.isHighlighted ? 'active' : ''}`}
                     style={{
-                      left: `${offsetPercent}%`,
-                      transform: 'translateX(-50%)',
+                      left: `${leftPercent}%`,
                     }}
                     title={`${key.noteName}${key.isHighlighted ? ' (chord tone)' : ''}`}
                     aria-label={`${key.noteName} ${key.isHighlighted ? 'active' : ''}`}
