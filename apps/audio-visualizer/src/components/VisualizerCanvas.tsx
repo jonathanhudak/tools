@@ -7,11 +7,18 @@ interface VisualizerCanvasProps {
   audioFiles: AudioFileData[];
   settings: VisualizationSettings;
   onRemoveFile: (id: string) => void;
+  p5InstanceRef?: React.MutableRefObject<p5Type | null>;
 }
 
-export function VisualizerCanvas({ audioFiles, settings, onRemoveFile }: VisualizerCanvasProps) {
+export function VisualizerCanvas({
+  audioFiles,
+  settings,
+  onRemoveFile: _onRemoveFile,
+  p5InstanceRef: externalRef,
+}: VisualizerCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const p5InstanceRef = useRef<p5Type | null>(null);
+  const localRef = useRef<p5Type | null>(null);
+  const p5InstanceRef = externalRef || localRef;
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -38,7 +45,11 @@ export function VisualizerCanvas({ audioFiles, settings, onRemoveFile }: Visuali
   }, [audioFiles, settings]);
 
   return (
-    <div ref={containerRef} className="w-full h-full flex items-center justify-center">
+    <div
+      ref={containerRef}
+      data-p5-container
+      className="w-full h-full flex items-center justify-center"
+    >
       {/* p5.js will render here */}
     </div>
   );
