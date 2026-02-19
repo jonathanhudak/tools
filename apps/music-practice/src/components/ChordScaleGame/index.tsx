@@ -14,13 +14,14 @@ import { Label } from '@hudak/ui/components/label';
 import { Brain, Settings2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { DegreeQuiz } from './DegreeQuiz';
+import { ChordSourcesQuiz } from './ChordSourcesQuiz';
 
-type GameMode = 'degreeQuiz';
+type GameMode = 'degreeQuiz' | 'chordSources';
 type Difficulty = 'major' | 'majorMinor' | 'allScales';
 
 export function ChordScaleGame(): JSX.Element {
   const [gameStarted, setGameStarted] = useState(false);
-  const [gameMode] = useState<GameMode>('degreeQuiz');
+  const [gameMode, setGameMode] = useState<GameMode>('degreeQuiz');
   const [difficulty, setDifficulty] = useState<Difficulty>('major');
 
   if (!gameStarted) {
@@ -65,7 +66,12 @@ export function ChordScaleGame(): JSX.Element {
                 <Label className="text-base font-medium">Game Mode</Label>
                 <div className="grid grid-cols-1 gap-3">
                   <button
-                    className="relative p-4 rounded-xl border-2 border-[var(--accent-color)] bg-[var(--accent-light)]"
+                    onClick={() => setGameMode('degreeQuiz')}
+                    className={`relative p-4 rounded-xl border-2 transition-all ${
+                      gameMode === 'degreeQuiz'
+                        ? 'border-[var(--accent-color)] bg-[var(--accent-light)]'
+                        : 'border-muted hover:border-[var(--accent-color)]/50'
+                    }`}
                   >
                     <div className="flex items-center gap-3">
                       <Brain className="h-6 w-6 text-[var(--accent-color)]" />
@@ -75,23 +81,33 @@ export function ChordScaleGame(): JSX.Element {
                           Quick-fire questions: "What chord is on degree 4 of Melodic Minor?"
                         </div>
                       </div>
-                      <Badge variant="secondary" className="ml-auto">Active</Badge>
+                      {gameMode === 'degreeQuiz' && (
+                        <Badge variant="secondary" className="ml-auto">Active</Badge>
+                      )}
                     </div>
                   </button>
 
-                  {/* Coming Soon Game Modes */}
-                  <div className="relative p-4 rounded-xl border-2 border-dashed border-muted opacity-40">
+                  <button
+                    onClick={() => setGameMode('chordSources')}
+                    className={`relative p-4 rounded-xl border-2 transition-all ${
+                      gameMode === 'chordSources'
+                        ? 'border-[var(--accent-color)] bg-[var(--accent-light)]'
+                        : 'border-muted hover:border-[var(--accent-color)]/50'
+                    }`}
+                  >
                     <div className="flex items-center gap-3">
-                      <Brain className="h-6 w-6 text-muted-foreground" />
+                      <Brain className="h-6 w-6 text-[var(--accent-color)]" />
                       <div className="text-left">
-                        <div className="text-sm font-medium text-muted-foreground">Chord → Sources</div>
+                        <div className="text-sm font-medium">Chord → Sources</div>
                         <div className="text-xs text-muted-foreground">
                           Find all parent scales for a given chord
                         </div>
                       </div>
-                      <Badge variant="outline" className="ml-auto">Coming Soon</Badge>
+                      {gameMode === 'chordSources' && (
+                        <Badge variant="secondary" className="ml-auto">Active</Badge>
+                      )}
                     </div>
-                  </div>
+                  </button>
                 </div>
               </div>
 
@@ -161,6 +177,7 @@ export function ChordScaleGame(): JSX.Element {
 
         {/* Render Game Mode */}
         {gameMode === 'degreeQuiz' && <DegreeQuiz difficulty={difficulty} />}
+        {gameMode === 'chordSources' && <ChordSourcesQuiz difficulty={difficulty} />}
       </div>
     </div>
   );
