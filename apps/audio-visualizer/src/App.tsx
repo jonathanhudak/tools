@@ -1,14 +1,16 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Toaster } from 'sonner';
 import { AudioUploader } from './components/AudioUploader';
 import { VisualizerCanvas } from './components/VisualizerCanvas';
 import { ControlPanel } from './components/ControlPanel';
+import { ExportButton } from './components/ExportButton';
 import { Header } from './components/Header';
 import { useAudioFiles } from './hooks/useAudioFiles';
 import type { VisualizationSettings } from './types';
 
 export default function App() {
   const { audioFiles, addAudioFiles, removeAudioFile, clearAudioFiles } = useAudioFiles();
+  const p5InstanceRef = useRef<any>(null);
 
   const [settings, setSettings] = useState<VisualizationSettings>({
     lineThickness: 2,
@@ -55,18 +57,23 @@ export default function App() {
                   audioFiles={audioFiles}
                   settings={settings}
                   onRemoveFile={removeAudioFile}
+                  p5InstanceRef={p5InstanceRef}
                 />
               )}
             </div>
           </div>
 
           {/* Control panel */}
-          <aside className="lg:w-80">
+          <aside className="lg:w-80 space-y-4">
             <ControlPanel
               settings={settings}
               onSettingChange={updateSetting}
               onRegenerateColors={regenerateColors}
               disabled={audioFiles.length === 0}
+            />
+            <ExportButton
+              p5Instance={p5InstanceRef.current}
+              audioFileCount={audioFiles.length}
             />
           </aside>
         </div>

@@ -11,13 +11,14 @@ export function createVisualizerSketch(
 ) {
   return (p5: p5Type) => {
     let rotation = 0;
+    let canvas: HTMLCanvasElement | null = null;
 
     p5.setup = () => {
-      const container = p5.canvas?.parentElement;
+      const container = document.querySelector('[data-p5-container]') as HTMLElement;
       const width = container?.clientWidth || 800;
       const height = container?.clientHeight || 600;
 
-      p5.createCanvas(width, height);
+      canvas = p5.createCanvas(width, height) as any;
       p5.strokeWeight(settings.lineThickness);
     };
 
@@ -33,7 +34,7 @@ export function createVisualizerSketch(
       const baseRadius = Math.min(p5.width, p5.height) * 0.2;
       const maxRadius = Math.min(p5.width, p5.height) * 0.45;
 
-      audioFiles.forEach((audioFile, fileIndex) => {
+      audioFiles.forEach((audioFile) => {
         if (!audioFile.waveformData) return;
 
         const { waveformData, color } = audioFile;
@@ -71,7 +72,8 @@ export function createVisualizerSketch(
     };
 
     p5.windowResized = () => {
-      const container = p5.canvas?.parentElement;
+      if (!canvas) return;
+      const container = canvas.parentElement;
       const width = container?.clientWidth || 800;
       const height = container?.clientHeight || 600;
       p5.resizeCanvas(width, height);
@@ -80,5 +82,6 @@ export function createVisualizerSketch(
     // Store references for updates
     (p5 as any).audioFiles = audioFiles;
     (p5 as any).settings = settings;
+    (p5 as any).canvas = canvas;
   };
 }
