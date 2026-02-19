@@ -1,3 +1,12 @@
+# [1.33.0](https://github.com/jonathanhudak/tools/compare/v1.32.0...v1.33.0) (2026-02-19)
+
+
+### Features
+
+* **music-practice:** add Chord Sources quiz and Scale Learning Hub ([4a82988](https://github.com/jonathanhudak/tools/commit/4a8298890675fc28bb6440133b7b30d6614f1a6d))
+* **music-practice:** UX overhaul — warm theme, typography, accent colors ([56846df](https://github.com/jonathanhudak/tools/commit/56846df3626e112ea675d88f17e3a7c09fd8d708))
+* **music-practice:** UX refinements and gitignore build assets ([7875420](https://github.com/jonathanhudak/tools/commit/78754205d6d0a36cf4df5ccfc7810d39adc0d9d5))
+
 # [1.32.0](https://github.com/jonathanhudak/tools/compare/v1.31.2...v1.32.0) (2026-02-19)
 
 
