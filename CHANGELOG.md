@@ -1,3 +1,15 @@
+# [1.32.0](https://github.com/jonathanhudak/tools/compare/v1.31.2...v1.32.0) (2026-02-19)
+
+
+### Features
+
+* **audio-visualizer:** Add audio export functionality and UI improvements ([#77](https://github.com/jonathanhudak/tools/issues/77)) ([a99e109](https://github.com/jonathanhudak/tools/commit/a99e109e40d39347e157cd0c590732123bf0bb77))
+
+
+### Reverts
+
+* rollback piano keyboard to original SVG implementation ([d0beb1a](https://github.com/jonathanhudak/tools/commit/d0beb1ae6998760f3c0db8b2aaf304f2c856403c))
+
 ## [1.31.2](https://github.com/jonathanhudak/tools/compare/v1.31.1...v1.31.2) (2026-02-18)
 
 
