@@ -466,7 +466,7 @@ function PlayRoute() {
   const isMicrophoneInstrument = instrument === 'violin' || instrument === 'guitar';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Exit Button - Top Right */}
       <div className="fixed top-6 right-6 z-30">
         <Button

@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ScalesQuizRouteImport } from './routes/scales-quiz'
 import { Route as PlayRouteImport } from './routes/play'
+import { Route as DevRouteImport } from './routes/dev'
 import { Route as ChordScaleRouteImport } from './routes/chord-scale'
 import { Route as ChordQuizRouteImport } from './routes/chord-quiz'
 import { Route as AboutRouteImport } from './routes/about'
@@ -24,6 +25,11 @@ const ScalesQuizRoute = ScalesQuizRouteImport.update({
 const PlayRoute = PlayRouteImport.update({
   id: '/play',
   path: '/play',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DevRoute = DevRouteImport.update({
+  id: '/dev',
+  path: '/dev',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChordScaleRoute = ChordScaleRouteImport.update({
@@ -52,6 +58,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/chord-quiz': typeof ChordQuizRoute
   '/chord-scale': typeof ChordScaleRoute
+  '/dev': typeof DevRoute
   '/play': typeof PlayRoute
   '/scales-quiz': typeof ScalesQuizRoute
 }
@@ -60,6 +67,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/chord-quiz': typeof ChordQuizRoute
   '/chord-scale': typeof ChordScaleRoute
+  '/dev': typeof DevRoute
   '/play': typeof PlayRoute
   '/scales-quiz': typeof ScalesQuizRoute
 }
@@ -69,6 +77,7 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/chord-quiz': typeof ChordQuizRoute
   '/chord-scale': typeof ChordScaleRoute
+  '/dev': typeof DevRoute
   '/play': typeof PlayRoute
   '/scales-quiz': typeof ScalesQuizRoute
 }
@@ -79,16 +88,25 @@ export interface FileRouteTypes {
     | '/about'
     | '/chord-quiz'
     | '/chord-scale'
+    | '/dev'
     | '/play'
     | '/scales-quiz'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/chord-quiz' | '/chord-scale' | '/play' | '/scales-quiz'
+  to:
+    | '/'
+    | '/about'
+    | '/chord-quiz'
+    | '/chord-scale'
+    | '/dev'
+    | '/play'
+    | '/scales-quiz'
   id:
     | '__root__'
     | '/'
     | '/about'
     | '/chord-quiz'
     | '/chord-scale'
+    | '/dev'
     | '/play'
     | '/scales-quiz'
   fileRoutesById: FileRoutesById
@@ -98,6 +116,7 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   ChordQuizRoute: typeof ChordQuizRoute
   ChordScaleRoute: typeof ChordScaleRoute
+  DevRoute: typeof DevRoute
   PlayRoute: typeof PlayRoute
   ScalesQuizRoute: typeof ScalesQuizRoute
 }
@@ -116,6 +135,13 @@ declare module '@tanstack/react-router' {
       path: '/play'
       fullPath: '/play'
       preLoaderRoute: typeof PlayRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dev': {
+      id: '/dev'
+      path: '/dev'
+      fullPath: '/dev'
+      preLoaderRoute: typeof DevRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/chord-scale': {
@@ -154,6 +180,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   ChordQuizRoute: ChordQuizRoute,
   ChordScaleRoute: ChordScaleRoute,
+  DevRoute: DevRoute,
   PlayRoute: PlayRoute,
   ScalesQuizRoute: ScalesQuizRoute,
 }

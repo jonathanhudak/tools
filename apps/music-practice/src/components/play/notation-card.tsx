@@ -97,7 +97,7 @@ export function NotationCard({
           </div>
 
           {isMicrophoneInstrument && (
-            <div className="flex-shrink-0 p-6 border-l border-border bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-blue-950/30 dark:to-purple-950/30">
+            <div className="flex-shrink-0 p-6 border-l border-border bg-muted/50">
               {detectedPitch ? (
                 <PitchGauge
                   note={detectedPitch.note}
@@ -139,9 +139,9 @@ export function NotationCard({
         </AnimatePresence>
 
         {(instrument === 'piano' || instrument === 'piano-virtual') && lastDetectedNote && (
-          <div className="px-6 py-3 flex items-center justify-center gap-4 bg-blue-50/50 dark:bg-blue-950/30 border-t border-border">
-            <Volume2 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-            <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
+          <div className="px-6 py-3 flex items-center justify-center gap-4 bg-muted/50 border-t border-border">
+            <Volume2 className="h-4 w-4 text-[var(--accent-color)]" />
+            <span className="text-sm font-medium text-foreground">
               Detected: {lastDetectedNote.noteName}
             </span>
             {lastDetectedNote.centsOff !== undefined && (

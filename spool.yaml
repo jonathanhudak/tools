@@ -1,0 +1,8 @@
+version: 1
+adapter: claude-code
+loop:
+  max_retries: 3
+  retry_delay: 0
+learnings:
+  auto: true
+  inject: true

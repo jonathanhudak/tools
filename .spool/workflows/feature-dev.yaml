@@ -1,0 +1,27 @@
+name: feature-dev
+description: Plan, implement, verify, test, and review a new feature
+
+steps:
+  - id: plan
+    agent: planner
+    description: Break the feature into implementation stories
+
+  - id: implement
+    agent: developer
+    for_each: stories
+    verifier: verifier
+    max_retries: 3
+    needs: [plan]
+
+  - id: test
+    agent: tester
+    needs: [implement]
+
+  - id: review
+    agent: reviewer
+    needs: [test]
+
+  - id: learn
+    agent: compound
+    always: true
+    needs: [review]

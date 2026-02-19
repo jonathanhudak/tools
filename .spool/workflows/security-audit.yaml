@@ -1,0 +1,30 @@
+name: security-audit
+description: Scan, prioritize, fix, and verify security issues
+
+steps:
+  - id: scan
+    agent: scanner
+
+  - id: triage
+    agent: triager
+    needs: [scan]
+
+  - id: fix
+    agent: fixer
+    for_each: stories
+    verifier: verifier
+    max_retries: 3
+    needs: [triage]
+
+  - id: test
+    agent: tester
+    needs: [fix]
+
+  - id: review
+    agent: reviewer
+    needs: [test]
+
+  - id: learn
+    agent: compound
+    always: true
+    needs: [review]

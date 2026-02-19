@@ -1,0 +1,26 @@
+name: bug-fix
+description: Triage, investigate, fix, and verify a bug
+
+steps:
+  - id: triage
+    agent: triager
+
+  - id: investigate
+    agent: investigator
+    needs: [triage]
+
+  - id: fix
+    agent: developer
+    for_each: stories
+    verifier: verifier
+    max_retries: 3
+    needs: [investigate]
+
+  - id: review
+    agent: reviewer
+    needs: [fix]
+
+  - id: learn
+    agent: compound
+    always: true
+    needs: [review]

@@ -1,3 +1,4 @@
+import { copyFileSync } from 'fs';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
@@ -16,6 +17,14 @@ export default defineConfig({
     tsconfigPaths({
       projects: ['../../packages/ui/tsconfig.json', './tsconfig.json'],
     }),
+    {
+      name: 'spa-fallback',
+      closeBundle() {
+        try {
+          copyFileSync('../../docs/music-practice/index.html', '../../docs/music-practice/404.html');
+        } catch {}
+      },
+    },
   ],
   base: '/tools/music-practice/',
   build: {

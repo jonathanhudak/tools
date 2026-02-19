@@ -1,1 +1,162 @@
-@import "@hudak/ui/styles/globals.css";
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+@source "../**/*.{ts,tsx}";
+@source "../../../packages/ui/src/**/*.{ts,tsx}";
+
+/* ─── THEME ──────────────────────────────────────────────── */
+
+@theme {
+  /* Warm light palette — mapped to shadcn/ui expected token names */
+  --color-background: 40 28% 95%;
+  --color-foreground: 30 11% 9%;
+  --color-card: 40 100% 99%;
+  --color-card-foreground: 30 11% 9%;
+  --color-primary: 171 45% 33%;
+  --color-primary-foreground: 0 0% 100%;
+  --color-secondary: 36 22% 92%;
+  --color-secondary-foreground: 30 11% 9%;
+  --color-muted: 36 22% 92%;
+  --color-muted-foreground: 22 6% 34%;
+  --color-accent: 171 45% 33%;
+  --color-accent-foreground: 0 0% 100%;
+  --color-destructive: 7 55% 40%;
+  --color-destructive-foreground: 0 0% 100%;
+  --color-popover: 40 100% 99%;
+  --color-popover-foreground: 30 11% 9%;
+  --color-border: 30 11% 9% / 0.14;
+  --color-input: 30 11% 9% / 0.14;
+  --color-ring: 171 45% 33%;
+  --radius-lg: 16px;
+  --radius-md: 8px;
+  --radius-sm: 4px;
+}
+
+.dark {
+  --color-background: 43 35% 7%;
+  --color-foreground: 40 23% 91%;
+  --color-card: 43 30% 10%;
+  --color-card-foreground: 40 23% 91%;
+  --color-primary: 168 48% 46%;
+  --color-primary-foreground: 43 35% 7%;
+  --color-secondary: 40 17% 15%;
+  --color-secondary-foreground: 40 23% 91%;
+  --color-muted: 40 17% 15%;
+  --color-muted-foreground: 28 16% 58%;
+  --color-accent: 168 48% 46%;
+  --color-accent-foreground: 43 35% 7%;
+  --color-destructive: 10 43% 54%;
+  --color-destructive-foreground: 0 0% 100%;
+  --color-popover: 43 30% 10%;
+  --color-popover-foreground: 40 23% 91%;
+  --color-border: 40 23% 91% / 0.13;
+  --color-input: 40 23% 91% / 0.13;
+  --color-ring: 168 48% 46%;
+}
+
+/* ─── SEMANTIC TOKENS ────────────────────────────────────── */
+
+:root {
+  --accent-color: #2d7a6e;
+  --accent-light: #ebf4f2;
+  --accent-hover: #245f56;
+  --success-color: #3a7d5c;
+  --success-bg: #edf6f1;
+  --error-color: #9b3a2f;
+  --error-bg: #faf0ef;
+  --ink-primary: #1a1714;
+  --ink-secondary: #5c5650;
+  --ink-tertiary: #9c9590;
+  --ink-disabled: #c8c4be;
+  --border-subtle: rgba(26, 23, 20, 0.08);
+  --border-strong: rgba(26, 23, 20, 0.24);
+  --surface-overlay: rgba(247, 244, 239, 0.92);
+  --shadow-warm-sm: 0 1px 3px rgba(26,23,20,0.06), 0 1px 2px rgba(26,23,20,0.04);
+  --shadow-warm-md: 0 4px 16px rgba(26,23,20,0.08), 0 1px 4px rgba(26,23,20,0.04);
+  --shadow-warm-lg: 0 12px 40px rgba(26,23,20,0.1), 0 2px 8px rgba(26,23,20,0.06);
+  --font-display: "Lora", Georgia, serif;
+  --font-body: "DM Sans", system-ui, sans-serif;
+  --font-mono: "DM Mono", "Courier New", monospace;
+}
+
+.dark {
+  --accent-color: #3daf9b;
+  --accent-light: rgba(61, 175, 155, 0.14);
+  --accent-hover: #4dbfa9;
+  --success-color: #4fa87a;
+  --success-bg: rgba(79, 168, 122, 0.12);
+  --error-color: #c4614f;
+  --error-bg: rgba(196, 97, 79, 0.12);
+  --ink-primary: #f0ead9;
+  --ink-secondary: #a89880;
+  --ink-tertiary: #6e6254;
+  --ink-disabled: #3e3a32;
+  --border-subtle: rgba(240, 234, 217, 0.07);
+  --border-strong: rgba(240, 234, 217, 0.22);
+  --surface-overlay: rgba(24, 22, 13, 0.94);
+  --shadow-warm-sm: 0 1px 4px rgba(0,0,0,0.28), 0 1px 2px rgba(0,0,0,0.2);
+  --shadow-warm-md: 0 4px 20px rgba(0,0,0,0.36), 0 1px 6px rgba(0,0,0,0.24);
+  --shadow-warm-lg: 0 12px 48px rgba(0,0,0,0.44), 0 2px 10px rgba(0,0,0,0.28);
+}
+
+/* ─── BASE ───────────────────────────────────────────────── */
+
+@layer base {
+  * {
+    border-color: hsl(var(--color-border));
+  }
+
+  body {
+    background-color: hsl(var(--color-background));
+    color: hsl(var(--color-foreground));
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* ─── UTILITIES ──────────────────────────────────────────── */
+
+@layer utilities {
+  /* Background utilities */
+  .bg-background { background-color: hsl(var(--color-background)); }
+  .bg-foreground { background-color: hsl(var(--color-foreground)); }
+  .bg-popover { background-color: hsl(var(--color-popover)); }
+  .bg-card { background-color: hsl(var(--color-card)); }
+  .bg-primary { background-color: hsl(var(--color-primary)); }
+  .bg-secondary { background-color: hsl(var(--color-secondary)); }
+  .bg-muted { background-color: hsl(var(--color-muted)); }
+  .bg-accent { background-color: hsl(var(--color-accent)); }
+  .bg-destructive { background-color: hsl(var(--color-destructive)); }
+
+  /* Text utilities */
+  .text-foreground { color: hsl(var(--color-foreground)); }
+  .text-background { color: hsl(var(--color-background)); }
+  .text-popover-foreground { color: hsl(var(--color-popover-foreground)); }
+  .text-card-foreground { color: hsl(var(--color-card-foreground)); }
+  .text-primary { color: hsl(var(--color-primary)); }
+  .text-primary-foreground { color: hsl(var(--color-primary-foreground)); }
+  .text-secondary { color: hsl(var(--color-secondary)); }
+  .text-secondary-foreground { color: hsl(var(--color-secondary-foreground)); }
+  .text-muted { color: hsl(var(--color-muted)); }
+  .text-muted-foreground { color: hsl(var(--color-muted-foreground)); }
+  .text-accent { color: hsl(var(--color-accent)); }
+  .text-accent-foreground { color: hsl(var(--color-accent-foreground)); }
+  .text-destructive { color: hsl(var(--color-destructive)); }
+  .text-destructive-foreground { color: hsl(var(--color-destructive-foreground)); }
+
+  /* Border utilities */
+  .border-border { border-color: hsl(var(--color-border)); }
+  .border-input { border-color: hsl(var(--color-input)); }
+
+  /* Custom font utilities */
+  .font-display { font-family: var(--font-display); }
+  .font-mono-app { font-family: var(--font-mono); }
+}
+
+/* ─── COLOR TRANSITIONS ──────────────────────────────────── */
+
+body,
+body * {
+  transition: background-color 220ms ease, border-color 220ms ease, color 220ms ease, box-shadow 220ms ease;
+}

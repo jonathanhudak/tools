@@ -141,7 +141,7 @@ export function DegreeQuiz({ difficulty }: DegreeQuizProps): JSX.Element {
       <div className="flex gap-4 justify-center">
         <Card className="flex-1">
           <CardContent className="pt-4 pb-3 text-center">
-            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+            <div className="text-2xl font-bold text-[var(--success-color)]">
               {score.correct}/{score.total}
             </div>
             <div className="text-xs text-muted-foreground">Correct</div>
@@ -149,7 +149,7 @@ export function DegreeQuiz({ difficulty }: DegreeQuizProps): JSX.Element {
         </Card>
         <Card className="flex-1">
           <CardContent className="pt-4 pb-3 text-center">
-            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+            <div className="text-2xl font-bold text-[var(--accent-color)]">
               {accuracy}%
             </div>
             <div className="text-xs text-muted-foreground">Accuracy</div>
@@ -157,7 +157,7 @@ export function DegreeQuiz({ difficulty }: DegreeQuizProps): JSX.Element {
         </Card>
         <Card className="flex-1">
           <CardContent className="pt-4 pb-3 text-center">
-            <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+            <div className="text-2xl font-bold text-[var(--accent-color)]">
               {streak}
             </div>
             <div className="text-xs text-muted-foreground">Streak</div>
@@ -166,12 +166,12 @@ export function DegreeQuiz({ difficulty }: DegreeQuizProps): JSX.Element {
       </div>
 
       {/* Question Card */}
-      <Card className="border-2">
+      <Card className="border-2 shadow-[var(--shadow-warm-md)]">
         <CardHeader className="pb-4">
-          <Badge variant="outline" className="w-fit mb-2">
+          <Badge variant="outline" className="w-fit mb-2 font-mono-app">
             Degree Quiz
           </Badge>
-          <CardTitle className="text-2xl">
+          <CardTitle className="text-2xl font-display">
             What chord quality is on degree {question.degree} of {SCALE_TYPE_NAMES[question.scaleType]}?
           </CardTitle>
           <CardDescription>
@@ -191,9 +191,9 @@ export function DegreeQuiz({ difficulty }: DegreeQuizProps): JSX.Element {
                 let className = 'h-16 text-lg font-semibold transition-all';
 
                 if (showCorrect) {
-                  className += ' bg-green-500 text-white hover:bg-green-600 border-green-600';
+                  className += ' bg-[var(--success-color)] text-white border-[var(--success-color)]';
                 } else if (showIncorrect) {
-                  className += ' bg-red-500 text-white hover:bg-red-600 border-red-600';
+                  className += ' bg-[var(--error-color)] text-white border-[var(--error-color)]';
                 } else if (isSelected) {
                   variant = 'secondary';
                 }
@@ -229,20 +229,20 @@ export function DegreeQuiz({ difficulty }: DegreeQuizProps): JSX.Element {
                 className="space-y-4"
               >
                 {isCorrect ? (
-                  <div className="p-4 rounded-lg bg-green-50 dark:bg-green-950/30 border-2 border-green-500">
-                    <div className="font-semibold text-green-900 dark:text-green-100">
+                  <div className="p-4 rounded-lg bg-[var(--success-bg)] border-2 border-[var(--success-color)]">
+                    <div className="font-semibold text-foreground">
                       ✓ Correct!
                     </div>
-                    <div className="text-sm text-green-800 dark:text-green-200 mt-1">
+                    <div className="text-sm text-muted-foreground mt-1">
                       {getDegreeInfo(question.scaleType, question.degree)?.modeName} mode
                     </div>
                   </div>
                 ) : (
-                  <div className="p-4 rounded-lg bg-red-50 dark:bg-red-950/30 border-2 border-red-500">
-                    <div className="font-semibold text-red-900 dark:text-red-100">
+                  <div className="p-4 rounded-lg bg-[var(--error-bg)] border-2 border-[var(--error-color)]">
+                    <div className="font-semibold text-foreground">
                       ✗ Incorrect
                     </div>
-                    <div className="text-sm text-red-800 dark:text-red-200 mt-1">
+                    <div className="text-sm text-muted-foreground mt-1">
                       The correct answer is <strong>{question.correctAnswer}</strong> (
                       {getDegreeInfo(question.scaleType, question.degree)?.modeName})
                     </div>

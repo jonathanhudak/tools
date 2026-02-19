@@ -1,0 +1,5720 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Music Practice Suite — Look & Feel Guide</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ─── TOKENS ─────────────────────────────────────────────── */
+      :root {
+        /* Surface */
+        --surface-page: #f7f4ef;
+        --surface-card: #fffefb;
+        --surface-subtle: #f0ece5;
+        --surface-overlay: rgba(247, 244, 239, 0.92);
+
+        /* Ink */
+        --ink-primary: #1a1714;
+        --ink-secondary: #5c5650;
+        --ink-tertiary: #9c9590;
+        --ink-disabled: #c8c4be;
+
+        /* Single Accent — a warm teal that reads confident without shouting */
+        --accent: #2d7a6e;
+        --accent-light: #ebf4f2;
+        --accent-hover: #245f56;
+
+        /* Feedback — desaturated */
+        --success: #3a7d5c;
+        --success-bg: #edf6f1;
+        --error: #9b3a2f;
+        --error-bg: #faf0ef;
+
+        /* Border */
+        --border-subtle: rgba(26, 23, 20, 0.08);
+        --border-medium: rgba(26, 23, 20, 0.14);
+        --border-strong: rgba(26, 23, 20, 0.24);
+
+        /* Spacing */
+        --sp-2: 4px;
+        --sp-4: 8px;
+        --sp-6: 12px;
+        --sp-8: 16px;
+        --sp-12: 24px;
+        --sp-16: 32px;
+        --sp-20: 40px;
+        --sp-24: 48px;
+        --sp-32: 64px;
+        --sp-40: 80px;
+        --sp-48: 96px;
+        --sp-64: 128px;
+
+        /* Radius */
+        --r-sm: 4px;
+        --r-md: 8px;
+        --r-lg: 16px;
+        --r-xl: 24px;
+
+        /* Shadow */
+        --shadow-sm:
+          0 1px 3px rgba(26, 23, 20, 0.06), 0 1px 2px rgba(26, 23, 20, 0.04);
+        --shadow-md:
+          0 4px 16px rgba(26, 23, 20, 0.08), 0 1px 4px rgba(26, 23, 20, 0.04);
+        --shadow-lg:
+          0 12px 40px rgba(26, 23, 20, 0.1), 0 2px 8px rgba(26, 23, 20, 0.06);
+
+        /* Type */
+        --font-display: "Lora", Georgia, serif;
+        --font-body: "DM Sans", system-ui, sans-serif;
+        --font-mono: "DM Mono", "Courier New", monospace;
+      }
+
+      /* ─── DARK MODE TOKENS ───────────────────────────────────── */
+      /*
+     Design intent: a music hall at night.
+     Warm near-black — the felt of a piano bench, aged wood under stage light.
+     The same ink-and-paper logic, just inverted into warmth rather than cool gray.
+     Accent brightens slightly so it holds its contrast on dark surfaces.
+  */
+      [data-theme="dark"] {
+        /* Surface — deep, warm, layered */
+        --surface-page: #18160d;
+        --surface-card: #211e14;
+        --surface-subtle: #2c2920;
+        --surface-overlay: rgba(24, 22, 13, 0.94);
+
+        /* Ink — warm cream, never cold white */
+        --ink-primary: #f0ead9;
+        --ink-secondary: #a89880;
+        --ink-tertiary: #6e6254;
+        --ink-disabled: #3e3a32;
+
+        /* Accent — brightened 15% for dark surface legibility */
+        --accent: #3daf9b;
+        --accent-light: rgba(61, 175, 155, 0.14);
+        --accent-hover: #4dbfa9;
+
+        /* Feedback — stays warm, never neon */
+        --success: #4fa87a;
+        --success-bg: rgba(79, 168, 122, 0.12);
+        --error: #c4614f;
+        --error-bg: rgba(196, 97, 79, 0.12);
+
+        /* Border — light ink on dark */
+        --border-subtle: rgba(240, 234, 217, 0.07);
+        --border-medium: rgba(240, 234, 217, 0.13);
+        --border-strong: rgba(240, 234, 217, 0.22);
+
+        /* Shadow — deeper, still warm */
+        --shadow-sm:
+          0 1px 4px rgba(0, 0, 0, 0.28), 0 1px 2px rgba(0, 0, 0, 0.2);
+        --shadow-md:
+          0 4px 20px rgba(0, 0, 0, 0.36), 0 1px 6px rgba(0, 0, 0, 0.24);
+        --shadow-lg:
+          0 12px 48px rgba(0, 0, 0, 0.44), 0 2px 10px rgba(0, 0, 0, 0.28);
+      }
+
+      /* ─── GLOBAL TRANSITION ──────────────────────────────────── */
+      /* Smooth theme switch — all color properties animate together */
+      body,
+      .demo-card,
+      .quiz-card,
+      .tool-card,
+      .stat-card,
+      .answer-btn,
+      .btn,
+      .input,
+      .nav-link,
+      .rule,
+      .swatch-info,
+      .chord-grid-wrap,
+      .notation-stage,
+      .demo-nav,
+      .spacing-bar,
+      .radius-box {
+        transition:
+          background-color 220ms ease,
+          border-color 220ms ease,
+          color 220ms ease,
+          box-shadow 220ms ease;
+      }
+
+      /* ─── RESET ──────────────────────────────────────────────── */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html {
+        font-size: 16px;
+        scroll-behavior: smooth;
+      }
+
+      body {
+        background: var(--surface-page);
+        color: var(--ink-primary);
+        font-family: var(--font-body);
+        font-weight: 400;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* ─── GUIDE SHELL ────────────────────────────────────────── */
+      .guide-header {
+        padding: var(--sp-48) var(--sp-32) var(--sp-40);
+        border-bottom: 1px solid var(--border-subtle);
+        max-width: 900px;
+        margin: 0 auto;
+      }
+      .guide-eyebrow {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink-tertiary);
+        margin-bottom: var(--sp-6);
+      }
+      .guide-title {
+        font-family: var(--font-display);
+        font-size: clamp(28px, 4vw, 40px);
+        font-weight: 500;
+        line-height: 1.2;
+        color: var(--ink-primary);
+        margin-bottom: var(--sp-8);
+      }
+      .guide-subtitle {
+        font-size: 17px;
+        color: var(--ink-secondary);
+        max-width: 560px;
+        line-height: 1.65;
+      }
+
+      .guide-body {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 0 var(--sp-32) var(--sp-64);
+      }
+
+      .section {
+        padding: var(--sp-40) 0;
+        border-bottom: 1px solid var(--border-subtle);
+      }
+      .section:last-child {
+        border-bottom: none;
+      }
+
+      .section-label {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--ink-tertiary);
+        margin-bottom: var(--sp-12);
+      }
+      .section-title {
+        font-family: var(--font-display);
+        font-size: 22px;
+        font-weight: 500;
+        margin-bottom: var(--sp-8);
+      }
+      .section-desc {
+        font-size: 15px;
+        color: var(--ink-secondary);
+        max-width: 620px;
+        margin-bottom: var(--sp-24);
+        line-height: 1.65;
+      }
+
+      /* ─── COLOR SWATCHES ─────────────────────────────────────── */
+      .swatch-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: var(--sp-8);
+      }
+      .swatch {
+        border-radius: var(--r-md);
+        overflow: hidden;
+        border: 1px solid var(--border-subtle);
+      }
+      .swatch-color {
+        height: 72px;
+      }
+      .swatch-info {
+        padding: var(--sp-6) var(--sp-8) var(--sp-8);
+        background: var(--surface-card);
+      }
+      .swatch-name {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--ink-primary);
+        margin-bottom: 2px;
+      }
+      .swatch-value {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--ink-tertiary);
+      }
+
+      /* ─── TYPE SPECIMENS ─────────────────────────────────────── */
+      .type-stack {
+        display: flex;
+        flex-direction: column;
+        gap: var(--sp-12);
+      }
+
+      .type-row {
+        display: flex;
+        align-items: baseline;
+        gap: var(--sp-16);
+        padding: var(--sp-12) 0;
+        border-bottom: 1px solid var(--border-subtle);
+      }
+      .type-row:last-child {
+        border-bottom: none;
+      }
+      .type-meta {
+        flex: 0 0 160px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .type-meta-label {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ink-tertiary);
+      }
+      .type-meta-spec {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--ink-secondary);
+      }
+
+      /* ─── SPACING RULER ─────────────────────────────────────── */
+      .spacing-grid {
+        display: flex;
+        flex-direction: column;
+        gap: var(--sp-6);
+      }
+      .spacing-row {
+        display: flex;
+        align-items: center;
+        gap: var(--sp-12);
+      }
+      .spacing-bar-wrap {
+        flex: 1;
+        height: 32px;
+        display: flex;
+        align-items: center;
+      }
+      .spacing-bar {
+        height: 20px;
+        background: var(--accent-light);
+        border: 1px solid var(--accent);
+        border-radius: 3px;
+        opacity: 0.7;
+      }
+      .spacing-label {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--ink-tertiary);
+        width: 80px;
+        flex-shrink: 0;
+      }
+      .spacing-px {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--ink-secondary);
+        width: 36px;
+        text-align: right;
+        flex-shrink: 0;
+      }
+
+      /* ─── COMPONENT DEMOS ────────────────────────────────────── */
+      .demo-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--sp-12);
+      }
+      @media (max-width: 640px) {
+        .demo-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .demo-card {
+        background: var(--surface-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--r-lg);
+        padding: var(--sp-20);
+        box-shadow: var(--shadow-sm);
+      }
+      .demo-card-wide {
+        grid-column: 1 / -1;
+      }
+      .demo-label {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink-tertiary);
+        margin-bottom: var(--sp-12);
+      }
+
+      /* BUTTONS */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--sp-4);
+        padding: 14px var(--sp-20);
+        border-radius: var(--r-md);
+        font-family: var(--font-body);
+        font-size: 15px;
+        font-weight: 500;
+        cursor: pointer;
+        border: none;
+        transition: all 120ms ease;
+        text-decoration: none;
+        letter-spacing: 0.01em;
+      }
+      .btn-primary {
+        background: var(--accent);
+        color: #fff;
+      }
+      .btn-primary:hover {
+        background: var(--accent-hover);
+      }
+
+      .btn-secondary {
+        background: transparent;
+        color: var(--accent);
+        border: 1.5px solid var(--accent);
+      }
+      .btn-secondary:hover {
+        background: var(--accent-light);
+      }
+
+      .btn-ghost {
+        background: transparent;
+        color: var(--ink-secondary);
+        border: 1.5px solid var(--border-medium);
+      }
+      .btn-ghost:hover {
+        background: var(--surface-subtle);
+        color: var(--ink-primary);
+      }
+
+      .btn-disabled {
+        background: var(--surface-subtle);
+        color: var(--ink-disabled);
+        cursor: not-allowed;
+      }
+
+      .btn-sm {
+        padding: 9px var(--sp-12);
+        font-size: 13px;
+        border-radius: var(--r-sm);
+      }
+
+      .btn-lg {
+        padding: 18px var(--sp-24);
+        font-size: 17px;
+        border-radius: var(--r-md);
+        width: 100%;
+      }
+
+      .btn-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--sp-8);
+        align-items: center;
+      }
+
+      /* INPUTS */
+      .input-group {
+        display: flex;
+        flex-direction: column;
+        gap: var(--sp-4);
+      }
+      .input-label {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--ink-secondary);
+      }
+      .input {
+        padding: 12px var(--sp-12);
+        border: 1.5px solid var(--border-medium);
+        border-radius: var(--r-md);
+        background: var(--surface-card);
+        font-family: var(--font-body);
+        font-size: 15px;
+        color: var(--ink-primary);
+        outline: none;
+        transition:
+          border-color 120ms ease,
+          box-shadow 120ms ease;
+      }
+      .input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--accent-light);
+      }
+      select.input {
+        cursor: pointer;
+      }
+
+      /* QUIZ CARD */
+      .quiz-card {
+        background: var(--surface-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--r-xl);
+        padding: var(--sp-24) var(--sp-24) var(--sp-20);
+        box-shadow: var(--shadow-md);
+      }
+      .quiz-mode-badge {
+        display: inline-block;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--accent);
+        background: var(--accent-light);
+        border-radius: var(--r-sm);
+        padding: 3px 8px;
+        margin-bottom: var(--sp-12);
+      }
+      .quiz-question {
+        font-family: var(--font-display);
+        font-size: 22px;
+        font-weight: 500;
+        line-height: 1.35;
+        margin-bottom: var(--sp-6);
+      }
+      .quiz-hint {
+        font-size: 14px;
+        color: var(--ink-tertiary);
+        margin-bottom: var(--sp-20);
+      }
+      .answer-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--sp-8);
+        margin-bottom: var(--sp-16);
+      }
+      .answer-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: var(--sp-12) var(--sp-8);
+        border: 1.5px solid var(--border-medium);
+        border-radius: var(--r-md);
+        background: var(--surface-card);
+        font-family: var(--font-display);
+        font-size: 18px;
+        font-weight: 500;
+        color: var(--ink-primary);
+        cursor: pointer;
+        transition: all 120ms ease;
+        min-height: 56px;
+      }
+      .answer-btn:hover {
+        border-color: var(--accent);
+        background: var(--accent-light);
+        color: var(--accent);
+      }
+      .answer-btn.correct {
+        border-color: var(--success);
+        background: var(--success-bg);
+        color: var(--success);
+      }
+      .answer-btn.incorrect {
+        border-color: var(--error);
+        background: var(--error-bg);
+        color: var(--error);
+      }
+      .answer-btn.faded {
+        opacity: 0.35;
+      }
+      .feedback-bar {
+        display: flex;
+        align-items: center;
+        gap: var(--sp-8);
+        padding: var(--sp-12) var(--sp-12);
+        background: var(--success-bg);
+        border: 1px solid rgba(58, 125, 92, 0.2);
+        border-radius: var(--r-md);
+        font-size: 14px;
+        color: var(--success);
+        font-weight: 500;
+      }
+
+      /* STAT CARDS */
+      .stats-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--sp-8);
+      }
+      .stat-card {
+        background: var(--surface-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--r-lg);
+        padding: var(--sp-16) var(--sp-12);
+        text-align: center;
+      }
+      .stat-value {
+        font-family: var(--font-display);
+        font-size: 28px;
+        font-weight: 500;
+        color: var(--ink-primary);
+        line-height: 1;
+        margin-bottom: var(--sp-4);
+      }
+      .stat-value.accent {
+        color: var(--accent);
+      }
+      .stat-label {
+        font-size: 12px;
+        color: var(--ink-tertiary);
+        letter-spacing: 0.04em;
+      }
+
+      /* TOOL CARD (Home) */
+      .tool-card {
+        background: var(--surface-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--r-xl);
+        padding: var(--sp-20);
+        box-shadow: var(--shadow-sm);
+        display: flex;
+        flex-direction: column;
+        gap: var(--sp-12);
+        transition:
+          box-shadow 150ms ease,
+          border-color 150ms ease;
+        cursor: pointer;
+      }
+      .tool-card:hover {
+        box-shadow: var(--shadow-md);
+        border-color: var(--border-medium);
+      }
+      .tool-card-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+      }
+      .tool-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: var(--r-md);
+        background: var(--surface-subtle);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+      }
+      .tool-name {
+        font-family: var(--font-display);
+        font-size: 17px;
+        font-weight: 500;
+        margin-bottom: 2px;
+      }
+      .tool-desc {
+        font-size: 13px;
+        color: var(--ink-tertiary);
+        line-height: 1.5;
+        flex: 1;
+      }
+
+      /* NOTATION STAGE — the centerpiece principle */
+      .notation-stage {
+        background: var(--surface-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--r-lg);
+        padding: var(--sp-32) var(--sp-24);
+        box-shadow: var(--shadow-md);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--sp-16);
+        position: relative;
+      }
+      .notation-staff {
+        width: 100%;
+        max-width: 480px;
+        position: relative;
+        height: 80px;
+        display: flex;
+        align-items: center;
+      }
+      /* Staff lines */
+      .staff-lines {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 12px 0;
+      }
+      .staff-line {
+        width: 100%;
+        height: 1px;
+        background: var(--border-medium);
+      }
+      /* Note */
+      .note-head {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%) translateY(-8px);
+        width: 18px;
+        height: 14px;
+        background: var(--ink-primary);
+        border-radius: 50%;
+        transform: translate(-50%, -50%) rotate(-20deg);
+      }
+      .note-stem {
+        position: absolute;
+        left: calc(50% + 8px);
+        top: calc(50% - 8px);
+        width: 1.5px;
+        height: 36px;
+        background: var(--ink-primary);
+        transform: translateY(-100%);
+      }
+      .notation-label {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ink-tertiary);
+      }
+
+      /* CHORD DIAGRAM */
+      .chord-diagram {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--sp-8);
+      }
+      .chord-name-display {
+        font-family: var(--font-display);
+        font-size: 32px;
+        font-weight: 500;
+        color: var(--ink-primary);
+        line-height: 1;
+      }
+      .chord-grid-wrap {
+        background: var(--surface-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--r-lg);
+        padding: var(--sp-16);
+        box-shadow: var(--shadow-sm);
+      }
+      .chord-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 28px);
+        grid-template-rows: repeat(5, 24px);
+        position: relative;
+      }
+      .chord-string {
+        border-right: 1px solid var(--border-strong);
+        border-bottom: 1px solid var(--border-medium);
+        position: relative;
+      }
+      .chord-string:nth-child(-n + 6) {
+        border-top: 2px solid var(--ink-primary);
+      }
+      .chord-dot {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .chord-dot::after {
+        content: "";
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: var(--accent);
+      }
+
+      /* NAV */
+      .demo-nav {
+        background: var(--surface-card);
+        border-bottom: 1px solid var(--border-subtle);
+        padding: 0 var(--sp-20);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 56px;
+        border-radius: var(--r-lg) var(--r-lg) 0 0;
+      }
+      .nav-brand {
+        display: flex;
+        align-items: center;
+        gap: var(--sp-6);
+        font-family: var(--font-display);
+        font-size: 16px;
+        font-weight: 500;
+        color: var(--ink-primary);
+      }
+      .nav-links {
+        display: flex;
+        gap: var(--sp-4);
+      }
+      .nav-link {
+        padding: 6px 12px;
+        border-radius: var(--r-sm);
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--ink-secondary);
+        text-decoration: none;
+        transition:
+          color 100ms,
+          background 100ms;
+      }
+      .nav-link:hover {
+        color: var(--ink-primary);
+        background: var(--surface-subtle);
+      }
+      .nav-link.active {
+        color: var(--accent);
+      }
+
+      /* RULES SECTION */
+      .rule-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--sp-12);
+      }
+      .rule {
+        display: flex;
+        gap: var(--sp-12);
+        padding: var(--sp-12) var(--sp-16);
+        background: var(--surface-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--r-md);
+      }
+      .rule-number {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--ink-tertiary);
+        flex-shrink: 0;
+        padding-top: 2px;
+        width: 20px;
+      }
+      .rule-body {
+      }
+      .rule-title {
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 2px;
+      }
+      .rule-desc {
+        font-size: 13px;
+        color: var(--ink-secondary);
+        line-height: 1.55;
+      }
+
+      /* DIVIDER */
+      hr.light {
+        border: none;
+        border-top: 1px solid var(--border-subtle);
+        margin: 0;
+      }
+
+      /* ─── THEME TOGGLE ───────────────────────────────────────── */
+      .theme-toggle {
+        position: fixed;
+        top: 20px;
+        right: 24px;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        gap: var(--sp-6);
+        padding: 9px 16px 9px 12px;
+        background: var(--surface-card);
+        border: 1px solid var(--border-medium);
+        border-radius: 999px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--ink-secondary);
+        cursor: pointer;
+        box-shadow: var(--shadow-md);
+        transition:
+          background-color 220ms ease,
+          border-color 220ms ease,
+          color 220ms ease,
+          box-shadow 220ms ease;
+      }
+      .theme-toggle:hover {
+        color: var(--ink-primary);
+        border-color: var(--border-strong);
+      }
+
+      .toggle-track {
+        width: 32px;
+        height: 18px;
+        border-radius: 999px;
+        background: var(--surface-subtle);
+        border: 1px solid var(--border-medium);
+        position: relative;
+        transition: background 220ms ease;
+      }
+      [data-theme="dark"] .toggle-track {
+        background: var(--accent);
+        border-color: transparent;
+      }
+      .toggle-thumb {
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--ink-tertiary);
+        transition:
+          transform 220ms ease,
+          background 220ms ease;
+      }
+      [data-theme="dark"] .toggle-thumb {
+        transform: translateX(14px);
+        background: #fff;
+      }
+
+      /* ─── DARK MODE PALETTE SECTION ─────────────────────────── */
+      .mode-split {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--r-lg);
+        overflow: hidden;
+      }
+      .mode-panel {
+        padding: var(--sp-20);
+      }
+      .mode-panel-light {
+        background: #f7f4ef;
+        border-right: 1px solid rgba(26, 23, 20, 0.1);
+      }
+      .mode-panel-dark {
+        background: #18160d;
+      }
+      .mode-panel-label {
+        font-family: "DM Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        margin-bottom: var(--sp-12);
+      }
+      .mode-panel-light .mode-panel-label {
+        color: #9c9590;
+      }
+      .mode-panel-dark .mode-panel-label {
+        color: #6e6254;
+      }
+
+      .dark-swatch-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .dark-swatch-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .dark-swatch-dot {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .dark-swatch-info {
+      }
+      .dark-swatch-name {
+        font-family: "DM Sans", sans-serif;
+        font-size: 12px;
+        font-weight: 500;
+      }
+      .dark-swatch-value {
+        font-family: "DM Mono", monospace;
+        font-size: 10px;
+        opacity: 0.5;
+      }
+      .mode-panel-light .dark-swatch-name {
+        color: #1a1714;
+      }
+      .mode-panel-light .dark-swatch-value {
+        color: #1a1714;
+      }
+      .mode-panel-dark .dark-swatch-name {
+        color: #f0ead9;
+      }
+      .mode-panel-dark .dark-swatch-value {
+        color: #f0ead9;
+      }
+
+      /* Live demo panels */
+      .live-demo-split {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--r-lg);
+        overflow: hidden;
+        margin-top: var(--sp-12);
+      }
+      .live-panel {
+        padding: var(--sp-20);
+        display: flex;
+        flex-direction: column;
+        gap: var(--sp-12);
+      }
+      .live-panel-light {
+        background: #f7f4ef;
+      }
+      .live-panel-dark {
+        background: #18160d;
+      }
+
+      /* Mini quiz card inside live demos */
+      .mini-quiz {
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      }
+      .mini-quiz-light {
+        background: #fffefb;
+        border: 1px solid rgba(26, 23, 20, 0.1);
+      }
+      .mini-quiz-dark {
+        background: #211e14;
+        border: 1px solid rgba(240, 234, 217, 0.1);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.36);
+      }
+      .mini-badge-light {
+        display: inline-block;
+        font-family: "DM Mono", monospace;
+        font-size: 9px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #2d7a6e;
+        background: #ebf4f2;
+        border-radius: 4px;
+        padding: 2px 7px;
+        margin-bottom: 8px;
+      }
+      .mini-badge-dark {
+        display: inline-block;
+        font-family: "DM Mono", monospace;
+        font-size: 9px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #3daf9b;
+        background: rgba(61, 175, 155, 0.14);
+        border-radius: 4px;
+        padding: 2px 7px;
+        margin-bottom: 8px;
+      }
+      .mini-question-light {
+        font-family: "Lora", Georgia, serif;
+        font-size: 14px;
+        font-weight: 500;
+        color: #1a1714;
+        margin-bottom: 4px;
+        line-height: 1.3;
+      }
+      .mini-question-dark {
+        font-family: "Lora", Georgia, serif;
+        font-size: 14px;
+        font-weight: 500;
+        color: #f0ead9;
+        margin-bottom: 4px;
+        line-height: 1.3;
+      }
+      .mini-hint-light {
+        font-size: 11px;
+        color: #9c9590;
+        margin-bottom: 10px;
+      }
+      .mini-hint-dark {
+        font-size: 11px;
+        color: #6e6254;
+        margin-bottom: 10px;
+      }
+      .mini-answer-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+      }
+      .mini-answer-light {
+        padding: 8px 6px;
+        border: 1.5px solid rgba(26, 23, 20, 0.14);
+        border-radius: 6px;
+        background: #fffefb;
+        font-family: "Lora", Georgia, serif;
+        font-size: 13px;
+        font-weight: 500;
+        color: #1a1714;
+        text-align: center;
+      }
+      .mini-answer-dark {
+        padding: 8px 6px;
+        border: 1.5px solid rgba(240, 234, 217, 0.13);
+        border-radius: 6px;
+        background: #2c2920;
+        font-family: "Lora", Georgia, serif;
+        font-size: 13px;
+        font-weight: 500;
+        color: #f0ead9;
+        text-align: center;
+      }
+      .mini-answer-correct-light {
+        border-color: #3a7d5c;
+        background: #edf6f1;
+        color: #3a7d5c;
+      }
+      .mini-answer-correct-dark {
+        border-color: #4fa87a;
+        background: rgba(79, 168, 122, 0.12);
+        color: #4fa87a;
+      }
+
+      /* PRINT NOTE */
+      .print-note {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--sp-6);
+        font-size: 12px;
+        color: var(--ink-tertiary);
+        font-family: var(--font-mono);
+      }
+
+      /* PILL / BADGE */
+      .badge {
+        display: inline-block;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 3px 8px;
+        border-radius: var(--r-sm);
+        background: var(--surface-subtle);
+        color: var(--ink-tertiary);
+        border: 1px solid var(--border-subtle);
+      }
+      .badge.accent {
+        background: var(--accent-light);
+        color: var(--accent);
+        border-color: transparent;
+      }
+
+      /* RADIUS DEMO */
+      .radius-row {
+        display: flex;
+        gap: var(--sp-12);
+        align-items: flex-end;
+      }
+      .radius-box {
+        background: var(--surface-subtle);
+        border: 1px solid var(--border-medium);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+      }
+      .radius-label-sm {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--ink-tertiary);
+      }
+
+      /* ─── PIANO KEYBOARD ─────────────────────────────────────── */
+      .piano-white {
+        flex: 1;
+        height: 110px;
+        background: var(--surface-card);
+        border: 1px solid var(--border-medium);
+        border-radius: 0 0 var(--r-sm) var(--r-sm);
+        position: relative;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        padding-bottom: 6px;
+        cursor: pointer;
+        transition:
+          background 120ms ease,
+          border-color 120ms ease;
+      }
+      .piano-white:hover {
+        background: var(--surface-subtle);
+      }
+      .piano-white.piano-root {
+        background: var(--accent);
+        border-color: var(--accent-hover);
+      }
+      .piano-white.piano-root:hover {
+        background: var(--accent-hover);
+      }
+      .piano-white.piano-chord {
+        background: var(--accent-light);
+        border-color: var(--accent);
+      }
+      .piano-white.piano-chord:hover {
+        background: var(--accent-light);
+      }
+      .piano-label {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        font-weight: 500;
+        letter-spacing: 0.06em;
+        color: var(--surface-card);
+        line-height: 1;
+      }
+      .piano-white:not(.piano-root) .piano-label {
+        color: var(--accent);
+      }
+      .piano-black {
+        width: calc(100% / 14 * 0.65);
+        flex-shrink: 0;
+        height: 68px;
+        background: var(--ink-primary);
+        border-radius: 0 0 3px 3px;
+        border: 1px solid var(--border-strong);
+        position: relative;
+        z-index: 2;
+      }
+
+      /* ICON TREATMENT */
+      .icon-grid {
+        display: flex;
+        gap: var(--sp-12);
+      }
+      .icon-demo {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--sp-6);
+      }
+      .icon-box {
+        width: 44px;
+        height: 44px;
+        background: var(--surface-subtle);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--r-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+      }
+      .icon-meta {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--ink-tertiary);
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ═══ THEME TOGGLE ══════════════════════════════════════════ -->
+    <button
+      class="theme-toggle"
+      onclick="toggleTheme()"
+      aria-label="Toggle dark mode"
+    >
+      <div class="toggle-track"><div class="toggle-thumb"></div></div>
+      <span id="toggle-label">Dark Mode</span>
+    </button>
+
+    <!-- ═══ HEADER ═══════════════════════════════════════════════ -->
+    <div class="guide-header">
+      <div class="guide-eyebrow">Design System · v1.0 · February 2026</div>
+      <h1 class="guide-title">
+        Music Practice Suite<br /><em>Look & Feel Guide</em>
+      </h1>
+      <p class="guide-subtitle">
+        A minimal, spatially rich design language built to keep the learner's
+        attention on notation, tablature, and chord diagrams — not the
+        interface. Designed to grow with students from first lesson to advanced
+        practice.
+      </p>
+    </div>
+
+    <div class="guide-body">
+      <!-- ═══ DESIGN PHILOSOPHY ════════════════════════════════════ -->
+      <div class="section">
+        <div class="section-label">Design Philosophy</div>
+        <h2 class="section-title">
+          The Interface Is the Frame. The Music Is the Art.
+        </h2>
+        <p class="section-desc">
+          The UI should feel like a well-designed music workbook — warm, calm,
+          and unobtrusive. Every pixel that doesn't serve the music is a
+          distraction. Color is used once and for one purpose. Space does the
+          heavy lifting. Notation, chord diagrams, and tablature are always the
+          most prominent element on screen.
+        </p>
+
+        <div class="rule-list">
+          <div class="rule">
+            <div class="rule-number">01</div>
+            <div class="rule-body">
+              <div class="rule-title">One accent. One job.</div>
+              <div class="rule-desc">
+                The single teal accent (#2D7A6E) is used exclusively for primary
+                actions and selected/active states. It appears nowhere else. No
+                blue cards, no green buttons, no orange CTAs. Color is a signal
+                — it loses meaning when overused.
+              </div>
+            </div>
+          </div>
+          <div class="rule">
+            <div class="rule-number">02</div>
+            <div class="rule-body">
+              <div class="rule-title">Space is structure.</div>
+              <div class="rule-desc">
+                Generous whitespace creates hierarchy without visual weight. The
+                eye reads space as importance — what has room around it matters.
+                Notation panels always have the most breathing room on screen.
+              </div>
+            </div>
+          </div>
+          <div class="rule">
+            <div class="rule-number">03</div>
+            <div class="rule-body">
+              <div class="rule-title">Ink and paper.</div>
+              <div class="rule-desc">
+                The palette is derived from printed sheet music: warm ivory
+                page, dark brown ink, a single functional color for highlights.
+                The app should feel like a beautifully designed music book that
+                happens to be interactive.
+              </div>
+            </div>
+          </div>
+          <div class="rule">
+            <div class="rule-number">04</div>
+            <div class="rule-body">
+              <div class="rule-title">Kids-first clarity.</div>
+              <div class="rule-desc">
+                Every interactive element must be unmistakably tappable. Touch
+                targets are 44px minimum. Labels are always present — no
+                icon-only buttons at primary scale. Feedback is immediate,
+                unambiguous, and kind. Error states never use alarming red; they
+                use a soft muted tone that corrects without punishing.
+              </div>
+            </div>
+          </div>
+          <div class="rule">
+            <div class="rule-number">05</div>
+            <div class="rule-body">
+              <div class="rule-title">Typography does the talking.</div>
+              <div class="rule-desc">
+                Lora (serif) carries the musical content — questions, chord
+                names, scale names. DM Sans carries the interface — labels,
+                buttons, navigation. DM Mono carries system metadata — mode
+                badges, token values. These three families cover every use case
+                and should not be supplemented.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ COLOR ════════════════════════════════════════════════ -->
+      <div class="section">
+        <div class="section-label">Color</div>
+        <h2 class="section-title">Palette</h2>
+        <p class="section-desc">
+          Warm neutral base with a single functional accent. The palette is
+          intentionally constrained — every color on this page is every color in
+          the app.
+        </p>
+
+        <div style="margin-bottom: var(--sp-16)">
+          <div class="section-label" style="margin-bottom: var(--sp-8)">
+            Surface
+          </div>
+          <div class="swatch-grid">
+            <div class="swatch">
+              <div class="swatch-color" style="background: #f7f4ef"></div>
+              <div class="swatch-info">
+                <div class="swatch-name">Page</div>
+                <div class="swatch-value">#F7F4EF</div>
+              </div>
+            </div>
+            <div class="swatch">
+              <div
+                class="swatch-color"
+                style="background: #fffefb; border-bottom: 1px solid #e8e4dd"
+              ></div>
+              <div class="swatch-info">
+                <div class="swatch-name">Card</div>
+                <div class="swatch-value">#FFFEFB</div>
+              </div>
+            </div>
+            <div class="swatch">
+              <div class="swatch-color" style="background: #f0ece5"></div>
+              <div class="swatch-info">
+                <div class="swatch-name">Subtle</div>
+                <div class="swatch-value">#F0ECE5</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: var(--sp-16)">
+          <div class="section-label" style="margin-bottom: var(--sp-8)">
+            Ink
+          </div>
+          <div class="swatch-grid">
+            <div class="swatch">
+              <div class="swatch-color" style="background: #1a1714"></div>
+              <div class="swatch-info">
+                <div class="swatch-name">Primary</div>
+                <div class="swatch-value">#1A1714</div>
+              </div>
+            </div>
+            <div class="swatch">
+              <div class="swatch-color" style="background: #5c5650"></div>
+              <div class="swatch-info">
+                <div class="swatch-name">Secondary</div>
+                <div class="swatch-value">#5C5650</div>
+              </div>
+            </div>
+            <div class="swatch">
+              <div class="swatch-color" style="background: #9c9590"></div>
+              <div class="swatch-info">
+                <div class="swatch-name">Tertiary</div>
+                <div class="swatch-value">#9C9590</div>
+              </div>
+            </div>
+            <div class="swatch">
+              <div class="swatch-color" style="background: #c8c4be"></div>
+              <div class="swatch-info">
+                <div class="swatch-name">Disabled</div>
+                <div class="swatch-value">#C8C4BE</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: var(--sp-16)">
+          <div class="section-label" style="margin-bottom: var(--sp-8)">
+            Accent — used once, for one purpose
+          </div>
+          <div class="swatch-grid">
+            <div class="swatch">
+              <div class="swatch-color" style="background: #2d7a6e"></div>
+              <div class="swatch-info">
+                <div class="swatch-name">Accent</div>
+                <div class="swatch-value">#2D7A6E</div>
+              </div>
+            </div>
+            <div class="swatch">
+              <div class="swatch-color" style="background: #245f56"></div>
+              <div class="swatch-info">
+                <div class="swatch-name">Accent Hover</div>
+                <div class="swatch-value">#245F56</div>
+              </div>
+            </div>
+            <div class="swatch">
+              <div class="swatch-color" style="background: #ebf4f2"></div>
+              <div class="swatch-info">
+                <div class="swatch-name">Accent Light</div>
+                <div class="swatch-value">#EBF4F2</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-label" style="margin-bottom: var(--sp-8)">
+            Feedback — desaturated, never alarming
+          </div>
+          <div class="swatch-grid">
+            <div class="swatch">
+              <div class="swatch-color" style="background: #3a7d5c"></div>
+              <div class="swatch-info">
+                <div class="swatch-name">Success</div>
+                <div class="swatch-value">#3A7D5C</div>
+              </div>
+            </div>
+            <div class="swatch">
+              <div class="swatch-color" style="background: #edf6f1"></div>
+              <div class="swatch-info">
+                <div class="swatch-name">Success BG</div>
+                <div class="swatch-value">#EDF6F1</div>
+              </div>
+            </div>
+            <div class="swatch">
+              <div class="swatch-color" style="background: #9b3a2f"></div>
+              <div class="swatch-info">
+                <div class="swatch-name">Error</div>
+                <div class="swatch-value">#9B3A2F</div>
+              </div>
+            </div>
+            <div class="swatch">
+              <div class="swatch-color" style="background: #faf0ef"></div>
+              <div class="swatch-info">
+                <div class="swatch-name">Error BG</div>
+                <div class="swatch-value">#FAF0EF</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ TYPOGRAPHY ═══════════════════════════════════════════ -->
+      <div class="section">
+        <div class="section-label">Typography</div>
+        <h2 class="section-title">Type System</h2>
+        <p class="section-desc">
+          Three families, strictly assigned. Lora for music content (it shares
+          DNA with engraved notation). DM Sans for interface chrome. DM Mono for
+          system metadata and code.
+        </p>
+
+        <div class="type-stack">
+          <div class="type-row">
+            <div class="type-meta">
+              <div class="type-meta-label">Display</div>
+              <div class="type-meta-spec">Lora · 40px · 500</div>
+            </div>
+            <div
+              style="
+                font-family: var(--font-display);
+                font-size: 40px;
+                font-weight: 500;
+                color: var(--ink-primary);
+                line-height: 1.15;
+              "
+            >
+              What chord is on<br /><em>degree 4?</em>
+            </div>
+          </div>
+
+          <div class="type-row">
+            <div class="type-meta">
+              <div class="type-meta-label">Heading 1</div>
+              <div class="type-meta-spec">Lora · 28px · 500</div>
+            </div>
+            <div
+              style="
+                font-family: var(--font-display);
+                font-size: 28px;
+                font-weight: 500;
+                color: var(--ink-primary);
+              "
+            >
+              Chord-Scale Matrix Trainer
+            </div>
+          </div>
+
+          <div class="type-row">
+            <div class="type-meta">
+              <div class="type-meta-label">Heading 2</div>
+              <div class="type-meta-spec">Lora · 22px · 500</div>
+            </div>
+            <div
+              style="
+                font-family: var(--font-display);
+                font-size: 22px;
+                font-weight: 500;
+                color: var(--ink-primary);
+              "
+            >
+              Practice Settings
+            </div>
+          </div>
+
+          <div class="type-row">
+            <div class="type-meta">
+              <div class="type-meta-label">Chord Name</div>
+              <div class="type-meta-spec">Lora · 32px · 500</div>
+            </div>
+            <div
+              style="
+                font-family: var(--font-display);
+                font-size: 32px;
+                font-weight: 500;
+                color: var(--ink-primary);
+              "
+            >
+              Cmaj7 &nbsp; Dm7 &nbsp; G7
+            </div>
+          </div>
+
+          <div class="type-row">
+            <div class="type-meta">
+              <div class="type-meta-label">Answer Option</div>
+              <div class="type-meta-spec">Lora · 18px · 500</div>
+            </div>
+            <div
+              style="
+                font-family: var(--font-display);
+                font-size: 18px;
+                font-weight: 500;
+                color: var(--ink-primary);
+              "
+            >
+              mMaj7 &nbsp; Maj7 &nbsp; m7b5
+            </div>
+          </div>
+
+          <div class="type-row">
+            <div class="type-meta">
+              <div class="type-meta-label">Body</div>
+              <div class="type-meta-spec">DM Sans · 15px · 400</div>
+            </div>
+            <div
+              style="
+                font-family: var(--font-body);
+                font-size: 15px;
+                color: var(--ink-secondary);
+                line-height: 1.65;
+              "
+            >
+              Practice major and minor scales with guitar and piano. Toggle
+              between guitar fretboard and piano keyboard to find the most
+              natural path for your instrument.
+            </div>
+          </div>
+
+          <div class="type-row">
+            <div class="type-meta">
+              <div class="type-meta-label">Label</div>
+              <div class="type-meta-spec">DM Sans · 13px · 500</div>
+            </div>
+            <div
+              style="
+                font-family: var(--font-body);
+                font-size: 13px;
+                font-weight: 500;
+                color: var(--ink-secondary);
+              "
+            >
+              Select the correct chord quality
+            </div>
+          </div>
+
+          <div class="type-row">
+            <div class="type-meta">
+              <div class="type-meta-label">Mono / Badge</div>
+              <div class="type-meta-spec">DM Mono · 10px · uppercase</div>
+            </div>
+            <div
+              style="
+                font-family: var(--font-mono);
+                font-size: 10px;
+                letter-spacing: 0.12em;
+                text-transform: uppercase;
+                color: var(--ink-tertiary);
+              "
+            >
+              Degree Quiz &nbsp;·&nbsp; Major Scale Only &nbsp;·&nbsp; Coming
+              Soon
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ SPACING ═══════════════════════════════════════════════ -->
+      <div class="section">
+        <div class="section-label">Spacing</div>
+        <h2 class="section-title">Spatial Scale</h2>
+        <p class="section-desc">
+          An 8px base grid. Notation panels and quiz cards always use the larger
+          end of the scale. Navigation and metadata always use the smaller end.
+          Generous spacing is the primary tool for hierarchy.
+        </p>
+
+        <div class="spacing-grid">
+          <div class="spacing-row">
+            <div class="spacing-label">sp-2 (xs)</div>
+            <div class="spacing-bar-wrap">
+              <div class="spacing-bar" style="width: 4px"></div>
+            </div>
+            <div class="spacing-px">4px</div>
+          </div>
+          <div class="spacing-row">
+            <div class="spacing-label">sp-4 (sm)</div>
+            <div class="spacing-bar-wrap">
+              <div class="spacing-bar" style="width: 8px"></div>
+            </div>
+            <div class="spacing-px">8px</div>
+          </div>
+          <div class="spacing-row">
+            <div class="spacing-label">sp-8 (base)</div>
+            <div class="spacing-bar-wrap">
+              <div class="spacing-bar" style="width: 16px"></div>
+            </div>
+            <div class="spacing-px">16px</div>
+          </div>
+          <div class="spacing-row">
+            <div class="spacing-label">sp-12</div>
+            <div class="spacing-bar-wrap">
+              <div class="spacing-bar" style="width: 24px"></div>
+            </div>
+            <div class="spacing-px">24px</div>
+          </div>
+          <div class="spacing-row">
+            <div class="spacing-label">sp-16</div>
+            <div class="spacing-bar-wrap">
+              <div class="spacing-bar" style="width: 32px"></div>
+            </div>
+            <div class="spacing-px">32px</div>
+          </div>
+          <div class="spacing-row">
+            <div class="spacing-label">sp-20 (card)</div>
+            <div class="spacing-bar-wrap">
+              <div class="spacing-bar" style="width: 40px"></div>
+            </div>
+            <div class="spacing-px">40px</div>
+          </div>
+          <div class="spacing-row">
+            <div class="spacing-label">sp-24 (quiz)</div>
+            <div class="spacing-bar-wrap">
+              <div class="spacing-bar" style="width: 48px"></div>
+            </div>
+            <div class="spacing-px">48px</div>
+          </div>
+          <div class="spacing-row">
+            <div class="spacing-label">sp-32 (section)</div>
+            <div class="spacing-bar-wrap">
+              <div class="spacing-bar" style="width: 64px"></div>
+            </div>
+            <div class="spacing-px">64px</div>
+          </div>
+          <div class="spacing-row">
+            <div class="spacing-label">sp-48 (page)</div>
+            <div class="spacing-bar-wrap">
+              <div class="spacing-bar" style="width: 96px"></div>
+            </div>
+            <div class="spacing-px">96px</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ NAVIGATION ════════════════════════════════════════════ -->
+      <div class="section">
+        <div class="section-label">Components · Navigation</div>
+        <h2 class="section-title">Navigation Bar</h2>
+        <p class="section-desc">
+          Minimal, 56px tall. Brand name in Lora. Nav links in DM Sans. Active
+          state uses accent color — no bold weight, just color. On mobile, the
+          link text collapses to icons only below 480px.
+        </p>
+
+        <div
+          style="
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--r-lg);
+            overflow: hidden;
+          "
+        >
+          <div class="demo-nav">
+            <div class="nav-brand">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M9 18V5l12-2v13" />
+                <circle cx="6" cy="18" r="3" />
+                <circle cx="18" cy="16" r="3" />
+              </svg>
+              Music Practice
+            </div>
+            <div class="nav-links">
+              <a href="#" class="nav-link active">Practice</a>
+              <a href="#" class="nav-link">About</a>
+              <a href="#" class="nav-link">Chord Scale</a>
+            </div>
+          </div>
+          <div style="background: var(--surface-page); height: 40px"></div>
+        </div>
+      </div>
+
+      <!-- ═══ BUTTONS ═══════════════════════════════════════════════ -->
+      <div class="section">
+        <div class="section-label">Components · Buttons</div>
+        <h2 class="section-title">Buttons</h2>
+        <p class="section-desc">
+          Three variants. One accent. Never use color alone to distinguish
+          sibling buttons — position and label do that work. All touch targets ≥
+          44px tall.
+        </p>
+
+        <div class="demo-grid">
+          <div class="demo-card">
+            <div class="demo-label">Primary — one per screen</div>
+            <div class="btn-row">
+              <button class="btn btn-primary">Start Practice</button>
+              <button class="btn btn-primary btn-sm">Start</button>
+            </div>
+          </div>
+          <div class="demo-card">
+            <div class="demo-label">Secondary — supporting action</div>
+            <div class="btn-row">
+              <button class="btn btn-secondary">View Settings</button>
+              <button class="btn btn-secondary btn-sm">Settings</button>
+            </div>
+          </div>
+          <div class="demo-card">
+            <div class="demo-label">Ghost — destructive or tertiary</div>
+            <div class="btn-row">
+              <button class="btn btn-ghost">Back to Settings</button>
+            </div>
+          </div>
+          <div class="demo-card">
+            <div class="demo-label">Disabled</div>
+            <div class="btn-row">
+              <button class="btn btn-disabled" disabled>Coming Soon</button>
+            </div>
+          </div>
+          <div class="demo-card demo-card-wide">
+            <div class="demo-label">
+              Full-width CTA — bottom of settings card
+            </div>
+            <button class="btn btn-primary btn-lg">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polygon points="5 3 19 12 5 21 5 3" />
+              </svg>
+              Start Practice
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ FORM CONTROLS ═════════════════════════════════════════ -->
+      <div class="section">
+        <div class="section-label">Components · Form Controls</div>
+        <h2 class="section-title">Inputs &amp; Selects</h2>
+        <p class="section-desc">
+          Warm neutral border at rest. Accent teal on focus with a soft glow
+          ring — makes the active field unmistakable for younger users without
+          alarming colors.
+        </p>
+
+        <div class="demo-grid">
+          <div class="demo-card">
+            <div class="demo-label">Select / Dropdown</div>
+            <div class="input-group">
+              <label class="input-label">Difficulty</label>
+              <select class="input">
+                <option>Major Scale Only</option>
+                <option>Major + Natural Minor</option>
+                <option>All Modes</option>
+              </select>
+            </div>
+          </div>
+          <div class="demo-card">
+            <div class="demo-label">Text Input (focused)</div>
+            <div class="input-group">
+              <label class="input-label">Search chords</label>
+              <input
+                type="text"
+                class="input"
+                value="Dm7"
+                style="
+                  border-color: var(--accent);
+                  box-shadow: 0 0 0 3px var(--accent-light);
+                "
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ HOME TOOL CARDS ═══════════════════════════════════════ -->
+      <div class="section">
+        <div class="section-label">Components · Home Screen</div>
+        <h2 class="section-title">Tool Cards</h2>
+        <p class="section-desc">
+          All cards are identical in structure, weight, and CTA color.
+          Differentiation is in the icon and name only — never in color. The
+          card that's hovered lifts slightly.
+        </p>
+
+        <div class="demo-grid">
+          <div class="tool-card">
+            <div class="tool-card-header">
+              <div>
+                <div class="tool-name">Scales Quiz</div>
+                <div class="tool-desc">
+                  Practice major and minor scales with guitar and piano
+                </div>
+              </div>
+              <div class="tool-icon">♩</div>
+            </div>
+            <button class="btn btn-primary" style="width: 100%">
+              Start Quiz →
+            </button>
+          </div>
+          <div class="tool-card">
+            <div class="tool-card-header">
+              <div>
+                <div class="tool-name">Chord Recognition</div>
+                <div class="tool-desc">
+                  Learn and identify chords with visual reference
+                </div>
+              </div>
+              <div class="tool-icon">♯</div>
+            </div>
+            <button class="btn btn-primary" style="width: 100%">
+              Start Quiz →
+            </button>
+          </div>
+          <div class="tool-card">
+            <div class="tool-card-header">
+              <div>
+                <div class="tool-name">Chord-Scale Matrix</div>
+                <div class="tool-desc">
+                  Understand which scales work with which chords
+                </div>
+              </div>
+              <div class="tool-icon">♬</div>
+            </div>
+            <button class="btn btn-primary" style="width: 100%">
+              Play Game →
+            </button>
+          </div>
+          <div class="tool-card" style="opacity: 0.5; cursor: default">
+            <div class="tool-card-header">
+              <div>
+                <div class="tool-name">Sight Reading</div>
+                <div class="tool-desc">
+                  Practice reading sheet music in real-time
+                </div>
+              </div>
+              <div class="tool-icon" style="font-size: 16px">🎼</div>
+            </div>
+            <button class="btn btn-disabled" style="width: 100%" disabled>
+              Coming Soon
+            </button>
+          </div>
+        </div>
+        <p
+          style="
+            font-size: 13px;
+            color: var(--ink-tertiary);
+            margin-top: var(--sp-12);
+          "
+        >
+          Note: Emoji icons are placeholders only — replace with a single
+          cohesive SVG icon set (Lucide or Phosphor) in final implementation.
+        </p>
+      </div>
+
+      <!-- ═══ QUIZ CARD ═════════════════════════════════════════════ -->
+      <div class="section">
+        <div class="section-label">Components · Quiz</div>
+        <h2 class="section-title">Quiz Card — All States</h2>
+        <p class="section-desc">
+          The question is always in Lora. The answer buttons use Lora for the
+          chord/scale name — it's music content, not UI chrome. State changes
+          happen on the button first, then explain below.
+        </p>
+
+        <div
+          style="
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--sp-16);
+          "
+        >
+          <!-- Default state -->
+          <div>
+            <div class="demo-label" style="margin-bottom: var(--sp-8)">
+              Default — awaiting answer
+            </div>
+            <div class="quiz-card">
+              <div class="quiz-mode-badge">Degree Quiz</div>
+              <div class="quiz-question">
+                What chord quality is on degree 4 of Major?
+              </div>
+              <div class="quiz-hint">Select the correct chord quality</div>
+              <div class="answer-grid">
+                <button class="answer-btn">mMaj7</button>
+                <button class="answer-btn">Maj7</button>
+                <button class="answer-btn">m7b5</button>
+                <button class="answer-btn">7</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Correct state -->
+          <div>
+            <div class="demo-label" style="margin-bottom: var(--sp-8)">
+              Correct — button changes first
+            </div>
+            <div class="quiz-card">
+              <div class="quiz-mode-badge">Degree Quiz</div>
+              <div class="quiz-question">
+                What chord quality is on degree 4 of Major?
+              </div>
+              <div class="quiz-hint">Select the correct chord quality</div>
+              <div class="answer-grid">
+                <button class="answer-btn faded">mMaj7</button>
+                <button class="answer-btn correct">Maj7</button>
+                <button class="answer-btn faded">m7b5</button>
+                <button class="answer-btn faded">7</button>
+              </div>
+              <div class="feedback-bar">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                Correct — Lydian mode
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Incorrect state full width -->
+        <div style="margin-top: var(--sp-12)">
+          <div class="demo-label" style="margin-bottom: var(--sp-8)">
+            Incorrect — selected button turns muted red, correct reveals in
+            green
+          </div>
+          <div class="quiz-card">
+            <div class="quiz-mode-badge">Degree Quiz</div>
+            <div class="quiz-question">
+              What chord quality is on degree 4 of Major?
+            </div>
+            <div class="quiz-hint">Select the correct chord quality</div>
+            <div class="answer-grid">
+              <button class="answer-btn incorrect">mMaj7</button>
+              <button class="answer-btn correct">Maj7</button>
+              <button class="answer-btn faded">m7b5</button>
+              <button class="answer-btn faded">7</button>
+            </div>
+            <div
+              class="feedback-bar"
+              style="
+                background: var(--error-bg);
+                border-color: rgba(155, 58, 47, 0.2);
+                color: var(--error);
+              "
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="15" y1="9" x2="9" y2="15" />
+                <line x1="9" y1="9" x2="15" y2="15" />
+              </svg>
+              Not quite — the answer is Maj7 (Lydian mode)
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ STATS ══════════════════════════════════════════════════ -->
+      <div class="section">
+        <div class="section-label">Components · Stats</div>
+        <h2 class="section-title">Session Stats</h2>
+        <p class="section-desc">
+          Numbers in Lora, labels in DM Mono. The accent color appears only on
+          the active/growing stat to draw the eye toward progress.
+        </p>
+
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-value">7/9</div>
+            <div class="stat-label">Correct</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value accent">78%</div>
+            <div class="stat-label">Accuracy</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">4</div>
+            <div class="stat-label">Streak</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ NOTATION FOCUS PRINCIPLE ═════════════════════════════ -->
+      <div class="section">
+        <div class="section-label">Design Principle · Notation Stage</div>
+        <h2 class="section-title">Notation Is Always the Star</h2>
+        <p class="section-desc">
+          When a screen contains sheet music, tablature, or a chord diagram, it
+          gets the most vertical space, the most horizontal margin, and the
+          softest shadow. Everything else — labels, controls, feedback — recedes
+          around it.
+        </p>
+
+        <div class="notation-stage">
+          <div class="notation-label">
+            Staff notation — maximum breathing room
+          </div>
+          <div class="notation-staff">
+            <div class="staff-lines">
+              <div class="staff-line"></div>
+              <div class="staff-line"></div>
+              <div class="staff-line"></div>
+              <div class="staff-line"></div>
+              <div class="staff-line"></div>
+            </div>
+            <div class="note-head"></div>
+            <div class="note-stem"></div>
+          </div>
+          <div
+            class="notation-label"
+            style="color: var(--accent); font-size: 10px"
+          >
+            ↑ Center stage. Always.
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ CHORD DIAGRAM ═════════════════════════════════════════ -->
+      <div class="section">
+        <div class="section-label">Components · Guitar Chord Diagram</div>
+        <h2 class="section-title">Chord Diagram — Standard Orientation</h2>
+        <p class="section-desc">
+          Standard guitar chord diagram orientation: vertical grid, nut at top,
+          strings run top-to-bottom,
+          <strong
+            >low E (6th string) on the left → high e (1st string) on the
+            right.</strong
+          >
+          String labels appear below the grid. Open strings (○) and muted
+          strings (✕) appear above the nut.
+        </p>
+
+        <div
+          style="
+            display: flex;
+            gap: var(--sp-24);
+            justify-content: center;
+            flex-wrap: wrap;
+          "
+        >
+          <!-- Am chord -->
+          <div
+            style="
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              gap: var(--sp-12);
+            "
+          >
+            <div
+              style="
+                font-family: var(--font-display);
+                font-size: 28px;
+                font-weight: 500;
+                color: var(--ink-primary);
+                line-height: 1;
+              "
+            >
+              Am
+            </div>
+            <div
+              class="chord-grid-wrap"
+              style="padding: var(--sp-12) var(--sp-8) var(--sp-8)"
+            >
+              <!-- Mute/open indicators above nut -->
+              <div
+                style="
+                  display: grid;
+                  grid-template-columns: repeat(6, 28px);
+                  margin-bottom: 4px;
+                "
+              >
+                <div
+                  style="
+                    text-align: center;
+                    font-size: 11px;
+                    font-weight: 700;
+                    color: var(--error);
+                  "
+                >
+                  ✕
+                </div>
+                <div
+                  style="
+                    text-align: center;
+                    font-size: 11px;
+                    color: var(--ink-secondary);
+                  "
+                >
+                  ○
+                </div>
+                <div style="text-align: center"></div>
+                <div style="text-align: center"></div>
+                <div style="text-align: center"></div>
+                <div
+                  style="
+                    text-align: center;
+                    font-size: 11px;
+                    color: var(--ink-secondary);
+                  "
+                >
+                  ○
+                </div>
+              </div>
+              <!-- NUT (thick top bar) -->
+              <div
+                style="
+                  height: 4px;
+                  background: var(--ink-primary);
+                  border-radius: 2px;
+                  margin-bottom: 0;
+                "
+              ></div>
+              <!-- Fret grid: 5 frets × 6 strings -->
+              <div
+                style="
+                  display: grid;
+                  grid-template-columns: repeat(6, 28px);
+                  grid-template-rows: repeat(4, 22px);
+                  border-left: 1px solid var(--border-strong);
+                "
+              >
+                <!-- Fret 1 -->
+                <div
+                  style="
+                    border-right: 1px solid var(--border-strong);
+                    border-bottom: 1px solid var(--border-medium);
+                    position: relative;
+                  "
+                ></div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-medium);
+                    border-bottom: 1px solid var(--border-medium);
+                    position: relative;
+                  "
+                >
+                  <div
+                    style="
+                      position: absolute;
+                      inset: 0;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                    "
+                  >
+                    <div
+                      style="
+                        width: 16px;
+                        height: 16px;
+                        border-radius: 50%;
+                        background: var(--accent);
+                      "
+                    ></div>
+                  </div>
+                </div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-medium);
+                    border-bottom: 1px solid var(--border-medium);
+                    position: relative;
+                  "
+                ></div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-medium);
+                    border-bottom: 1px solid var(--border-medium);
+                    position: relative;
+                  "
+                ></div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-medium);
+                    border-bottom: 1px solid var(--border-medium);
+                    position: relative;
+                  "
+                ></div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-strong);
+                    border-bottom: 1px solid var(--border-medium);
+                    position: relative;
+                  "
+                ></div>
+                <!-- Fret 2 -->
+                <div
+                  style="
+                    border-right: 1px solid var(--border-strong);
+                    border-bottom: 1px solid var(--border-medium);
+                    position: relative;
+                  "
+                ></div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-medium);
+                    border-bottom: 1px solid var(--border-medium);
+                    position: relative;
+                  "
+                ></div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-medium);
+                    border-bottom: 1px solid var(--border-medium);
+                    position: relative;
+                  "
+                >
+                  <div
+                    style="
+                      position: absolute;
+                      inset: 0;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                    "
+                  >
+                    <div
+                      style="
+                        width: 16px;
+                        height: 16px;
+                        border-radius: 50%;
+                        background: var(--accent);
+                      "
+                    ></div>
+                  </div>
+                </div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-medium);
+                    border-bottom: 1px solid var(--border-medium);
+                    position: relative;
+                  "
+                >
+                  <div
+                    style="
+                      position: absolute;
+                      inset: 0;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                    "
+                  >
+                    <div
+                      style="
+                        width: 16px;
+                        height: 16px;
+                        border-radius: 50%;
+                        background: var(--accent);
+                      "
+                    ></div>
+                  </div>
+                </div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-medium);
+                    border-bottom: 1px solid var(--border-medium);
+                    position: relative;
+                  "
+                ></div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-strong);
+                    border-bottom: 1px solid var(--border-medium);
+                    position: relative;
+                  "
+                ></div>
+                <!-- Fret 3 -->
+                <div
+                  style="
+                    border-right: 1px solid var(--border-strong);
+                    border-bottom: 1px solid var(--border-medium);
+                  "
+                ></div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-medium);
+                    border-bottom: 1px solid var(--border-medium);
+                  "
+                ></div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-medium);
+                    border-bottom: 1px solid var(--border-medium);
+                  "
+                ></div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-medium);
+                    border-bottom: 1px solid var(--border-medium);
+                  "
+                ></div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-medium);
+                    border-bottom: 1px solid var(--border-medium);
+                  "
+                ></div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-strong);
+                    border-bottom: 1px solid var(--border-medium);
+                  "
+                ></div>
+                <!-- Fret 4 -->
+                <div
+                  style="
+                    border-right: 1px solid var(--border-strong);
+                    border-bottom: 1px solid var(--border-medium);
+                  "
+                ></div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-medium);
+                    border-bottom: 1px solid var(--border-medium);
+                  "
+                ></div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-medium);
+                    border-bottom: 1px solid var(--border-medium);
+                  "
+                ></div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-medium);
+                    border-bottom: 1px solid var(--border-medium);
+                  "
+                ></div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-medium);
+                    border-bottom: 1px solid var(--border-medium);
+                  "
+                ></div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-strong);
+                    border-bottom: 1px solid var(--border-medium);
+                  "
+                ></div>
+              </div>
+              <!-- String labels: low E → high e -->
+              <div
+                style="
+                  display: grid;
+                  grid-template-columns: repeat(6, 28px);
+                  margin-top: 6px;
+                "
+              >
+                <div
+                  style="
+                    text-align: center;
+                    font-family: var(--font-mono);
+                    font-size: 9px;
+                    color: var(--ink-tertiary);
+                  "
+                >
+                  E
+                </div>
+                <div
+                  style="
+                    text-align: center;
+                    font-family: var(--font-mono);
+                    font-size: 9px;
+                    color: var(--ink-tertiary);
+                  "
+                >
+                  A
+                </div>
+                <div
+                  style="
+                    text-align: center;
+                    font-family: var(--font-mono);
+                    font-size: 9px;
+                    color: var(--ink-tertiary);
+                  "
+                >
+                  D
+                </div>
+                <div
+                  style="
+                    text-align: center;
+                    font-family: var(--font-mono);
+                    font-size: 9px;
+                    color: var(--ink-tertiary);
+                  "
+                >
+                  G
+                </div>
+                <div
+                  style="
+                    text-align: center;
+                    font-family: var(--font-mono);
+                    font-size: 9px;
+                    color: var(--ink-tertiary);
+                  "
+                >
+                  B
+                </div>
+                <div
+                  style="
+                    text-align: center;
+                    font-family: var(--font-mono);
+                    font-size: 9px;
+                    color: var(--ink-tertiary);
+                  "
+                >
+                  e
+                </div>
+              </div>
+              <div
+                style="
+                  text-align: center;
+                  font-family: var(--font-mono);
+                  font-size: 9px;
+                  color: var(--ink-disabled);
+                  margin-top: 2px;
+                  letter-spacing: 0.06em;
+                "
+              >
+                low ←————————→ high
+              </div>
+            </div>
+            <div class="notation-label">Am — strings E A D G B e</div>
+          </div>
+
+          <!-- G chord -->
+          <div
+            style="
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              gap: var(--sp-12);
+            "
+          >
+            <div
+              style="
+                font-family: var(--font-display);
+                font-size: 28px;
+                font-weight: 500;
+                color: var(--ink-primary);
+                line-height: 1;
+              "
+            >
+              G
+            </div>
+            <div
+              class="chord-grid-wrap"
+              style="padding: var(--sp-12) var(--sp-8) var(--sp-8)"
+            >
+              <div
+                style="
+                  display: grid;
+                  grid-template-columns: repeat(6, 28px);
+                  margin-bottom: 4px;
+                "
+              >
+                <div></div>
+                <div
+                  style="
+                    text-align: center;
+                    font-size: 11px;
+                    color: var(--ink-secondary);
+                  "
+                >
+                  ○
+                </div>
+                <div
+                  style="
+                    text-align: center;
+                    font-size: 11px;
+                    color: var(--ink-secondary);
+                  "
+                >
+                  ○
+                </div>
+                <div
+                  style="
+                    text-align: center;
+                    font-size: 11px;
+                    color: var(--ink-secondary);
+                  "
+                >
+                  ○
+                </div>
+                <div></div>
+                <div></div>
+              </div>
+              <div
+                style="
+                  height: 4px;
+                  background: var(--ink-primary);
+                  border-radius: 2px;
+                "
+              ></div>
+              <div
+                style="
+                  display: grid;
+                  grid-template-columns: repeat(6, 28px);
+                  grid-template-rows: repeat(4, 22px);
+                  border-left: 1px solid var(--border-strong);
+                "
+              >
+                <!-- F1 -->
+                <div
+                  style="
+                    border-right: 1px solid var(--border-strong);
+                    border-bottom: 1px solid var(--border-medium);
+                    position: relative;
+                  "
+                ></div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-medium);
+                    border-bottom: 1px solid var(--border-medium);
+                  "
+                ></div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-medium);
+                    border-bottom: 1px solid var(--border-medium);
+                  "
+                ></div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-medium);
+                    border-bottom: 1px solid var(--border-medium);
+                  "
+                ></div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-medium);
+                    border-bottom: 1px solid var(--border-medium);
+                    position: relative;
+                  "
+                >
+                  <div
+                    style="
+                      position: absolute;
+                      inset: 0;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                    "
+                  >
+                    <div
+                      style="
+                        width: 16px;
+                        height: 16px;
+                        border-radius: 50%;
+                        background: var(--accent);
+                      "
+                    ></div>
+                  </div>
+                </div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-strong);
+                    border-bottom: 1px solid var(--border-medium);
+                  "
+                ></div>
+                <!-- F2 -->
+                <div
+                  style="
+                    border-right: 1px solid var(--border-strong);
+                    border-bottom: 1px solid var(--border-medium);
+                  "
+                ></div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-medium);
+                    border-bottom: 1px solid var(--border-medium);
+                  "
+                ></div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-medium);
+                    border-bottom: 1px solid var(--border-medium);
+                  "
+                ></div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-medium);
+                    border-bottom: 1px solid var(--border-medium);
+                  "
+                ></div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-medium);
+                    border-bottom: 1px solid var(--border-medium);
+                  "
+                ></div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-strong);
+                    border-bottom: 1px solid var(--border-medium);
+                  "
+                ></div>
+                <!-- F3 -->
+                <div
+                  style="
+                    border-right: 1px solid var(--border-strong);
+                    border-bottom: 1px solid var(--border-medium);
+                    position: relative;
+                  "
+                >
+                  <div
+                    style="
+                      position: absolute;
+                      inset: 0;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                    "
+                  >
+                    <div
+                      style="
+                        width: 16px;
+                        height: 16px;
+                        border-radius: 50%;
+                        background: var(--accent);
+                      "
+                    ></div>
+                  </div>
+                </div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-medium);
+                    border-bottom: 1px solid var(--border-medium);
+                  "
+                ></div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-medium);
+                    border-bottom: 1px solid var(--border-medium);
+                  "
+                ></div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-medium);
+                    border-bottom: 1px solid var(--border-medium);
+                  "
+                ></div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-medium);
+                    border-bottom: 1px solid var(--border-medium);
+                  "
+                ></div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-strong);
+                    border-bottom: 1px solid var(--border-medium);
+                    position: relative;
+                  "
+                >
+                  <div
+                    style="
+                      position: absolute;
+                      inset: 0;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                    "
+                  >
+                    <div
+                      style="
+                        width: 16px;
+                        height: 16px;
+                        border-radius: 50%;
+                        background: var(--accent);
+                      "
+                    ></div>
+                  </div>
+                </div>
+                <!-- F4 -->
+                <div
+                  style="
+                    border-right: 1px solid var(--border-strong);
+                    border-bottom: 1px solid var(--border-medium);
+                  "
+                ></div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-medium);
+                    border-bottom: 1px solid var(--border-medium);
+                  "
+                ></div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-medium);
+                    border-bottom: 1px solid var(--border-medium);
+                  "
+                ></div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-medium);
+                    border-bottom: 1px solid var(--border-medium);
+                  "
+                ></div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-medium);
+                    border-bottom: 1px solid var(--border-medium);
+                  "
+                ></div>
+                <div
+                  style="
+                    border-right: 1px solid var(--border-strong);
+                    border-bottom: 1px solid var(--border-medium);
+                  "
+                ></div>
+              </div>
+              <div
+                style="
+                  display: grid;
+                  grid-template-columns: repeat(6, 28px);
+                  margin-top: 6px;
+                "
+              >
+                <div
+                  style="
+                    text-align: center;
+                    font-family: var(--font-mono);
+                    font-size: 9px;
+                    color: var(--ink-tertiary);
+                  "
+                >
+                  E
+                </div>
+                <div
+                  style="
+                    text-align: center;
+                    font-family: var(--font-mono);
+                    font-size: 9px;
+                    color: var(--ink-tertiary);
+                  "
+                >
+                  A
+                </div>
+                <div
+                  style="
+                    text-align: center;
+                    font-family: var(--font-mono);
+                    font-size: 9px;
+                    color: var(--ink-tertiary);
+                  "
+                >
+                  D
+                </div>
+                <div
+                  style="
+                    text-align: center;
+                    font-family: var(--font-mono);
+                    font-size: 9px;
+                    color: var(--ink-tertiary);
+                  "
+                >
+                  G
+                </div>
+                <div
+                  style="
+                    text-align: center;
+                    font-family: var(--font-mono);
+                    font-size: 9px;
+                    color: var(--ink-tertiary);
+                  "
+                >
+                  B
+                </div>
+                <div
+                  style="
+                    text-align: center;
+                    font-family: var(--font-mono);
+                    font-size: 9px;
+                    color: var(--ink-tertiary);
+                  "
+                >
+                  e
+                </div>
+              </div>
+              <div
+                style="
+                  text-align: center;
+                  font-family: var(--font-mono);
+                  font-size: 9px;
+                  color: var(--ink-disabled);
+                  margin-top: 2px;
+                  letter-spacing: 0.06em;
+                "
+              >
+                low ←————————→ high
+              </div>
+            </div>
+            <div class="notation-label">G major — 3 fingers</div>
+          </div>
+        </div>
+
+        <div style="margin-top: var(--sp-20)">
+          <div class="rule-list">
+            <div class="rule">
+              <div class="rule-number">C1</div>
+              <div class="rule-body">
+                <div class="rule-title">
+                  Orientation is always: low E (left) → high e (right)
+                </div>
+                <div class="rule-desc">
+                  Left column = 6th string (low E). Right column = 1st string
+                  (high e). This is universal standard notation. Never invert
+                  for any reason.
+                </div>
+              </div>
+            </div>
+            <div class="rule">
+              <div class="rule-number">C2</div>
+              <div class="rule-body">
+                <div class="rule-title">
+                  Nut rendered as thick bar, frets as thin lines
+                </div>
+                <div class="rule-desc">
+                  The nut (4px) is visually heavier than fret lines (1px) so
+                  users immediately understand position 0. For barre chords not
+                  starting at the nut, show the fret number beside the diagram
+                  and omit the nut bar.
+                </div>
+              </div>
+            </div>
+            <div class="rule">
+              <div class="rule-number">C3</div>
+              <div class="rule-body">
+                <div class="rule-title">
+                  Dots use accent color only. Open/muted use ink.
+                </div>
+                <div class="rule-desc">
+                  Finger placement dots = var(--accent). Open string ○ =
+                  var(--ink-secondary). Muted string ✕ = var(--error), small,
+                  above nut. Never use multiple colors for different fingers —
+                  it adds visual noise without musical meaning for beginners.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ GUITAR TABLATURE ═══════════════════════════════════════ -->
+      <div class="section">
+        <div class="section-label">Components · Guitar Tablature</div>
+        <h2 class="section-title">Tablature — Standard Orientation</h2>
+        <p class="section-desc">
+          Standard tab: 6 horizontal lines, read left to right in time.
+          <strong
+            >Bottom line = low E (6th string). Top line = high e (1st
+            string).</strong
+          >
+          Numbers on each line indicate fret position. This mirrors how a
+          guitar's strings look when held and viewed from above — lowest pitch
+          at the bottom, highest at top.
+        </p>
+
+        <div
+          class="notation-stage"
+          style="align-items: flex-start; padding: var(--sp-24) var(--sp-32)"
+        >
+          <!-- Tab staff -->
+          <div style="width: 100%; max-width: 560px; margin: 0 auto">
+            <!-- Tab label -->
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: var(--sp-8);
+                margin-bottom: var(--sp-12);
+              "
+            >
+              <div
+                style="
+                  font-family: var(--font-display);
+                  font-size: 20px;
+                  font-weight: 500;
+                  color: var(--ink-secondary);
+                  letter-spacing: -0.02em;
+                  line-height: 1;
+                "
+              >
+                TAB
+              </div>
+              <div
+                style="flex: 1; height: 1px; background: var(--border-subtle)"
+              ></div>
+            </div>
+
+            <!-- The 6 strings — high e on top, low E on bottom -->
+            <div style="display: flex; flex-direction: column; gap: 0">
+              <!-- String labels + lines -->
+              <div style="display: flex; align-items: center; gap: 0">
+                <div
+                  style="
+                    font-family: var(--font-mono);
+                    font-size: 10px;
+                    color: var(--ink-tertiary);
+                    width: 18px;
+                    text-align: right;
+                    padding-right: 6px;
+                  "
+                >
+                  e
+                </div>
+                <div
+                  style="
+                    flex: 1;
+                    position: relative;
+                    height: 32px;
+                    display: flex;
+                    align-items: center;
+                  "
+                >
+                  <div
+                    style="
+                      position: absolute;
+                      left: 0;
+                      right: 0;
+                      height: 1px;
+                      background: var(--border-strong);
+                    "
+                  ></div>
+                  <!-- Fret numbers -->
+                  <div
+                    style="
+                      position: relative;
+                      display: flex;
+                      gap: 32px;
+                      padding-left: 8px;
+                    "
+                  >
+                    <span
+                      style="
+                        font-family: var(--font-mono);
+                        font-size: 13px;
+                        font-weight: 500;
+                        color: var(--ink-primary);
+                        background: var(--surface-card);
+                        padding: 0 3px;
+                        line-height: 1;
+                      "
+                      >0</span
+                    >
+                    <span
+                      style="
+                        font-family: var(--font-mono);
+                        font-size: 13px;
+                        font-weight: 500;
+                        color: var(--ink-primary);
+                        background: var(--surface-card);
+                        padding: 0 3px;
+                        line-height: 1;
+                      "
+                      >1</span
+                    >
+                    <span
+                      style="
+                        font-family: var(--font-mono);
+                        font-size: 13px;
+                        font-weight: 500;
+                        color: var(--accent);
+                        background: var(--surface-card);
+                        padding: 0 3px;
+                        line-height: 1;
+                      "
+                      >0</span
+                    >
+                    <span
+                      style="
+                        font-family: var(--font-mono);
+                        font-size: 13px;
+                        font-weight: 500;
+                        color: var(--ink-primary);
+                        background: var(--surface-card);
+                        padding: 0 3px;
+                        line-height: 1;
+                      "
+                      >—</span
+                    >
+                  </div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 0">
+                <div
+                  style="
+                    font-family: var(--font-mono);
+                    font-size: 10px;
+                    color: var(--ink-tertiary);
+                    width: 18px;
+                    text-align: right;
+                    padding-right: 6px;
+                  "
+                >
+                  B
+                </div>
+                <div
+                  style="
+                    flex: 1;
+                    position: relative;
+                    height: 32px;
+                    display: flex;
+                    align-items: center;
+                  "
+                >
+                  <div
+                    style="
+                      position: absolute;
+                      left: 0;
+                      right: 0;
+                      height: 1px;
+                      background: var(--border-strong);
+                    "
+                  ></div>
+                  <div
+                    style="
+                      position: relative;
+                      display: flex;
+                      gap: 32px;
+                      padding-left: 8px;
+                    "
+                  >
+                    <span
+                      style="
+                        font-family: var(--font-mono);
+                        font-size: 13px;
+                        font-weight: 500;
+                        color: var(--ink-primary);
+                        background: var(--surface-card);
+                        padding: 0 3px;
+                        line-height: 1;
+                      "
+                      >1</span
+                    >
+                    <span
+                      style="
+                        font-family: var(--font-mono);
+                        font-size: 13px;
+                        font-weight: 500;
+                        color: var(--ink-primary);
+                        background: var(--surface-card);
+                        padding: 0 3px;
+                        line-height: 1;
+                      "
+                      >3</span
+                    >
+                    <span
+                      style="
+                        font-family: var(--font-mono);
+                        font-size: 13px;
+                        font-weight: 500;
+                        color: var(--accent);
+                        background: var(--surface-card);
+                        padding: 0 3px;
+                        line-height: 1;
+                      "
+                      >1</span
+                    >
+                    <span
+                      style="
+                        font-family: var(--font-mono);
+                        font-size: 13px;
+                        font-weight: 500;
+                        color: var(--ink-primary);
+                        background: var(--surface-card);
+                        padding: 0 3px;
+                        line-height: 1;
+                      "
+                      >—</span
+                    >
+                  </div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 0">
+                <div
+                  style="
+                    font-family: var(--font-mono);
+                    font-size: 10px;
+                    color: var(--ink-tertiary);
+                    width: 18px;
+                    text-align: right;
+                    padding-right: 6px;
+                  "
+                >
+                  G
+                </div>
+                <div
+                  style="
+                    flex: 1;
+                    position: relative;
+                    height: 32px;
+                    display: flex;
+                    align-items: center;
+                  "
+                >
+                  <div
+                    style="
+                      position: absolute;
+                      left: 0;
+                      right: 0;
+                      height: 1px;
+                      background: var(--border-strong);
+                    "
+                  ></div>
+                  <div
+                    style="
+                      position: relative;
+                      display: flex;
+                      gap: 32px;
+                      padding-left: 8px;
+                    "
+                  >
+                    <span
+                      style="
+                        font-family: var(--font-mono);
+                        font-size: 13px;
+                        font-weight: 500;
+                        color: var(--ink-primary);
+                        background: var(--surface-card);
+                        padding: 0 3px;
+                        line-height: 1;
+                      "
+                      >0</span
+                    >
+                    <span
+                      style="
+                        font-family: var(--font-mono);
+                        font-size: 13px;
+                        font-weight: 500;
+                        color: var(--ink-primary);
+                        background: var(--surface-card);
+                        padding: 0 3px;
+                        line-height: 1;
+                      "
+                      >2</span
+                    >
+                    <span
+                      style="
+                        font-family: var(--font-mono);
+                        font-size: 13px;
+                        font-weight: 500;
+                        color: var(--accent);
+                        background: var(--surface-card);
+                        padding: 0 3px;
+                        line-height: 1;
+                      "
+                      >2</span
+                    >
+                    <span
+                      style="
+                        font-family: var(--font-mono);
+                        font-size: 13px;
+                        font-weight: 500;
+                        color: var(--ink-primary);
+                        background: var(--surface-card);
+                        padding: 0 3px;
+                        line-height: 1;
+                      "
+                      >—</span
+                    >
+                  </div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 0">
+                <div
+                  style="
+                    font-family: var(--font-mono);
+                    font-size: 10px;
+                    color: var(--ink-tertiary);
+                    width: 18px;
+                    text-align: right;
+                    padding-right: 6px;
+                  "
+                >
+                  D
+                </div>
+                <div
+                  style="
+                    flex: 1;
+                    position: relative;
+                    height: 32px;
+                    display: flex;
+                    align-items: center;
+                  "
+                >
+                  <div
+                    style="
+                      position: absolute;
+                      left: 0;
+                      right: 0;
+                      height: 1px;
+                      background: var(--border-strong);
+                    "
+                  ></div>
+                  <div
+                    style="
+                      position: relative;
+                      display: flex;
+                      gap: 32px;
+                      padding-left: 8px;
+                    "
+                  >
+                    <span
+                      style="
+                        font-family: var(--font-mono);
+                        font-size: 13px;
+                        font-weight: 500;
+                        color: var(--ink-primary);
+                        background: var(--surface-card);
+                        padding: 0 3px;
+                        line-height: 1;
+                      "
+                      >2</span
+                    >
+                    <span
+                      style="
+                        font-family: var(--font-mono);
+                        font-size: 13px;
+                        font-weight: 500;
+                        color: var(--ink-primary);
+                        background: var(--surface-card);
+                        padding: 0 3px;
+                        line-height: 1;
+                      "
+                      >0</span
+                    >
+                    <span
+                      style="
+                        font-family: var(--font-mono);
+                        font-size: 13px;
+                        font-weight: 500;
+                        color: var(--accent);
+                        background: var(--surface-card);
+                        padding: 0 3px;
+                        line-height: 1;
+                      "
+                      >2</span
+                    >
+                    <span
+                      style="
+                        font-family: var(--font-mono);
+                        font-size: 13px;
+                        font-weight: 500;
+                        color: var(--ink-primary);
+                        background: var(--surface-card);
+                        padding: 0 3px;
+                        line-height: 1;
+                      "
+                      >—</span
+                    >
+                  </div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 0">
+                <div
+                  style="
+                    font-family: var(--font-mono);
+                    font-size: 10px;
+                    color: var(--ink-tertiary);
+                    width: 18px;
+                    text-align: right;
+                    padding-right: 6px;
+                  "
+                >
+                  A
+                </div>
+                <div
+                  style="
+                    flex: 1;
+                    position: relative;
+                    height: 32px;
+                    display: flex;
+                    align-items: center;
+                  "
+                >
+                  <div
+                    style="
+                      position: absolute;
+                      left: 0;
+                      right: 0;
+                      height: 1px;
+                      background: var(--border-strong);
+                    "
+                  ></div>
+                  <div
+                    style="
+                      position: relative;
+                      display: flex;
+                      gap: 32px;
+                      padding-left: 8px;
+                    "
+                  >
+                    <span
+                      style="
+                        font-family: var(--font-mono);
+                        font-size: 13px;
+                        font-weight: 500;
+                        color: var(--ink-primary);
+                        background: var(--surface-card);
+                        padding: 0 3px;
+                        line-height: 1;
+                      "
+                      >0</span
+                    >
+                    <span
+                      style="
+                        font-family: var(--font-mono);
+                        font-size: 13px;
+                        font-weight: 500;
+                        color: var(--ink-primary);
+                        background: var(--surface-card);
+                        padding: 0 3px;
+                        line-height: 1;
+                      "
+                      >—</span
+                    >
+                    <span
+                      style="
+                        font-family: var(--font-mono);
+                        font-size: 13px;
+                        font-weight: 500;
+                        color: var(--accent);
+                        background: var(--surface-card);
+                        padding: 0 3px;
+                        line-height: 1;
+                      "
+                      >0</span
+                    >
+                    <span
+                      style="
+                        font-family: var(--font-mono);
+                        font-size: 13px;
+                        font-weight: 500;
+                        color: var(--ink-primary);
+                        background: var(--surface-card);
+                        padding: 0 3px;
+                        line-height: 1;
+                      "
+                      >—</span
+                    >
+                  </div>
+                </div>
+              </div>
+              <!-- Low E — bottom -->
+              <div style="display: flex; align-items: center; gap: 0">
+                <div
+                  style="
+                    font-family: var(--font-mono);
+                    font-size: 10px;
+                    color: var(--ink-tertiary);
+                    width: 18px;
+                    text-align: right;
+                    padding-right: 6px;
+                    font-weight: 500;
+                  "
+                >
+                  E
+                </div>
+                <div
+                  style="
+                    flex: 1;
+                    position: relative;
+                    height: 32px;
+                    display: flex;
+                    align-items: center;
+                  "
+                >
+                  <div
+                    style="
+                      position: absolute;
+                      left: 0;
+                      right: 0;
+                      height: 2px;
+                      background: var(--border-strong);
+                    "
+                  ></div>
+                  <div
+                    style="
+                      position: relative;
+                      display: flex;
+                      gap: 32px;
+                      padding-left: 8px;
+                    "
+                  >
+                    <span
+                      style="
+                        font-family: var(--font-mono);
+                        font-size: 13px;
+                        font-weight: 500;
+                        color: var(--ink-primary);
+                        background: var(--surface-card);
+                        padding: 0 3px;
+                        line-height: 1;
+                      "
+                      >0</span
+                    >
+                    <span
+                      style="
+                        font-family: var(--font-mono);
+                        font-size: 13px;
+                        font-weight: 500;
+                        color: var(--ink-primary);
+                        background: var(--surface-card);
+                        padding: 0 3px;
+                        line-height: 1;
+                      "
+                      >—</span
+                    >
+                    <span
+                      style="
+                        font-family: var(--font-mono);
+                        font-size: 13px;
+                        font-weight: 500;
+                        color: var(--accent);
+                        background: var(--surface-card);
+                        padding: 0 3px;
+                        line-height: 1;
+                      "
+                      >3</span
+                    >
+                    <span
+                      style="
+                        font-family: var(--font-mono);
+                        font-size: 13px;
+                        font-weight: 500;
+                        color: var(--ink-primary);
+                        background: var(--surface-card);
+                        padding: 0 3px;
+                        line-height: 1;
+                      "
+                      >—</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Beat/time markers below -->
+            <div
+              style="
+                display: flex;
+                gap: 32px;
+                padding-left: 26px;
+                margin-top: var(--sp-8);
+              "
+            >
+              <span
+                style="
+                  font-family: var(--font-mono);
+                  font-size: 9px;
+                  color: var(--ink-tertiary);
+                  width: 13px;
+                  text-align: center;
+                "
+                >Em</span
+              >
+              <span
+                style="
+                  font-family: var(--font-mono);
+                  font-size: 9px;
+                  color: var(--ink-tertiary);
+                  width: 13px;
+                  text-align: center;
+                "
+                >D</span
+              >
+              <span
+                style="
+                  font-family: var(--font-mono);
+                  font-size: 9px;
+                  color: var(--accent);
+                  width: 13px;
+                  text-align: center;
+                  font-weight: 500;
+                "
+                >G</span
+              >
+              <span
+                style="
+                  font-family: var(--font-mono);
+                  font-size: 9px;
+                  color: var(--ink-tertiary);
+                  width: 13px;
+                  text-align: center;
+                "
+                >—</span
+              >
+            </div>
+
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: var(--sp-4);
+                margin-top: var(--sp-12);
+              "
+            >
+              <div
+                style="
+                  font-family: var(--font-mono);
+                  font-size: 9px;
+                  color: var(--ink-disabled);
+                  letter-spacing: 0.08em;
+                "
+              >
+                ↑ high e (1st)
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                low E (6th) ↓
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: var(--sp-16)">
+          <div class="rule-list">
+            <div class="rule">
+              <div class="rule-number">T1</div>
+              <div class="rule-body">
+                <div class="rule-title">Low E is always the bottom line</div>
+                <div class="rule-desc">
+                  Tab reads like the guitar viewed from above: thick strings
+                  (low pitch) at the bottom, thin strings (high pitch) at the
+                  top. Never invert this. It is universal and matches the
+                  physical instrument.
+                </div>
+              </div>
+            </div>
+            <div class="rule">
+              <div class="rule-number">T2</div>
+              <div class="rule-body">
+                <div class="rule-title">
+                  Fret numbers in DM Mono, background-masked on the line
+                </div>
+                <div class="rule-desc">
+                  Numbers sit on the string line with a card-surface background
+                  so they don't visually cut the line. Font-weight 500 for
+                  legibility. The low E string renders as a 2px line (thicker)
+                  to echo the physical gauge difference.
+                </div>
+              </div>
+            </div>
+            <div class="rule">
+              <div class="rule-number">T3</div>
+              <div class="rule-body">
+                <div class="rule-title">
+                  Accent color highlights the current beat/note
+                </div>
+                <div class="rule-desc">
+                  The active column uses var(--accent) for all fret numbers in
+                  that beat. This makes the "now" position scannable at a glance
+                  during practice. Everything else stays in ink-primary.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ PIANO CHORD VISUALIZATION ════════════════════════════ -->
+      <div class="section">
+        <div class="section-label">Components · Piano Keyboard</div>
+        <h2 class="section-title">Piano Chord Visualization</h2>
+        <p class="section-desc">
+          A one-to-two octave piano keyboard with chord tones highlighted using
+          the accent color. Root note is always the most prominent (solid fill).
+          Chord tones use a lighter fill. Non-chord keys are the base surface
+          color. Labels appear below highlighted keys. The keyboard sits inside
+          the Notation Stage with maximum horizontal space.
+        </p>
+
+        <!-- Full piano demo -->
+        <div
+          class="notation-stage"
+          style="padding: var(--sp-24) var(--sp-16) var(--sp-20)"
+        >
+          <div class="notation-label" style="margin-bottom: var(--sp-12)">
+            Cmaj7 — C E G B highlighted
+          </div>
+
+          <div
+            style="
+              position: relative;
+              width: 100%;
+              max-width: 560px;
+              margin: 0 auto;
+            "
+            id="piano-demo"
+          >
+            <!-- White keys -->
+            <div style="display: flex; gap: 2px; position: relative">
+              <!-- C -->
+              <div class="piano-white piano-root" data-note="C">
+                <div class="piano-label">C</div>
+              </div>
+              <!-- D -->
+              <div class="piano-white" data-note="D"></div>
+              <!-- E -->
+              <div class="piano-white piano-chord" data-note="E">
+                <div class="piano-label">E</div>
+              </div>
+              <!-- F -->
+              <div class="piano-white" data-note="F"></div>
+              <!-- G -->
+              <div class="piano-white piano-chord" data-note="G">
+                <div class="piano-label">G</div>
+              </div>
+              <!-- A -->
+              <div class="piano-white" data-note="A"></div>
+              <!-- B -->
+              <div class="piano-white piano-chord" data-note="B">
+                <div class="piano-label">B</div>
+              </div>
+              <!-- C2 -->
+              <div class="piano-white piano-root" data-note="C">
+                <div class="piano-label">C</div>
+              </div>
+              <!-- D2 -->
+              <div class="piano-white" data-note="D"></div>
+              <!-- E2 -->
+              <div class="piano-white piano-chord" data-note="E">
+                <div class="piano-label">E</div>
+              </div>
+              <!-- F2 -->
+              <div class="piano-white" data-note="F"></div>
+              <!-- G2 -->
+              <div class="piano-white piano-chord" data-note="G">
+                <div class="piano-label">G</div>
+              </div>
+              <!-- A2 -->
+              <div class="piano-white" data-note="A"></div>
+              <!-- B2 -->
+              <div class="piano-white piano-chord" data-note="B">
+                <div class="piano-label">B</div>
+              </div>
+            </div>
+
+            <!-- Black keys — positioned absolutely -->
+            <div
+              style="
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                pointer-events: none;
+                display: flex;
+                gap: 2px;
+              "
+            >
+              <!-- C# -->
+              <div
+                style="
+                  width: calc((100% - 26px) / 14);
+                  flex-shrink: 0;
+                  visibility: hidden;
+                "
+              ></div>
+              <!-- spacer for C white key portion -->
+              <div
+                class="piano-black"
+                style="margin-left: calc(((100% - 26px) / 14) * 0.6)"
+              ></div>
+              <!-- D# -->
+              <div
+                class="piano-black"
+                style="margin-left: calc(((100% - 26px) / 14) * 0.35)"
+              ></div>
+              <!-- gap: no black between E and F -->
+              <div
+                style="width: calc(((100% - 26px) / 14) * 1.6); flex-shrink: 0"
+              ></div>
+              <!-- F# -->
+              <div
+                class="piano-black"
+                style="margin-left: calc(((100% - 26px) / 14) * 0.6)"
+              ></div>
+              <!-- G# -->
+              <div
+                class="piano-black"
+                style="margin-left: calc(((100% - 26px) / 14) * 0.35)"
+              ></div>
+              <!-- A# -->
+              <div
+                class="piano-black"
+                style="margin-left: calc(((100% - 26px) / 14) * 0.35)"
+              ></div>
+              <!-- gap E-F octave 2 -->
+              <div
+                style="width: calc(((100% - 26px) / 14) * 1.3); flex-shrink: 0"
+              ></div>
+              <!-- C#2 -->
+              <div
+                class="piano-black"
+                style="margin-left: calc(((100% - 26px) / 14) * 0.6)"
+              ></div>
+              <!-- D#2 -->
+              <div
+                class="piano-black"
+                style="margin-left: calc(((100% - 26px) / 14) * 0.35)"
+              ></div>
+            </div>
+          </div>
+
+          <!-- Chord label row -->
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              gap: var(--sp-12);
+              margin-top: var(--sp-16);
+              flex-wrap: wrap;
+              justify-content: center;
+            "
+          >
+            <div style="display: flex; align-items: center; gap: 6px">
+              <div
+                style="
+                  width: 12px;
+                  height: 12px;
+                  border-radius: 3px;
+                  background: var(--accent);
+                "
+              ></div>
+              <span
+                style="
+                  font-family: var(--font-mono);
+                  font-size: 11px;
+                  color: var(--ink-secondary);
+                "
+                >Root</span
+              >
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px">
+              <div
+                style="
+                  width: 12px;
+                  height: 12px;
+                  border-radius: 3px;
+                  background: var(--accent-light);
+                  border: 1px solid var(--accent);
+                "
+              ></div>
+              <span
+                style="
+                  font-family: var(--font-mono);
+                  font-size: 11px;
+                  color: var(--ink-secondary);
+                "
+                >Chord tone</span
+              >
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px">
+              <div
+                style="
+                  width: 12px;
+                  height: 12px;
+                  border-radius: 3px;
+                  background: var(--surface-card);
+                  border: 1px solid var(--border-medium);
+                "
+              ></div>
+              <span
+                style="
+                  font-family: var(--font-mono);
+                  font-size: 11px;
+                  color: var(--ink-secondary);
+                "
+                >Non-chord</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Chord switcher demo -->
+        <div style="margin-top: var(--sp-16)">
+          <div class="demo-label">
+            Chord selector — same keyboard, different highlighting
+          </div>
+          <div
+            style="
+              display: flex;
+              gap: var(--sp-8);
+              flex-wrap: wrap;
+              margin-top: var(--sp-8);
+            "
+          >
+            <button class="btn btn-primary btn-sm">Cmaj7</button>
+            <button class="btn btn-ghost btn-sm">Am7</button>
+            <button class="btn btn-ghost btn-sm">Dm7</button>
+            <button class="btn btn-ghost btn-sm">G7</button>
+          </div>
+          <p
+            style="
+              font-size: 13px;
+              color: var(--ink-tertiary);
+              margin-top: var(--sp-8);
+              line-height: 1.6;
+            "
+          >
+            Active chord button is primary. Others are ghost. Selecting a new
+            chord repaints the keyboard — no page navigation. The keyboard
+            persists; only the highlighted keys change.
+          </p>
+        </div>
+
+        <div style="margin-top: var(--sp-16)">
+          <div class="rule-list">
+            <div class="rule">
+              <div class="rule-number">P1</div>
+              <div class="rule-body">
+                <div class="rule-title">
+                  Root = solid accent fill. Chord tones = accent-light fill with
+                  accent border.
+                </div>
+                <div class="rule-desc">
+                  Three-level visual hierarchy: root (strongest), chord tone
+                  (present), non-chord (absent). Kids can map "what matches the
+                  chord name" instantly because one key is always clearly
+                  dominant.
+                </div>
+              </div>
+            </div>
+            <div class="rule">
+              <div class="rule-number">P2</div>
+              <div class="rule-body">
+                <div class="rule-title">
+                  Note names always appear on highlighted white keys
+                </div>
+                <div class="rule-desc">
+                  Labels sit at the bottom of the white key, in DM Mono 10px.
+                  Non-chord keys have no labels — less text, cleaner read. For
+                  black keys in a chord, show a small dot indicator above the
+                  key top rather than a label.
+                </div>
+              </div>
+            </div>
+            <div class="rule">
+              <div class="rule-number">P3</div>
+              <div class="rule-body">
+                <div class="rule-title">
+                  Two octaves minimum for chord context
+                </div>
+                <div class="rule-desc">
+                  One octave is insufficient — chord voicings often span beyond
+                  a single octave. Two octaves (14 white keys) fits the stage
+                  width on mobile. Three octaves is preferred on desktop for
+                  showing inversions.
+                </div>
+              </div>
+            </div>
+            <div class="rule">
+              <div class="rule-number">P4</div>
+              <div class="rule-body">
+                <div class="rule-title">
+                  Dark mode: white keys become warm cream, black keys become
+                  very dark brown
+                </div>
+                <div class="rule-desc">
+                  White keys → var(--ink-primary) inverted to warm off-white
+                  (#E8E0CC). Black keys → #1A1510 (near black, warm).
+                  Highlighted keys use the same accent logic. The keyboard must
+                  remain unmistakably a keyboard in both modes.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ LIBRARY RESEARCH ═══════════════════════════════════════ -->
+      <div class="section">
+        <div class="section-label">
+          Technical Research · Rendering Libraries
+        </div>
+        <h2 class="section-title">
+          Notation &amp; Tablature Library Recommendations
+        </h2>
+        <p class="section-desc">
+          Custom SVG implementation vs. library — researched February 2026.
+          Recommendation varies by feature. The piano keyboard is always custom.
+          Staff notation and tablature have clear library winners.
+        </p>
+
+        <!-- Decision matrix -->
+        <div style="overflow-x: auto; margin-bottom: var(--sp-20)">
+          <table
+            style="width: 100%; border-collapse: collapse; font-size: 13px"
+          >
+            <thead>
+              <tr style="border-bottom: 2px solid var(--border-medium)">
+                <th
+                  style="
+                    text-align: left;
+                    padding: 10px 12px;
+                    font-family: var(--font-mono);
+                    font-size: 10px;
+                    letter-spacing: 0.1em;
+                    text-transform: uppercase;
+                    color: var(--ink-tertiary);
+                    font-weight: 400;
+                  "
+                >
+                  Feature
+                </th>
+                <th
+                  style="
+                    text-align: left;
+                    padding: 10px 12px;
+                    font-family: var(--font-mono);
+                    font-size: 10px;
+                    letter-spacing: 0.1em;
+                    text-transform: uppercase;
+                    color: var(--ink-tertiary);
+                    font-weight: 400;
+                  "
+                >
+                  Recommendation
+                </th>
+                <th
+                  style="
+                    text-align: left;
+                    padding: 10px 12px;
+                    font-family: var(--font-mono);
+                    font-size: 10px;
+                    letter-spacing: 0.1em;
+                    text-transform: uppercase;
+                    color: var(--ink-tertiary);
+                    font-weight: 400;
+                  "
+                >
+                  Approach
+                </th>
+                <th
+                  style="
+                    text-align: left;
+                    padding: 10px 12px;
+                    font-family: var(--font-mono);
+                    font-size: 10px;
+                    letter-spacing: 0.1em;
+                    text-transform: uppercase;
+                    color: var(--ink-tertiary);
+                    font-weight: 400;
+                  "
+                >
+                  License
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                style="
+                  border-bottom: 1px solid var(--border-subtle);
+                  background: var(--accent-light);
+                "
+              >
+                <td
+                  style="
+                    padding: 12px;
+                    font-weight: 500;
+                    color: var(--ink-primary);
+                  "
+                >
+                  Staff Notation
+                </td>
+                <td
+                  style="
+                    padding: 12px;
+                    color: var(--accent);
+                    font-weight: 500;
+                    font-family: var(--font-mono);
+                    font-size: 12px;
+                  "
+                >
+                  VexFlow 5
+                </td>
+                <td style="padding: 12px; color: var(--ink-secondary)">
+                  Library — do not build custom
+                </td>
+                <td
+                  style="
+                    padding: 12px;
+                    color: var(--ink-tertiary);
+                    font-family: var(--font-mono);
+                    font-size: 11px;
+                  "
+                >
+                  MIT
+                </td>
+              </tr>
+              <tr
+                style="
+                  border-bottom: 1px solid var(--border-subtle);
+                  background: var(--accent-light);
+                "
+              >
+                <td
+                  style="
+                    padding: 12px;
+                    font-weight: 500;
+                    color: var(--ink-primary);
+                  "
+                >
+                  Guitar Tablature
+                </td>
+                <td
+                  style="
+                    padding: 12px;
+                    color: var(--accent);
+                    font-weight: 500;
+                    font-family: var(--font-mono);
+                    font-size: 12px;
+                  "
+                >
+                  VexFlow 5
+                </td>
+                <td style="padding: 12px; color: var(--ink-secondary)">
+                  Library — same as notation
+                </td>
+                <td
+                  style="
+                    padding: 12px;
+                    color: var(--ink-tertiary);
+                    font-family: var(--font-mono);
+                    font-size: 11px;
+                  "
+                >
+                  MIT
+                </td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-subtle)">
+                <td
+                  style="
+                    padding: 12px;
+                    font-weight: 500;
+                    color: var(--ink-primary);
+                  "
+                >
+                  Guitar Chord Diagram
+                </td>
+                <td
+                  style="
+                    padding: 12px;
+                    color: var(--ink-secondary);
+                    font-weight: 500;
+                    font-family: var(--font-mono);
+                    font-size: 12px;
+                  "
+                >
+                  Custom SVG
+                </td>
+                <td style="padding: 12px; color: var(--ink-secondary)">
+                  Build custom — libraries overkill
+                </td>
+                <td
+                  style="
+                    padding: 12px;
+                    color: var(--ink-tertiary);
+                    font-family: var(--font-mono);
+                    font-size: 11px;
+                  "
+                >
+                  N/A
+                </td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-subtle)">
+                <td
+                  style="
+                    padding: 12px;
+                    font-weight: 500;
+                    color: var(--ink-primary);
+                  "
+                >
+                  Piano Keyboard
+                </td>
+                <td
+                  style="
+                    padding: 12px;
+                    color: var(--ink-secondary);
+                    font-weight: 500;
+                    font-family: var(--font-mono);
+                    font-size: 12px;
+                  "
+                >
+                  Custom SVG / CSS
+                </td>
+                <td style="padding: 12px; color: var(--ink-secondary)">
+                  Build custom — requires token integration
+                </td>
+                <td
+                  style="
+                    padding: 12px;
+                    color: var(--ink-tertiary);
+                    font-family: var(--font-mono);
+                    font-size: 11px;
+                  "
+                >
+                  N/A
+                </td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border-subtle)">
+                <td
+                  style="
+                    padding: 12px;
+                    font-weight: 500;
+                    color: var(--ink-primary);
+                  "
+                >
+                  MusicXML import
+                </td>
+                <td
+                  style="
+                    padding: 12px;
+                    color: var(--ink-secondary);
+                    font-weight: 500;
+                    font-family: var(--font-mono);
+                    font-size: 12px;
+                  "
+                >
+                  OSMD
+                </td>
+                <td style="padding: 12px; color: var(--ink-secondary)">
+                  If MusicXML files needed — wraps VexFlow
+                </td>
+                <td
+                  style="
+                    padding: 12px;
+                    color: var(--ink-tertiary);
+                    font-family: var(--font-mono);
+                    font-size: 11px;
+                  "
+                >
+                  BSD-3
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Library cards -->
+        <div class="demo-grid">
+          <div
+            class="demo-card"
+            style="border-color: var(--accent); border-width: 1.5px"
+          >
+            <div
+              style="
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                margin-bottom: var(--sp-8);
+              "
+            >
+              <div>
+                <div
+                  style="
+                    font-family: var(--font-mono);
+                    font-size: 10px;
+                    color: var(--accent);
+                    letter-spacing: 0.1em;
+                    text-transform: uppercase;
+                    margin-bottom: 3px;
+                  "
+                >
+                  Recommended · Staff + Tab
+                </div>
+                <div
+                  style="
+                    font-family: var(--font-display);
+                    font-size: 18px;
+                    font-weight: 500;
+                  "
+                >
+                  VexFlow 5
+                </div>
+              </div>
+              <span class="badge accent">MIT</span>
+            </div>
+            <p
+              style="
+                font-size: 13px;
+                color: var(--ink-secondary);
+                line-height: 1.6;
+                margin-bottom: var(--sp-12);
+              "
+            >
+              The de-facto standard for browser-based music notation.
+              TypeScript-native, outputs SVG (recommended for theming) or
+              Canvas. Handles both standard notation and guitar tab in a single
+              library. 10+ years of production use, active development (v5
+              current).
+            </p>
+            <div class="rule-list" style="gap: 6px">
+              <div class="rule" style="padding: 8px 12px">
+                <div class="rule-number" style="color: var(--success)">✓</div>
+                <div class="rule-body">
+                  <div class="rule-desc">
+                    SVG output — stroke/fill styleable via CSS or
+                    <code style="font-family: var(--font-mono); font-size: 11px"
+                      >context.setFillStyle()</code
+                    >. Dark mode works by wrapping in a themed container and
+                    passing token colors at render time.
+                  </div>
+                </div>
+              </div>
+              <div class="rule" style="padding: 8px 12px">
+                <div class="rule-number" style="color: var(--success)">✓</div>
+                <div class="rule-body">
+                  <div class="rule-desc">
+                    Guitar tab built-in via
+                    <code style="font-family: var(--font-mono); font-size: 11px"
+                      >TabStave</code
+                    >
+                    +
+                    <code style="font-family: var(--font-mono); font-size: 11px"
+                      >TabNote</code
+                    >. Standard orientation (low E at bottom) is default.
+                  </div>
+                </div>
+              </div>
+              <div class="rule" style="padding: 8px 12px">
+                <div class="rule-number" style="color: var(--success)">✓</div>
+                <div class="rule-body">
+                  <div class="rule-desc">
+                    Individual note styling via
+                    <code style="font-family: var(--font-mono); font-size: 11px"
+                      >setKeyStyle()</code
+                    >
+                    — accent-color a specific beat/note for the active-beat
+                    highlighting pattern in this system.
+                  </div>
+                </div>
+              </div>
+              <div class="rule" style="padding: 8px 12px">
+                <div class="rule-number" style="color: var(--error)">✗</div>
+                <div class="rule-body">
+                  <div class="rule-desc">
+                    ~800KB bundle. Use tree-shaking and import a single
+                    engraving font variant to reduce to ~300KB. Worth the
+                    trade-off vs. custom notation rendering.
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div
+              style="
+                margin-top: var(--sp-12);
+                background: var(--surface-subtle);
+                border-radius: var(--r-sm);
+                padding: var(--sp-8) var(--sp-12);
+              "
+            >
+              <div
+                style="
+                  font-family: var(--font-mono);
+                  font-size: 11px;
+                  color: var(--ink-tertiary);
+                  margin-bottom: 3px;
+                "
+              >
+                npm install
+              </div>
+              <div
+                style="
+                  font-family: var(--font-mono);
+                  font-size: 12px;
+                  color: var(--ink-primary);
+                "
+              >
+                npm i vexflow
+              </div>
+            </div>
+          </div>
+
+          <div class="demo-card">
+            <div
+              style="
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                margin-bottom: var(--sp-8);
+              "
+            >
+              <div>
+                <div
+                  style="
+                    font-family: var(--font-mono);
+                    font-size: 10px;
+                    color: var(--ink-tertiary);
+                    letter-spacing: 0.1em;
+                    text-transform: uppercase;
+                    margin-bottom: 3px;
+                  "
+                >
+                  If needed · MusicXML
+                </div>
+                <div
+                  style="
+                    font-family: var(--font-display);
+                    font-size: 18px;
+                    font-weight: 500;
+                  "
+                >
+                  OSMD
+                </div>
+              </div>
+              <span class="badge">BSD-3</span>
+            </div>
+            <p
+              style="
+                font-size: 13px;
+                color: var(--ink-secondary);
+                line-height: 1.6;
+                margin-bottom: var(--sp-12);
+              "
+            >
+              OpenSheetMusicDisplay wraps VexFlow with a MusicXML parser. Only
+              needed if the app ingests MusicXML files from external sources
+              (MuseScore, Sibelius exports, etc.). For programmatically
+              generated notation, use VexFlow directly.
+            </p>
+            <div class="rule-list" style="gap: 6px">
+              <div class="rule" style="padding: 8px 12px">
+                <div class="rule-number" style="color: var(--success)">✓</div>
+                <div class="rule-body">
+                  <div class="rule-desc">
+                    TypeScript-first. React wrapper available (<code
+                      style="font-family: var(--font-mono); font-size: 11px"
+                      >react-opensheetmusicdisplay</code
+                    >). Actively maintained, v1.9.0 released March 2025.
+                  </div>
+                </div>
+              </div>
+              <div class="rule" style="padding: 8px 12px">
+                <div class="rule-number" style="color: var(--error)">✗</div>
+                <div class="rule-body">
+                  <div class="rule-desc">
+                    Larger bundle than VexFlow alone. Theming requires passing
+                    colors at the OSMD configuration level, not via CSS. More
+                    friction for dark mode integration.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="demo-card">
+            <div
+              style="
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                margin-bottom: var(--sp-8);
+              "
+            >
+              <div>
+                <div
+                  style="
+                    font-family: var(--font-mono);
+                    font-size: 10px;
+                    color: var(--ink-tertiary);
+                    letter-spacing: 0.1em;
+                    text-transform: uppercase;
+                    margin-bottom: 3px;
+                  "
+                >
+                  Not recommended
+                </div>
+                <div
+                  style="
+                    font-family: var(--font-display);
+                    font-size: 18px;
+                    font-weight: 500;
+                  "
+                >
+                  abcjs
+                </div>
+              </div>
+              <span class="badge">MIT</span>
+            </div>
+            <p
+              style="
+                font-size: 13px;
+                color: var(--ink-secondary);
+                line-height: 1.6;
+                margin-bottom: var(--sp-12);
+              "
+            >
+              Parses and renders ABC notation format. Good for folk/traditional
+              music repositories. Not suitable here — the app works with
+              chord/scale data structures, not ABC text files. Custom theming is
+              limited compared to VexFlow.
+            </p>
+            <div class="rule-list" style="gap: 6px">
+              <div class="rule" style="padding: 8px 12px">
+                <div class="rule-number" style="color: var(--error)">✗</div>
+                <div class="rule-body">
+                  <div class="rule-desc">
+                    ABC notation is the wrong data format for this app's
+                    chord-scale domain. Would require ABC string generation from
+                    structured data — unnecessary abstraction layer.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="demo-card">
+            <div
+              style="
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                margin-bottom: var(--sp-8);
+              "
+            >
+              <div>
+                <div
+                  style="
+                    font-family: var(--font-mono);
+                    font-size: 10px;
+                    color: var(--ink-tertiary);
+                    letter-spacing: 0.1em;
+                    text-transform: uppercase;
+                    margin-bottom: 3px;
+                  "
+                >
+                  Custom · Chord + Piano
+                </div>
+                <div
+                  style="
+                    font-family: var(--font-display);
+                    font-size: 18px;
+                    font-weight: 500;
+                  "
+                >
+                  SVG / CSS
+                </div>
+              </div>
+              <span class="badge accent">Recommended</span>
+            </div>
+            <p
+              style="
+                font-size: 13px;
+                color: var(--ink-secondary);
+                line-height: 1.6;
+                margin-bottom: var(--sp-12);
+              "
+            >
+              Guitar chord diagrams and the piano keyboard should be
+              custom-built. Both are simple grid layouts with no engraving
+              complexity. Building custom gives full token integration, dark
+              mode support for free, and no bundle overhead.
+            </p>
+            <div class="rule-list" style="gap: 6px">
+              <div class="rule" style="padding: 8px 12px">
+                <div class="rule-number" style="color: var(--success)">✓</div>
+                <div class="rule-body">
+                  <div class="rule-desc">
+                    CSS grid/flexbox renders both. SVG for the piano keyboard
+                    ensures crisp scaling at all screen densities. Dark mode
+                    inherits automatically from token system.
+                  </div>
+                </div>
+              </div>
+              <div class="rule" style="padding: 8px 12px">
+                <div class="rule-number" style="color: var(--success)">✓</div>
+                <div class="rule-body">
+                  <div class="rule-desc">
+                    Chord diagram data format is simple:
+                    <code style="font-family: var(--font-mono); font-size: 11px"
+                      >{"frets":[0,0,2,2,1,0], "muted":[false,...]}</code
+                    >. No external dependency needed.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VexFlow theming note -->
+        <div
+          style="
+            margin-top: var(--sp-16);
+            background: var(--surface-subtle);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--r-md);
+            padding: var(--sp-16);
+          "
+        >
+          <div class="section-label" style="margin-bottom: var(--sp-8)">
+            VexFlow dark mode integration pattern
+          </div>
+          <pre
+            style="
+              font-family: var(--font-mono);
+              font-size: 12px;
+              color: var(--ink-secondary);
+              line-height: 1.7;
+              overflow-x: auto;
+              white-space: pre-wrap;
+            "
+          >
+// Read CSS tokens and pass to VexFlow context at render time
+const style = getComputedStyle(document.documentElement);
+const inkColor  = style.getPropertyValue('--ink-primary').trim();
+const bgColor   = style.getPropertyValue('--surface-card').trim();
+const accentColor = style.getPropertyValue('--accent').trim();
+
+const renderer = new Renderer(container, Renderer.Backends.SVG);
+const context  = renderer.getContext();
+
+// VexFlow context supports setFillStyle / setStrokeStyle
+context.setFillStyle(inkColor);
+context.setStrokeStyle(inkColor);
+
+// Highlight a specific note in accent color
+note.setStyle({ fillStyle: accentColor, strokeStyle: accentColor });
+
+// Re-render on theme switch
+document.documentElement.addEventListener('dataset', () => { re-render(); });</pre
+          >
+        </div>
+      </div>
+
+      <!-- ═══ RADIUS + SHADOW ═══════════════════════════════════════ -->
+      <div class="section">
+        <div class="section-label">Shape &amp; Depth</div>
+        <h2 class="section-title">Radius &amp; Shadow</h2>
+        <p class="section-desc">
+          Soft but not bubbly. Radius scales with element size. Shadows are
+          always warm-toned (dark brown, not cool gray) at very low opacity —
+          depth without drama.
+        </p>
+
+        <div style="margin-bottom: var(--sp-20)">
+          <div class="radius-row">
+            <div
+              class="radius-box"
+              style="width: 40px; height: 40px; border-radius: var(--r-sm)"
+            >
+              <div class="radius-label-sm">4px</div>
+              <div
+                class="radius-label-sm"
+                style="font-size: 9px; color: var(--ink-disabled)"
+              >
+                badge
+              </div>
+            </div>
+            <div
+              class="radius-box"
+              style="width: 60px; height: 60px; border-radius: var(--r-md)"
+            >
+              <div class="radius-label-sm">8px</div>
+              <div
+                class="radius-label-sm"
+                style="font-size: 9px; color: var(--ink-disabled)"
+              >
+                button
+              </div>
+            </div>
+            <div
+              class="radius-box"
+              style="width: 80px; height: 80px; border-radius: var(--r-lg)"
+            >
+              <div class="radius-label-sm">16px</div>
+              <div
+                class="radius-label-sm"
+                style="font-size: 9px; color: var(--ink-disabled)"
+              >
+                card
+              </div>
+            </div>
+            <div
+              class="radius-box"
+              style="width: 100px; height: 100px; border-radius: var(--r-xl)"
+            >
+              <div class="radius-label-sm">24px</div>
+              <div
+                class="radius-label-sm"
+                style="font-size: 9px; color: var(--ink-disabled)"
+              >
+                quiz card
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: var(--sp-12)">
+          <div
+            style="
+              flex: 1;
+              background: var(--surface-card);
+              border-radius: var(--r-lg);
+              border: 1px solid var(--border-subtle);
+              padding: var(--sp-16);
+              box-shadow: var(--shadow-sm);
+            "
+          >
+            <div class="demo-label">shadow-sm</div>
+            <div
+              style="
+                font-size: 13px;
+                color: var(--ink-secondary);
+                font-family: var(--font-mono);
+              "
+            >
+              0 1px 3px …0.06
+            </div>
+            <div
+              style="
+                font-size: 12px;
+                color: var(--ink-tertiary);
+                margin-top: 2px;
+              "
+            >
+              Cards at rest
+            </div>
+          </div>
+          <div
+            style="
+              flex: 1;
+              background: var(--surface-card);
+              border-radius: var(--r-lg);
+              border: 1px solid var(--border-subtle);
+              padding: var(--sp-16);
+              box-shadow: var(--shadow-md);
+            "
+          >
+            <div class="demo-label">shadow-md</div>
+            <div
+              style="
+                font-size: 13px;
+                color: var(--ink-secondary);
+                font-family: var(--font-mono);
+              "
+            >
+              0 4px 16px …0.08
+            </div>
+            <div
+              style="
+                font-size: 12px;
+                color: var(--ink-tertiary);
+                margin-top: 2px;
+              "
+            >
+              Quiz panels, modals
+            </div>
+          </div>
+          <div
+            style="
+              flex: 1;
+              background: var(--surface-card);
+              border-radius: var(--r-lg);
+              border: 1px solid var(--border-subtle);
+              padding: var(--sp-16);
+              box-shadow: var(--shadow-lg);
+            "
+          >
+            <div class="demo-label">shadow-lg</div>
+            <div
+              style="
+                font-size: 13px;
+                color: var(--ink-secondary);
+                font-family: var(--font-mono);
+              "
+            >
+              0 12px 40px …0.10
+            </div>
+            <div
+              style="
+                font-size: 12px;
+                color: var(--ink-tertiary);
+                margin-top: 2px;
+              "
+            >
+              Overlays, drawers
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ ACCESSIBILITY ══════════════════════════════════════════ -->
+      <div class="section">
+        <div class="section-label">Accessibility</div>
+        <h2 class="section-title">Accessibility Requirements</h2>
+        <p class="section-desc">
+          Designed for kids means designed for everyone. These are
+          non-negotiable.
+        </p>
+
+        <div class="rule-list">
+          <div class="rule">
+            <div class="rule-number">A1</div>
+            <div class="rule-body">
+              <div class="rule-title">
+                Contrast — WCAG AA minimum, AAA preferred
+              </div>
+              <div class="rule-desc">
+                Ink Primary (#1A1714) on Page (#F7F4EF): 15.4:1 ✓ · Ink
+                Secondary (#5C5650) on Card (#FFFEFB): 6.8:1 ✓ · Accent
+                (#2D7A6E) on Card: 4.6:1 (AA) — do not use on surfaces smaller
+                than 18px.
+              </div>
+            </div>
+          </div>
+          <div class="rule">
+            <div class="rule-number">A2</div>
+            <div class="rule-body">
+              <div class="rule-title">Touch targets — 44×44px minimum</div>
+              <div class="rule-desc">
+                All buttons, links, and answer options must meet this minimum.
+                Answer buttons in the quiz are min-height 56px. No icon-only
+                controls at primary action scale.
+              </div>
+            </div>
+          </div>
+          <div class="rule">
+            <div class="rule-number">A3</div>
+            <div class="rule-body">
+              <div class="rule-title">
+                Focus states — visible and accent-colored
+              </div>
+              <div class="rule-desc">
+                All interactive elements show a 3px focus ring using
+                var(--accent-light) as the glow. Never suppress focus outlines.
+                Keyboard navigation must traverse every interactive element in
+                logical order.
+              </div>
+            </div>
+          </div>
+          <div class="rule">
+            <div class="rule-number">A4</div>
+            <div class="rule-body">
+              <div class="rule-title">
+                State never communicated by color alone
+              </div>
+              <div class="rule-desc">
+                Correct/incorrect feedback uses both color AND an icon (✓ / ✗)
+                AND text. Never rely on red/green distinction alone — a
+                significant portion of young users may have color vision
+                deficiencies.
+              </div>
+            </div>
+          </div>
+          <div class="rule">
+            <div class="rule-number">A5</div>
+            <div class="rule-body">
+              <div class="rule-title">Motion is opt-in</div>
+              <div class="rule-desc">
+                Respect prefers-reduced-motion. All transitions must have a
+                reduced-motion fallback that still communicates state change
+                (instant swap, no animation).
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ MOTION ════════════════════════════════════════════════ -->
+      <div class="section">
+        <div class="section-label">Motion</div>
+        <h2 class="section-title">Transition Guidelines</h2>
+        <p class="section-desc">
+          Motion is purposeful. It confirms actions and communicates state.
+          Nothing moves for decoration.
+        </p>
+
+        <div class="rule-list">
+          <div class="rule">
+            <div class="rule-number">M1</div>
+            <div class="rule-body">
+              <div class="rule-title">Button interactions — 120ms ease</div>
+              <div class="rule-desc">
+                Background and border color transitions. Fast enough to feel
+                responsive, slow enough to be perceivable.
+              </div>
+            </div>
+          </div>
+          <div class="rule">
+            <div class="rule-number">M2</div>
+            <div class="rule-body">
+              <div class="rule-title">Answer reveal — 180ms ease-out</div>
+              <div class="rule-desc">
+                The selected button transitions to correct/incorrect state.
+                Unchosen options fade to 35% opacity simultaneously. No stagger
+                — the whole board resolves at once.
+              </div>
+            </div>
+          </div>
+          <div class="rule">
+            <div class="rule-number">M3</div>
+            <div class="rule-body">
+              <div class="rule-title">Stats counter — 150ms count-up</div>
+              <div class="rule-desc">
+                On correct answer, the streak and correct count do a brief
+                count-up animation. Creates a reward loop without being
+                distracting. Skip entirely under prefers-reduced-motion.
+              </div>
+            </div>
+          </div>
+          <div class="rule">
+            <div class="rule-number">M4</div>
+            <div class="rule-body">
+              <div class="rule-title">Page transitions — 200ms fade</div>
+              <div class="rule-desc">
+                Between routes, a simple opacity fade. No sliding, no scaling —
+                keeps the app feeling stable and booklike.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ ANTI-PATTERNS ═════════════════════════════════════════ -->
+      <div class="section">
+        <div class="section-label">What Not To Do</div>
+        <h2 class="section-title">Anti-Patterns</h2>
+        <p class="section-desc">
+          These are explicitly prohibited in this design system.
+        </p>
+
+        <div class="rule-list">
+          <div
+            class="rule"
+            style="
+              border-color: rgba(155, 58, 47, 0.2);
+              background: var(--error-bg);
+            "
+          >
+            <div class="rule-number" style="color: var(--error)">✗</div>
+            <div class="rule-body">
+              <div class="rule-title">Multiple CTA button colors</div>
+              <div class="rule-desc">
+                Blue, green, purple, orange CTAs on the same screen. The current
+                app does this. All primary CTAs must be var(--accent).
+              </div>
+            </div>
+          </div>
+          <div
+            class="rule"
+            style="
+              border-color: rgba(155, 58, 47, 0.2);
+              background: var(--error-bg);
+            "
+          >
+            <div class="rule-number" style="color: var(--error)">✗</div>
+            <div class="rule-body">
+              <div class="rule-title">Emoji icons in the UI</div>
+              <div class="rule-desc">
+                🎸 🎹 🎼 — emoji render inconsistently across platforms, cannot
+                be styled, and have no design intent. Use a single SVG icon
+                library.
+              </div>
+            </div>
+          </div>
+          <div
+            class="rule"
+            style="
+              border-color: rgba(155, 58, 47, 0.2);
+              background: var(--error-bg);
+            "
+          >
+            <div class="rule-number" style="color: var(--error)">✗</div>
+            <div class="rule-body">
+              <div class="rule-title">Hardcoded color values</div>
+              <div class="rule-desc">
+                No color, spacing, radius, or shadow value that is not a CSS
+                token. Every value must reference a variable so light/dark mode
+                can be toggled at the root level.
+              </div>
+            </div>
+          </div>
+          <div
+            class="rule"
+            style="
+              border-color: rgba(155, 58, 47, 0.2);
+              background: var(--error-bg);
+            "
+          >
+            <div class="rule-number" style="color: var(--error)">✗</div>
+            <div class="rule-body">
+              <div class="rule-title">Alarm-red error states</div>
+              <div class="rule-desc">
+                Bright red (#FF0000, #EF4444, etc.) is too alarming for young
+                learners. Use the desaturated var(--error) (#9B3A2F) which
+                communicates incorrectness without punishment.
+              </div>
+            </div>
+          </div>
+          <div
+            class="rule"
+            style="
+              border-color: rgba(155, 58, 47, 0.2);
+              background: var(--error-bg);
+            "
+          >
+            <div class="rule-number" style="color: var(--error)">✗</div>
+            <div class="rule-body">
+              <div class="rule-title">Feedback below the action</div>
+              <div class="rule-desc">
+                The current app shows a feedback card below the answer buttons
+                while the buttons themselves don't change. State must resolve on
+                the button first — where the user's eye already is.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ DARK MODE ══════════════════════════════════════════════ -->
+      <div class="section">
+        <div class="section-label">Dark Mode</div>
+        <h2 class="section-title">A Music Hall at Night</h2>
+        <p class="section-desc">
+          Dark mode is not an inverted light mode. It's a distinct environment
+          derived from the same warmth — aged wood, felt, amber stage light. No
+          cool grays. No pure black. The accent brightens by 15% to hold its
+          contrast ratio on dark surfaces. Toggle the button (top right) to see
+          this guide switch live.
+        </p>
+
+        <!-- Side-by-side palette comparison -->
+        <div class="mode-split" style="margin-bottom: var(--sp-16)">
+          <div class="mode-panel mode-panel-light">
+            <div class="mode-panel-label">Light — Warm Ivory</div>
+            <div class="dark-swatch-grid">
+              <div class="dark-swatch-row">
+                <div
+                  class="dark-swatch-dot"
+                  style="
+                    background: #f7f4ef;
+                    border-color: rgba(26, 23, 20, 0.15);
+                  "
+                ></div>
+                <div class="dark-swatch-info">
+                  <div class="dark-swatch-name">Page</div>
+                  <div class="dark-swatch-value">#F7F4EF</div>
+                </div>
+              </div>
+              <div class="dark-swatch-row">
+                <div
+                  class="dark-swatch-dot"
+                  style="
+                    background: #fffefb;
+                    border-color: rgba(26, 23, 20, 0.15);
+                  "
+                ></div>
+                <div class="dark-swatch-info">
+                  <div class="dark-swatch-name">Card</div>
+                  <div class="dark-swatch-value">#FFFEFB</div>
+                </div>
+              </div>
+              <div class="dark-swatch-row">
+                <div
+                  class="dark-swatch-dot"
+                  style="
+                    background: #1a1714;
+                    border-color: rgba(26, 23, 20, 0.15);
+                  "
+                ></div>
+                <div class="dark-swatch-info">
+                  <div class="dark-swatch-name">Ink Primary</div>
+                  <div class="dark-swatch-value">#1A1714</div>
+                </div>
+              </div>
+              <div class="dark-swatch-row">
+                <div
+                  class="dark-swatch-dot"
+                  style="
+                    background: #2d7a6e;
+                    border-color: rgba(26, 23, 20, 0.15);
+                  "
+                ></div>
+                <div class="dark-swatch-info">
+                  <div class="dark-swatch-name">Accent</div>
+                  <div class="dark-swatch-value">#2D7A6E</div>
+                </div>
+              </div>
+              <div class="dark-swatch-row">
+                <div
+                  class="dark-swatch-dot"
+                  style="
+                    background: #3a7d5c;
+                    border-color: rgba(26, 23, 20, 0.15);
+                  "
+                ></div>
+                <div class="dark-swatch-info">
+                  <div class="dark-swatch-name">Success</div>
+                  <div class="dark-swatch-value">#3A7D5C</div>
+                </div>
+              </div>
+              <div class="dark-swatch-row">
+                <div
+                  class="dark-swatch-dot"
+                  style="
+                    background: #9b3a2f;
+                    border-color: rgba(26, 23, 20, 0.15);
+                  "
+                ></div>
+                <div class="dark-swatch-info">
+                  <div class="dark-swatch-name">Error</div>
+                  <div class="dark-swatch-value">#9B3A2F</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mode-panel mode-panel-dark">
+            <div class="mode-panel-label">Dark — Music Hall Night</div>
+            <div class="dark-swatch-grid">
+              <div class="dark-swatch-row">
+                <div class="dark-swatch-dot" style="background: #18160d"></div>
+                <div class="dark-swatch-info">
+                  <div class="dark-swatch-name">Page</div>
+                  <div class="dark-swatch-value">#18160D</div>
+                </div>
+              </div>
+              <div class="dark-swatch-row">
+                <div class="dark-swatch-dot" style="background: #211e14"></div>
+                <div class="dark-swatch-info">
+                  <div class="dark-swatch-name">Card</div>
+                  <div class="dark-swatch-value">#211E14</div>
+                </div>
+              </div>
+              <div class="dark-swatch-row">
+                <div class="dark-swatch-dot" style="background: #f0ead9"></div>
+                <div class="dark-swatch-info">
+                  <div class="dark-swatch-name">Ink Primary</div>
+                  <div class="dark-swatch-value">#F0EAD9</div>
+                </div>
+              </div>
+              <div class="dark-swatch-row">
+                <div class="dark-swatch-dot" style="background: #3daf9b"></div>
+                <div class="dark-swatch-info">
+                  <div class="dark-swatch-name">Accent (+15%)</div>
+                  <div class="dark-swatch-value">#3DAF9B</div>
+                </div>
+              </div>
+              <div class="dark-swatch-row">
+                <div class="dark-swatch-dot" style="background: #4fa87a"></div>
+                <div class="dark-swatch-info">
+                  <div class="dark-swatch-name">Success</div>
+                  <div class="dark-swatch-value">#4FA87A</div>
+                </div>
+              </div>
+              <div class="dark-swatch-row">
+                <div class="dark-swatch-dot" style="background: #c4614f"></div>
+                <div class="dark-swatch-info">
+                  <div class="dark-swatch-name">Error</div>
+                  <div class="dark-swatch-value">#C4614F</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live component comparison -->
+        <div class="section-label" style="margin-bottom: var(--sp-8)">
+          Side-by-side component comparison
+        </div>
+
+        <div class="live-demo-split">
+          <!-- LIGHT SIDE -->
+          <div class="live-panel live-panel-light">
+            <div
+              style="
+                font-family: &quot;DM Mono&quot;, monospace;
+                font-size: 10px;
+                letter-spacing: 0.12em;
+                text-transform: uppercase;
+                color: #9c9590;
+                margin-bottom: 4px;
+              "
+            >
+              Light
+            </div>
+
+            <!-- Nav strip -->
+            <div
+              style="
+                background: #fffefb;
+                border: 1px solid rgba(26, 23, 20, 0.1);
+                border-radius: 10px;
+                padding: 10px 14px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 2px;
+              "
+            >
+              <div
+                style="
+                  font-family: &quot;Lora&quot;, serif;
+                  font-size: 13px;
+                  font-weight: 500;
+                  color: #1a1714;
+                "
+              >
+                Music Practice
+              </div>
+              <div style="display: flex; gap: 8px">
+                <span style="font-size: 12px; color: #2d7a6e; font-weight: 500"
+                  >Practice</span
+                >
+                <span style="font-size: 12px; color: #5c5650">About</span>
+              </div>
+            </div>
+
+            <!-- Stats -->
+            <div
+              style="
+                display: grid;
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 6px;
+                margin-bottom: 2px;
+              "
+            >
+              <div
+                style="
+                  background: #fffefb;
+                  border: 1px solid rgba(26, 23, 20, 0.1);
+                  border-radius: 10px;
+                  padding: 10px 8px;
+                  text-align: center;
+                "
+              >
+                <div
+                  style="
+                    font-family: &quot;Lora&quot;, serif;
+                    font-size: 20px;
+                    font-weight: 500;
+                    color: #1a1714;
+                  "
+                >
+                  7/9
+                </div>
+                <div style="font-size: 10px; color: #9c9590">Correct</div>
+              </div>
+              <div
+                style="
+                  background: #fffefb;
+                  border: 1px solid rgba(26, 23, 20, 0.1);
+                  border-radius: 10px;
+                  padding: 10px 8px;
+                  text-align: center;
+                "
+              >
+                <div
+                  style="
+                    font-family: &quot;Lora&quot;, serif;
+                    font-size: 20px;
+                    font-weight: 500;
+                    color: #2d7a6e;
+                  "
+                >
+                  78%
+                </div>
+                <div style="font-size: 10px; color: #9c9590">Accuracy</div>
+              </div>
+              <div
+                style="
+                  background: #fffefb;
+                  border: 1px solid rgba(26, 23, 20, 0.1);
+                  border-radius: 10px;
+                  padding: 10px 8px;
+                  text-align: center;
+                "
+              >
+                <div
+                  style="
+                    font-family: &quot;Lora&quot;, serif;
+                    font-size: 20px;
+                    font-weight: 500;
+                    color: #1a1714;
+                  "
+                >
+                  4
+                </div>
+                <div style="font-size: 10px; color: #9c9590">Streak</div>
+              </div>
+            </div>
+
+            <!-- Quiz -->
+            <div class="mini-quiz mini-quiz-light">
+              <div class="mini-badge-light">Degree Quiz</div>
+              <div class="mini-question-light">
+                What chord is on degree 4 of Major?
+              </div>
+              <div class="mini-hint-light">
+                Select the correct chord quality
+              </div>
+              <div class="mini-answer-grid">
+                <div class="mini-answer-light mini-answer-correct-light">
+                  Maj7
+                </div>
+                <div class="mini-answer-light" style="opacity: 0.35">mMaj7</div>
+                <div class="mini-answer-light" style="opacity: 0.35">m7b5</div>
+                <div class="mini-answer-light" style="opacity: 0.35">7</div>
+              </div>
+              <div
+                style="
+                  margin-top: 8px;
+                  display: flex;
+                  align-items: center;
+                  gap: 6px;
+                  padding: 8px 10px;
+                  background: #edf6f1;
+                  border: 1px solid rgba(58, 125, 92, 0.2);
+                  border-radius: 6px;
+                  font-size: 12px;
+                  color: #3a7d5c;
+                  font-weight: 500;
+                "
+              >
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                Correct — Lydian mode
+              </div>
+            </div>
+
+            <!-- CTA -->
+            <div
+              style="
+                background: #2d7a6e;
+                color: white;
+                border-radius: 8px;
+                padding: 13px;
+                text-align: center;
+                font-size: 14px;
+                font-weight: 500;
+                font-family: &quot;DM Sans&quot;, sans-serif;
+              "
+            >
+              Start Practice
+            </div>
+          </div>
+
+          <!-- DARK SIDE -->
+          <div class="live-panel live-panel-dark">
+            <div
+              style="
+                font-family: &quot;DM Mono&quot;, monospace;
+                font-size: 10px;
+                letter-spacing: 0.12em;
+                text-transform: uppercase;
+                color: #6e6254;
+                margin-bottom: 4px;
+              "
+            >
+              Dark
+            </div>
+
+            <!-- Nav strip -->
+            <div
+              style="
+                background: #211e14;
+                border: 1px solid rgba(240, 234, 217, 0.1);
+                border-radius: 10px;
+                padding: 10px 14px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 2px;
+              "
+            >
+              <div
+                style="
+                  font-family: &quot;Lora&quot;, serif;
+                  font-size: 13px;
+                  font-weight: 500;
+                  color: #f0ead9;
+                "
+              >
+                Music Practice
+              </div>
+              <div style="display: flex; gap: 8px">
+                <span style="font-size: 12px; color: #3daf9b; font-weight: 500"
+                  >Practice</span
+                >
+                <span style="font-size: 12px; color: #a89880">About</span>
+              </div>
+            </div>
+
+            <!-- Stats -->
+            <div
+              style="
+                display: grid;
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 6px;
+                margin-bottom: 2px;
+              "
+            >
+              <div
+                style="
+                  background: #211e14;
+                  border: 1px solid rgba(240, 234, 217, 0.1);
+                  border-radius: 10px;
+                  padding: 10px 8px;
+                  text-align: center;
+                "
+              >
+                <div
+                  style="
+                    font-family: &quot;Lora&quot;, serif;
+                    font-size: 20px;
+                    font-weight: 500;
+                    color: #f0ead9;
+                  "
+                >
+                  7/9
+                </div>
+                <div style="font-size: 10px; color: #6e6254">Correct</div>
+              </div>
+              <div
+                style="
+                  background: #211e14;
+                  border: 1px solid rgba(240, 234, 217, 0.1);
+                  border-radius: 10px;
+                  padding: 10px 8px;
+                  text-align: center;
+                "
+              >
+                <div
+                  style="
+                    font-family: &quot;Lora&quot;, serif;
+                    font-size: 20px;
+                    font-weight: 500;
+                    color: #3daf9b;
+                  "
+                >
+                  78%
+                </div>
+                <div style="font-size: 10px; color: #6e6254">Accuracy</div>
+              </div>
+              <div
+                style="
+                  background: #211e14;
+                  border: 1px solid rgba(240, 234, 217, 0.1);
+                  border-radius: 10px;
+                  padding: 10px 8px;
+                  text-align: center;
+                "
+              >
+                <div
+                  style="
+                    font-family: &quot;Lora&quot;, serif;
+                    font-size: 20px;
+                    font-weight: 500;
+                    color: #f0ead9;
+                  "
+                >
+                  4
+                </div>
+                <div style="font-size: 10px; color: #6e6254">Streak</div>
+              </div>
+            </div>
+
+            <!-- Quiz -->
+            <div class="mini-quiz mini-quiz-dark">
+              <div class="mini-badge-dark">Degree Quiz</div>
+              <div class="mini-question-dark">
+                What chord is on degree 4 of Major?
+              </div>
+              <div class="mini-hint-dark">Select the correct chord quality</div>
+              <div class="mini-answer-grid">
+                <div class="mini-answer-dark mini-answer-correct-dark">
+                  Maj7
+                </div>
+                <div class="mini-answer-dark" style="opacity: 0.35">mMaj7</div>
+                <div class="mini-answer-dark" style="opacity: 0.35">m7b5</div>
+                <div class="mini-answer-dark" style="opacity: 0.35">7</div>
+              </div>
+              <div
+                style="
+                  margin-top: 8px;
+                  display: flex;
+                  align-items: center;
+                  gap: 6px;
+                  padding: 8px 10px;
+                  background: rgba(79, 168, 122, 0.12);
+                  border: 1px solid rgba(79, 168, 122, 0.2);
+                  border-radius: 6px;
+                  font-size: 12px;
+                  color: #4fa87a;
+                  font-weight: 500;
+                "
+              >
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                Correct — Lydian mode
+              </div>
+            </div>
+
+            <!-- CTA -->
+            <div
+              style="
+                background: #3daf9b;
+                color: #18160d;
+                border-radius: 8px;
+                padding: 13px;
+                text-align: center;
+                font-size: 14px;
+                font-weight: 500;
+                font-family: &quot;DM Sans&quot;, sans-serif;
+              "
+            >
+              Start Practice
+            </div>
+          </div>
+        </div>
+
+        <!-- Dark mode rules -->
+        <div class="rule-list" style="margin-top: var(--sp-16)">
+          <div class="rule">
+            <div class="rule-number">D1</div>
+            <div class="rule-body">
+              <div class="rule-title">Never use pure black or pure white</div>
+              <div class="rule-desc">
+                Page background is #18160D, not #000000. Text is #F0EAD9, not
+                #FFFFFF. Pure values feel harsh and strip the warmth that makes
+                this system distinctive.
+              </div>
+            </div>
+          </div>
+          <div class="rule">
+            <div class="rule-number">D2</div>
+            <div class="rule-body">
+              <div class="rule-title">
+                Accent brightens, it doesn't change hue
+              </div>
+              <div class="rule-desc">
+                Light accent is #2D7A6E. Dark accent is #3DAF9B — same hue
+                (174°), just lightened so it clears 4.5:1 on the dark card
+                surface (#211E14). Never switch to a different color for dark
+                mode.
+              </div>
+            </div>
+          </div>
+          <div class="rule">
+            <div class="rule-number">D3</div>
+            <div class="rule-body">
+              <div class="rule-title">
+                Feedback backgrounds use alpha, not solid fills
+              </div>
+              <div class="rule-desc">
+                In dark mode, success-bg is rgba(79,168,122,0.12) rather than a
+                solid tint. This lets the card surface show through, keeping the
+                layering coherent without blowing out the brightness.
+              </div>
+            </div>
+          </div>
+          <div class="rule">
+            <div class="rule-number">D4</div>
+            <div class="rule-body">
+              <div class="rule-title">Shadows deepen significantly</div>
+              <div class="rule-desc">
+                In light mode shadows are barely-there. In dark mode they deepen
+                to 0.28–0.44 opacity to maintain the same perceived depth — dark
+                surfaces absorb shadow so you need more of it.
+              </div>
+            </div>
+          </div>
+          <div class="rule">
+            <div class="rule-number">D5</div>
+            <div class="rule-body">
+              <div class="rule-title">
+                Implementation: one data attribute at the root
+              </div>
+              <div class="rule-desc">
+                Set
+                <code
+                  style="
+                    font-family: var(--font-mono);
+                    font-size: 12px;
+                    background: var(--surface-subtle);
+                    padding: 1px 5px;
+                    border-radius: 3px;
+                  "
+                  >data-theme="dark"</code
+                >
+                on
+                <code
+                  style="
+                    font-family: var(--font-mono);
+                    font-size: 12px;
+                    background: var(--surface-subtle);
+                    padding: 1px 5px;
+                    border-radius: 3px;
+                  "
+                  >&lt;html&gt;</code
+                >
+                or
+                <code
+                  style="
+                    font-family: var(--font-mono);
+                    font-size: 12px;
+                    background: var(--surface-subtle);
+                    padding: 1px 5px;
+                    border-radius: 3px;
+                  "
+                  >&lt;body&gt;</code
+                >. All tokens redefine. No component code changes. Persist
+                preference to localStorage. Respect prefers-color-scheme on
+                first load.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Implementation snippet -->
+        <div
+          style="
+            margin-top: var(--sp-16);
+            background: var(--surface-subtle);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--r-md);
+            padding: var(--sp-16);
+          "
+        >
+          <div class="section-label" style="margin-bottom: var(--sp-8)">
+            Implementation — theme initialization
+          </div>
+          <pre
+            style="
+              font-family: var(--font-mono);
+              font-size: 12px;
+              color: var(--ink-secondary);
+              line-height: 1.7;
+              overflow-x: auto;
+              white-space: pre-wrap;
+            "
+          >
+// Respect system preference, override with stored value
+const stored = localStorage.getItem('theme');
+const system = window.matchMedia('(prefers-color-scheme: dark)').matches
+  ? 'dark' : 'light';
+document.documentElement.dataset.theme = stored ?? system;
+
+// Toggle
+function setTheme(t) {
+  document.documentElement.dataset.theme = t;
+  localStorage.setItem('theme', t);
+}</pre
+          >
+        </div>
+      </div>
+
+      <!-- ═══ FOOTER ════════════════════════════════════════════════ -->
+      <div class="section" style="border-bottom: none">
+        <div class="section-label">Document</div>
+        <p
+          style="font-size: 14px; color: var(--ink-tertiary); line-height: 1.65"
+        >
+          This document is the source of truth for visual decisions in Music
+          Practice Suite. Any value not defined here requires a proposal before
+          use. When in doubt: more space, less color, Lora for music content, DM
+          Sans for interface.
+        </p>
+        <div style="margin-top: var(--sp-12)">
+          <span class="badge">v1.1</span>
+          &nbsp;
+          <span class="badge">Light + Dark Mode</span>
+          &nbsp;
+          <span class="badge accent">Pending approval</span>
+        </div>
+      </div>
+    </div>
+    <!-- /.guide-body -->
+
+    <script>
+      // ─── THEME SYSTEM ─────────────────────────────────────────
+      // On load: respect stored preference, fall back to system
+      (function () {
+        const stored = localStorage.getItem("mps-theme");
+        const system = window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light";
+        const theme = stored ?? system;
+        document.documentElement.dataset.theme = theme;
+        updateLabel(theme);
+      })();
+
+      function toggleTheme() {
+        const current = document.documentElement.dataset.theme;
+        const next = current === "dark" ? "light" : "dark";
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem("mps-theme", next);
+        updateLabel(next);
+      }
+
+      function updateLabel(theme) {
+        const label = document.getElementById("toggle-label");
+        if (label)
+          label.textContent = theme === "dark" ? "Light Mode" : "Dark Mode";
+      }
+    </script>
+  </body>
+</html>

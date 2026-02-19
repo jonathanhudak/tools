@@ -1,28 +1,15 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <title>Music Practice</title>
-    <script>
-      // Handle SPA routing for deep links
-      // When a user visits /tools/music-practice/chord-quiz directly,
-      // GitHub Pages returns 404 and serves this file
-      // We capture the original path and redirect to index with it as a param
-      
-      var originalPath = window.location.pathname;
-      var searchParams = window.location.search;
-      
-      // Extract the route after /tools/music-practice/
-      // e.g., /tools/music-practice/chord-quiz → /chord-quiz
-      var basePath = '/tools/music-practice';
-      var route = originalPath.substring(basePath.length) || '/';
-      
-      // Store in sessionStorage for the app to pick up
-      sessionStorage.redirectRoute = route;
-      
-      // Redirect to index.html - the SPA will handle the navigation
-      window.location.replace(basePath + '/?redirect=' + encodeURIComponent(route));
-    </script>
-  </head>
-  <body></body>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InstrumentPractice Pro</title>
+    <!-- VexFlow for music notation -->
+    <script src="https://cdn.jsdelivr.net/npm/vexflow@4.2.2/build/cjs/vexflow.js"></script>
+  <script type="module" crossorigin src="/tools/music-practice/assets/index-DTUOieYJ.js"></script>
+  <link rel="stylesheet" crossorigin href="/tools/music-practice/assets/index-DvRqhULD.css">
+</head>
+<body>
+    <div id="root"></div>
+</body>
 </html>

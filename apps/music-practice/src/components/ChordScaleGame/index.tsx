@@ -25,24 +25,24 @@ export function ChordScaleGame(): JSX.Element {
 
   if (!gameStarted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center p-6">
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="w-full max-w-2xl"
         >
           {/* Header */}
-          <div className="text-center mb-10">
+          <div className="text-center mb-16">
             <motion.div
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
               className="inline-flex items-center gap-3 mb-4"
             >
-              <div className="p-3 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg">
+              <div className="p-3 rounded-2xl bg-[var(--accent-color)] shadow-lg">
                 <Brain className="h-8 w-8 text-white" />
               </div>
             </motion.div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
+            <h1 className="text-4xl font-bold font-display text-foreground">
               Chord-Scale Matrix Trainer
             </h1>
             <p className="text-muted-foreground mt-2 text-lg">
@@ -51,7 +51,7 @@ export function ChordScaleGame(): JSX.Element {
           </div>
 
           {/* Settings Card */}
-          <Card className="border-2 shadow-xl">
+          <Card className="border-2 shadow-[var(--shadow-warm-md)]">
             <CardHeader className="pb-4">
               <div className="flex items-center gap-2">
                 <Settings2 className="h-5 w-5 text-muted-foreground" />
@@ -65,10 +65,10 @@ export function ChordScaleGame(): JSX.Element {
                 <Label className="text-base font-medium">Game Mode</Label>
                 <div className="grid grid-cols-1 gap-3">
                   <button
-                    className="relative p-4 rounded-xl border-2 border-violet-500 bg-violet-50 dark:bg-violet-950/30"
+                    className="relative p-4 rounded-xl border-2 border-[var(--accent-color)] bg-[var(--accent-light)]"
                   >
                     <div className="flex items-center gap-3">
-                      <Brain className="h-6 w-6 text-violet-600" />
+                      <Brain className="h-6 w-6 text-[var(--accent-color)]" />
                       <div className="text-left">
                         <div className="text-sm font-medium">Degree Quiz</div>
                         <div className="text-xs text-muted-foreground">
@@ -80,7 +80,7 @@ export function ChordScaleGame(): JSX.Element {
                   </button>
 
                   {/* Coming Soon Game Modes */}
-                  <div className="relative p-4 rounded-xl border-2 border-dashed border-muted opacity-50">
+                  <div className="relative p-4 rounded-xl border-2 border-dashed border-muted opacity-40">
                     <div className="flex items-center gap-3">
                       <Brain className="h-6 w-6 text-muted-foreground" />
                       <div className="text-left">
@@ -123,7 +123,7 @@ export function ChordScaleGame(): JSX.Element {
                 <Button
                   onClick={() => setGameStarted(true)}
                   size="lg"
-                  className="w-full h-16 text-lg font-semibold bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 shadow-lg"
+                  className="w-full h-16 text-lg font-semibold bg-[var(--accent-color)] hover:bg-[var(--accent-hover)] shadow-lg"
                 >
                   <Brain className="mr-3 h-6 w-6" />
                   Start Practice
@@ -143,13 +143,13 @@ export function ChordScaleGame(): JSX.Element {
 
   // Game started - render the active game mode
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-6">
+    <div className="min-h-screen bg-background p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header with Exit Button */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
-            <Brain className="h-6 w-6 text-violet-600" />
-            <h1 className="text-2xl font-bold">Chord-Scale Matrix Trainer</h1>
+            <Brain className="h-6 w-6 text-[var(--accent-color)]" />
+            <h1 className="text-2xl font-bold font-display">Chord-Scale Matrix Trainer</h1>
           </div>
           <Button
             variant="ghost"

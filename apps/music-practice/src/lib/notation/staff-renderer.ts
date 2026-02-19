@@ -51,7 +51,8 @@ export class StaffRenderer {
      * Get the appropriate stroke color based on theme
      */
     private getStrokeColor(): string {
-        return this.isDarkMode() ? '#e5e5e5' : '#000000';
+        return getComputedStyle(document.documentElement).getPropertyValue('--ink-primary').trim()
+            || (this.isDarkMode() ? '#f0ead9' : '#1a1714');
     }
 
     /**
