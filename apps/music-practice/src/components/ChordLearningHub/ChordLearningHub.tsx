@@ -80,11 +80,11 @@ export function ChordLearningHub(): JSX.Element {
             animate={{ scale: 1 }}
             className="inline-flex items-center gap-3 mb-4"
           >
-            <div className="p-3 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 shadow-lg">
+            <div className="p-3 rounded-2xl bg-[var(--accent-color)] shadow-lg">
               <Brain className="h-8 w-8 text-white" />
             </div>
           </motion.div>
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-3">
+          <h1 className="text-5xl font-bold font-display text-foreground mb-3">
             Chord Learning System
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -102,7 +102,7 @@ export function ChordLearningHub(): JSX.Element {
             <Card className="border-2 h-full cursor-pointer hover:shadow-lg transition-shadow" onClick={handleToReference}>
               <CardHeader>
                 <div className="flex items-center gap-2 mb-2">
-                  <BookOpen className="w-6 h-6 text-amber-600" />
+                  <BookOpen className="w-6 h-6 text-[var(--accent-color)]" />
                   <CardTitle>Chord Reference</CardTitle>
                 </div>
                 <CardDescription>Learn and explore all chord fingerings</CardDescription>
@@ -141,7 +141,7 @@ export function ChordLearningHub(): JSX.Element {
             <Card className="border-2 h-full cursor-pointer hover:shadow-lg transition-shadow" onClick={handleToQuiz}>
               <CardHeader>
                 <div className="flex items-center gap-2 mb-2">
-                  <Zap className="w-6 h-6 text-yellow-600" />
+                  <Zap className="w-6 h-6 text-[var(--accent-color)]" />
                   <CardTitle>Quiz Modes</CardTitle>
                 </div>
                 <CardDescription>Test your chord knowledge in different game modes</CardDescription>
@@ -180,14 +180,14 @@ export function ChordLearningHub(): JSX.Element {
           transition={{ delay: 0.2 }}
           className="mb-12"
         >
-          <h2 className="text-2xl font-bold mb-6 text-center">Start a Quiz</h2>
+          <h2 className="text-2xl font-bold font-display mb-6 text-center">Start a Quiz</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             {/* Speed Mode */}
             <Card className="border cursor-pointer hover:shadow-lg transition-all hover:border-primary">
               <CardHeader>
                 <div className="flex items-center gap-2 mb-2">
-                  <Zap className="w-5 h-5 text-yellow-600" />
+                  <Zap className="w-5 h-5 text-[var(--accent-color)]" />
                   <CardTitle className="text-lg">Speed Mode</CardTitle>
                 </div>
                 <CardDescription>Race against time! 30 seconds per question.</CardDescription>
@@ -216,7 +216,7 @@ export function ChordLearningHub(): JSX.Element {
             <Card className="border cursor-pointer hover:shadow-lg transition-all hover:border-primary">
               <CardHeader>
                 <div className="flex items-center gap-2 mb-2">
-                  <Target className="w-5 h-5 text-green-600" />
+                  <Target className="w-5 h-5 text-[var(--accent-color)]" />
                   <CardTitle className="text-lg">Accuracy Mode</CardTitle>
                 </div>
                 <CardDescription>No time limit. Focus on getting every answer right.</CardDescription>
@@ -245,7 +245,7 @@ export function ChordLearningHub(): JSX.Element {
             <Card className="border cursor-pointer hover:shadow-lg transition-all hover:border-primary">
               <CardHeader>
                 <div className="flex items-center gap-2 mb-2">
-                  <Brain className="w-5 h-5 text-purple-600" />
+                  <Brain className="w-5 h-5 text-[var(--accent-color)]" />
                   <CardTitle className="text-lg">Progression</CardTitle>
                 </div>
                 <CardDescription>Start easy, difficulty increases with your score.</CardDescription>
@@ -273,7 +273,7 @@ export function ChordLearningHub(): JSX.Element {
         </motion.div>
 
         {/* Features */}
-        <Card className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950 border-2">
+        <Card className="bg-[var(--accent-light)] border-2">
           <CardHeader>
             <CardTitle className="text-center">Why Use Our Chord System?</CardTitle>
           </CardHeader>

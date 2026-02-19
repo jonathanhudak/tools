@@ -59,7 +59,7 @@ export function ChordDiagram({ chord, voicing, interactive = false, size = 'medi
       <svg
         width={width}
         height={startY + fretboardHeight + 40}
-        className="border rounded-lg bg-amber-50 dark:bg-slate-900 border-amber-200 dark:border-slate-700"
+        className="border rounded-lg bg-card border-border"
       >
         {/* Fret markers */}
         {!isOpen && (
@@ -85,7 +85,7 @@ export function ChordDiagram({ chord, voicing, interactive = false, size = 'medi
             y2={startY + i * fretHeight}
             stroke={i === 0 ? '#000' : '#ddd'}
             strokeWidth={i === 0 ? 3 : 1}
-            className="dark:stroke-slate-600"
+            className="dark:stroke-[var(--ink-disabled)]"
           />
         ))}
 
@@ -99,7 +99,7 @@ export function ChordDiagram({ chord, voicing, interactive = false, size = 'medi
             y2={startY + fretboardHeight}
             stroke="#8b7355"
             strokeWidth={1.5}
-            className="dark:stroke-amber-700"
+            className="dark:stroke-[var(--ink-tertiary)]"
           />
         ))}
 
@@ -113,14 +113,14 @@ export function ChordDiagram({ chord, voicing, interactive = false, size = 'medi
             // Draw X for muted strings
             return (
               <g key={`fingering-${index}`}>
-                <circle cx={x} cy={startY - 15} r={8} fill="none" stroke="#ef4444" strokeWidth={2} />
+                <circle cx={x} cy={startY - 15} r={8} fill="none" stroke="var(--error-color)" strokeWidth={2} />
                 <text
                   x={x}
                   y={startY - 10}
                   textAnchor="middle"
                   fontSize={14}
                   fontWeight="bold"
-                  fill="#ef4444"
+                  fill="var(--error-color)"
                 >
                   ✕
                 </text>
@@ -137,7 +137,7 @@ export function ChordDiagram({ chord, voicing, interactive = false, size = 'medi
                 cy={startY - 15}
                 r={8}
                 fill="none"
-                stroke="#22c55e"
+                stroke="var(--success-color)"
                 strokeWidth={2}
               />
             );
@@ -151,7 +151,7 @@ export function ChordDiagram({ chord, voicing, interactive = false, size = 'medi
               cx={x}
               cy={dotY}
               r={fretHeight / 2.5}
-              fill="#3b82f6"
+              fill="var(--accent-color)"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: index * 0.1 }}
@@ -190,15 +190,15 @@ export function ChordDiagram({ chord, voicing, interactive = false, size = 'medi
       {/* Legend */}
       <div className="flex gap-4 text-xs justify-center">
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 border-2 border-green-500 rounded-full" />
+          <div className="w-4 h-4 border-2 border-[var(--success-color)] rounded-full" />
           <span>Open</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 bg-blue-500 rounded-full" />
+          <div className="w-4 h-4 bg-[var(--accent-color)] rounded-full" />
           <span>Fret</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-red-500 font-bold">✕</span>
+          <span className="text-[var(--error-color)] font-bold">✕</span>
           <span>Muted</span>
         </div>
       </div>

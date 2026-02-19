@@ -28,13 +28,13 @@ export function ResultsSummary({ results, onRetry }: ResultsSummaryProps): JSX.E
 
   if (isExcellent) {
     feedbackMessage = '🌟 Outstanding! You have excellent knowledge of scales and modes!';
-    feedbackColor = 'text-yellow-600 dark:text-yellow-400';
+    feedbackColor = 'text-[var(--warning-color)]';
   } else if (isGood) {
     feedbackMessage = '👏 Great job! You&apos;re getting solid with scales and modes.';
-    feedbackColor = 'text-green-600 dark:text-green-400';
+    feedbackColor = 'text-[var(--success-color)]';
   } else {
     feedbackMessage = '💪 Keep practicing! You&apos;ll master scales and modes in no time.';
-    feedbackColor = 'text-blue-600 dark:text-blue-400';
+    feedbackColor = 'text-[var(--accent-color)]';
   }
 
   return (
@@ -52,7 +52,7 @@ export function ResultsSummary({ results, onRetry }: ResultsSummaryProps): JSX.E
             <Badge variant="secondary" className="w-fit mx-auto mb-4">
               Quiz Complete
             </Badge>
-            <CardTitle className="text-4xl">
+            <CardTitle className="text-4xl font-display">
               {results.correctAnswers}/{results.totalQuestions}
             </CardTitle>
             <CardDescription className="text-xl">{results.accuracy.toFixed(1)}% Accuracy</CardDescription>
@@ -77,7 +77,7 @@ export function ResultsSummary({ results, onRetry }: ResultsSummaryProps): JSX.E
             >
               <Card>
                 <CardContent className="pt-6 pb-4 text-center">
-                  <div className="text-3xl font-bold text-green-600 dark:text-green-400">
+                  <div className="text-3xl font-bold text-[var(--success-color)]">
                     {results.correctAnswers}
                   </div>
                   <div className="text-sm text-muted-foreground mt-1">Correct</div>
@@ -85,7 +85,7 @@ export function ResultsSummary({ results, onRetry }: ResultsSummaryProps): JSX.E
               </Card>
               <Card>
                 <CardContent className="pt-6 pb-4 text-center">
-                  <div className="text-3xl font-bold text-red-600 dark:text-red-400">
+                  <div className="text-3xl font-bold text-[var(--error-color)]">
                     {results.incorrectAnswers}
                   </div>
                   <div className="text-sm text-muted-foreground mt-1">Incorrect</div>
@@ -93,7 +93,7 @@ export function ResultsSummary({ results, onRetry }: ResultsSummaryProps): JSX.E
               </Card>
               <Card>
                 <CardContent className="pt-6 pb-4 text-center">
-                  <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                  <div className="text-3xl font-bold text-[var(--accent-color)]">
                     {results.accuracy.toFixed(0)}%
                   </div>
                   <div className="text-sm text-muted-foreground mt-1">Accuracy</div>
@@ -142,8 +142,8 @@ export function ResultsSummary({ results, onRetry }: ResultsSummaryProps): JSX.E
               <Card
                 className={`${
                   answer.isCorrect
-                    ? 'border-l-4 border-l-green-500 bg-green-50 dark:bg-green-950/20'
-                    : 'border-l-4 border-l-red-500 bg-red-50 dark:bg-red-950/20'
+                    ? 'border-l-4 border-l-[var(--success-color)] bg-[var(--success-bg)]'
+                    : 'border-l-4 border-l-[var(--error-color)] bg-[var(--error-bg)]'
                 }`}
               >
                 <CardContent className="pt-4 pb-4">
@@ -157,14 +157,14 @@ export function ResultsSummary({ results, onRetry }: ResultsSummaryProps): JSX.E
                       </div>
                       <div className="text-sm">
                         <span className="font-semibold">Your answer:</span>{' '}
-                        <span className={answer.isCorrect ? 'text-green-600' : 'text-red-600'}>
+                        <span className={answer.isCorrect ? 'text-[var(--success-color)]' : 'text-[var(--error-color)]'}>
                           {answer.selectedAnswer}
                         </span>
                       </div>
                       {!answer.isCorrect && (
                         <div className="text-sm mt-1">
                           <span className="font-semibold">Correct answer:</span>{' '}
-                          <span className="text-green-600">{answer.question.correctAnswer}</span>
+                          <span className="text-[var(--success-color)]">{answer.question.correctAnswer}</span>
                         </div>
                       )}
                     </div>

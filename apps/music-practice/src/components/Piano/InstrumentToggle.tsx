@@ -15,8 +15,8 @@ export const InstrumentToggle: React.FC<InstrumentToggleProps> = ({
         onClick={() => onChange('guitar')}
         className={`px-4 py-2 rounded ${
           instrument === 'guitar'
-            ? 'bg-blue-600 text-white'
-            : 'bg-gray-200 text-gray-800'
+            ? 'bg-[var(--accent-color)] text-white'
+            : 'bg-muted text-muted-foreground'
         }`}
       >
         🎸 Guitar
@@ -25,8 +25,8 @@ export const InstrumentToggle: React.FC<InstrumentToggleProps> = ({
         onClick={() => onChange('piano')}
         className={`px-4 py-2 rounded ${
           instrument === 'piano'
-            ? 'bg-blue-600 text-white'
-            : 'bg-gray-200 text-gray-800'
+            ? 'bg-[var(--accent-color)] text-white'
+            : 'bg-muted text-muted-foreground'
         }`}
       >
         🎹 Piano

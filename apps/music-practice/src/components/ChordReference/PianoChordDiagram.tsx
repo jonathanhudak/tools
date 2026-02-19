@@ -99,11 +99,11 @@ export function PianoChordDiagram({ voicing, size = 'large' }: PianoChordDiagram
       className="flex flex-col items-center gap-4 w-full"
     >
       {/* Piano Keyboard SVG - Responsive Container */}
-      <div className="w-full overflow-x-auto rounded-lg border border-slate-700">
+      <div className="w-full overflow-x-auto rounded-lg border border-border">
         <svg
           width={totalWidth + 4}
           height={whiteKeyHeight + 50}
-          className="border-2 bg-slate-900 border-slate-700 shadow-2xl"
+          className="border-2 bg-card border-border shadow-2xl"
           style={{ minWidth: totalWidth + 4, display: 'block', margin: '0 auto' }}
         >
         {/* White keys */}
@@ -121,11 +121,11 @@ export function PianoChordDiagram({ voicing, size = 'large' }: PianoChordDiagram
                 y={10}
                 width={whiteKeyWidth - 2}
                 height={whiteKeyHeight}
-                fill={isHighlighted ? '#3b82f6' : '#ffffff'}
+                fill={isHighlighted ? 'var(--piano-highlight)' : '#ffffff'}
                 stroke="#333"
                 strokeWidth="1"
                 rx="4"
-                className={isHighlighted ? '' : 'cursor-pointer hover:fill-gray-100'}
+                className={isHighlighted ? '' : 'cursor-pointer'}
               />
               {/* Key label */}
               {isHighlighted && (
@@ -134,7 +134,7 @@ export function PianoChordDiagram({ voicing, size = 'large' }: PianoChordDiagram
                   y={whiteKeyHeight + 5}
                   textAnchor="middle"
                   fontSize={size === 'large' ? 12 : 10}
-                  fill="#3b82f6"
+                  fill="var(--piano-highlight)"
                   fontWeight="bold"
                   className="pointer-events-none"
                 >
@@ -164,11 +164,11 @@ export function PianoChordDiagram({ voicing, size = 'large' }: PianoChordDiagram
                   y={10}
                   width={blackKeyWidth - 2}
                   height={blackKeyHeight}
-                  fill={isHighlighted ? '#ec4899' : '#1f2937'}
+                  fill={isHighlighted ? 'var(--piano-highlight)' : '#1f2937'}
                   stroke="#000"
                   strokeWidth="1"
                   rx="3"
-                  className={isHighlighted ? '' : 'cursor-pointer hover:fill-gray-800'}
+                  className={isHighlighted ? '' : 'cursor-pointer'}
                 />
                 {/* Key label */}
                 {isHighlighted && (
@@ -177,7 +177,7 @@ export function PianoChordDiagram({ voicing, size = 'large' }: PianoChordDiagram
                     y={blackKeyHeight + 15}
                     textAnchor="middle"
                     fontSize={size === 'large' ? 10 : 8}
-                    fill="#ec4899"
+                    fill="var(--piano-highlight)"
                     fontWeight="bold"
                     className="pointer-events-none"
                   >
@@ -199,7 +199,7 @@ export function PianoChordDiagram({ voicing, size = 'large' }: PianoChordDiagram
           {notes.map((note) => (
             <span
               key={note}
-              className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 rounded-full text-sm font-medium"
+              className="px-3 py-1 bg-[var(--accent-light)] text-[var(--piano-highlight)] rounded-full text-sm font-medium"
             >
               {note}
             </span>

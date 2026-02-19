@@ -11,21 +11,21 @@ function ScalesQuizPage() {
   const navigate = Route.useNavigate()
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto py-8 px-4">
         <Button
           variant="outline"
           size="sm"
           onClick={() => navigate({ to: '/' })}
-          className="mb-6 text-white border-white hover:bg-white/10"
+          className="mb-6"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
-        
-        <div className="bg-slate-800/50 backdrop-blur rounded-lg p-8 border border-slate-700">
-          <h1 className="text-3xl font-bold text-white mb-2">Scales & Modes Quiz</h1>
-          <p className="text-slate-300 mb-8">Master scale theory through interactive practice. Toggle between guitar and piano.</p>
+
+        <div className="bg-card backdrop-blur rounded-lg p-8 border border-border">
+          <h1 className="text-3xl font-bold font-display text-foreground mb-2">Scales & Modes Quiz</h1>
+          <p className="text-muted-foreground mb-8">Master scale theory through interactive practice. Toggle between guitar and piano.</p>
           
           <ScalesModesQuiz />
         </div>

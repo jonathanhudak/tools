@@ -113,7 +113,7 @@ export function QuizGame({ selectedScales, onQuizComplete }: QuizGameProps): JSX
           <CardDescription>Answer {questionCount} questions about scales and modes</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-950">
+          <div className="p-4 rounded-lg bg-[var(--accent-light)]">
             <div className="text-sm font-semibold mb-2">Selected Scales:</div>
             <div className="flex flex-wrap gap-2">
               {selectedScales.map(scale => (
@@ -129,7 +129,7 @@ export function QuizGame({ selectedScales, onQuizComplete }: QuizGameProps): JSX
             <select
               value={questionCount}
               onChange={e => setQuestionCount(parseInt(e.target.value))}
-              className="w-full p-2 border rounded-lg dark:bg-gray-800"
+              className="w-full p-2 border rounded-lg bg-card"
             >
               <option value="5">5 Questions</option>
               <option value="10">10 Questions</option>
@@ -156,9 +156,9 @@ export function QuizGame({ selectedScales, onQuizComplete }: QuizGameProps): JSX
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Progress Bar */}
-      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+      <div className="w-full bg-muted rounded-full h-2">
         <motion.div
-          className="bg-blue-500 h-2 rounded-full"
+          className="bg-[var(--accent-color)] h-2 rounded-full"
           initial={{ width: 0 }}
           animate={{ width: `${progress}%` }}
           transition={{ duration: 0.5 }}
@@ -169,7 +169,7 @@ export function QuizGame({ selectedScales, onQuizComplete }: QuizGameProps): JSX
       <div className="flex gap-4 justify-center">
         <Card className="flex-1">
           <CardContent className="pt-4 pb-3 text-center">
-            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+            <div className="text-2xl font-bold text-[var(--success-color)]">
               {score.correct}/{score.total}
             </div>
             <div className="text-xs text-muted-foreground">Correct</div>
@@ -177,7 +177,7 @@ export function QuizGame({ selectedScales, onQuizComplete }: QuizGameProps): JSX
         </Card>
         <Card className="flex-1">
           <CardContent className="pt-4 pb-3 text-center">
-            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+            <div className="text-2xl font-bold text-[var(--accent-color)]">
               {accuracy}%
             </div>
             <div className="text-xs text-muted-foreground">Accuracy</div>
@@ -185,7 +185,7 @@ export function QuizGame({ selectedScales, onQuizComplete }: QuizGameProps): JSX
         </Card>
         <Card className="flex-1">
           <CardContent className="pt-4 pb-3 text-center">
-            <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+            <div className="text-2xl font-bold text-[var(--accent-color)]">
               {streak}
             </div>
             <div className="text-xs text-muted-foreground">Streak</div>
@@ -199,7 +199,7 @@ export function QuizGame({ selectedScales, onQuizComplete }: QuizGameProps): JSX
           <Badge variant="outline" className="w-fit mb-2">
             Question {score.total + 1} of {questionCount}
           </Badge>
-          <CardTitle className="text-2xl">{currentQuestion.questionText}</CardTitle>
+          <CardTitle className="text-2xl font-display">{currentQuestion.questionText}</CardTitle>
           <CardDescription>
             Scale Type: {SCALE_TYPE_NAMES[currentQuestion.scaleType]}
           </CardDescription>
@@ -217,9 +217,9 @@ export function QuizGame({ selectedScales, onQuizComplete }: QuizGameProps): JSX
                 let className = 'h-16 text-lg font-semibold transition-all';
 
                 if (showCorrect) {
-                  className += ' bg-green-500 text-white hover:bg-green-600 border-green-600';
+                  className += ' bg-[var(--success-color)] text-white hover:opacity-90 border-[var(--success-color)]';
                 } else if (showIncorrect) {
-                  className += ' bg-red-500 text-white hover:bg-red-600 border-red-600';
+                  className += ' bg-[var(--error-color)] text-white hover:opacity-90 border-[var(--error-color)]';
                 } else if (isSelected) {
                   variant = 'secondary';
                 }
@@ -255,21 +255,21 @@ export function QuizGame({ selectedScales, onQuizComplete }: QuizGameProps): JSX
                 className="space-y-4"
               >
                 {isCorrect ? (
-                  <div className="p-4 rounded-lg bg-green-50 dark:bg-green-950/30 border-2 border-green-500">
-                    <div className="font-semibold text-green-900 dark:text-green-100">
+                  <div className="p-4 rounded-lg bg-[var(--success-bg)] border-2 border-[var(--success-color)]">
+                    <div className="font-semibold text-[var(--success-color)]">
                       ✓ Correct!
                     </div>
-                    <div className="text-sm text-green-800 dark:text-green-200 mt-1">
+                    <div className="text-sm text-[var(--success-color)] mt-1">
                       {currentQuestion.correctAnswer} is the {currentQuestion.degree}th mode of{' '}
                       {SCALE_TYPE_NAMES[currentQuestion.scaleType]}
                     </div>
                   </div>
                 ) : (
-                  <div className="p-4 rounded-lg bg-red-50 dark:bg-red-950/30 border-2 border-red-500">
-                    <div className="font-semibold text-red-900 dark:text-red-100">
+                  <div className="p-4 rounded-lg bg-[var(--error-bg)] border-2 border-[var(--error-color)]">
+                    <div className="font-semibold text-[var(--error-color)]">
                       ✗ Incorrect
                     </div>
-                    <div className="text-sm text-red-800 dark:text-red-200 mt-1">
+                    <div className="text-sm text-[var(--error-color)] mt-1">
                       The correct answer is <strong>{currentQuestion.correctAnswer}</strong> (
                       {currentQuestion.degree}th degree of {SCALE_TYPE_NAMES[currentQuestion.scaleType]}
                       )

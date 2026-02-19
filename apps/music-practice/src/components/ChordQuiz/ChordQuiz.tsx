@@ -111,7 +111,7 @@ export function ChordQuiz({ mode, difficulty, questionCount = 10, onBack }: Chor
         {/* Header with stats */}
         <div className="flex items-center justify-between mb-6">
           <div className="space-y-1">
-            <h1 className="text-3xl font-bold">Chord Quiz</h1>
+            <h1 className="text-3xl font-bold font-display">Chord Quiz</h1>
             <div className="flex gap-3">
               <Badge variant="secondary" className="capitalize">
                 {mode} Mode
@@ -135,7 +135,7 @@ export function ChordQuiz({ mode, difficulty, questionCount = 10, onBack }: Chor
               Question {quizState.currentQuestionIndex + 1} of {quizState.questions.length}
             </span>
             {mode === 'speed' && (
-              <span className={`font-bold ${timeLeft > 10 ? 'text-green-600' : 'text-red-600'}`}>
+              <span className={`font-bold ${timeLeft > 10 ? 'text-[var(--success-color)]' : 'text-[var(--error-color)]'}`}>
                 {timeLeft}s
               </span>
             )}
@@ -176,10 +176,10 @@ export function ChordQuiz({ mode, difficulty, questionCount = 10, onBack }: Chor
                   className={`p-3 rounded-lg border-2 font-semibold transition-all ${
                     selectedAnswer === index
                       ? isCorrect
-                        ? 'border-green-500 bg-green-50 dark:bg-green-950'
-                        : 'border-red-500 bg-red-50 dark:bg-red-950'
+                        ? 'border-[var(--success-color)] bg-[var(--success-bg)]'
+                        : 'border-[var(--error-color)] bg-[var(--error-bg)]'
                       : answered && index === currentQuestion.correctIndex
-                        ? 'border-green-500 bg-green-50 dark:bg-green-950'
+                        ? 'border-[var(--success-color)] bg-[var(--success-bg)]'
                         : 'border-border hover:border-primary'
                   } ${answered ? 'opacity-60 cursor-default' : 'cursor-pointer'}`}
                 >
@@ -196,8 +196,8 @@ export function ChordQuiz({ mode, difficulty, questionCount = 10, onBack }: Chor
                 animate={{ opacity: 1, y: 0 }}
                 className={`mt-6 p-4 rounded-lg text-center font-semibold ${
                   isCorrect
-                    ? 'bg-green-100 dark:bg-green-950 text-green-900 dark:text-green-100'
-                    : 'bg-red-100 dark:bg-red-950 text-red-900 dark:text-red-100'
+                    ? 'bg-[var(--success-bg)] text-[var(--success-color)]'
+                    : 'bg-[var(--error-bg)] text-[var(--error-color)]'
                 }`}
               >
                 {isCorrect ? '✓ Correct!' : '✗ Incorrect'}

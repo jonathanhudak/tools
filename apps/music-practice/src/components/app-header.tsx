@@ -13,6 +13,12 @@ export function AppHeader() {
         <Link to="/" className="[&.active]:font-bold [&.active]:text-[var(--accent-color)]">
           Practice
         </Link>
+        <Link to="/scales-quiz" className="[&.active]:font-bold [&.active]:text-[var(--accent-color)]">
+          Scales
+        </Link>
+        <Link to="/chord-quiz" className="[&.active]:font-bold [&.active]:text-[var(--accent-color)]">
+          Chords
+        </Link>
         <Link to="/chord-scale" className="[&.active]:font-bold [&.active]:text-[var(--accent-color)]">
           Chord Scale
         </Link>

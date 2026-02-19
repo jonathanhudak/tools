@@ -64,6 +64,7 @@
   --success-bg: #edf6f1;
   --error-color: #9b3a2f;
   --error-bg: #faf0ef;
+  --warning-color: #b58a2b;
   --ink-primary: #1a1714;
   --ink-secondary: #5c5650;
   --ink-tertiary: #9c9590;
@@ -74,6 +75,8 @@
   --shadow-warm-sm: 0 1px 3px rgba(26,23,20,0.06), 0 1px 2px rgba(26,23,20,0.04);
   --shadow-warm-md: 0 4px 16px rgba(26,23,20,0.08), 0 1px 4px rgba(26,23,20,0.04);
   --shadow-warm-lg: 0 12px 40px rgba(26,23,20,0.1), 0 2px 8px rgba(26,23,20,0.06);
+  --piano-highlight: #f59e0b;
+  --piano-highlight-label: #f59e0b;
   --font-display: "Lora", Georgia, serif;
   --font-body: "DM Sans", system-ui, sans-serif;
   --font-mono: "DM Mono", "Courier New", monospace;
@@ -87,6 +90,9 @@
   --success-bg: rgba(79, 168, 122, 0.12);
   --error-color: #c4614f;
   --error-bg: rgba(196, 97, 79, 0.12);
+  --piano-highlight: #fbbf24;
+  --piano-highlight-label: #fbbf24;
+  --warning-color: #d4a843;
   --ink-primary: #f0ead9;
   --ink-secondary: #a89880;
   --ink-tertiary: #6e6254;
@@ -148,6 +154,12 @@
   /* Border utilities */
   .border-border { border-color: hsl(var(--color-border)); }
   .border-input { border-color: hsl(var(--color-input)); }
+
+  /* Semantic color utilities */
+  .text-success { color: var(--success-color); }
+  .text-error { color: var(--error-color); }
+  .bg-success-light { background-color: var(--success-bg); }
+  .bg-error-light { background-color: var(--error-bg); }
 
   /* Custom font utilities */
   .font-display { font-family: var(--font-display); }

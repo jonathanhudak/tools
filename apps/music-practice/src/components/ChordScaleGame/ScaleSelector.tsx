@@ -96,14 +96,14 @@ export function ScaleSelector({ onScalesSelected }: ScaleSelectorProps): JSX.Ele
                 onClick={() => toggleScale(option.value)}
                 className={`w-full p-3 rounded-lg border-2 transition-all text-left ${
                   selectedScales.includes(option.value)
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-950'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-blue-300'
+                    ? 'border-[var(--accent-color)] bg-[var(--accent-light)]'
+                    : 'border-border hover:border-[var(--accent-color)]'
                 }`}
               >
                 <div className="font-semibold">{option.label}</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">{option.description}</div>
+                <div className="text-sm text-muted-foreground">{option.description}</div>
                 {selectedScales.includes(option.value) && (
-                  <Badge className="mt-2 bg-blue-600">Selected</Badge>
+                  <Badge className="mt-2 bg-[var(--accent-color)]">Selected</Badge>
                 )}
               </button>
             ))}
@@ -111,7 +111,7 @@ export function ScaleSelector({ onScalesSelected }: ScaleSelectorProps): JSX.Ele
         </div>
 
         {/* Selected Scales Summary */}
-        <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-900">
+        <div className="p-3 rounded-lg bg-secondary">
           <div className="text-sm font-semibold mb-2">Selected:</div>
           <div className="flex flex-wrap gap-2">
             {selectedScales.length > 0 ? (
@@ -127,7 +127,7 @@ export function ScaleSelector({ onScalesSelected }: ScaleSelectorProps): JSX.Ele
                 </Badge>
               ))
             ) : (
-              <span className="text-gray-500 text-sm">Select at least one scale</span>
+              <span className="text-muted-foreground text-sm">Select at least one scale</span>
             )}
           </div>
         </div>

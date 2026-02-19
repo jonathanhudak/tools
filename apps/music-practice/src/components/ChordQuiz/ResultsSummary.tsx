@@ -34,7 +34,7 @@ export function ResultsSummary({ stats, onPlayAgain, onBack }: ResultsSummaryPro
   };
 
   const accuracyColor =
-    stats.accuracy >= 80 ? 'text-green-600' : stats.accuracy >= 60 ? 'text-yellow-600' : 'text-red-600';
+    stats.accuracy >= 80 ? 'text-[var(--success-color)]' : stats.accuracy >= 60 ? 'text-[var(--warning-color)]' : 'text-[var(--error-color)]';
 
   const ratingEmoji =
     stats.accuracy >= 90
@@ -64,7 +64,7 @@ export function ResultsSummary({ stats, onPlayAgain, onBack }: ResultsSummaryPro
           >
             {ratingEmoji}
           </motion.div>
-          <h1 className="text-4xl font-bold">Quiz Complete!</h1>
+          <h1 className="text-4xl font-bold font-display">Quiz Complete!</h1>
           <p className="text-muted-foreground mt-2">Great job learning chords</p>
         </div>
 
@@ -89,17 +89,17 @@ export function ResultsSummary({ stats, onPlayAgain, onBack }: ResultsSummaryPro
                 </div>
 
                 <div className="text-center p-3 rounded-lg bg-secondary/50">
-                  <div className="text-2xl font-bold text-blue-600">{stats.correct}</div>
+                  <div className="text-2xl font-bold text-[var(--accent-color)]">{stats.correct}</div>
                   <div className="text-xs text-muted-foreground">Correct</div>
                 </div>
 
                 <div className="text-center p-3 rounded-lg bg-secondary/50">
-                  <div className="text-2xl font-bold text-orange-600">{stats.incorrect}</div>
+                  <div className="text-2xl font-bold text-[var(--error-color)]">{stats.incorrect}</div>
                   <div className="text-xs text-muted-foreground">Incorrect</div>
                 </div>
 
                 <div className="text-center p-3 rounded-lg bg-secondary/50">
-                  <div className="text-2xl font-bold text-green-600">
+                  <div className="text-2xl font-bold text-[var(--success-color)]">
                     {(stats.averageTime / 1000).toFixed(1)}s
                   </div>
                   <div className="text-xs text-muted-foreground">Avg Time</div>
@@ -189,7 +189,7 @@ export function ResultsSummary({ stats, onPlayAgain, onBack }: ResultsSummaryPro
                     transition={{ delay: index * 0.1 }}
                     className={`flex items-center gap-4 p-3 rounded-lg ${
                       index === 0
-                        ? 'bg-yellow-50 dark:bg-yellow-950 border-2 border-yellow-300 dark:border-yellow-700'
+                        ? 'bg-[var(--accent-light)] border-2 border-[var(--accent-color)]'
                         : 'bg-secondary/50'
                     }`}
                   >

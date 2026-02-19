@@ -114,11 +114,11 @@ export function ChordReference({ onStartQuiz }: ChordReferenceProps): JSX.Elemen
             animate={{ scale: 1 }}
             className="inline-flex items-center gap-3 mb-4"
           >
-            <div className="p-3 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg">
+            <div className="p-3 rounded-2xl bg-[var(--accent-color)] shadow-lg">
               <BookOpen className="h-8 w-8 text-white" />
             </div>
           </motion.div>
-          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
+          <h1 className="text-3xl md:text-4xl font-bold font-display text-foreground">
             Chord Reference Library
           </h1>
           <p className="text-muted-foreground mt-2 text-sm md:text-lg">
@@ -354,7 +354,7 @@ export function ChordReference({ onStartQuiz }: ChordReferenceProps): JSX.Elemen
                             {selectedChord.tags.map(tag => (
                               <span
                                 key={tag}
-                                className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 px-2 py-1 rounded-full"
+                                className="text-xs bg-[var(--accent-light)] text-[var(--accent-color)] px-2 py-1 rounded-full"
                               >
                                 {tag}
                               </span>
