@@ -1,3 +1,10 @@
+# [1.35.0](https://github.com/jonathanhudak/tools/compare/v1.34.0...v1.35.0) (2026-02-24)
+
+
+### Features
+
+* add ChordScaleMatrix component with key picker + restructure chord-scale route ([#78](https://github.com/jonathanhudak/tools/issues/78)) ([90eab76](https://github.com/jonathanhudak/tools/commit/90eab763f7b76864b5b8538297c223f336605c2f))
+
 # [1.34.0](https://github.com/jonathanhudak/tools/compare/v1.33.0...v1.34.0) (2026-02-24)
 
 
