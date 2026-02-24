@@ -1,3 +1,10 @@
+# [1.36.0](https://github.com/jonathanhudak/tools/compare/v1.35.0...v1.36.0) (2026-02-24)
+
+
+### Features
+
+* mobile carousel + chord voicing integration in ChordScaleMatrix ([949068b](https://github.com/jonathanhudak/tools/commit/949068bc56c95a661700061def38362682bcf707))
+
 # [1.35.0](https://github.com/jonathanhudak/tools/compare/v1.34.0...v1.35.0) (2026-02-24)
 
 
