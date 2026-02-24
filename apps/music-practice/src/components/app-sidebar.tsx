@@ -72,9 +72,9 @@ export function AppSidebar({
                   <SelectValue placeholder="Select instrument" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="piano">🎹 Piano (MIDI)</SelectItem>
-                  <SelectItem value="violin">🎻 Violin (Microphone)</SelectItem>
-                  <SelectItem value="guitar">🎸 Guitar (Microphone)</SelectItem>
+                  <SelectItem value="piano">Piano (MIDI)</SelectItem>
+                  <SelectItem value="violin">Violin (Microphone)</SelectItem>
+                  <SelectItem value="guitar">Guitar (Microphone)</SelectItem>
                 </SelectContent>
               </Select>
             </div>

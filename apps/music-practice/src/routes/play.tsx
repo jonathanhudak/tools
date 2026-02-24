@@ -1,12 +1,16 @@
 /**
- * Play Route - Flash card game interface with centered notation display
+ * Play Route - Sight reading game with setup phase
+ * Shows settings form first, then starts the flash card game
  */
 
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { Button } from '@hudak/ui/components/button';
 import { Badge } from '@hudak/ui/components/badge';
-import { X, SkipForward } from 'lucide-react';
+import { Label } from '@hudak/ui/components/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@hudak/ui/components/select';
+import { Slider } from '@hudak/ui/components/slider';
+import { X, SkipForward, Piano, Guitar, Mic, Play } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 
@@ -31,7 +35,7 @@ import { ScoreHud } from '../components/play/score-hud';
 import { NotationCard } from '../components/play/notation-card';
 import { ScoreSummaryModal } from '../components/play/score-summary-modal';
 
-// Search params for game settings
+// Search params for game settings (backward compatibility)
 interface PlaySearchParams {
   instrument?: string;
   clef?: string;
@@ -46,30 +50,304 @@ interface PlaySearchParams {
 export const Route = createFileRoute('/play')({
   component: PlayRoute,
   validateSearch: (search: Record<string, unknown>): PlaySearchParams => ({
-    instrument: (search.instrument as string) || 'piano',
-    clef: (search.clef as string) || 'treble',
-    difficulty: (search.difficulty as string) || 'beginner',
-    gameMode: (search.gameMode as string) || 'practice',
-    tabDisplayMode: (search.tabDisplayMode as string) || 'both',
-    pitchSensitivity: Number(search.pitchSensitivity) || 10,
-    pitchSmoothing: Number(search.pitchSmoothing) || 0.7,
-    selectedAudioDevice: (search.selectedAudioDevice as string) || '',
+    instrument: (search.instrument as string) || undefined,
+    clef: (search.clef as string) || undefined,
+    difficulty: (search.difficulty as string) || undefined,
+    gameMode: (search.gameMode as string) || undefined,
+    tabDisplayMode: (search.tabDisplayMode as string) || undefined,
+    pitchSensitivity: search.pitchSensitivity ? Number(search.pitchSensitivity) : undefined,
+    pitchSmoothing: search.pitchSmoothing ? Number(search.pitchSmoothing) : undefined,
+    selectedAudioDevice: (search.selectedAudioDevice as string) || undefined,
   }),
 });
 
+// ─── Instrument definitions ────────────────────────────────
+const INSTRUMENTS = [
+  { id: 'piano', label: 'Piano (MIDI)', icon: Piano, description: 'Connect a MIDI keyboard' },
+  { id: 'piano-virtual', label: 'Piano (Virtual)', icon: Piano, description: 'On-screen keyboard' },
+  { id: 'violin', label: 'Violin (Mic)', icon: Mic, description: 'Microphone pitch detection' },
+  { id: 'guitar', label: 'Guitar (Mic)', icon: Guitar, description: 'Microphone pitch detection' },
+] as const;
+
+const DIFFICULTIES = [
+  { id: 'beginner', label: 'Beginner', range: 'C4 – C5' },
+  { id: 'intermediate', label: 'Intermediate', range: 'C4 – G5' },
+  { id: 'advanced', label: 'Advanced', range: 'A3 – C6' },
+] as const;
+
+// ─── Setup Screen ──────────────────────────────────────────
+function SetupScreen({ onStart }: {
+  onStart: (settings: {
+    instrument: string;
+    clef: string;
+    difficulty: string;
+    gameMode: string;
+    tabDisplayMode: string;
+    pitchSensitivity: number;
+    pitchSmoothing: number;
+    selectedAudioDevice: string;
+  }) => void;
+}) {
+  const navigate = useNavigate();
+  const saved = Storage.getSettings();
+
+  const [instrument, setInstrument] = useState(saved.instrument || 'piano');
+  const [clef, setClef] = useState<string>(saved.clef || 'treble');
+  const [difficulty, setDifficulty] = useState(saved.difficulty || 'beginner');
+  const [gameMode, setGameMode] = useState<string>(saved.gameMode || 'practice');
+  const [tabDisplayMode, setTabDisplayMode] = useState('both');
+  const [pitchSensitivity, setPitchSensitivity] = useState(saved.pitchTolerance || 10);
+  const [pitchSmoothing, setPitchSmoothing] = useState(0.7);
+  const [selectedAudioDevice, setSelectedAudioDevice] = useState(saved.audioDeviceId || '');
+  const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
+
+  const isMicInstrument = instrument === 'violin' || instrument === 'guitar';
+
+  // Fetch audio devices when mic instrument is selected
+  useEffect(() => {
+    if (!isMicInstrument) return;
+    AudioManager.getAudioInputDevices().then(setAudioDevices).catch(() => {});
+  }, [isMicInstrument]);
+
+  const handleStart = () => {
+    // Save to storage for persistence
+    Storage.saveSettings({
+      instrument,
+      clef: clef as 'treble' | 'bass',
+      gameMode: gameMode as 'practice' | 'timed',
+      pitchTolerance: pitchSensitivity,
+      audioDeviceId: selectedAudioDevice || null,
+      difficulty,
+    });
+
+    onStart({
+      instrument,
+      clef,
+      difficulty,
+      gameMode,
+      tabDisplayMode,
+      pitchSensitivity,
+      pitchSmoothing,
+      selectedAudioDevice,
+    });
+  };
+
+  return (
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Back button */}
+      <div className="fixed top-6 left-6 z-30">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate({ to: '/' })}
+          className="h-12 w-12 rounded-full bg-card/80 backdrop-blur hover:bg-muted transition-all shadow-lg"
+        >
+          <X className="h-5 w-5" />
+        </Button>
+      </div>
+
+      <div className="flex-1 flex items-center justify-center p-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-lg space-y-8"
+        >
+          {/* Header */}
+          <div className="text-center space-y-2">
+            <h1 className="text-3xl font-display font-bold text-foreground">Sight Reading</h1>
+            <p className="text-muted-foreground">Configure your practice session</p>
+          </div>
+
+          {/* Instrument Selection */}
+          <div className="space-y-3">
+            <Label className="text-sm font-medium">Instrument</Label>
+            <div className="grid grid-cols-2 gap-3">
+              {INSTRUMENTS.map((inst) => {
+                const Icon = inst.icon;
+                const isActive = instrument === inst.id;
+                return (
+                  <button
+                    key={inst.id}
+                    onClick={() => setInstrument(inst.id)}
+                    className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-left ${
+                      isActive
+                        ? 'border-[var(--accent-color)] bg-[var(--accent-light)]'
+                        : 'border-border hover:border-[var(--accent-color)]/40 bg-card'
+                    }`}
+                  >
+                    <Icon className={`h-5 w-5 shrink-0 ${isActive ? 'text-[var(--accent-color)]' : 'text-muted-foreground'}`} />
+                    <div>
+                      <div className={`text-sm font-medium ${isActive ? 'text-[var(--accent-color)]' : 'text-foreground'}`}>
+                        {inst.label}
+                      </div>
+                      <div className="text-xs text-muted-foreground">{inst.description}</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Clef + Difficulty row */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="clef-select" className="text-sm font-medium">Clef</Label>
+              <Select value={clef} onValueChange={setClef}>
+                <SelectTrigger id="clef-select">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="treble">Treble</SelectItem>
+                  <SelectItem value="bass">Bass</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="difficulty-select" className="text-sm font-medium">Difficulty</Label>
+              <Select value={difficulty} onValueChange={setDifficulty}>
+                <SelectTrigger id="difficulty-select">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {DIFFICULTIES.map((d) => (
+                    <SelectItem key={d.id} value={d.id}>
+                      {d.label} ({d.range})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Game Mode */}
+          <div className="space-y-2">
+            <Label htmlFor="mode-select" className="text-sm font-medium">Game Mode</Label>
+            <Select value={gameMode} onValueChange={setGameMode}>
+              <SelectTrigger id="mode-select">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="practice">Practice (untimed)</SelectItem>
+                <SelectItem value="timed">Timed Challenge</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Tab Display Mode (guitar only) */}
+          {instrument === 'guitar' && (
+            <div className="space-y-2">
+              <Label htmlFor="tab-display-select" className="text-sm font-medium">Tab Display</Label>
+              <Select value={tabDisplayMode} onValueChange={setTabDisplayMode}>
+                <SelectTrigger id="tab-display-select">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="both">Staff + Tab</SelectItem>
+                  <SelectItem value="tab">Tab Only</SelectItem>
+                  <SelectItem value="staff">Staff Only</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {/* Microphone Config (violin/guitar only) */}
+          {isMicInstrument && (
+            <div className="space-y-4 p-4 rounded-xl border border-border bg-card">
+              <h3 className="text-sm font-medium text-foreground">Microphone Settings</h3>
+
+              {/* Audio Device */}
+              {audioDevices.length > 0 && (
+                <div className="space-y-2">
+                  <Label htmlFor="audio-device" className="text-xs text-muted-foreground">Audio Device</Label>
+                  <Select value={selectedAudioDevice} onValueChange={setSelectedAudioDevice}>
+                    <SelectTrigger id="audio-device">
+                      <SelectValue placeholder="Default microphone" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {audioDevices.map((device) => (
+                        <SelectItem key={device.deviceId} value={device.deviceId}>
+                          {device.label || `Microphone ${device.deviceId.slice(0, 8)}`}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* Pitch Sensitivity */}
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <Label className="text-xs text-muted-foreground">Pitch Sensitivity</Label>
+                  <span className="text-xs text-muted-foreground">{pitchSensitivity} cents</span>
+                </div>
+                <Slider
+                  value={[pitchSensitivity]}
+                  onValueChange={([v]) => setPitchSensitivity(v)}
+                  min={5}
+                  max={50}
+                  step={5}
+                />
+              </div>
+
+              {/* Dial Smoothing */}
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <Label className="text-xs text-muted-foreground">Dial Smoothing</Label>
+                  <span className="text-xs text-muted-foreground">{pitchSmoothing.toFixed(1)}</span>
+                </div>
+                <Slider
+                  value={[pitchSmoothing * 10]}
+                  onValueChange={([v]) => setPitchSmoothing(v / 10)}
+                  min={1}
+                  max={10}
+                  step={1}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Start Button */}
+          <Button
+            onClick={handleStart}
+            className="w-full h-14 text-lg gap-3 bg-[var(--accent-color)] hover:bg-[var(--accent-hover)] text-white rounded-xl"
+          >
+            <Play className="h-5 w-5" />
+            Start Practice
+          </Button>
+        </motion.div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main PlayRoute ────────────────────────────────────────
 function PlayRoute() {
   const navigate = useNavigate();
   const search = Route.useSearch();
 
-  // Extract settings from search params
-  const instrument = search.instrument || 'piano';
-  const clef = search.clef || 'treble';
-  const difficulty = (search.difficulty || 'beginner') as 'beginner' | 'intermediate' | 'advanced';
-  const gameMode = (search.gameMode || 'practice') as GameMode;
-  const tabDisplayMode = (search.tabDisplayMode || 'both') as 'staff' | 'tab' | 'both';
-  const pitchSensitivity = search.pitchSensitivity || 10;
-  const pitchSmoothing = search.pitchSmoothing || 0.7;
-  const selectedAudioDevice = search.selectedAudioDevice || '';
+  // Setup phase
+  const [setupComplete, setSetupComplete] = useState(false);
+  const [settings, setSettings] = useState({
+    instrument: search.instrument || 'piano',
+    clef: search.clef || 'treble',
+    difficulty: search.difficulty || 'beginner',
+    gameMode: search.gameMode || 'practice',
+    tabDisplayMode: search.tabDisplayMode || 'both',
+    pitchSensitivity: search.pitchSensitivity || 10,
+    pitchSmoothing: search.pitchSmoothing || 0.7,
+    selectedAudioDevice: search.selectedAudioDevice || '',
+  });
+
+  // Derived settings
+  const instrument = settings.instrument;
+  const clef = settings.clef;
+  const difficulty = settings.difficulty as 'beginner' | 'intermediate' | 'advanced';
+  const gameMode = settings.gameMode as GameMode;
+  const tabDisplayMode = settings.tabDisplayMode as 'staff' | 'tab' | 'both';
+  const pitchSensitivity = settings.pitchSensitivity;
+  const pitchSmoothing = settings.pitchSmoothing;
+  const selectedAudioDevice = settings.selectedAudioDevice;
 
   // Input status
   const [midiConnected, setMidiConnected] = useState(false);
@@ -88,8 +366,8 @@ function PlayRoute() {
 
   // Tab orientation for left-handed guitarists
   const [tabOrientation, setTabOrientation] = useState<'standard' | 'leftHanded'>(() => {
-    const settings = Storage.getSettings();
-    return settings.tabOrientation || 'standard';
+    const saved = Storage.getSettings();
+    return saved.tabOrientation || 'standard';
   });
 
   // Refs
@@ -116,13 +394,10 @@ function PlayRoute() {
   // Get note range based on difficulty and instrument
   const noteRange = useCallback(() => getNoteRange(instrument, difficulty), [difficulty, instrument]);
 
-  // Stable callbacks for game round hook to prevent infinite re-renders
+  // Stable callbacks for game round hook
   const handleRoundComplete = useCallback((state: any) => {
     setShowScoreSummary(true);
-
-    // Calculate range inline to avoid dependency cycle
     const range = getNoteRange(instrument, difficulty);
-
     Storage.saveSession({
       module: 'sightReading',
       correct: state.correctCount,
@@ -136,7 +411,7 @@ function PlayRoute() {
       clef,
       range,
     });
-    toast.success('Round Complete! 🎉', {
+    toast.success('Round Complete!', {
       description: `Score: ${state.currentScore?.finalScore || 0} points`,
     });
   }, [gameMode, instrument, clef, difficulty]);
@@ -150,7 +425,7 @@ function PlayRoute() {
 
   const handleLifeLost = useCallback((livesLeft: number) => {
     if (livesLeft === 1) {
-      toast.warning('Last Life! 💔', { description: 'Be careful on the next note!', duration: 2000 });
+      toast.warning('Last Life!', { description: 'Be careful on the next note!', duration: 2000 });
     }
   }, []);
 
@@ -236,7 +511,7 @@ function PlayRoute() {
             streak: gameModeRef.current === 'timed' ? (roundStateRef.current?.streak || 0) : prev.streak + 1,
             avgTime: prev.avgTime
           }));
-          setFeedback('Correct! ✓');
+          setFeedback('Correct!');
           if (staffRenderer.current) staffRenderer.current.showFeedback(true);
         }
       } else {
@@ -256,7 +531,7 @@ function PlayRoute() {
     }
   }, []);
 
-  // Handle MIDI note input - use refs to avoid recreating callback
+  // Handle MIDI note input
   const nextNoteRef = useRef(nextNote);
   useEffect(() => { nextNoteRef.current = nextNote; }, [nextNote]);
 
@@ -290,7 +565,7 @@ function PlayRoute() {
           streak: gameModeRef.current === 'timed' ? (roundStateRef.current?.streak || 0) : prev.streak + 1,
           avgTime: prev.avgTime
         }));
-        setFeedback('Correct! ✓');
+        setFeedback('Correct!');
         if (staffRenderer.current) staffRenderer.current.showFeedback(true);
         setTimeout(() => { if (!roundStateRef.current?.isComplete) nextNoteRef.current(); }, 500);
       } else {
@@ -298,14 +573,16 @@ function PlayRoute() {
           roundActionsRef.current?.noteIncorrect();
         }
         setStats(prev => ({ correct: prev.correct, incorrect: prev.incorrect + 1, streak: 0, avgTime: prev.avgTime }));
-        setFeedback('Try again ✗');
+        setFeedback('Try again');
         if (staffRenderer.current) staffRenderer.current.showFeedback(false);
       }
     }
   }, []);
 
-  // Initialize managers
+  // Initialize managers when setup is complete
   useEffect(() => {
+    if (!setupComplete) return;
+
     const initManagers = async () => {
       audioPlayback.current = new AudioPlayback();
 
@@ -337,7 +614,7 @@ function PlayRoute() {
       audioPlayback.current?.cleanup();
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [setupComplete]);
 
   // Sync refs
   useEffect(() => {
@@ -348,19 +625,15 @@ function PlayRoute() {
   }, [instrument, tabOrientation]);
 
   useEffect(() => {
-    // Update TabRenderer's tab orientation when setting changes
     if (tabRenderer.current) {
       tabRenderer.current.setTabOrientation(tabOrientation);
     }
-    // Persist setting to storage
     Storage.saveSettings({ tabOrientation });
   }, [tabOrientation]);
 
   useEffect(() => { clefRef.current = clef; }, [clef]);
   useEffect(() => { gameModeRef.current = gameMode; }, [gameMode]);
 
-  // Update refs in render phase - this is safe and doesn't cause re-renders
-  // React docs: "You can mutate refs during rendering as long as the mutation doesn't affect rendering output"
   roundActionsRef.current = roundActions;
   roundStateRef.current = roundState;
 
@@ -374,15 +647,15 @@ function PlayRoute() {
         noteValidatedRef.current = false;
         correctDetectionsRef.current = 0;
         lastDetectionTimeRef.current = 0;
-        // Use refs to avoid dependency on roundState object and nextNote callback
         if (!roundStateRef.current?.isComplete) nextNoteRef.current();
       }
     }, 100);
     return () => clearInterval(checkInterval);
-  }, [sessionActive]); // Removed roundState.isComplete and nextNote dependencies
+  }, [sessionActive]);
 
   // Audio manager for microphone instruments
   useEffect(() => {
+    if (!setupComplete) return;
     const isMicrophoneInstrument = instrument === 'violin' || instrument === 'guitar';
     if (isMicrophoneInstrument && !audioInitAttemptedRef.current) {
       const initAudio = async () => {
@@ -411,10 +684,12 @@ function PlayRoute() {
       audioInitAttemptedRef.current = false;
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [instrument, selectedAudioDevice]);
+  }, [setupComplete, instrument, selectedAudioDevice]);
 
-  // Auto-start session on mount
+  // Start session when setup completes
   useEffect(() => {
+    if (!setupComplete) return;
+
     const startSession = () => {
       if (gameMode === 'timed') roundActions.startRound();
       const note = generateRandomNote(noteRange(), clef as 'treble' | 'bass');
@@ -443,7 +718,7 @@ function PlayRoute() {
     const timer = setTimeout(startSession, 600);
     return () => clearTimeout(timer);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [setupComplete]);
 
   // Stop session
   const stopSession = () => {
@@ -463,6 +738,19 @@ function PlayRoute() {
     navigate({ to: '/' });
   };
 
+  // ─── Setup screen ─────────────────────────────────────────
+  if (!setupComplete) {
+    return (
+      <SetupScreen
+        onStart={(s) => {
+          setSettings(s);
+          setSetupComplete(true);
+        }}
+      />
+    );
+  }
+
+  // ─── Game screen ──────────────────────────────────────────
   const isMicrophoneInstrument = instrument === 'violin' || instrument === 'guitar';
 
   return (
@@ -481,9 +769,9 @@ function PlayRoute() {
 
       {/* Connection Status - Top Left */}
       <div className="fixed top-6 left-6 z-30 flex gap-2">
-        {midiConnected && <Badge variant="default" className="bg-emerald-600">MIDI Connected</Badge>}
+        {midiConnected && <Badge variant="default" className="bg-[var(--success-color)]">MIDI Connected</Badge>}
         {microphoneActive && isMicrophoneInstrument && (
-          <Badge variant="default" className="bg-emerald-600">🎤 Mic Active</Badge>
+          <Badge variant="default" className="bg-[var(--success-color)]">Mic Active</Badge>
         )}
       </div>
 

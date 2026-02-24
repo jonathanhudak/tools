@@ -48,8 +48,8 @@ export function LivesDisplay({ lives, maxLives = 3, className = '' }: LivesDispl
                   <Heart
                     className={`h-6 w-6 ${
                       isLastLife
-                        ? 'fill-red-500 text-red-500'
-                        : 'fill-red-400 text-red-400'
+                        ? 'fill-[var(--error-color)] text-[var(--error-color)]'
+                        : 'fill-[var(--error-color)] text-[var(--error-color)] opacity-80'
                     }`}
                   />
                 </motion.div>
@@ -64,7 +64,7 @@ export function LivesDisplay({ lives, maxLives = 3, className = '' }: LivesDispl
                     damping: 20,
                   }}
                 >
-                  <Heart className="h-6 w-6 text-gray-300 dark:text-gray-600" />
+                  <Heart className="h-6 w-6 text-muted-foreground/30" />
                 </motion.div>
               )}
             </AnimatePresence>

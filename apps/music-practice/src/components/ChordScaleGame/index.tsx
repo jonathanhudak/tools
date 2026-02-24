@@ -11,12 +11,13 @@ import { Button } from '@hudak/ui/components/button';
 import { Badge } from '@hudak/ui/components/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@hudak/ui/components/select';
 import { Label } from '@hudak/ui/components/label';
-import { Brain, Settings2 } from 'lucide-react';
+import { Brain, Settings2, BookOpen } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { DegreeQuiz } from './DegreeQuiz';
 import { ChordSourcesQuiz } from './ChordSourcesQuiz';
+import { ScaleReference } from '../ScaleReference/ScaleReference';
 
-type GameMode = 'degreeQuiz' | 'chordSources';
+type GameMode = 'degreeQuiz' | 'chordSources' | 'reference';
 type Difficulty = 'major' | 'majorMinor' | 'allScales';
 
 export function ChordScaleGame(): JSX.Element {
@@ -98,7 +99,7 @@ export function ChordScaleGame(): JSX.Element {
                     <div className="flex items-center gap-3">
                       <Brain className="h-6 w-6 text-[var(--accent-color)]" />
                       <div className="text-left">
-                        <div className="text-sm font-medium">Chord → Sources</div>
+                        <div className="text-sm font-medium">Chord Sources</div>
                         <div className="text-xs text-muted-foreground">
                           Find all parent scales for a given chord
                         </div>
@@ -108,28 +109,52 @@ export function ChordScaleGame(): JSX.Element {
                       )}
                     </div>
                   </button>
+
+                  <button
+                    onClick={() => setGameMode('reference')}
+                    className={`relative p-4 rounded-xl border-2 transition-all ${
+                      gameMode === 'reference'
+                        ? 'border-[var(--accent-color)] bg-[var(--accent-light)]'
+                        : 'border-muted hover:border-[var(--accent-color)]/50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <BookOpen className="h-6 w-6 text-[var(--accent-color)]" />
+                      <div className="text-left">
+                        <div className="text-sm font-medium">Chord-Scale Reference</div>
+                        <div className="text-xs text-muted-foreground">
+                          Browse scales, modes, and chord voicings
+                        </div>
+                      </div>
+                      {gameMode === 'reference' && (
+                        <Badge variant="secondary" className="ml-auto">Active</Badge>
+                      )}
+                    </div>
+                  </button>
                 </div>
               </div>
 
-              {/* Difficulty Selection */}
-              <div className="space-y-2">
-                <Label htmlFor="difficulty">Difficulty</Label>
-                <Select value={difficulty} onValueChange={(v) => setDifficulty(v as Difficulty)}>
-                  <SelectTrigger id="difficulty">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="major">Major Scale Only</SelectItem>
-                    <SelectItem value="majorMinor">Major + Natural Minor</SelectItem>
-                    <SelectItem value="allScales">All 4 Scale Families</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {difficulty === 'major' && 'Learn the 7 chords of the major scale'}
-                  {difficulty === 'majorMinor' && 'Add natural minor scale chords'}
-                  {difficulty === 'allScales' && 'Master all 28 chord-scale relationships'}
-                </p>
-              </div>
+              {/* Difficulty Selection (hidden for reference mode) */}
+              {gameMode !== 'reference' && (
+                <div className="space-y-2">
+                  <Label htmlFor="difficulty">Difficulty</Label>
+                  <Select value={difficulty} onValueChange={(v) => setDifficulty(v as Difficulty)}>
+                    <SelectTrigger id="difficulty">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="major">Major Scale Only</SelectItem>
+                      <SelectItem value="majorMinor">Major + Natural Minor</SelectItem>
+                      <SelectItem value="allScales">All 4 Scale Families</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {difficulty === 'major' && 'Learn the 7 chords of the major scale'}
+                    {difficulty === 'majorMinor' && 'Add natural minor scale chords'}
+                    {difficulty === 'allScales' && 'Master all 28 chord-scale relationships'}
+                  </p>
+                </div>
+              )}
 
               {/* Start Button */}
               <motion.div
@@ -155,6 +180,11 @@ export function ChordScaleGame(): JSX.Element {
         </motion.div>
       </div>
     );
+  }
+
+  // Reference mode has its own full-page layout
+  if (gameMode === 'reference') {
+    return <ScaleReference onBack={() => setGameStarted(false)} />;
   }
 
   // Game started - render the active game mode

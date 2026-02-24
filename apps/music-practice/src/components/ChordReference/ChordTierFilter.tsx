@@ -4,12 +4,12 @@
  */
 
 import { useState, useMemo } from 'react';
-import type { Chord } from '@/lib/chord-library';
+import type { LucideIcon } from 'lucide-react';
 import { CHORD_LIBRARY } from '@/lib/chord-library';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@hudak/ui/components/card';
 import { Button } from '@hudak/ui/components/button';
 import { Badge } from '@hudak/ui/components/badge';
-import { ChevronDown, Filter } from 'lucide-react';
+import { ChevronDown, Filter, Sprout, Music, Rocket, Music2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 type Difficulty = 'beginner' | 'intermediate' | 'advanced' | 'jazz';
@@ -18,7 +18,7 @@ interface TierConfig {
   difficulty: Difficulty;
   label: string;
   color: string;
-  icon: string;
+  icon: LucideIcon;
   description: string;
 }
 
@@ -27,28 +27,28 @@ const TIER_CONFIG: Record<Difficulty, TierConfig> = {
     difficulty: 'beginner',
     label: 'Beginner',
     color: 'bg-[var(--success-bg)] border-[var(--success-color)] text-[var(--success-color)]',
-    icon: '🌱',
+    icon: Sprout,
     description: 'Essential chords to start',
   },
   intermediate: {
     difficulty: 'intermediate',
     label: 'Intermediate',
     color: 'bg-[var(--accent-light)] border-[var(--accent-color)] text-[var(--accent-color)]',
-    icon: '🎵',
+    icon: Music,
     description: 'Expand your vocabulary',
   },
   advanced: {
     difficulty: 'advanced',
     label: 'Advanced',
     color: 'bg-secondary border-muted-foreground text-muted-foreground',
-    icon: '🚀',
+    icon: Rocket,
     description: 'Master complex voicings',
   },
   jazz: {
     difficulty: 'jazz',
     label: 'Jazz',
     color: 'bg-[var(--accent-light)] border-[var(--warning-color)] text-[var(--warning-color)]',
-    icon: '🎷',
+    icon: Music2,
     description: 'Jazz harmony essentials',
   },
 };
@@ -130,7 +130,7 @@ export function ChordTierFilter({
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-semibold">{config.icon} {config.label}</span>
+                      <span className="font-semibold flex items-center gap-1"><config.icon className="w-3.5 h-3.5" /> {config.label}</span>
                       {showCounts && <span className="text-xs opacity-75">{count}</span>}
                     </div>
                   </motion.button>
@@ -175,7 +175,7 @@ export function ChordTierFilter({
             >
               <div className="flex items-center justify-between mb-1">
                 <span className="font-semibold text-sm flex items-center gap-2">
-                  <span className="text-xl">{config.icon}</span>
+                  <config.icon className="w-5 h-5" />
                   {config.label}
                 </span>
                 {showCounts && (

@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@huda
 import { Button } from '@hudak/ui/components/button';
 import { Input } from '@hudak/ui/components/input';
 import { motion } from 'framer-motion';
-import { Trophy, Share2, RotateCcw, Home } from 'lucide-react';
+import { Trophy, Share2, RotateCcw, Home, Check } from 'lucide-react';
 
 interface ResultsSummaryProps {
   stats: QuizStats;
@@ -36,16 +36,16 @@ export function ResultsSummary({ stats, onPlayAgain, onBack }: ResultsSummaryPro
   const accuracyColor =
     stats.accuracy >= 80 ? 'text-[var(--success-color)]' : stats.accuracy >= 60 ? 'text-[var(--warning-color)]' : 'text-[var(--error-color)]';
 
-  const ratingEmoji =
+  const ratingLabel =
     stats.accuracy >= 90
-      ? '🏆'
+      ? 'Outstanding!'
       : stats.accuracy >= 80
-        ? '⭐'
+        ? 'Excellent!'
         : stats.accuracy >= 70
-          ? '👍'
+          ? 'Great Work!'
           : stats.accuracy >= 50
-            ? '💪'
-            : '📚';
+            ? 'Keep Going!'
+            : 'Keep Practicing!';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 md:p-6">
@@ -60,11 +60,11 @@ export function ResultsSummary({ stats, onPlayAgain, onBack }: ResultsSummaryPro
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.2 }}
-            className="text-6xl mb-4"
+            className="mb-4"
           >
-            {ratingEmoji}
+            <Trophy className="w-16 h-16 mx-auto text-[var(--accent-color)]" />
           </motion.div>
-          <h1 className="text-4xl font-bold font-display">Quiz Complete!</h1>
+          <h1 className="text-4xl font-bold font-display">{ratingLabel}</h1>
           <p className="text-muted-foreground mt-2">Great job learning chords</p>
         </div>
 
@@ -89,7 +89,7 @@ export function ResultsSummary({ stats, onPlayAgain, onBack }: ResultsSummaryPro
                 </div>
 
                 <div className="text-center p-3 rounded-lg bg-secondary/50">
-                  <div className="text-2xl font-bold text-[var(--accent-color)]">{stats.correct}</div>
+                  <div className="text-2xl font-bold text-foreground">{stats.correct}</div>
                   <div className="text-xs text-muted-foreground">Correct</div>
                 </div>
 
@@ -155,7 +155,7 @@ export function ResultsSummary({ stats, onPlayAgain, onBack }: ResultsSummaryPro
                   animate={{ opacity: 1 }}
                   className="text-center py-6"
                 >
-                  <div className="text-2xl mb-2">✓</div>
+                  <Check className="w-6 h-6 mx-auto mb-2 text-[var(--success-color)]" />
                   <p className="font-semibold">Score saved!</p>
                   <p className="text-sm text-muted-foreground">Check the leaderboard to see where you rank</p>
                 </motion.div>
@@ -194,7 +194,7 @@ export function ResultsSummary({ stats, onPlayAgain, onBack }: ResultsSummaryPro
                     }`}
                   >
                     <div className="text-xl font-bold w-8">
-                      {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                      #{index + 1}
                     </div>
                     <div className="flex-1">
                       <div className="font-semibold">{entry.playerName}</div>
@@ -215,7 +215,7 @@ export function ResultsSummary({ stats, onPlayAgain, onBack }: ResultsSummaryPro
 
         {/* Action buttons */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <Button onClick={onPlayAgain} variant="default" size="lg" className="gap-2">
+          <Button onClick={onPlayAgain} size="lg" className="gap-2 bg-[var(--accent-color)] hover:bg-[var(--accent-hover)] text-white">
             <RotateCcw className="w-4 h-4" />
             Play Again
           </Button>

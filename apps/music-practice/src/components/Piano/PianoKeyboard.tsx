@@ -19,15 +19,15 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
     <div className="flex justify-center py-4">
       <div className="relative" style={{ width: keyWidth * totalKeys }}>
         {/* White keys */}
-        <div className="flex gap-px bg-gray-200 p-1 rounded">
+        <div className="flex gap-px bg-muted p-1 rounded">
           {Array.from({ length: totalKeys }).map((_, i) => (
             <motion.div
               key={`white-${i}`}
               onClick={() => onKeyClick?.(i)}
-              className={`w-6 h-24 rounded-b cursor-pointer border border-gray-300 transition-colors ${
+              className={`w-6 h-24 rounded-b cursor-pointer border border-border transition-colors ${
                 highlightedKeys.includes(i)
-                  ? 'bg-blue-400'
-                  : 'bg-white hover:bg-gray-50'
+                  ? 'bg-[var(--accent-color)]'
+                  : 'bg-card hover:bg-muted'
               }`}
               whileHover={{ scale: 1.02 }}
             />

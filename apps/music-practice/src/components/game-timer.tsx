@@ -32,15 +32,21 @@ export function GameTimer({ timeLeft, maxTime, isActive, onTimeUp, className = '
 
   // Color based on time remaining
   const getColor = () => {
-    if (progress > 0.5) return 'text-green-500';
-    if (progress > 0.25) return 'text-yellow-500';
-    return 'text-red-500';
+    if (progress > 0.5) return 'text-[var(--success-color)]';
+    if (progress > 0.25) return 'text-[var(--warning-color)]';
+    return 'text-[var(--error-color)]';
   };
 
   const getBgColor = () => {
-    if (progress > 0.5) return 'bg-green-500/10';
-    if (progress > 0.25) return 'bg-yellow-500/10';
-    return 'bg-red-500/10';
+    if (progress > 0.5) return 'bg-[var(--success-bg)]';
+    if (progress > 0.25) return 'bg-[var(--warning-bg,var(--accent-light))]';
+    return 'bg-[var(--error-bg)]';
+  };
+
+  const getBarColor = () => {
+    if (progress > 0.5) return 'bg-[var(--success-color)]';
+    if (progress > 0.25) return 'bg-[var(--warning-color)]';
+    return 'bg-[var(--error-color)]';
   };
 
   // Animation when time is running low
@@ -78,12 +84,12 @@ export function GameTimer({ timeLeft, maxTime, isActive, onTimeUp, className = '
 
       {/* Progress bar */}
       <motion.div
-        className="mt-2 h-1 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden"
+        className="mt-2 h-1 rounded-full bg-muted overflow-hidden"
         initial={{ opacity: 0 }}
         animate={{ opacity: isActive ? 1 : 0 }}
       >
         <motion.div
-          className={`h-full ${getColor().replace('text-', 'bg-')}`}
+          className={`h-full ${getBarColor()}`}
           initial={{ width: '100%' }}
           animate={{ width: `${progress * 100}%` }}
           transition={{ duration: 0.3 }}

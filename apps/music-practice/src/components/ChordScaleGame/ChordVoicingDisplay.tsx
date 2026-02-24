@@ -6,20 +6,22 @@
 import { useState, useCallback, useMemo } from 'react';
 import type { Chord } from '@/lib/chord-library';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@hudak/ui/components/card';
-import { Button } from '@hudak/ui/components/button';
 import { ChordDiagram } from '../ChordReference/ChordDiagram';
 import { PianoChordDiagram } from '../ChordReference/PianoChordDiagram';
 import { ChordPlayer } from '../ChordReference/ChordPlayer';
 import { InstrumentToggle } from '../Piano/InstrumentToggle';
+import { TabDisplay } from '../notation/TabDisplay';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@hudak/ui/components/select';
 import { Label } from '@hudak/ui/components/label';
-import { Play, Volume2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+
+const STANDARD_TUNING = [40, 45, 50, 55, 59, 64]; // E2, A2, D3, G3, B3, E4
 
 interface ChordVoicingDisplayProps {
   chord: Chord;
   voicingIndex?: number;
   onInstrumentChange?: (instrument: 'guitar' | 'piano') => void;
+  externalInstrument?: 'guitar' | 'piano';
 }
 
 type Instrument = 'guitar' | 'piano';
@@ -28,28 +30,33 @@ export function ChordVoicingDisplay({
   chord,
   voicingIndex = 0,
   onInstrumentChange,
+  externalInstrument,
 }: ChordVoicingDisplayProps): JSX.Element {
-  const [instrument, setInstrument] = useState<Instrument>('guitar');
+  const [internalInstrument, setInternalInstrument] = useState<Instrument>('guitar');
+  const instrument = externalInstrument ?? internalInstrument;
   const [selectedVoicing, setSelectedVoicing] = useState(voicingIndex);
-  const [isPlaying, setIsPlaying] = useState(false);
+
+  const hasVoicings = chord.voicings && chord.voicings.length > 0;
 
   // Ensure voicing index is within bounds
-  const safeVoicingIndex = Math.min(selectedVoicing, chord.voicings.length - 1);
-  const currentVoicing = chord.voicings[safeVoicingIndex];
+  const safeVoicingIndex = hasVoicings
+    ? Math.min(selectedVoicing, chord.voicings.length - 1)
+    : 0;
+  const currentVoicing = hasVoicings ? chord.voicings[safeVoicingIndex] : undefined;
 
   // Check which voicings are available for each instrument
-  const guitarVoicings = useMemo(() => 
-    chord.voicings.filter((v, _idx) => v.guitar),
-    [chord]
+  const guitarVoicings = useMemo(() =>
+    hasVoicings ? chord.voicings.filter((v, _idx) => v.guitar) : [],
+    [chord, hasVoicings]
   );
-  
-  const pianoVoicings = useMemo(() => 
-    chord.voicings.filter((v, _idx) => v.piano),
-    [chord]
+
+  const pianoVoicings = useMemo(() =>
+    hasVoicings ? chord.voicings.filter((v, _idx) => v.piano) : [],
+    [chord, hasVoicings]
   );
 
   const handleInstrumentChange = useCallback((inst: Instrument) => {
-    setInstrument(inst);
+    setInternalInstrument(inst);
     setSelectedVoicing(0); // Reset voicing on instrument switch
     onInstrumentChange?.(inst);
   }, [onInstrumentChange]);
@@ -57,6 +64,15 @@ export function ChordVoicingDisplay({
   const handleVoicingChange = useCallback((index: string) => {
     setSelectedVoicing(parseInt(index, 10));
   }, []);
+
+  // Guard against empty voicings array
+  if (!hasVoicings || !currentVoicing) {
+    return (
+      <div className="w-full text-center text-sm text-muted-foreground py-8">
+        <p>No voicing data available for {chord.name}.</p>
+      </div>
+    );
+  }
 
   const availableVoicings = instrument === 'guitar' ? guitarVoicings : pianoVoicings;
   const voicingLabel = currentVoicing.voicingName || `Voicing ${safeVoicingIndex + 1}`;
@@ -76,10 +92,12 @@ export function ChordVoicingDisplay({
                 {voicingLabel}
               </CardDescription>
             </div>
-            <InstrumentToggle
-              instrument={instrument}
-              onInstrumentChange={handleInstrumentChange}
-            />
+            {!externalInstrument && (
+              <InstrumentToggle
+                instrument={instrument}
+                onChange={handleInstrumentChange}
+              />
+            )}
           </div>
         </CardHeader>
 
@@ -113,9 +131,23 @@ export function ChordVoicingDisplay({
             {instrument === 'guitar' && currentVoicing.guitar ? (
               <>
                 <ChordDiagram
+                  chord={chord}
                   voicing={currentVoicing}
-                  chordName={chord.name}
                 />
+                {/* Tab notation for guitar voicing */}
+                {(() => {
+                  const frets = currentVoicing.guitar!.frets;
+                  const midiNotes = frets
+                    .map((fret, i) => fret >= 0 ? STANDARD_TUNING[i] + fret : null)
+                    .filter((n): n is number => n !== null);
+                  return midiNotes.length > 0 ? (
+                    <TabDisplay
+                      midiNotes={midiNotes}
+                      instrumentId="guitar"
+                      className="w-full max-w-sm"
+                    />
+                  ) : null;
+                })()}
                 <p className="text-xs text-muted-foreground text-center max-w-xs">
                   {currentVoicing.guitar.description}
                 </p>
@@ -137,25 +169,10 @@ export function ChordVoicingDisplay({
             )}
           </div>
 
-          {/* Audio Player & Play Button */}
+          {/* Audio Player */}
           {currentVoicing.guitar || currentVoicing.piano ? (
             <div className="flex items-center gap-3 pt-4 border-t">
-              <ChordPlayer
-                chord={chord}
-                voicingIndex={safeVoicingIndex}
-                onPlayStart={() => setIsPlaying(true)}
-                onPlayEnd={() => setIsPlaying(false)}
-              />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsPlaying(!isPlaying)}
-                disabled={isPlaying}
-                className="gap-2"
-              >
-                <Volume2 className="h-4 w-4" />
-                {isPlaying ? 'Playing...' : 'Play Chord'}
-              </Button>
+              <ChordPlayer chord={chord} />
             </div>
           ) : null}
         </CardContent>

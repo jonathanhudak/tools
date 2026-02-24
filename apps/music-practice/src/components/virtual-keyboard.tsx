@@ -189,14 +189,14 @@ export function VirtualKeyboard({
                 key={`${octave}-${note}`}
                 onClick={() => void playNote(midiNote)}
                 disabled={!enabled}
-                className={`h-40 border border-gray-400 flex flex-col items-center justify-end pb-2 disabled:opacity-50 transition-colors ${
+                className={`h-40 border border-border flex flex-col items-center justify-end pb-2 disabled:opacity-50 transition-colors ${
                   isActive
-                    ? 'bg-blue-200'
-                    : 'bg-white hover:bg-gray-50'
+                    ? 'bg-[var(--accent-light)]'
+                    : 'bg-card hover:bg-muted'
                 }`}
                 style={{ width: `${whiteKeyWidth}px` }}
               >
-                <span className="text-xs font-medium text-gray-700">
+                <span className="text-xs font-medium text-foreground">
                   {displayName}
                 </span>
               </button>
@@ -219,17 +219,17 @@ export function VirtualKeyboard({
                 key={`${octave}-${note}`}
                 onClick={() => void playNote(midiNote)}
                 disabled={!enabled}
-                className={`absolute h-24 border border-gray-800 pointer-events-auto disabled:opacity-50 transition-colors ${
+                className={`absolute h-24 border border-foreground/80 pointer-events-auto disabled:opacity-50 transition-colors ${
                   isActive
-                    ? 'bg-gray-600'
-                    : 'bg-black hover:bg-gray-800'
+                    ? 'bg-foreground/70'
+                    : 'bg-foreground hover:bg-foreground/90'
                 }`}
                 style={{
                   width: `${blackKeyWidth}px`,
                   left: `${leftOffset}px`
                 }}
               >
-                <span className="text-[10px] font-medium text-gray-300 block mt-auto mb-1">
+                <span className="text-[10px] font-medium text-background block mt-auto mb-1">
                   {displayName}
                 </span>
               </button>

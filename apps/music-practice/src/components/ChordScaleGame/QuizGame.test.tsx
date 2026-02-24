@@ -1,10 +1,19 @@
 /**
  * QuizGame Component Tests
+ * Updated after removing the "Ready to Start?" confirmation screen (P0 #5)
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { QuizGame } from './QuizGame';
+
+// Mock framer-motion
+vi.mock('framer-motion', () => ({
+  motion: {
+    div: ({ children, ...props }: React.PropsWithChildren<Record<string, unknown>>) => <div {...props}>{children}</div>,
+  },
+  AnimatePresence: ({ children }: React.PropsWithChildren) => <>{children}</>,
+}));
 
 describe('QuizGame', () => {
   const mockOnQuizComplete = vi.fn();
@@ -14,27 +23,25 @@ describe('QuizGame', () => {
     mockOnQuizComplete.mockClear();
   });
 
-  it('should render without errors', () => {
+  it('should render quiz immediately without confirmation screen', () => {
     const { container } = render(<QuizGame selectedScales={selectedScales} onQuizComplete={mockOnQuizComplete} />);
     expect(container).toBeInTheDocument();
+    // Should NOT have a "Ready to Start?" or "Let's Go!" screen
+    expect(screen.queryByText(/ready to start/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/let's go/i)).not.toBeInTheDocument();
   });
 
-  it('should render start screen', () => {
-    const { container } = render(<QuizGame selectedScales={selectedScales} onQuizComplete={mockOnQuizComplete} />);
-    const card = container.querySelector('[data-slot="card"]');
-    expect(card).toBeInTheDocument();
+  it('should display a question on mount', () => {
+    render(<QuizGame selectedScales={selectedScales} onQuizComplete={mockOnQuizComplete} />);
+    // Should show question 1 of N
+    expect(screen.getByText(/question 1 of/i)).toBeInTheDocument();
   });
 
-  it('should have question count selector', () => {
-    const { container } = render(<QuizGame selectedScales={selectedScales} onQuizComplete={mockOnQuizComplete} />);
-    const select = container.querySelector('select');
-    expect(select).toBeInTheDocument();
-  });
-
-  it('should have start button', () => {
+  it('should have answer buttons', () => {
     const { container } = render(<QuizGame selectedScales={selectedScales} onQuizComplete={mockOnQuizComplete} />);
     const buttons = container.querySelectorAll('button');
-    expect(buttons.length).toBeGreaterThan(0);
+    // At least 4 answer option buttons
+    expect(buttons.length).toBeGreaterThanOrEqual(4);
   });
 
   it('should accept multiple scale types', () => {

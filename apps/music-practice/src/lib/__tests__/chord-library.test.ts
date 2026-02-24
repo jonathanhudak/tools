@@ -68,8 +68,9 @@ describe('Chord Library', () => {
       const beginner = getChordsByDifficulty('beginner');
       const intermediate = getChordsByDifficulty('intermediate');
       const advanced = getChordsByDifficulty('advanced');
+      const jazz = getChordsByDifficulty('jazz');
 
-      expect(beginner.length + intermediate.length + advanced.length).toBe(CHORD_LIBRARY.length);
+      expect(beginner.length + intermediate.length + advanced.length + jazz.length).toBe(CHORD_LIBRARY.length);
     });
   });
 

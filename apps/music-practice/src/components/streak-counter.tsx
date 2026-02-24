@@ -20,17 +20,17 @@ export function StreakCounter({ streak, className = '' }: StreakCounterProps) {
 
   // Color based on streak level
   const getFlameColor = () => {
-    if (streak >= 20) return 'text-orange-600 dark:text-orange-400';
-    if (streak >= 10) return 'text-orange-500 dark:text-orange-300';
-    if (streak >= 5) return 'text-yellow-500 dark:text-yellow-300';
-    return 'text-gray-400 dark:text-gray-600';
+    if (streak >= 20) return 'text-[var(--error-color)]';
+    if (streak >= 10) return 'text-[var(--warning-color)]';
+    if (streak >= 5) return 'text-[var(--warning-color)]';
+    return 'text-muted-foreground';
   };
 
   const getBgColor = () => {
-    if (streak >= 20) return 'bg-orange-500/10';
-    if (streak >= 10) return 'bg-orange-400/10';
-    if (streak >= 5) return 'bg-yellow-500/10';
-    return 'bg-gray-500/10';
+    if (streak >= 20) return 'bg-[var(--error-bg)]';
+    if (streak >= 10) return 'bg-[var(--warning-bg,var(--accent-light))]';
+    if (streak >= 5) return 'bg-[var(--warning-bg,var(--accent-light))]';
+    return 'bg-muted/50';
   };
 
   return (

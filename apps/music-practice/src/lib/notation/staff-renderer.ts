@@ -304,7 +304,7 @@ export class StaffRenderer {
         if (svg) {
             const noteheads = svg.querySelectorAll('.vf-notehead');
             noteheads.forEach(notehead => {
-                (notehead as HTMLElement).style.fill = '#3b82f6';
+                (notehead as HTMLElement).style.fill = 'var(--accent-color, #3b82f6)';
             });
         }
     }
@@ -320,7 +320,7 @@ export class StaffRenderer {
         if (!svg) return;
 
         const noteheads = svg.querySelectorAll('.vf-notehead');
-        const color = isCorrect ? '#10b981' : '#ef4444';
+        const color = isCorrect ? 'var(--success-color, #10b981)' : 'var(--error-color, #ef4444)';
 
         noteheads.forEach(notehead => {
             const element = notehead as HTMLElement;

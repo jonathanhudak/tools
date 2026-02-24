@@ -4,16 +4,18 @@
  */
 
 import type { Chord, ChordVoicing } from '@/lib/chord-library';
-import { motion } from 'framer-motion';
 
 interface ChordDiagramProps {
   chord: Chord;
   voicing?: ChordVoicing;
-  interactive?: boolean;
   size?: 'small' | 'medium' | 'large';
+  /** Hide chord name and description (for quiz mode to prevent answer leak) */
+  hideChordInfo?: boolean;
 }
 
-export function ChordDiagram({ chord, voicing, interactive = false, size = 'medium' }: ChordDiagramProps): JSX.Element {
+const STRING_LABELS = ['E', 'A', 'D', 'G', 'B', 'e'];
+
+export function ChordDiagram({ chord, voicing, size = 'medium', hideChordInfo = false }: ChordDiagramProps): JSX.Element {
   // Use voicing if provided, otherwise use first voicing from chord
   const guitarData = voicing?.guitar || chord.voicings[0]?.guitar;
   const guitarFingerings = guitarData ? [
@@ -24,68 +26,83 @@ export function ChordDiagram({ chord, voicing, interactive = false, size = 'medi
     { string: 5, fret: guitarData.frets[4] },
     { string: 6, fret: guitarData.frets[5] },
   ] : chord.fingerings.guitar;
-  const isOpen = guitarFingerings.every(f => f.fret <= 0);
-  const maxFret = Math.max(...guitarFingerings.map(f => (f.fret > 0 ? f.fret : 0)), 4);
+
+  const frettedNotes = guitarFingerings.filter(f => f.fret > 0);
+  const minFret = frettedNotes.length > 0 ? Math.min(...frettedNotes.map(f => f.fret)) : 1;
+  const maxFret = frettedNotes.length > 0 ? Math.max(...frettedNotes.map(f => f.fret)) : 4;
+  const isOpenPosition = minFret <= 3;
+  const startFret = isOpenPosition ? 1 : minFret;
+  const numFrets = Math.max(4, maxFret - startFret + 1);
 
   // Size configuration
   const sizeConfig = {
-    small: { stringSpacing: 20, fretHeight: 20, width: 140 },
-    medium: { stringSpacing: 30, fretHeight: 30, width: 210 },
-    large: { stringSpacing: 40, fretHeight: 40, width: 280 },
+    small: { stringSpacing: 18, fretHeight: 22, fontSize: 10 },
+    medium: { stringSpacing: 24, fretHeight: 28, fontSize: 12 },
+    large: { stringSpacing: 32, fretHeight: 36, fontSize: 14 },
   };
 
   const config = sizeConfig[size];
-  const width = config.width;
-  const stringSpacing = config.stringSpacing;
-  const fretHeight = config.fretHeight;
-  const startX = 20;
-  const startY = 30;
+  const { stringSpacing, fretHeight, fontSize } = config;
+  const leftPad = 28; // space for fret numbers
+  const topPad = 24; // space for open/muted indicators
+  const bottomPad = 24; // space for string labels
   const fretboardWidth = stringSpacing * 5;
-  const fretboardHeight = fretHeight * (isOpen ? maxFret : maxFret);
+  const fretboardHeight = fretHeight * numFrets;
+  const nutHeight = isOpenPosition ? 4 : 0;
+  const svgWidth = leftPad + fretboardWidth + 16;
+  const svgHeight = topPad + nutHeight + fretboardHeight + bottomPad;
+  const startX = leftPad;
+  const startY = topPad + nutHeight;
+  const dotRadius = Math.min(stringSpacing, fretHeight) / 2.8;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="flex flex-col items-center gap-4"
-    >
-      {/* Chord Name */}
-      <div className="text-center">
-        <h3 className="text-lg font-bold text-foreground">{chord.name}</h3>
-        <p className="text-xs text-muted-foreground">{chord.description}</p>
-      </div>
+    <div className="flex flex-col items-center gap-3">
+      {/* Chord Name — hidden in quiz mode */}
+      {!hideChordInfo && (
+        <div className="text-center">
+          <h3 className="text-lg font-bold text-foreground">{chord.name}</h3>
+          <p className="text-xs text-muted-foreground">{chord.description}</p>
+        </div>
+      )}
 
       {/* SVG Fretboard */}
-      <svg
-        width={width}
-        height={startY + fretboardHeight + 40}
-        className="border rounded-lg bg-card border-border"
-      >
-        {/* Fret markers */}
-        {!isOpen && (
+      <svg width={svgWidth} height={svgHeight}>
+        {/* Nut bar (only for open position) */}
+        {isOpenPosition && (
+          <rect
+            x={startX}
+            y={topPad}
+            width={fretboardWidth}
+            height={nutHeight}
+            fill="var(--ink-primary, #1a1714)"
+            rx={1}
+          />
+        )}
+
+        {/* Fret number label (when not open position) */}
+        {!isOpenPosition && (
           <text
-            x={startX - 15}
-            y={startY + fretHeight / 2 + 5}
-            fontSize={12}
-            fontWeight="bold"
-            fill="currentColor"
-            className="text-muted-foreground"
+            x={startX - 8}
+            y={startY + fretHeight / 2 + fontSize / 3}
+            textAnchor="end"
+            fontSize={fontSize - 1}
+            fontFamily="var(--font-mono)"
+            fill="var(--ink-secondary, #5c5650)"
           >
-            1
+            {startFret}
           </text>
         )}
 
         {/* Horizontal fret lines */}
-        {Array.from({ length: isOpen ? maxFret + 1 : maxFret + 1 }).map((_, i) => (
+        {Array.from({ length: numFrets + 1 }).map((_, i) => (
           <line
             key={`fret-${i}`}
             x1={startX}
             y1={startY + i * fretHeight}
             x2={startX + fretboardWidth}
             y2={startY + i * fretHeight}
-            stroke={i === 0 ? '#000' : '#ddd'}
-            strokeWidth={i === 0 ? 3 : 1}
-            className="dark:stroke-[var(--ink-disabled)]"
+            stroke="var(--ink-tertiary, #9c9590)"
+            strokeWidth={1}
           />
         ))}
 
@@ -97,111 +114,94 @@ export function ChordDiagram({ chord, voicing, interactive = false, size = 'medi
             y1={startY}
             x2={startX + i * stringSpacing}
             y2={startY + fretboardHeight}
-            stroke="#8b7355"
+            stroke="var(--ink-tertiary, #9c9590)"
             strokeWidth={1.5}
-            className="dark:stroke-[var(--ink-tertiary)]"
           />
         ))}
 
-        {/* Fingering markers and muted strings */}
+        {/* Open / Muted indicators above nut */}
         {guitarFingerings.map((fingering, index) => {
           const x = startX + index * stringSpacing;
-          const isMuted = fingering.fret === -1;
-          const isOpen = fingering.fret === 0;
+          const indicatorY = topPad - 10;
 
-          if (isMuted) {
-            // Draw X for muted strings
+          if (fingering.fret === -1) {
+            // X for muted
+            const sz = 5;
             return (
-              <g key={`fingering-${index}`}>
-                <circle cx={x} cy={startY - 15} r={8} fill="none" stroke="var(--error-color)" strokeWidth={2} />
-                <text
-                  x={x}
-                  y={startY - 10}
-                  textAnchor="middle"
-                  fontSize={14}
-                  fontWeight="bold"
-                  fill="var(--error-color)"
-                >
-                  ✕
-                </text>
+              <g key={`ind-${index}`}>
+                <line x1={x - sz} y1={indicatorY - sz} x2={x + sz} y2={indicatorY + sz} stroke="var(--ink-secondary, #5c5650)" strokeWidth={2} strokeLinecap="round" />
+                <line x1={x + sz} y1={indicatorY - sz} x2={x - sz} y2={indicatorY + sz} stroke="var(--ink-secondary, #5c5650)" strokeWidth={2} strokeLinecap="round" />
               </g>
             );
           }
 
-          if (isOpen) {
-            // Draw circle for open strings
+          if (fingering.fret === 0) {
+            // Circle for open
             return (
               <circle
-                key={`fingering-${index}`}
+                key={`ind-${index}`}
                 cx={x}
-                cy={startY - 15}
-                r={8}
+                cy={indicatorY}
+                r={5}
                 fill="none"
-                stroke="var(--success-color)"
-                strokeWidth={2}
+                stroke="var(--ink-secondary, #5c5650)"
+                strokeWidth={1.5}
               />
             );
           }
 
-          // Draw filled dot for fretted notes
-          const dotY = startY + (fingering.fret - 0.5) * fretHeight;
+          return null;
+        })}
+
+        {/* Fretted note dots */}
+        {guitarFingerings.map((fingering, index) => {
+          if (fingering.fret <= 0) return null;
+
+          const x = startX + index * stringSpacing;
+          const relFret = fingering.fret - startFret;
+          const dotY = startY + (relFret + 0.5) * fretHeight;
+
           return (
-            <motion.circle
-              key={`fingering-${index}`}
-              cx={x}
-              cy={dotY}
-              r={fretHeight / 2.5}
-              fill="var(--accent-color)"
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: index * 0.1 }}
-              className="cursor-pointer"
-              onMouseEnter={e => {
-                if (interactive) {
-                  (e.target as SVGCircleElement).setAttribute('r', String(fretHeight / 2));
-                }
-              }}
-              onMouseLeave={e => {
-                if (interactive) {
-                  (e.target as SVGCircleElement).setAttribute('r', String(fretHeight / 2.5));
-                }
-              }}
-            />
+            <g key={`dot-${index}`}>
+              <circle
+                cx={x}
+                cy={dotY}
+                r={dotRadius}
+                fill="var(--accent-color)"
+              />
+              {/* Finger number inside dot */}
+              {guitarData?.fingers[index] && guitarData.fingers[index] !== 'open' && (
+                <text
+                  x={x}
+                  y={dotY + (fontSize - 2) / 3}
+                  textAnchor="middle"
+                  fontSize={fontSize - 2}
+                  fontFamily="var(--font-mono)"
+                  fill="white"
+                  fontWeight="bold"
+                >
+                  {guitarData.fingers[index]}
+                </text>
+              )}
+            </g>
           );
         })}
 
         {/* String labels at bottom */}
-        {['E', 'A', 'D', 'G', 'B', 'E'].map((note, i) => (
+        {STRING_LABELS.map((label, i) => (
           <text
             key={`label-${i}`}
             x={startX + i * stringSpacing}
-            y={startY + fretboardHeight + 20}
+            y={startY + fretboardHeight + 16}
             textAnchor="middle"
-            fontSize={12}
-            fontWeight="bold"
-            fill="currentColor"
-            className="text-foreground"
+            fontSize={fontSize - 1}
+            fontFamily="var(--font-mono)"
+            fill="var(--ink-secondary, #5c5650)"
           >
-            {note}
+            {label}
           </text>
         ))}
       </svg>
-
-      {/* Legend */}
-      <div className="flex gap-4 text-xs justify-center">
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 border-2 border-[var(--success-color)] rounded-full" />
-          <span>Open</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 bg-[var(--accent-color)] rounded-full" />
-          <span>Fret</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-[var(--error-color)] font-bold">✕</span>
-          <span>Muted</span>
-        </div>
-      </div>
-    </motion.div>
+    </div>
   );
 }

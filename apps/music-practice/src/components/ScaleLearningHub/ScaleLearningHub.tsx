@@ -8,7 +8,7 @@ import { ScaleReference } from '../ScaleReference/ScaleReference';
 import { ScalesModesQuiz } from '../ChordScaleGame/ScalesModesQuiz';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@hudak/ui/components/card';
 import { Button } from '@hudak/ui/components/button';
-import { BookOpen, Zap, Music, ArrowLeft } from 'lucide-react';
+import { BookOpen, Zap, Music, ArrowLeft, ArrowRight, Target, Puzzle, Link2, TrendingUp, Guitar, Piano } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 type View = 'menu' | 'reference' | 'quiz';
@@ -91,24 +91,24 @@ export function ScaleLearningHub(): JSX.Element {
               <CardContent className="space-y-4">
                 <ul className="space-y-2 text-sm">
                   <li className="flex items-center gap-2">
-                    <span className="text-lg">🎼</span>
+                    <Music className="w-4 h-4 text-muted-foreground shrink-0" />
                     <span>4 scale families with all 28 modes</span>
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className="text-lg">🎹</span>
+                    <Piano className="w-4 h-4 text-muted-foreground shrink-0" />
                     <span>Chord quality for every degree</span>
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className="text-lg">🎸</span>
+                    <Guitar className="w-4 h-4 text-muted-foreground shrink-0" />
                     <span>Interactive chord voicing display</span>
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className="text-lg">📖</span>
+                    <BookOpen className="w-4 h-4 text-muted-foreground shrink-0" />
                     <span>Mode descriptions and theory</span>
                   </li>
                 </ul>
-                <Button className="w-full mt-4" variant="default">
-                  Open Scales Reference &rarr;
+                <Button className="w-full mt-4 bg-[var(--accent-color)] hover:bg-[var(--accent-hover)] text-white">
+                  Open Scales Reference <ArrowRight className="w-4 h-4 ml-1" />
                 </Button>
               </CardContent>
             </Card>
@@ -135,24 +135,24 @@ export function ScaleLearningHub(): JSX.Element {
               <CardContent className="space-y-4">
                 <ul className="space-y-2 text-sm">
                   <li className="flex items-center gap-2">
-                    <span className="text-lg">🎯</span>
+                    <Target className="w-4 h-4 text-muted-foreground shrink-0" />
                     <span>Scale selection by family</span>
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className="text-lg">🧩</span>
+                    <Puzzle className="w-4 h-4 text-muted-foreground shrink-0" />
                     <span>Mode identification challenges</span>
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className="text-lg">🔗</span>
+                    <Link2 className="w-4 h-4 text-muted-foreground shrink-0" />
                     <span>Chord quality recognition</span>
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className="text-lg">📈</span>
+                    <TrendingUp className="w-4 h-4 text-muted-foreground shrink-0" />
                     <span>Track your progress</span>
                   </li>
                 </ul>
-                <Button className="w-full mt-4" variant="default">
-                  Start Quiz &rarr;
+                <Button className="w-full mt-4 bg-[var(--accent-color)] hover:bg-[var(--accent-hover)] text-white">
+                  Start Quiz <ArrowRight className="w-4 h-4 ml-1" />
                 </Button>
               </CardContent>
             </Card>

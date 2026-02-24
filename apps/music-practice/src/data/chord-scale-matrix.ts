@@ -7,6 +7,8 @@
  * parent scales and modes.
  */
 
+import { Scale, Note } from 'tonal';
+
 export type ScaleType = "major" | "naturalMinor" | "melodicMinor" | "harmonicMinor";
 export type Degree = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
@@ -388,4 +390,64 @@ export async function getChordFromLibrary(chordId: string) {
   // Lazy import to avoid circular dependency
   const { CHORD_LIBRARY } = await import('@/lib/chord-library');
   return CHORD_LIBRARY.find(c => c.id === chordId);
+}
+
+/**
+ * Maps ScaleType to tonal library scale names
+ */
+const SCALE_TYPE_TO_TONAL: Record<ScaleType, string> = {
+  major: 'major',
+  naturalMinor: 'minor',
+  melodicMinor: 'melodic minor',
+  harmonicMinor: 'harmonic minor',
+};
+
+/**
+ * Get note names (with octave) for a mode derived from a C parent scale.
+ * Rotates the parent scale to start from the given degree and fixes octaves
+ * so notes ascend correctly.
+ *
+ * @example
+ * getModeNotes('major', 2) // D Dorian: ["D4", "E4", "F4", "G4", "A4", "B4", "C5"]
+ */
+export function getModeNotes(scaleType: ScaleType, degree: Degree, rootOctave = 4): string[] {
+  const scale = Scale.get(`C${rootOctave} ${SCALE_TYPE_TO_TONAL[scaleType]}`);
+  if (!scale.notes.length) return [];
+
+  const rotateBy = degree - 1;
+  const rotated = [
+    ...scale.notes.slice(rotateBy),
+    ...scale.notes.slice(0, rotateBy),
+  ];
+
+  // Fix octaves so notes ascend monotonically
+  const result: string[] = [rotated[0]];
+  for (let i = 1; i < rotated.length; i++) {
+    const prevMidi = Note.midi(result[i - 1]);
+    if (prevMidi === null) continue;
+
+    let note = rotated[i];
+    let midi = Note.midi(note);
+
+    while (midi !== null && midi <= prevMidi) {
+      const parsed = Note.get(note);
+      note = parsed.pc + ((parsed.oct ?? 0) + 1);
+      midi = Note.midi(note);
+    }
+    result.push(note);
+  }
+
+  return result;
+}
+
+/**
+ * Get MIDI note numbers for a mode.
+ *
+ * @example
+ * getModeNotesAsMidi('major', 2) // D Dorian: [62, 64, 65, 67, 69, 71, 72]
+ */
+export function getModeNotesAsMidi(scaleType: ScaleType, degree: Degree, rootOctave = 4): number[] {
+  return getModeNotes(scaleType, degree, rootOctave)
+    .map(n => Note.midi(n))
+    .filter((m): m is number => m !== null);
 }

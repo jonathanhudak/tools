@@ -136,8 +136,8 @@ export function ChordPlayer({ chord, variant = 'primary', size = 'md' }: ChordPl
     <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
       <Button
         onClick={playChord}
-        variant={variant === 'primary' ? 'default' : 'secondary'}
-        className={`${sizeClasses[size]} gap-2 transition-colors`}
+        variant="ghost"
+        className={`${sizeClasses[size]} gap-2 transition-colors bg-[var(--accent-color)] hover:bg-[var(--accent-hover)] text-white`}
         disabled={!chord.fingerings.piano}
       >
         {isPlaying ? (

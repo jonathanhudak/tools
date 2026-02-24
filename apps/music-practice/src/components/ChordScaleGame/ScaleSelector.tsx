@@ -110,28 +110,6 @@ export function ScaleSelector({ onScalesSelected }: ScaleSelectorProps): JSX.Ele
           </div>
         </div>
 
-        {/* Selected Scales Summary */}
-        <div className="p-3 rounded-lg bg-secondary">
-          <div className="text-sm font-semibold mb-2">Selected:</div>
-          <div className="flex flex-wrap gap-2">
-            {selectedScales.length > 0 ? (
-              selectedScales.map(scale => (
-                <Badge key={scale} variant="secondary" className="capitalize">
-                  {scale === 'naturalMinor'
-                    ? 'Natural Minor'
-                    : scale === 'melodicMinor'
-                      ? 'Melodic Minor'
-                      : scale === 'harmonicMinor'
-                        ? 'Harmonic Minor'
-                        : 'Major'}
-                </Badge>
-              ))
-            ) : (
-              <span className="text-muted-foreground text-sm">Select at least one scale</span>
-            )}
-          </div>
-        </div>
-
         {/* Start Button */}
         <Button
           onClick={handleStart}

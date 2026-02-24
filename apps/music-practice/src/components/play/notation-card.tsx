@@ -126,10 +126,10 @@ export function NotationCard({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               className={`px-6 py-3 text-center text-sm font-medium ${
-                feedback.includes('✓')
-                  ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                  : feedback.includes('✗') || feedback.includes('Try again')
-                  ? 'bg-red-500/10 text-red-600 dark:text-red-400'
+                feedback.includes('Correct')
+                  ? 'bg-success-light text-[var(--success-color)]'
+                  : feedback.includes('Try again')
+                  ? 'bg-error-light text-[var(--error-color)]'
                   : 'bg-muted/50 text-muted-foreground'
               }`}
             >

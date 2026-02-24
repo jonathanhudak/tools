@@ -8,14 +8,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@hudak/ui/components/c
 import { Button } from '@hudak/ui/components/button';
 import { Badge } from '@hudak/ui/components/badge';
 import { ArrowLeft, ChevronDown, ChevronUp, Music } from 'lucide-react';
+import { InstrumentToggle } from '../Piano/InstrumentToggle';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChordVoicingDisplay } from '../ChordScaleGame/ChordVoicingDisplay';
+import { ScaleDisplay } from './ScaleDisplay';
 import { getChordById } from '@/lib/chord-library';
 import type { Chord } from '@/lib/chord-library';
 import {
   buildScaleChords,
   SCALE_TYPE_NAMES,
   type ScaleType,
+  type Degree,
 } from '../../data/chord-scale-matrix';
 
 interface ScaleReferenceProps {
@@ -34,6 +37,7 @@ const SCALE_DESCRIPTIONS: Record<ScaleType, string> = {
 export function ScaleReference({ onBack }: ScaleReferenceProps): JSX.Element {
   const [activeScale, setActiveScale] = useState<ScaleType>('major');
   const [expandedDegree, setExpandedDegree] = useState<number | null>(null);
+  const [instrument, setInstrument] = useState<'guitar' | 'piano'>('guitar');
 
   const degrees = buildScaleChords(activeScale);
 
@@ -89,19 +93,22 @@ export function ScaleReference({ onBack }: ScaleReferenceProps): JSX.Element {
           </p>
         </div>
 
-        {/* Scale Family Selector */}
-        <div className="flex flex-wrap justify-center gap-2 mb-8">
-          {SCALE_TYPES.map(scale => (
-            <Button
-              key={scale}
-              variant={activeScale === scale ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => handleScaleChange(scale)}
-              className="text-xs md:text-sm"
-            >
-              {SCALE_TYPE_NAMES[scale]}
-            </Button>
-          ))}
+        {/* Scale Family Selector + Instrument Toggle */}
+        <div className="flex flex-col items-center gap-4 mb-8">
+          <div className="flex flex-wrap justify-center gap-2">
+            {SCALE_TYPES.map(scale => (
+              <Button
+                key={scale}
+                variant={activeScale === scale ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => handleScaleChange(scale)}
+                className="text-xs md:text-sm"
+              >
+                {SCALE_TYPE_NAMES[scale]}
+              </Button>
+            ))}
+          </div>
+          <InstrumentToggle instrument={instrument} onChange={setInstrument} />
         </div>
 
         {/* Scale Description */}
@@ -171,15 +178,24 @@ export function ScaleReference({ onBack }: ScaleReferenceProps): JSX.Element {
                           className="pt-0 pb-6"
                           onClick={e => e.stopPropagation()}
                         >
-                          {chord ? (
-                            <ChordVoicingDisplay
-                              chord={chord}
-                              voicingIndex={entry.voicingIndex ?? 0}
-                            />
-                          ) : (
-                            <div className="text-center text-sm text-muted-foreground py-8">
-                              <p>No chord voicing available for this degree.</p>
-                            </div>
+                          <ScaleDisplay
+                            scaleType={activeScale}
+                            degree={entry.degree as Degree}
+                            modeName={entry.modeName}
+                            instrument={instrument}
+                          />
+                          {chord && (
+                            <>
+                              <div className="my-6 border-t border-border" />
+                              <p className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wide">
+                                Built on this degree
+                              </p>
+                              <ChordVoicingDisplay
+                                chord={chord}
+                                voicingIndex={entry.voicingIndex ?? 0}
+                                externalInstrument={instrument}
+                              />
+                            </>
                           )}
                         </CardContent>
                       </motion.div>

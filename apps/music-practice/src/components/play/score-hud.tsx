@@ -20,8 +20,8 @@ export function ScoreHud({ gameMode, roundState, stats }: ScoreHudProps) {
     <div className="flex items-center justify-between px-4">
       <div className="flex items-center gap-8">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-full bg-amber-500/20">
-            <Trophy className="h-5 w-5 text-amber-500" />
+          <div className="p-2 rounded-full bg-[var(--warning-bg,var(--accent-light))]">
+            <Trophy className="h-5 w-5 text-[var(--warning-color)]" />
           </div>
           <div>
             <div className="text-xs text-muted-foreground uppercase tracking-wider">Score</div>
@@ -32,8 +32,8 @@ export function ScoreHud({ gameMode, roundState, stats }: ScoreHudProps) {
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-full bg-orange-500/20">
-            <Flame className="h-5 w-5 text-orange-500" />
+          <div className="p-2 rounded-full bg-[var(--error-bg)]">
+            <Flame className="h-5 w-5 text-[var(--error-color)]" />
           </div>
           <div>
             <div className="text-xs text-muted-foreground uppercase tracking-wider">Streak</div>
@@ -42,7 +42,7 @@ export function ScoreHud({ gameMode, roundState, stats }: ScoreHudProps) {
                 {gameMode === 'timed' ? roundState.streak : stats.streak}
               </span>
               {stats.streak >= 3 && (
-                <span className="text-xs text-orange-500">🔥</span>
+                <Flame className="h-3 w-3 text-[var(--error-color)]" />
               )}
             </div>
           </div>
@@ -55,7 +55,7 @@ export function ScoreHud({ gameMode, roundState, stats }: ScoreHudProps) {
             <LivesDisplay lives={roundState.lives} maxLives={roundState.maxLives} />
             <div className="text-center">
               <div className="text-xs text-muted-foreground uppercase tracking-wider">Progress</div>
-              <div className="text-2xl font-bold text-blue-500">
+              <div className="text-2xl font-bold text-[var(--accent-color)]">
                 {roundState.notesCompleted}/{roundState.notesRequired}
               </div>
             </div>
@@ -63,17 +63,17 @@ export function ScoreHud({ gameMode, roundState, stats }: ScoreHudProps) {
         ) : (
           <>
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-full bg-emerald-500/20">
-                <Target className="h-5 w-5 text-emerald-500" />
+              <div className="p-2 rounded-full bg-success-light">
+                <Target className="h-5 w-5 text-[var(--success-color)]" />
               </div>
               <div>
                 <div className="text-xs text-muted-foreground uppercase tracking-wider">Correct</div>
-                <div className="text-2xl font-bold tabular-nums text-emerald-500">{stats.correct}</div>
+                <div className="text-2xl font-bold tabular-nums text-[var(--success-color)]">{stats.correct}</div>
               </div>
             </div>
             <div>
               <div className="text-xs text-muted-foreground uppercase tracking-wider">Incorrect</div>
-              <div className="text-2xl font-bold tabular-nums text-red-500">{stats.incorrect}</div>
+              <div className="text-2xl font-bold tabular-nums text-[var(--error-color)]">{stats.incorrect}</div>
             </div>
           </>
         )}

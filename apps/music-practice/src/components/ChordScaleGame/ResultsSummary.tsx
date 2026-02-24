@@ -10,6 +10,7 @@ import { Button } from '@hudak/ui/components/button';
 import { Badge } from '@hudak/ui/components/badge';
 import Confetti from 'react-confetti';
 import { useState } from 'react';
+import { CheckCircle2, XCircle, RotateCcw, Target } from 'lucide-react';
 import { SCALE_TYPE_NAMES } from '../../data/chord-scale-matrix';
 import type { QuizResults, AnswerRecord } from './QuizGame';
 
@@ -27,13 +28,13 @@ export function ResultsSummary({ results, onRetry }: ResultsSummaryProps): JSX.E
   let feedbackColor = '';
 
   if (isExcellent) {
-    feedbackMessage = '🌟 Outstanding! You have excellent knowledge of scales and modes!';
+    feedbackMessage = 'Outstanding! You have excellent knowledge of scales and modes!';
     feedbackColor = 'text-[var(--warning-color)]';
   } else if (isGood) {
-    feedbackMessage = '👏 Great job! You&apos;re getting solid with scales and modes.';
+    feedbackMessage = 'Great job! You\'re getting solid with scales and modes.';
     feedbackColor = 'text-[var(--success-color)]';
   } else {
-    feedbackMessage = '💪 Keep practicing! You&apos;ll master scales and modes in no time.';
+    feedbackMessage = 'Keep practicing! You\'ll master scales and modes in no time.';
     feedbackColor = 'text-[var(--accent-color)]';
   }
 
@@ -77,7 +78,7 @@ export function ResultsSummary({ results, onRetry }: ResultsSummaryProps): JSX.E
             >
               <Card>
                 <CardContent className="pt-6 pb-4 text-center">
-                  <div className="text-3xl font-bold text-[var(--success-color)]">
+                  <div className="text-3xl font-bold text-foreground">
                     {results.correctAnswers}
                   </div>
                   <div className="text-sm text-muted-foreground mt-1">Correct</div>
@@ -109,7 +110,7 @@ export function ResultsSummary({ results, onRetry }: ResultsSummaryProps): JSX.E
               className="space-y-3"
             >
               <Button onClick={onRetry} size="lg" className="w-full">
-                Try Again 🎯
+                <RotateCcw className="w-4 h-4 mr-2" /> Try Again
               </Button>
               <Button
                 onClick={() => setShowDetails(!showDetails)}
@@ -172,7 +173,9 @@ export function ResultsSummary({ results, onRetry }: ResultsSummaryProps): JSX.E
                       variant={answer.isCorrect ? 'default' : 'destructive'}
                       className="shrink-0 mt-1"
                     >
-                      {answer.isCorrect ? '✓ Correct' : '✗ Wrong'}
+                      <span className="inline-flex items-center gap-1">
+                        {answer.isCorrect ? <><CheckCircle2 className="w-3.5 h-3.5" /> Correct</> : <><XCircle className="w-3.5 h-3.5" /> Wrong</>}
+                      </span>
                     </Badge>
                   </div>
                 </CardContent>

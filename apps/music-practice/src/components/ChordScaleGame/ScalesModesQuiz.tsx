@@ -41,7 +41,7 @@ export function ScalesModesQuiz(): JSX.Element {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8 mt-8">
-          <h1 className="text-4xl font-bold font-display mb-2">🎵 Scales & Modes Quiz</h1>
+          <h1 className="text-4xl font-bold font-display mb-2">Scales & Modes Quiz</h1>
           <p className="text-muted-foreground text-lg">
             Master the connection between scales, modes, and their chord qualities
           </p>

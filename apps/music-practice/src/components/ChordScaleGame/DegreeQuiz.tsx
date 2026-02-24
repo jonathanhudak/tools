@@ -7,9 +7,11 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@hudak/ui/components/card';
+import { Skeleton } from '@hudak/ui/components/skeleton';
 import { Button } from '@hudak/ui/components/button';
 import { Badge } from '@hudak/ui/components/badge';
 import { motion, AnimatePresence } from 'framer-motion';
+import { CheckCircle2, XCircle, ArrowRight } from 'lucide-react';
 import { ChordVoicingDisplay } from './ChordVoicingDisplay';
 import { getChordById } from '@/lib/chord-library';
 import type { Chord } from '@/lib/chord-library';
@@ -130,7 +132,34 @@ export function DegreeQuiz({ difficulty }: DegreeQuizProps): JSX.Element {
   };
 
   if (!question) {
-    return <div>Loading...</div>;
+    return (
+      <div className="max-w-2xl mx-auto space-y-6">
+        <div className="flex gap-4 justify-center">
+          {[1, 2, 3].map(i => (
+            <Card key={i} className="flex-1">
+              <CardContent className="pt-4 pb-3 text-center">
+                <Skeleton className="h-8 w-16 mx-auto mb-1" />
+                <Skeleton className="h-3 w-12 mx-auto" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <Card className="border-2">
+          <CardHeader className="pb-4">
+            <Skeleton className="h-5 w-24 mb-2" />
+            <Skeleton className="h-8 w-full" />
+            <Skeleton className="h-4 w-48 mt-2" />
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-3">
+              {[1, 2, 3, 4].map(i => (
+                <Skeleton key={i} className="h-16 rounded-md" />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   const accuracy = score.total > 0 ? Math.round((score.correct / score.total) * 100) : 0;
@@ -141,7 +170,7 @@ export function DegreeQuiz({ difficulty }: DegreeQuizProps): JSX.Element {
       <div className="flex gap-4 justify-center">
         <Card className="flex-1">
           <CardContent className="pt-4 pb-3 text-center">
-            <div className="text-2xl font-bold text-[var(--success-color)]">
+            <div className="text-2xl font-bold text-foreground">
               {score.correct}/{score.total}
             </div>
             <div className="text-xs text-muted-foreground">Correct</div>
@@ -157,7 +186,7 @@ export function DegreeQuiz({ difficulty }: DegreeQuizProps): JSX.Element {
         </Card>
         <Card className="flex-1">
           <CardContent className="pt-4 pb-3 text-center">
-            <div className="text-2xl font-bold text-[var(--accent-color)]">
+            <div className="text-2xl font-bold text-foreground">
               {streak}
             </div>
             <div className="text-xs text-muted-foreground">Streak</div>
@@ -187,15 +216,17 @@ export function DegreeQuiz({ difficulty }: DegreeQuizProps): JSX.Element {
                 const showCorrect = selectedAnswer && option === question.correctAnswer;
                 const showIncorrect = selectedAnswer && isSelected && !isCorrect;
 
-                let variant: 'default' | 'outline' | 'secondary' = 'outline';
+                let variant: 'default' | 'outline' | 'secondary' | 'ghost' = 'outline';
                 let className = 'h-16 text-lg font-semibold transition-all';
 
                 if (showCorrect) {
-                  className += ' bg-[var(--success-color)] text-white border-[var(--success-color)]';
+                  variant = 'ghost';
+                  className += ' bg-success-solid text-white border-2 border-success';
                 } else if (showIncorrect) {
-                  className += ' bg-[var(--error-color)] text-white border-[var(--error-color)]';
-                } else if (isSelected) {
-                  variant = 'secondary';
+                  variant = 'ghost';
+                  className += ' bg-error-solid text-white border-2 border-error';
+                } else if (selectedAnswer) {
+                  className += ' opacity-50';
                 }
 
                 return (
@@ -230,8 +261,8 @@ export function DegreeQuiz({ difficulty }: DegreeQuizProps): JSX.Element {
               >
                 {isCorrect ? (
                   <div className="p-4 rounded-lg bg-[var(--success-bg)] border-2 border-[var(--success-color)]">
-                    <div className="font-semibold text-foreground">
-                      ✓ Correct!
+                    <div className="font-semibold text-foreground flex items-center gap-2">
+                      <CheckCircle2 className="w-5 h-5 text-[var(--success-color)]" /> Correct!
                     </div>
                     <div className="text-sm text-muted-foreground mt-1">
                       {getDegreeInfo(question.scaleType, question.degree)?.modeName} mode
@@ -239,8 +270,8 @@ export function DegreeQuiz({ difficulty }: DegreeQuizProps): JSX.Element {
                   </div>
                 ) : (
                   <div className="p-4 rounded-lg bg-[var(--error-bg)] border-2 border-[var(--error-color)]">
-                    <div className="font-semibold text-foreground">
-                      ✗ Incorrect
+                    <div className="font-semibold text-foreground flex items-center gap-2">
+                      <XCircle className="w-5 h-5 text-[var(--error-color)]" /> Incorrect
                     </div>
                     <div className="text-sm text-muted-foreground mt-1">
                       The correct answer is <strong>{question.correctAnswer}</strong> (

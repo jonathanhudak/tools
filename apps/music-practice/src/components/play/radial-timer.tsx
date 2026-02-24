@@ -35,13 +35,13 @@ export function RadialTimer({ timeLeft, maxTime }: RadialTimerProps) {
           strokeDashoffset={strokeDashoffset}
           strokeLinecap="round"
           className={`transition-all duration-100 ${
-            isLow ? 'text-red-500' : isMedium ? 'text-amber-500' : 'text-emerald-500'
+            isLow ? 'text-[var(--error-color)]' : isMedium ? 'text-[var(--warning-color)]' : 'text-[var(--success-color)]'
           }`}
         />
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="text-center">
-          <div className={`text-3xl font-bold tabular-nums ${isLow ? 'text-red-500 animate-pulse' : ''}`}>
+          <div className={`text-3xl font-bold tabular-nums ${isLow ? 'text-[var(--error-color)] animate-pulse' : ''}`}>
             {Math.ceil(timeLeft)}
           </div>
           <div className="text-xs text-muted-foreground uppercase tracking-wider">sec</div>

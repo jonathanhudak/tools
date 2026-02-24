@@ -1,4 +1,5 @@
 import React from 'react'
+import { Guitar, Piano } from 'lucide-react'
 
 interface InstrumentToggleProps {
   instrument: 'guitar' | 'piano'
@@ -19,7 +20,7 @@ export const InstrumentToggle: React.FC<InstrumentToggleProps> = ({
             : 'bg-muted text-muted-foreground'
         }`}
       >
-        🎸 Guitar
+        <Guitar className="w-4 h-4 inline mr-1" /> Guitar
       </button>
       <button
         onClick={() => onChange('piano')}
@@ -29,7 +30,7 @@ export const InstrumentToggle: React.FC<InstrumentToggleProps> = ({
             : 'bg-muted text-muted-foreground'
         }`}
       >
-        🎹 Piano
+        <Piano className="w-4 h-4 inline mr-1" /> Piano
       </button>
     </div>
   )

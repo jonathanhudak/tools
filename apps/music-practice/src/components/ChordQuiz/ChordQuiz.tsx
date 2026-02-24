@@ -16,6 +16,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@hudak/ui/components/card';
 import { Button } from '@hudak/ui/components/button';
 import { Badge } from '@hudak/ui/components/badge';
+import { CheckCircle2, XCircle } from 'lucide-react';
 import { ChordDiagram } from '../ChordReference/ChordDiagram';
 import { ChordPlayer } from '../ChordReference/ChordPlayer';
 import { ResultsSummary } from './ResultsSummary';
@@ -150,7 +151,7 @@ export function ChordQuiz({ mode, difficulty, questionCount = 10, onBack }: Chor
 
             {/* Chord diagram */}
             <div className="flex justify-center my-6">
-              <ChordDiagram chord={currentQuestion.chord} size="large" />
+              <ChordDiagram chord={currentQuestion.chord} size="large" hideChordInfo={!answered} />
             </div>
 
             {/* Play button */}
@@ -176,12 +177,14 @@ export function ChordQuiz({ mode, difficulty, questionCount = 10, onBack }: Chor
                   className={`p-3 rounded-lg border-2 font-semibold transition-all ${
                     selectedAnswer === index
                       ? isCorrect
-                        ? 'border-[var(--success-color)] bg-[var(--success-bg)]'
-                        : 'border-[var(--error-color)] bg-[var(--error-bg)]'
+                        ? 'border-success bg-success-solid text-white'
+                        : 'border-error bg-error-solid text-white'
                       : answered && index === currentQuestion.correctIndex
-                        ? 'border-[var(--success-color)] bg-[var(--success-bg)]'
-                        : 'border-border hover:border-primary'
-                  } ${answered ? 'opacity-60 cursor-default' : 'cursor-pointer'}`}
+                        ? 'border-success bg-success-light'
+                        : answered
+                          ? 'border-border opacity-50 cursor-default'
+                          : 'border-border hover:border-primary cursor-pointer'
+                  }`}
                 >
                   <div className="text-sm md:text-base">{option.shortName}</div>
                   <div className="text-xs text-muted-foreground capitalize">{option.type}</div>
@@ -200,7 +203,9 @@ export function ChordQuiz({ mode, difficulty, questionCount = 10, onBack }: Chor
                     : 'bg-[var(--error-bg)] text-[var(--error-color)]'
                 }`}
               >
-                {isCorrect ? '✓ Correct!' : '✗ Incorrect'}
+                <span className="inline-flex items-center gap-2">
+                  {isCorrect ? <><CheckCircle2 className="w-5 h-5" /> Correct!</> : <><XCircle className="w-5 h-5" /> Incorrect</>}
+                </span>
                 {!isCorrect && (
                   <div className="text-sm mt-2">
                     The correct answer is <strong>{currentQuestion.options[currentQuestion.correctIndex].shortName}</strong>

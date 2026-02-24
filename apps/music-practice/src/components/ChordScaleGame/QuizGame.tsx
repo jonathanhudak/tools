@@ -6,9 +6,11 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@hudak/ui/components/card';
+import { Skeleton } from '@hudak/ui/components/skeleton';
 import { Button } from '@hudak/ui/components/button';
 import { Badge } from '@hudak/ui/components/badge';
 import { motion, AnimatePresence } from 'framer-motion';
+import { CheckCircle2, XCircle, ArrowRight } from 'lucide-react';
 import {
   generateScaleQuizQuestion,
   validateAnswer,
@@ -42,17 +44,16 @@ export function QuizGame({ selectedScales, onQuizComplete }: QuizGameProps): JSX
   const [score, setScore] = useState({ correct: 0, total: 0 });
   const [streak, setStreak] = useState(0);
   const [answers, setAnswers] = useState<AnswerRecord[]>([]);
-  const [questionCount, setQuestionCount] = useState(10);
-  const [quizStarted, setQuizStarted] = useState(false);
+  const [questionCount] = useState(10);
 
-  // Generate initial question
+  // Generate initial question on mount
   useEffect(() => {
-    if (quizStarted && !currentQuestion) {
+    if (!currentQuestion) {
       const question = generateScaleQuizQuestion(selectedScales);
       setCurrentQuestion(question);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [quizStarted]);
+  }, []);
 
   const generateNextQuestion = (): void => {
     const question = generateScaleQuizQuestion(selectedScales);
@@ -105,49 +106,36 @@ export function QuizGame({ selectedScales, onQuizComplete }: QuizGameProps): JSX
     generateNextQuestion();
   };
 
-  if (!quizStarted) {
+  if (!currentQuestion) {
     return (
-      <Card className="w-full max-w-md mx-auto">
-        <CardHeader>
-          <CardTitle>Ready to Start?</CardTitle>
-          <CardDescription>Answer {questionCount} questions about scales and modes</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="p-4 rounded-lg bg-[var(--accent-light)]">
-            <div className="text-sm font-semibold mb-2">Selected Scales:</div>
-            <div className="flex flex-wrap gap-2">
-              {selectedScales.map(scale => (
-                <Badge key={scale} variant="secondary" className="capitalize">
-                  {SCALE_TYPE_NAMES[scale]}
-                </Badge>
+      <div className="max-w-2xl mx-auto space-y-6">
+        <Skeleton className="h-2 w-full rounded-full" />
+        <div className="flex gap-4 justify-center">
+          {[1, 2, 3].map(i => (
+            <Card key={i} className="flex-1">
+              <CardContent className="pt-4 pb-3 text-center">
+                <Skeleton className="h-8 w-16 mx-auto mb-1" />
+                <Skeleton className="h-3 w-12 mx-auto" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <Card className="border-2">
+          <CardHeader className="pb-4">
+            <Skeleton className="h-5 w-32 mb-2" />
+            <Skeleton className="h-8 w-full" />
+            <Skeleton className="h-4 w-40 mt-2" />
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-3">
+              {[1, 2, 3, 4].map(i => (
+                <Skeleton key={i} className="h-16 rounded-md" />
               ))}
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-semibold">Number of Questions</label>
-            <select
-              value={questionCount}
-              onChange={e => setQuestionCount(parseInt(e.target.value))}
-              className="w-full p-2 border rounded-lg bg-card"
-            >
-              <option value="5">5 Questions</option>
-              <option value="10">10 Questions</option>
-              <option value="20">20 Questions</option>
-              <option value="30">30 Questions</option>
-            </select>
-          </div>
-
-          <Button onClick={() => setQuizStarted(true)} size="lg" className="w-full">
-            Let&apos;s Go! 🎵
-          </Button>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     );
-  }
-
-  if (!currentQuestion) {
-    return <div className="text-center p-4">Loading question...</div>;
   }
 
   const accuracy = score.total > 0 ? Math.round((score.correct / score.total) * 100) : 0;
@@ -169,7 +157,7 @@ export function QuizGame({ selectedScales, onQuizComplete }: QuizGameProps): JSX
       <div className="flex gap-4 justify-center">
         <Card className="flex-1">
           <CardContent className="pt-4 pb-3 text-center">
-            <div className="text-2xl font-bold text-[var(--success-color)]">
+            <div className="text-2xl font-bold text-foreground">
               {score.correct}/{score.total}
             </div>
             <div className="text-xs text-muted-foreground">Correct</div>
@@ -185,7 +173,7 @@ export function QuizGame({ selectedScales, onQuizComplete }: QuizGameProps): JSX
         </Card>
         <Card className="flex-1">
           <CardContent className="pt-4 pb-3 text-center">
-            <div className="text-2xl font-bold text-[var(--accent-color)]">
+            <div className="text-2xl font-bold text-foreground">
               {streak}
             </div>
             <div className="text-xs text-muted-foreground">Streak</div>
@@ -213,15 +201,18 @@ export function QuizGame({ selectedScales, onQuizComplete }: QuizGameProps): JSX
                 const showCorrect = selectedAnswer && option === currentQuestion.correctAnswer;
                 const showIncorrect = selectedAnswer && isSelected && !isCorrect;
 
-                let variant: 'default' | 'outline' | 'secondary' = 'outline';
+                let variant: 'default' | 'outline' | 'secondary' | 'ghost' = 'outline';
                 let className = 'h-16 text-lg font-semibold transition-all';
 
                 if (showCorrect) {
-                  className += ' bg-[var(--success-color)] text-white hover:opacity-90 border-[var(--success-color)]';
+                  variant = 'ghost';
+                  className += ' bg-success-solid text-white border-2 border-success';
                 } else if (showIncorrect) {
-                  className += ' bg-[var(--error-color)] text-white hover:opacity-90 border-[var(--error-color)]';
-                } else if (isSelected) {
-                  variant = 'secondary';
+                  variant = 'ghost';
+                  className += ' bg-error-solid text-white border-2 border-error';
+                } else if (selectedAnswer) {
+                  // Dim non-selected options after answer
+                  className += ' opacity-50';
                 }
 
                 return (
@@ -256,8 +247,8 @@ export function QuizGame({ selectedScales, onQuizComplete }: QuizGameProps): JSX
               >
                 {isCorrect ? (
                   <div className="p-4 rounded-lg bg-[var(--success-bg)] border-2 border-[var(--success-color)]">
-                    <div className="font-semibold text-[var(--success-color)]">
-                      ✓ Correct!
+                    <div className="font-semibold text-[var(--success-color)] flex items-center gap-2">
+                      <CheckCircle2 className="w-5 h-5" /> Correct!
                     </div>
                     <div className="text-sm text-[var(--success-color)] mt-1">
                       {currentQuestion.correctAnswer} is the {currentQuestion.degree}th mode of{' '}
@@ -266,8 +257,8 @@ export function QuizGame({ selectedScales, onQuizComplete }: QuizGameProps): JSX
                   </div>
                 ) : (
                   <div className="p-4 rounded-lg bg-[var(--error-bg)] border-2 border-[var(--error-color)]">
-                    <div className="font-semibold text-[var(--error-color)]">
-                      ✗ Incorrect
+                    <div className="font-semibold text-[var(--error-color)] flex items-center gap-2">
+                      <XCircle className="w-5 h-5" /> Incorrect
                     </div>
                     <div className="text-sm text-[var(--error-color)] mt-1">
                       The correct answer is <strong>{currentQuestion.correctAnswer}</strong> (
@@ -279,7 +270,7 @@ export function QuizGame({ selectedScales, onQuizComplete }: QuizGameProps): JSX
 
                 {score.total < questionCount && (
                   <Button onClick={handleNextQuestion} size="lg" className="w-full">
-                    Next Question →
+                    Next Question <ArrowRight className="w-4 h-4 ml-1" />
                   </Button>
                 )}
               </motion.div>

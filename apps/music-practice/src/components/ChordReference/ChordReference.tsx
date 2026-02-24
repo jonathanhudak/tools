@@ -34,7 +34,6 @@ type ViewMode = 'browser' | 'progression' | 'comparison';
 
 export function ChordReference({ onStartQuiz }: ChordReferenceProps): JSX.Element {
   const [selectedChord, setSelectedChord] = useState<Chord | null>(() => CHORD_LIBRARY[0]);
-  const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('beginner');
   const [selectedInstrument, setSelectedInstrument] = useState<Instrument>('guitar');
   const [selectedVoicing, setSelectedVoicing] = useState(0);
   const [selectedTiers, setSelectedTiers] = useState<Set<Difficulty>>(
@@ -61,29 +60,12 @@ export function ChordReference({ onStartQuiz }: ChordReferenceProps): JSX.Elemen
     return CHORD_LIBRARY.filter(chord => selectedTiers.has(chord.difficulty));
   }, [selectedTiers]);
 
-  // Filter chords by difficulty (legacy support)
-  const filteredChords = useMemo(
-    () => CHORD_LIBRARY.filter(chord => chord.difficulty === selectedDifficulty),
-    [selectedDifficulty]
-  );
-
   const handleRandomChord = useCallback(() => {
-    const chordsToUse = selectedTiers.size > 0 ? chordsInSelectedTiers : filteredChords;
-    if (chordsToUse.length > 0) {
-      const randomIndex = Math.floor(Math.random() * chordsToUse.length);
-      setSelectedChord(chordsToUse[randomIndex]);
-      setSelectedVoicing(0);
-    }
-  }, [filteredChords, chordsInSelectedTiers, selectedTiers.size]);
-
-  const handleDifficultyChange = useCallback((difficulty: Difficulty) => {
-    setSelectedDifficulty(difficulty);
-    const chordsInDifficulty = CHORD_LIBRARY.filter(c => c.difficulty === difficulty);
-    if (chordsInDifficulty.length > 0) {
-      setSelectedChord(chordsInDifficulty[0]);
-      setSelectedVoicing(0);
-    }
-  }, []);
+    const chordsToUse = chordsInSelectedTiers.length > 0 ? chordsInSelectedTiers : CHORD_LIBRARY;
+    const randomIndex = Math.floor(Math.random() * chordsToUse.length);
+    setSelectedChord(chordsToUse[randomIndex]);
+    setSelectedVoicing(0);
+  }, [chordsInSelectedTiers]);
 
   const handleInstrumentChange = useCallback((instrument: Instrument) => {
     setSelectedInstrument(instrument);
@@ -136,30 +118,6 @@ export function ChordReference({ onStartQuiz }: ChordReferenceProps): JSX.Elemen
               showCounts={true}
               compact={isMobile}
             />
-
-            {/* Difficulty Filter (legacy) */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Quick Filter</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {(['beginner', 'intermediate', 'advanced', 'jazz'] as const).map(diff => {
-                  const count = CHORD_LIBRARY.filter(c => c.difficulty === diff).length;
-                  return (
-                    <Button
-                      key={diff}
-                      variant={selectedDifficulty === diff ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => handleDifficultyChange(diff)}
-                      className="w-full justify-start text-xs md:text-sm"
-                    >
-                      <span className="capitalize">{diff}</span>
-                      <span className="ml-auto text-xs opacity-60">({count})</span>
-                    </Button>
-                  );
-                })}
-              </CardContent>
-            </Card>
 
             {/* Search & Select */}
             <ChordSearch onChordSelect={setSelectedChord} selectedChord={selectedChord || undefined} />
@@ -245,7 +203,7 @@ export function ChordReference({ onStartQuiz }: ChordReferenceProps): JSX.Elemen
                     <Card className="border-2">
                       <CardHeader>
                         <CardTitle className="text-lg">
-                          {selectedInstrument === 'guitar' ? '🎸 Guitar' : '🎹 Piano'} Voicing
+                          {selectedInstrument === 'guitar' ? 'Guitar' : 'Piano'} Voicing
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-6">

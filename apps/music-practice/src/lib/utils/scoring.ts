@@ -44,11 +44,11 @@ export interface RankInfo {
 }
 
 export const SCORE_RANKS: Record<ScoreRank, RankInfo> = {
-  S: { min: 120, label: 'Perfect!', color: 'text-yellow-500' },
-  A: { min: 100, label: 'Excellent', color: 'text-green-500' },
-  B: { min: 80, label: 'Good', color: 'text-blue-500' },
-  C: { min: 60, label: 'Keep Practicing', color: 'text-gray-500' },
-  D: { min: 0, label: 'Try Again', color: 'text-red-500' },
+  S: { min: 120, label: 'Perfect!', color: 'text-[var(--warning-color)]' },
+  A: { min: 100, label: 'Excellent', color: 'text-[var(--success-color)]' },
+  B: { min: 80, label: 'Good', color: 'text-[var(--accent-color)]' },
+  C: { min: 60, label: 'Keep Practicing', color: 'text-muted-foreground' },
+  D: { min: 0, label: 'Try Again', color: 'text-[var(--error-color)]' },
 };
 
 /**
@@ -161,10 +161,10 @@ export function isStreakMilestone(streak: number): boolean {
  * Get streak milestone message
  */
 export function getStreakMilestoneMessage(streak: number): string {
-  if (streak >= 50) return `Legendary! ${streak} streak! 🌟`;
-  if (streak >= 25) return `Unstoppable! ${streak} streak! 🔥🔥🔥`;
-  if (streak === 20) return `On fire! ${streak} streak! 🔥🔥`;
-  if (streak === 10) return `Great streak! ${streak} in a row! 🔥`;
-  if (streak === 5) return `Nice! ${streak} correct! 🎵`;
+  if (streak >= 50) return `Legendary! ${streak} streak!`;
+  if (streak >= 25) return `Unstoppable! ${streak} streak!`;
+  if (streak === 20) return `On fire! ${streak} streak!`;
+  if (streak === 10) return `Great streak! ${streak} in a row!`;
+  if (streak === 5) return `Nice! ${streak} correct!`;
   return '';
 }

@@ -1,50 +1,45 @@
 /**
- * PianoChordDiagram - Professional piano keyboard visualization for chords
+ * PianoScaleDiagram - Piano keyboard visualization for scale notes
  * Root note = solid accent fill + white text
- * Chord tones = accent-light fill + accent border + accent text
+ * Scale tones = accent-light fill + accent border + accent text
  */
 
-import type { ChordVoicing } from '@/lib/chord-library';
+import { Note } from 'tonal';
 import { motion } from 'framer-motion';
 
-interface PianoChordDiagramProps {
-  voicing: ChordVoicing;
-  chordName?: string;
+interface PianoScaleDiagramProps {
+  notes: string[];
+  rootNote?: string;
   size?: 'small' | 'medium' | 'large';
 }
 
 const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 const BLACK_KEYS_PATTERN = [1, 3, 6, 8, 10];
 
-function noteNameToMidiNumber(noteName: string): number {
-  const match = noteName.match(/([A-G]#?)(\d)/);
-  if (!match) return -1;
-  const [, note, octave] = match;
-  const noteIndex = NOTE_NAMES.indexOf(note);
-  return 12 + (parseInt(octave) * 12) + noteIndex;
-}
-
 function isBlackKey(noteIndex: number): boolean {
   return BLACK_KEYS_PATTERN.includes(noteIndex % 12);
 }
 
-export function PianoChordDiagram({ voicing, size = 'large' }: PianoChordDiagramProps) {
-  if (!voicing.piano) {
+export function PianoScaleDiagram({ notes, rootNote, size = 'large' }: PianoScaleDiagramProps) {
+  const midiNumbers = notes.map(n => Note.midi(n)).filter((m): m is number => m !== null);
+  const rootMidi = rootNote ? Note.midi(rootNote) : null;
+
+  const midiToName = new Map<number, string>();
+  notes.forEach(n => {
+    const midi = Note.midi(n);
+    if (midi !== null) midiToName.set(midi, n);
+  });
+
+  if (midiNumbers.length === 0) {
     return (
       <div className="text-center text-muted-foreground">
-        No piano voicing available
+        No scale data available
       </div>
     );
   }
 
-  const notes = voicing.piano.notes;
-  const highlightedMidiNumbers = notes.map(noteNameToMidiNumber);
-  // First note is the root
-  const rootMidi = highlightedMidiNumbers[0];
-
-  const minMidi = Math.min(...highlightedMidiNumbers);
-  const maxMidi = Math.max(...highlightedMidiNumbers);
-
+  const minMidi = Math.min(...midiNumbers);
+  const maxMidi = Math.max(...midiNumbers);
   const minOctave = Math.floor(minMidi / 12);
   const maxOctave = Math.floor(maxMidi / 12);
   const octaveSpan = maxOctave - minOctave + 1;
@@ -75,6 +70,7 @@ export function PianoChordDiagram({ voicing, size = 'large' }: PianoChordDiagram
     }
   }
   const totalWidth = whiteKeyX;
+  const pitchClasses = notes.map(n => Note.get(n).pc);
 
   return (
     <motion.div
@@ -90,11 +86,9 @@ export function PianoChordDiagram({ voicing, size = 'large' }: PianoChordDiagram
         >
           {/* White keys */}
           {whiteKeys.map(({ midiNum, x }) => {
-            const isHighlighted = highlightedMidiNumbers.includes(midiNum);
-            const isRoot = midiNum === rootMidi;
-            const octave = Math.floor(midiNum / 12);
-            const noteIndex = midiNum % 12;
-            const noteName = NOTE_NAMES[noteIndex] + octave;
+            const isHighlighted = midiNumbers.includes(midiNum);
+            const isRoot = rootMidi !== null && midiNum === rootMidi;
+            const label = midiToName.get(midiNum) || (NOTE_NAMES[midiNum % 12] + Math.floor(midiNum / 12));
 
             return (
               <g key={`white-${midiNum}`}>
@@ -116,11 +110,11 @@ export function PianoChordDiagram({ voicing, size = 'large' }: PianoChordDiagram
                     y={whiteKeyHeight + 5}
                     textAnchor="middle"
                     fontSize={size === 'large' ? 12 : 10}
-                    fill={isRoot ? 'var(--accent-color)' : 'var(--accent-color)'}
+                    fill="var(--accent-color)"
                     fontWeight={isRoot ? '900' : 'bold'}
                     className="pointer-events-none"
                   >
-                    {noteName}
+                    {label}
                   </text>
                 )}
               </g>
@@ -133,10 +127,9 @@ export function PianoChordDiagram({ voicing, size = 'large' }: PianoChordDiagram
             const nextNoteIndex = nextMidi % 12;
 
             if (nextNoteIndex !== 0 && nextNoteIndex !== 5 && isBlackKey(nextMidi)) {
-              const isHighlighted = highlightedMidiNumbers.includes(nextMidi);
-              const isRoot = nextMidi === rootMidi;
-              const octave = Math.floor(nextMidi / 12);
-              const noteName = NOTE_NAMES[nextNoteIndex] + octave;
+              const isHighlighted = midiNumbers.includes(nextMidi);
+              const isRoot = rootMidi !== null && nextMidi === rootMidi;
+              const label = midiToName.get(nextMidi) || (NOTE_NAMES[nextNoteIndex] + Math.floor(nextMidi / 12));
 
               return (
                 <g key={`black-${nextMidi}`}>
@@ -162,7 +155,7 @@ export function PianoChordDiagram({ voicing, size = 'large' }: PianoChordDiagram
                       fontWeight={isRoot ? '900' : 'bold'}
                       className="pointer-events-none"
                     >
-                      {noteName}
+                      {label}
                     </text>
                   )}
                 </g>
@@ -173,20 +166,20 @@ export function PianoChordDiagram({ voicing, size = 'large' }: PianoChordDiagram
         </svg>
       </div>
 
-      {/* Chord Notes Info */}
+      {/* Scale Tones */}
       <div className="text-center">
-        <p className="text-sm font-medium text-foreground">Chord Tones:</p>
+        <p className="text-sm font-medium text-foreground">Scale Tones:</p>
         <div className="flex gap-2 mt-2 flex-wrap justify-center">
-          {notes.map((note, i) => (
+          {pitchClasses.map((pc, i) => (
             <span
-              key={note}
+              key={`${pc}-${i}`}
               className={`px-3 py-1 rounded-full text-sm font-medium ${
                 i === 0
                   ? 'bg-[var(--accent-color)] text-white'
                   : 'bg-[var(--accent-light)] text-[var(--accent-color)] border border-[var(--accent-color)]/30'
               }`}
             >
-              {note}
+              {pc}
             </span>
           ))}
         </div>

@@ -6,7 +6,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Button } from '@hudak/ui/components/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@hudak/ui/components/card';
-import { Music, Zap, BookOpen, Grid3x3 } from 'lucide-react';
+import { Music, Zap, BookOpen, Grid3x3, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const Route = createFileRoute('/')({
@@ -20,7 +20,6 @@ function LandingRoute() {
     {
       id: 'scales-quiz',
       title: 'Scales Quiz',
-      emoji: '🎸',
       description: 'Practice major and minor scales with guitar and piano',
       details: 'Learn scale theory through interactive identification practice. Toggle between guitar fretboard and piano keyboard.',
       icon: Music,
@@ -28,8 +27,7 @@ function LandingRoute() {
     },
     {
       id: 'chord-quiz',
-      title: 'Chord Recognition',
-      emoji: '🎹',
+      title: 'Chord Quiz',
       description: 'Learn and identify chords with visual reference',
       details: 'Master chord theory with interactive learning. Browse chord diagrams and audio, then test yourself with quizzes. Supports guitar and piano.',
       icon: BookOpen,
@@ -38,7 +36,6 @@ function LandingRoute() {
     {
       id: 'chord-scale',
       title: 'Chord-Scale Matrix',
-      emoji: '🔗',
       description: 'Understand which scales work with which chords',
       details: 'Learn the relationships between chords and scales. Interactive matrix game shows you which scales contain which chords.',
       icon: Grid3x3,
@@ -47,7 +44,6 @@ function LandingRoute() {
     {
       id: 'play',
       title: 'Sight Reading',
-      emoji: '📖',
       description: 'Practice reading sheet music in real-time',
       details: 'Become a fluent music reader. See a note on staff, identify it on your instrument. Supports MIDI, microphone, and virtual keyboard.',
       icon: Zap,
@@ -86,7 +82,7 @@ function LandingRoute() {
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div>
-                        <CardTitle className="text-xl">{module.emoji} {module.title}</CardTitle>
+                        <CardTitle className="text-xl">{module.title}</CardTitle>
                         <CardDescription className="mt-1">{module.description}</CardDescription>
                       </div>
                       <div className="p-3 rounded-lg bg-[var(--accent-color)] text-white">
@@ -103,7 +99,7 @@ function LandingRoute() {
                       }}
                       className="w-full bg-[var(--accent-color)] hover:bg-[var(--accent-hover)] text-white"
                     >
-                      {module.buttonText} →
+                      {module.buttonText} <ArrowRight className="w-4 h-4 ml-1" />
                     </Button>
                   </CardContent>
                 </Card>

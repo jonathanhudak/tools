@@ -71,6 +71,23 @@ export class TabRenderer {
     }
 
     /**
+     * Walk up the DOM from the container to find the nearest ancestor with an
+     * opaque background color. Falls back to body background.
+     */
+    private resolveBackgroundColor(): string {
+        let el: HTMLElement | null = this.container;
+        while (el) {
+            const bg = getComputedStyle(el).backgroundColor;
+            // Skip transparent / rgba(0,0,0,0)
+            if (bg && bg !== 'transparent' && bg !== 'rgba(0, 0, 0, 0)') {
+                return bg;
+            }
+            el = el.parentElement;
+        }
+        return getComputedStyle(document.body).backgroundColor || '#18160d';
+    }
+
+    /**
      * Get the appropriate stroke color based on theme
      */
     private getStrokeColor(): string {
@@ -97,13 +114,17 @@ export class TabRenderer {
             }
         });
 
-        // Handle rectangles separately - only style staff lines, not white backgrounds
+        // Handle rectangles separately
+        // VexFlow uses white rects behind fret numbers to mask staff lines.
+        // In dark mode these must match the actual container background.
         const rects = svg.querySelectorAll('rect');
+        const tabBg = this.isDarkMode() ? this.resolveBackgroundColor() : 'white';
         rects.forEach(el => {
             const element = el as SVGElement;
             const fill = element.getAttribute('fill');
-            // Only style rectangles that are NOT white backgrounds (those are for tab numbers)
-            if (fill !== 'white') {
+            if (fill === 'white') {
+                element.style.fill = tabBg;
+            } else {
                 element.style.stroke = strokeColor;
                 element.style.fill = strokeColor;
             }
@@ -458,7 +479,7 @@ export class TabRenderer {
         if (svg) {
             const noteText = svg.querySelectorAll('text');
             noteText.forEach(text => {
-                (text as SVGTextElement).style.fill = '#3b82f6';
+                (text as SVGTextElement).style.fill = 'var(--accent-color, #3b82f6)';
             });
         }
     }
@@ -474,7 +495,7 @@ export class TabRenderer {
         if (!svg) return;
 
         const noteText = svg.querySelectorAll('text');
-        const color = isCorrect ? '#10b981' : '#ef4444';
+        const color = isCorrect ? 'var(--success-color, #10b981)' : 'var(--error-color, #ef4444)';
 
         noteText.forEach(text => {
             const element = text as SVGTextElement;

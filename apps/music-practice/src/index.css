@@ -59,7 +59,7 @@
 :root {
   --accent-color: #2d7a6e;
   --accent-light: #ebf4f2;
-  --accent-hover: #245f56;
+  --accent-hover: #3a9d8f;
   --success-color: #3a7d5c;
   --success-bg: #edf6f1;
   --error-color: #9b3a2f;
@@ -75,8 +75,14 @@
   --shadow-warm-sm: 0 1px 3px rgba(26,23,20,0.06), 0 1px 2px rgba(26,23,20,0.04);
   --shadow-warm-md: 0 4px 16px rgba(26,23,20,0.08), 0 1px 4px rgba(26,23,20,0.04);
   --shadow-warm-lg: 0 12px 40px rgba(26,23,20,0.1), 0 2px 8px rgba(26,23,20,0.06);
-  --piano-highlight: #f59e0b;
-  --piano-highlight-label: #f59e0b;
+  --piano-white: #ffffff;
+  --piano-black: #1c1917;
+  --piano-key-border: #d1d5db;
+  --piano-highlight: var(--accent-color);
+  --piano-highlight-label: var(--accent-color);
+  --piano-root: var(--accent-color);
+  --piano-chord-tone: var(--accent-light);
+  --piano-black-highlighted: #5ec4b5;
   --font-display: "Lora", Georgia, serif;
   --font-body: "DM Sans", system-ui, sans-serif;
   --font-mono: "DM Mono", "Courier New", monospace;
@@ -85,13 +91,16 @@
 .dark {
   --accent-color: #3daf9b;
   --accent-light: rgba(61, 175, 155, 0.14);
-  --accent-hover: #4dbfa9;
+  --accent-hover: #62d4c3;
   --success-color: #4fa87a;
   --success-bg: rgba(79, 168, 122, 0.12);
   --error-color: #c4614f;
   --error-bg: rgba(196, 97, 79, 0.12);
-  --piano-highlight: #fbbf24;
-  --piano-highlight-label: #fbbf24;
+  --piano-highlight: var(--accent-color);
+  --piano-highlight-label: var(--accent-color);
+  --piano-root: var(--accent-color);
+  --piano-chord-tone: var(--accent-light);
+  --piano-black-highlighted: #6ee0d0;
   --warning-color: #d4a843;
   --ink-primary: #f0ead9;
   --ink-secondary: #a89880;
@@ -160,6 +169,10 @@
   .text-error { color: var(--error-color); }
   .bg-success-light { background-color: var(--success-bg); }
   .bg-error-light { background-color: var(--error-bg); }
+  .bg-success-solid { background-color: var(--success-color); }
+  .bg-error-solid { background-color: var(--error-color); }
+  .border-success { border-color: var(--success-color); }
+  .border-error { border-color: var(--error-color); }
 
   /* Custom font utilities */
   .font-display { font-family: var(--font-display); }

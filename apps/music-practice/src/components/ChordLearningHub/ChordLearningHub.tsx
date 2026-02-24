@@ -8,7 +8,7 @@ import { ChordReference } from '../ChordReference/ChordReference';
 import { ChordQuiz } from '../ChordQuiz/ChordQuiz';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@hudak/ui/components/card';
 import { Button } from '@hudak/ui/components/button';
-import { BookOpen, Zap, Target, Brain } from 'lucide-react';
+import { BookOpen, Zap, Target, Brain, ArrowRight, BarChart3, Volume2, Search, TrendingUp, Trophy } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 type View = 'menu' | 'reference' | 'quiz';
@@ -110,24 +110,24 @@ export function ChordLearningHub(): JSX.Element {
               <CardContent className="space-y-4">
                 <ul className="space-y-2 text-sm">
                   <li className="flex items-center gap-2">
-                    <span className="text-lg">📊</span>
+                    <BarChart3 className="w-4 h-4 text-muted-foreground shrink-0" />
                     <span>100+ chord diagrams with fingerings</span>
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className="text-lg">🔊</span>
+                    <Volume2 className="w-4 h-4 text-muted-foreground shrink-0" />
                     <span>Audio playback for each chord</span>
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className="text-lg">🔍</span>
+                    <Search className="w-4 h-4 text-muted-foreground shrink-0" />
                     <span>Search and filter by difficulty & type</span>
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className="text-lg">📈</span>
+                    <TrendingUp className="w-4 h-4 text-muted-foreground shrink-0" />
                     <span>Progress from beginner to advanced</span>
                   </li>
                 </ul>
-                <Button className="w-full mt-4" variant="default">
-                  Open Reference Library →
+                <Button className="w-full mt-4 bg-[var(--accent-color)] hover:bg-[var(--accent-hover)] text-white">
+                  Open Reference Library <ArrowRight className="w-4 h-4 ml-1" />
                 </Button>
               </CardContent>
             </Card>
@@ -149,24 +149,24 @@ export function ChordLearningHub(): JSX.Element {
               <CardContent className="space-y-4">
                 <ul className="space-y-2 text-sm">
                   <li className="flex items-center gap-2">
-                    <span className="text-lg">⚡</span>
+                    <Zap className="w-4 h-4 text-muted-foreground shrink-0" />
                     <span>Speed Mode - Answer fast!</span>
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className="text-lg">🎯</span>
+                    <Target className="w-4 h-4 text-muted-foreground shrink-0" />
                     <span>Accuracy Mode - Get every one right</span>
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className="text-lg">📈</span>
+                    <TrendingUp className="w-4 h-4 text-muted-foreground shrink-0" />
                     <span>Progression Mode - Increasing difficulty</span>
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className="text-lg">🏆</span>
+                    <Trophy className="w-4 h-4 text-muted-foreground shrink-0" />
                     <span>Leaderboard tracking</span>
                   </li>
                 </ul>
-                <Button className="w-full mt-4" variant="default">
-                  Choose Quiz Mode →
+                <Button className="w-full mt-4 bg-[var(--accent-color)] hover:bg-[var(--accent-hover)] text-white">
+                  Choose Quiz Mode <ArrowRight className="w-4 h-4 ml-1" />
                 </Button>
               </CardContent>
             </Card>
@@ -280,21 +280,21 @@ export function ChordLearningHub(): JSX.Element {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="text-center">
-                <div className="text-4xl mb-2">🎸</div>
+                <BookOpen className="w-10 h-10 mx-auto mb-2 text-[var(--accent-color)]" />
                 <h3 className="font-semibold mb-2">Complete Library</h3>
                 <p className="text-sm text-muted-foreground">
                   Over 100 chords covering all common shapes and variations
                 </p>
               </div>
               <div className="text-center">
-                <div className="text-4xl mb-2">🎓</div>
+                <TrendingUp className="w-10 h-10 mx-auto mb-2 text-[var(--accent-color)]" />
                 <h3 className="font-semibold mb-2">Progressive Learning</h3>
                 <p className="text-sm text-muted-foreground">
                   Structured difficulty levels from beginner to advanced
                 </p>
               </div>
               <div className="text-center">
-                <div className="text-4xl mb-2">🏆</div>
+                <Trophy className="w-10 h-10 mx-auto mb-2 text-[var(--accent-color)]" />
                 <h3 className="font-semibold mb-2">Gamified Practice</h3>
                 <p className="text-sm text-muted-foreground">
                   Compete on leaderboards and track your progress over time

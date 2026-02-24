@@ -68,7 +68,7 @@ export function ScoreSummary({
           recycle={false}
           numberOfPieces={200}
           gravity={0.2}
-          colors={['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899']}
+          colors={['var(--accent-color)', 'var(--success-color)', 'var(--warning-color)', '#8B5CF6', '#EC4899']}
         />
       )}
 
@@ -106,7 +106,7 @@ export function ScoreSummary({
             <div className="space-y-4">
               <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                 <div className="flex items-center gap-3">
-                  <Target className="h-6 w-6 text-blue-500" />
+                  <Target className="h-6 w-6 text-[var(--accent-color)]" />
                   <div>
                     <p className="text-sm text-muted-foreground">Accuracy</p>
                     <p className="text-2xl font-bold">{accuracy.toFixed(0)}%</p>
@@ -125,13 +125,13 @@ export function ScoreSummary({
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: 0.3 }}
-                  className="flex items-center justify-between p-4 bg-yellow-500/10 rounded-lg border border-yellow-500/20"
+                  className="flex items-center justify-between p-4 bg-[var(--warning-bg,var(--accent-light))] rounded-lg border border-[var(--warning-color)]"
                 >
                   <div className="flex items-center gap-3">
-                    <Clock className="h-6 w-6 text-yellow-500" />
+                    <Clock className="h-6 w-6 text-[var(--warning-color)]" />
                     <div>
                       <p className="text-sm text-muted-foreground">Speed Bonus</p>
-                      <p className="text-xl font-bold text-yellow-500">
+                      <p className="text-xl font-bold text-[var(--warning-color)]">
                         +{scoreResult.speedBonus}%
                       </p>
                     </div>
@@ -144,13 +144,13 @@ export function ScoreSummary({
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: 0.4 }}
-                  className="flex items-center justify-between p-4 bg-orange-500/10 rounded-lg border border-orange-500/20"
+                  className="flex items-center justify-between p-4 bg-[var(--accent-light)] rounded-lg border border-[var(--accent-color)]"
                 >
                   <div className="flex items-center gap-3">
-                    <TrendingUp className="h-6 w-6 text-orange-500" />
+                    <TrendingUp className="h-6 w-6 text-[var(--accent-color)]" />
                     <div>
                       <p className="text-sm text-muted-foreground">Streak Multiplier</p>
-                      <p className="text-xl font-bold text-orange-500">
+                      <p className="text-xl font-bold text-[var(--accent-color)]">
                         ×{scoreResult.streakMultiplier.toFixed(1)}
                       </p>
                     </div>
@@ -162,12 +162,12 @@ export function ScoreSummary({
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.5, type: 'spring' }}
-                className="p-6 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg border-2 border-blue-500/20"
+                className="p-6 bg-[var(--accent-light)] rounded-lg border-2 border-[var(--accent-color)]"
               >
                 <p className="text-sm text-muted-foreground text-center mb-2">
                   Total Score
                 </p>
-                <p className="text-5xl font-bold text-center text-blue-500">
+                <p className="text-5xl font-bold text-center text-[var(--accent-color)]">
                   {scoreResult.finalScore}
                 </p>
                 <p className="text-center text-lg font-medium mt-2 text-muted-foreground">

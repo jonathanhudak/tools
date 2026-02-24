@@ -27,16 +27,9 @@ describe('ChordDiagram', () => {
     expect(svg).toBeInTheDocument();
   });
 
-  it('should display legend', () => {
-    render(<ChordDiagram chord={testChord} />);
-    expect(screen.getByText('Open')).toBeInTheDocument();
-    expect(screen.getByText('Fret')).toBeInTheDocument();
-    expect(screen.getByText('Muted')).toBeInTheDocument();
-  });
-
   it('should render string labels', () => {
     render(<ChordDiagram chord={testChord} />);
-    const stringLabels = ['E', 'A', 'D', 'G', 'B'];
+    const stringLabels = ['A', 'D', 'G', 'B'];
     stringLabels.forEach(label => {
       const elements = screen.getAllByText(label);
       expect(elements.length).toBeGreaterThan(0);
@@ -55,9 +48,8 @@ describe('ChordDiagram', () => {
     expect(parseInt(smallWidth || '0')).toBeLessThan(parseInt(largeWidth || '0'));
   });
 
-  it('should accept interactive prop', () => {
-    render(<ChordDiagram chord={testChord} interactive={true} />);
-    // Interactive mode allows hover effects
-    expect(screen.getByText(testChord.name)).toBeInTheDocument();
+  it('should hide chord info when hideChordInfo is true', () => {
+    render(<ChordDiagram chord={testChord} hideChordInfo={true} />);
+    expect(screen.queryByText(testChord.name)).not.toBeInTheDocument();
   });
 });

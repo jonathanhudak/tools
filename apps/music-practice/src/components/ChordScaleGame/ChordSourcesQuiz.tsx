@@ -9,9 +9,11 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@hudak/ui/components/card';
+import { Skeleton } from '@hudak/ui/components/skeleton';
 import { Button } from '@hudak/ui/components/button';
 import { Badge } from '@hudak/ui/components/badge';
 import { motion, AnimatePresence } from 'framer-motion';
+import { CheckCircle2, XCircle } from 'lucide-react';
 import {
   CHORD_SCALE_MATRIX,
   getChordSources,
@@ -143,7 +145,34 @@ export function ChordSourcesQuiz({ difficulty }: ChordSourcesQuizProps): JSX.Ele
   };
 
   if (!question) {
-    return <div>Loading...</div>;
+    return (
+      <div className="max-w-2xl mx-auto space-y-6">
+        <div className="flex gap-4 justify-center">
+          {[1, 2, 3].map(i => (
+            <Card key={i} className="flex-1">
+              <CardContent className="pt-4 pb-3 text-center">
+                <Skeleton className="h-8 w-16 mx-auto mb-1" />
+                <Skeleton className="h-3 w-12 mx-auto" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <Card className="border-2">
+          <CardHeader className="pb-4">
+            <Skeleton className="h-5 w-28 mb-2" />
+            <Skeleton className="h-8 w-full" />
+            <Skeleton className="h-4 w-56 mt-2" />
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 gap-3">
+              {[1, 2, 3, 4].map(i => (
+                <Skeleton key={i} className="h-14 rounded-md" />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   const accuracy = score.total > 0 ? Math.round((score.correct / score.total) * 100) : 0;
@@ -154,7 +183,7 @@ export function ChordSourcesQuiz({ difficulty }: ChordSourcesQuizProps): JSX.Ele
       <div className="flex gap-4 justify-center">
         <Card className="flex-1">
           <CardContent className="pt-4 pb-3 text-center">
-            <div className="text-2xl font-bold text-[var(--success-color)]">
+            <div className="text-2xl font-bold text-foreground">
               {score.correct}/{score.total}
             </div>
             <div className="text-xs text-muted-foreground">Correct</div>
@@ -170,7 +199,7 @@ export function ChordSourcesQuiz({ difficulty }: ChordSourcesQuizProps): JSX.Ele
         </Card>
         <Card className="flex-1">
           <CardContent className="pt-4 pb-3 text-center">
-            <div className="text-2xl font-bold text-[var(--accent-color)]">
+            <div className="text-2xl font-bold text-foreground">
               {streak}
             </div>
             <div className="text-xs text-muted-foreground">Streak</div>
@@ -200,15 +229,17 @@ export function ChordSourcesQuiz({ difficulty }: ChordSourcesQuizProps): JSX.Ele
                 const showCorrect = selectedAnswer && option.isCorrect;
                 const showIncorrect = selectedAnswer && isSelected && !option.isCorrect;
 
-                let variant: 'default' | 'outline' | 'secondary' = 'outline';
+                let variant: 'default' | 'outline' | 'secondary' | 'ghost' = 'outline';
                 let className = 'h-auto min-h-14 text-sm font-semibold transition-all whitespace-normal py-3 px-4';
 
                 if (showCorrect) {
-                  className += ' bg-[var(--success-color)] text-white border-[var(--success-color)]';
+                  variant = 'ghost';
+                  className += ' bg-success-solid text-white border-2 border-success';
                 } else if (showIncorrect) {
-                  className += ' bg-[var(--error-color)] text-white border-[var(--error-color)]';
-                } else if (isSelected) {
-                  variant = 'secondary';
+                  variant = 'ghost';
+                  className += ' bg-error-solid text-white border-2 border-error';
+                } else if (selectedAnswer) {
+                  className += ' opacity-50';
                 }
 
                 return (
@@ -242,18 +273,18 @@ export function ChordSourcesQuiz({ difficulty }: ChordSourcesQuizProps): JSX.Ele
                 className="space-y-4"
               >
                 {isCorrect ? (
-                  <div className="p-4 rounded-lg bg-[var(--success-bg)] border-2 border-[var(--success-color)]">
-                    <div className="font-semibold text-foreground">
-                      Correct!
+                  <div className="p-4 rounded-lg bg-success-light border-2 border-success">
+                    <div className="font-semibold text-foreground flex items-center gap-2">
+                      <CheckCircle2 className="w-5 h-5 text-[var(--success-color)]" /> Correct!
                     </div>
                     <div className="text-sm text-muted-foreground mt-1">
                       {formatSource(question.correctSource)} produces {question.chordQuality}
                     </div>
                   </div>
                 ) : (
-                  <div className="p-4 rounded-lg bg-[var(--error-bg)] border-2 border-[var(--error-color)]">
-                    <div className="font-semibold text-foreground">
-                      Incorrect
+                  <div className="p-4 rounded-lg bg-error-light border-2 border-error">
+                    <div className="font-semibold text-foreground flex items-center gap-2">
+                      <XCircle className="w-5 h-5 text-[var(--error-color)]" /> Incorrect
                     </div>
                     <div className="text-sm text-muted-foreground mt-1">
                       A valid source is <strong>{formatSource(question.correctSource)}</strong>

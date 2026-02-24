@@ -50,11 +50,11 @@ export class FallingNotesRenderer {
         hitZoneY: 350, // Y position of hit zone
         hitZoneHeight: 40,
         colors: {
-            note: '#3b82f6',
-            hitZone: 'rgba(59, 130, 246, 0.2)',
-            hitZoneBorder: '#3b82f6',
-            correct: '#10b981',
-            incorrect: '#ef4444'
+            note: 'var(--accent-color, #3b82f6)',
+            hitZone: 'var(--accent-light, rgba(59, 130, 246, 0.2))',
+            hitZoneBorder: 'var(--accent-color, #3b82f6)',
+            correct: 'var(--success-color, #10b981)',
+            incorrect: 'var(--error-color, #ef4444)'
         }
     };
 
