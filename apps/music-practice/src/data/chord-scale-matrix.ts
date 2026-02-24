@@ -403,15 +403,28 @@ const SCALE_TYPE_TO_TONAL: Record<ScaleType, string> = {
 };
 
 /**
- * Get note names (with octave) for a mode derived from a C parent scale.
- * Rotates the parent scale to start from the given degree and fixes octaves
+ * Get note names (with octave) for a mode built from any root key.
+ * Builds the parent scale from `rootNote`, then rotates to the given degree
  * so notes ascend correctly.
  *
+ * @param scaleType - The scale family
+ * @param degree    - Scale degree to rotate to (1 = root mode, 2 = second mode, etc.)
+ * @param rootNote  - Root note of the *parent* scale (e.g. 'G' for G Major). Defaults to 'C'.
+ * @param rootOctave - Starting octave for the parent scale root. Defaults to 4.
+ *
  * @example
- * getModeNotes('major', 2) // D Dorian: ["D4", "E4", "F4", "G4", "A4", "B4", "C5"]
+ * getModeNotes('major', 1)        // C Ionian:  ["C4","D4","E4","F4","G4","A4","B4"]
+ * getModeNotes('major', 2)        // D Dorian:  ["D4","E4","F4","G4","A4","B4","C5"]
+ * getModeNotes('major', 2, 'G')   // A Dorian:  ["A4","B4","C5","D5","E5","F#5","G5"]
+ * getModeNotes('major', 5, 'Bb')  // F Mixolydian: ["F4","G4","A4","Bb4","C5","D5","Eb5"]
  */
-export function getModeNotes(scaleType: ScaleType, degree: Degree, rootOctave = 4): string[] {
-  const scale = Scale.get(`C${rootOctave} ${SCALE_TYPE_TO_TONAL[scaleType]}`);
+export function getModeNotes(
+  scaleType: ScaleType,
+  degree: Degree,
+  rootNote = 'C',
+  rootOctave = 4,
+): string[] {
+  const scale = Scale.get(`${rootNote}${rootOctave} ${SCALE_TYPE_TO_TONAL[scaleType]}`);
   if (!scale.notes.length) return [];
 
   const rotateBy = degree - 1;
@@ -441,13 +454,52 @@ export function getModeNotes(scaleType: ScaleType, degree: Degree, rootOctave = 
 }
 
 /**
+ * Get just the pitch-class names (no octave) for a mode in a given key.
+ *
+ * @example
+ * getModeNoteNames('major', 5, 'G') // D Mixolydian: ["D","E","F#","G","A","B","C"]
+ */
+export function getModeNoteNames(
+  scaleType: ScaleType,
+  degree: Degree,
+  rootNote = 'C',
+): string[] {
+  return getModeNotes(scaleType, degree, rootNote).map(n => Note.get(n).pc ?? n);
+}
+
+/**
+ * Get the chord name (root + quality) for a given degree in a key.
+ *
+ * @example
+ * getChordName('major', 5, 'G') // "D7"
+ * getChordName('major', 1, 'Bb') // "BbMaj7"
+ */
+export function getChordName(
+  scaleType: ScaleType,
+  degree: Degree,
+  rootNote = 'C',
+): string {
+  const entry = getDegreeInfo(scaleType, degree);
+  if (!entry) return '';
+  const noteNames = getModeNoteNames(scaleType, degree, rootNote);
+  const chordRoot = noteNames[0] ?? '';
+  return `${chordRoot}${entry.chordQuality}`;
+}
+
+/**
  * Get MIDI note numbers for a mode.
  *
  * @example
  * getModeNotesAsMidi('major', 2) // D Dorian: [62, 64, 65, 67, 69, 71, 72]
+ * getModeNotesAsMidi('major', 2, 'G') // A Dorian: [69, 71, 72, 74, 76, 78, 79]
  */
-export function getModeNotesAsMidi(scaleType: ScaleType, degree: Degree, rootOctave = 4): number[] {
-  return getModeNotes(scaleType, degree, rootOctave)
+export function getModeNotesAsMidi(
+  scaleType: ScaleType,
+  degree: Degree,
+  rootNote = 'C',
+  rootOctave = 4,
+): number[] {
+  return getModeNotes(scaleType, degree, rootNote, rootOctave)
     .map(n => Note.midi(n))
     .filter((m): m is number => m !== null);
 }
