@@ -15,19 +15,21 @@ interface ScaleDisplayProps {
   degree: Degree;
   modeName: string;
   instrument: 'guitar' | 'piano';
+  /** Root key of the parent scale. Defaults to 'C'. */
+  rootKey?: string;
 }
 
-export function ScaleDisplay({ scaleType, degree, modeName, instrument }: ScaleDisplayProps): JSX.Element {
+export function ScaleDisplay({ scaleType, degree, modeName, instrument, rootKey = 'C' }: ScaleDisplayProps): JSX.Element {
   const rootOctave = instrument === 'guitar' ? 3 : 4;
-  const notes = useMemo(() => getModeNotes(scaleType, degree, rootOctave), [scaleType, degree, rootOctave]);
-  const midiNotes = useMemo(() => getModeNotesAsMidi(scaleType, degree, rootOctave), [scaleType, degree, rootOctave]);
+  const notes = useMemo(() => getModeNotes(scaleType, degree, rootKey, rootOctave), [scaleType, degree, rootKey, rootOctave]);
+  const midiNotes = useMemo(() => getModeNotesAsMidi(scaleType, degree, rootKey, rootOctave), [scaleType, degree, rootKey, rootOctave]);
   const pitchClasses = useMemo(() => notes.map(n => Note.get(n).pc), [notes]);
 
   return (
     <div className="space-y-4">
       <div className="min-w-0">
         <h3 className="text-sm font-semibold text-foreground">{modeName} Scale</h3>
-        <p className="text-xs text-muted-foreground">{pitchClasses.join(' \u2013 ')}</p>
+        <p className="text-xs text-muted-foreground">{pitchClasses.join(' – ')}</p>
       </div>
 
       {instrument === 'guitar' ? (
