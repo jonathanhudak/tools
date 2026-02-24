@@ -1,3 +1,10 @@
+# [1.34.0](https://github.com/jonathanhudak/tools/compare/v1.33.0...v1.34.0) (2026-02-24)
+
+
+### Features
+
+* so much ([503b547](https://github.com/jonathanhudak/tools/commit/503b5479661bc318feaf160fffe3e7d92cbf1cf3))
+
 # [1.33.0](https://github.com/jonathanhudak/tools/compare/v1.32.0...v1.33.0) (2026-02-19)
 
 
