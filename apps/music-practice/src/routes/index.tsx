@@ -6,7 +6,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Button } from '@hudak/ui/components/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@hudak/ui/components/card';
-import { Music, Zap, BookOpen, Grid3x3, ArrowRight } from 'lucide-react';
+import { Music, Zap, BookOpen, Grid3x3, ArrowRight, Disc3 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const Route = createFileRoute('/')({
@@ -40,6 +40,14 @@ function LandingRoute() {
       details: 'Learn the relationships between chords and scales. Interactive matrix game shows you which scales contain which chords.',
       icon: Grid3x3,
       buttonText: 'Play Game',
+    },
+    {
+      id: 'circle-of-fifths',
+      title: 'Circle of Fifths',
+      description: 'Navigate all 12 keys and relative minor relationships',
+      details: 'Interactive key wheel with major/minor rings, keyboard navigation, and diatonic chord reference.',
+      icon: Disc3,
+      buttonText: 'Explore',
     },
     {
       id: 'play',

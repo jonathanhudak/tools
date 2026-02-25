@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as ScalesQuizRouteImport } from './routes/scales-quiz'
 import { Route as PlayRouteImport } from './routes/play'
 import { Route as DevRouteImport } from './routes/dev'
+import { Route as CircleOfFifthsRouteImport } from './routes/circle-of-fifths'
 import { Route as ChordScaleRouteImport } from './routes/chord-scale'
 import { Route as ChordQuizRouteImport } from './routes/chord-quiz'
 import { Route as AboutRouteImport } from './routes/about'
@@ -30,6 +31,11 @@ const PlayRoute = PlayRouteImport.update({
 const DevRoute = DevRouteImport.update({
   id: '/dev',
   path: '/dev',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CircleOfFifthsRoute = CircleOfFifthsRouteImport.update({
+  id: '/circle-of-fifths',
+  path: '/circle-of-fifths',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChordScaleRoute = ChordScaleRouteImport.update({
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/chord-quiz': typeof ChordQuizRoute
   '/chord-scale': typeof ChordScaleRoute
+  '/circle-of-fifths': typeof CircleOfFifthsRoute
   '/dev': typeof DevRoute
   '/play': typeof PlayRoute
   '/scales-quiz': typeof ScalesQuizRoute
@@ -67,6 +74,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/chord-quiz': typeof ChordQuizRoute
   '/chord-scale': typeof ChordScaleRoute
+  '/circle-of-fifths': typeof CircleOfFifthsRoute
   '/dev': typeof DevRoute
   '/play': typeof PlayRoute
   '/scales-quiz': typeof ScalesQuizRoute
@@ -77,6 +85,7 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/chord-quiz': typeof ChordQuizRoute
   '/chord-scale': typeof ChordScaleRoute
+  '/circle-of-fifths': typeof CircleOfFifthsRoute
   '/dev': typeof DevRoute
   '/play': typeof PlayRoute
   '/scales-quiz': typeof ScalesQuizRoute
@@ -88,6 +97,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/chord-quiz'
     | '/chord-scale'
+    | '/circle-of-fifths'
     | '/dev'
     | '/play'
     | '/scales-quiz'
@@ -97,6 +107,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/chord-quiz'
     | '/chord-scale'
+    | '/circle-of-fifths'
     | '/dev'
     | '/play'
     | '/scales-quiz'
@@ -106,6 +117,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/chord-quiz'
     | '/chord-scale'
+    | '/circle-of-fifths'
     | '/dev'
     | '/play'
     | '/scales-quiz'
@@ -116,6 +128,7 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   ChordQuizRoute: typeof ChordQuizRoute
   ChordScaleRoute: typeof ChordScaleRoute
+  CircleOfFifthsRoute: typeof CircleOfFifthsRoute
   DevRoute: typeof DevRoute
   PlayRoute: typeof PlayRoute
   ScalesQuizRoute: typeof ScalesQuizRoute
@@ -142,6 +155,13 @@ declare module '@tanstack/react-router' {
       path: '/dev'
       fullPath: '/dev'
       preLoaderRoute: typeof DevRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/circle-of-fifths': {
+      id: '/circle-of-fifths'
+      path: '/circle-of-fifths'
+      fullPath: '/circle-of-fifths'
+      preLoaderRoute: typeof CircleOfFifthsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/chord-scale': {
@@ -180,6 +200,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   ChordQuizRoute: ChordQuizRoute,
   ChordScaleRoute: ChordScaleRoute,
+  CircleOfFifthsRoute: CircleOfFifthsRoute,
   DevRoute: DevRoute,
   PlayRoute: PlayRoute,
   ScalesQuizRoute: ScalesQuizRoute,
