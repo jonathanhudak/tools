@@ -38,22 +38,24 @@ export function ChordVoicingDisplay({
 
   const hasVoicings = chord.voicings && chord.voicings.length > 0;
 
-  // Ensure voicing index is within bounds
-  const safeVoicingIndex = hasVoicings
-    ? Math.min(selectedVoicing, chord.voicings.length - 1)
-    : 0;
-  const currentVoicing = hasVoicings ? chord.voicings[safeVoicingIndex] : undefined;
-
   // Check which voicings are available for each instrument
   const guitarVoicings = useMemo(() =>
-    hasVoicings ? chord.voicings.filter((v, _idx) => v.guitar) : [],
+    hasVoicings ? chord.voicings.filter((v) => v.guitar) : [],
     [chord, hasVoicings]
   );
 
   const pianoVoicings = useMemo(() =>
-    hasVoicings ? chord.voicings.filter((v, _idx) => v.piano) : [],
+    hasVoicings ? chord.voicings.filter((v) => v.piano) : [],
     [chord, hasVoicings]
   );
+
+  const availableVoicings = instrument === 'guitar' ? guitarVoicings : pianoVoicings;
+
+  // Ensure voicing index is within bounds for the currently selected instrument
+  const safeVoicingIndex = availableVoicings.length > 0
+    ? Math.min(selectedVoicing, availableVoicings.length - 1)
+    : 0;
+  const currentVoicing = availableVoicings[safeVoicingIndex];
 
   const handleInstrumentChange = useCallback((inst: Instrument) => {
     setInternalInstrument(inst);
@@ -74,7 +76,6 @@ export function ChordVoicingDisplay({
     );
   }
 
-  const availableVoicings = instrument === 'guitar' ? guitarVoicings : pianoVoicings;
   const voicingLabel = currentVoicing.voicingName || `Voicing ${safeVoicingIndex + 1}`;
 
   return (
@@ -141,11 +142,13 @@ export function ChordVoicingDisplay({
                     .map((fret, i) => fret >= 0 ? STANDARD_TUNING[i] + fret : null)
                     .filter((n): n is number => n !== null);
                   return midiNotes.length > 0 ? (
-                    <TabDisplay
-                      midiNotes={midiNotes}
-                      instrumentId="guitar"
-                      className="w-full max-w-sm"
-                    />
+                    <div className="w-full overflow-x-auto">
+                      <TabDisplay
+                        midiNotes={midiNotes}
+                        instrumentId="guitar"
+                        className="min-w-[700px]"
+                      />
+                    </div>
                   ) : null;
                 })()}
                 <p className="text-xs text-muted-foreground text-center max-w-xs">
@@ -172,7 +175,10 @@ export function ChordVoicingDisplay({
           {/* Audio Player */}
           {currentVoicing.guitar || currentVoicing.piano ? (
             <div className="flex items-center gap-3 pt-4 border-t">
-              <ChordPlayer chord={chord} />
+              <ChordPlayer
+                chord={chord}
+                notes={currentVoicing.piano?.notes}
+              />
             </div>
           ) : null}
         </CardContent>
