@@ -1,31 +1,74 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@hudak/ui/components/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@hudak/ui/components/card';
 import { cn } from '@hudak/ui/lib/utils';
+import type { Chord } from '@/lib/chord-library';
+import {
+  buildScaleChords,
+  getChordFromLibrary,
+  getChordName,
+  SCALE_TYPE_NAMES,
+  type Degree,
+  type ScaleType,
+} from '@/data/chord-scale-matrix';
+import { ChordVoicingDisplay } from '../ChordScaleGame/ChordVoicingDisplay';
 
 type RingFocus = 'major' | 'minor';
 type MinorMode = 'relative' | 'independent';
+type InstrumentMode = 'guitar' | 'piano';
 
-const MAJOR_KEYS = ['C', 'G', 'D', 'A', 'E', 'B', 'F♯', 'D♭', 'A♭', 'E♭', 'B♭', 'F'] as const;
-const MINOR_KEYS = ['Am', 'Em', 'Bm', 'F♯m', 'C♯m', 'G♯m', 'E♭m', 'B♭m', 'Fm', 'Cm', 'Gm', 'Dm'] as const;
-
-const DIATONIC_CHORDS: Record<string, string[]> = {
-  C: ['Cmaj7', 'Dm7', 'Em7', 'Fmaj7', 'G7', 'Am7', 'Bm7♭5'],
-  G: ['Gmaj7', 'Am7', 'Bm7', 'Cmaj7', 'D7', 'Em7', 'F♯m7♭5'],
-  D: ['Dmaj7', 'Em7', 'F♯m7', 'Gmaj7', 'A7', 'Bm7', 'C♯m7♭5'],
-  A: ['Amaj7', 'Bm7', 'C♯m7', 'Dmaj7', 'E7', 'F♯m7', 'G♯m7♭5'],
-  E: ['Emaj7', 'F♯m7', 'G♯m7', 'Amaj7', 'B7', 'C♯m7', 'D♯m7♭5'],
-  B: ['Bmaj7', 'C♯m7', 'D♯m7', 'Emaj7', 'F♯7', 'G♯m7', 'A♯m7♭5'],
-  'F♯': ['F♯maj7', 'G♯m7', 'A♯m7', 'Bmaj7', 'C♯7', 'D♯m7', 'Fm7♭5'],
-  'D♭': ['D♭maj7', 'E♭m7', 'Fm7', 'G♭maj7', 'A♭7', 'B♭m7', 'Cm7♭5'],
-  'A♭': ['A♭maj7', 'B♭m7', 'Cm7', 'D♭maj7', 'E♭7', 'Fm7', 'Gm7♭5'],
-  'E♭': ['E♭maj7', 'Fm7', 'Gm7', 'A♭maj7', 'B♭7', 'Cm7', 'Dm7♭5'],
-  'B♭': ['B♭maj7', 'Cm7', 'Dm7', 'E♭maj7', 'F7', 'Gm7', 'Am7♭5'],
-  F: ['Fmaj7', 'Gm7', 'Am7', 'B♭maj7', 'C7', 'Dm7', 'Em7♭5'],
-};
+const MAJOR_KEYS = ['C', 'G', 'D', 'A', 'E', 'B', 'F#', 'Db', 'Ab', 'Eb', 'Bb', 'F'] as const;
+const MINOR_KEYS = ['Am', 'Em', 'Bm', 'F#m', 'C#m', 'G#m', 'Ebm', 'Bbm', 'Fm', 'Cm', 'Gm', 'Dm'] as const;
+const SCALE_TYPES: ScaleType[] = ['major', 'naturalMinor', 'melodicMinor', 'harmonicMinor'];
 
 function normalizeIndex(index: number) {
   return ((index % 12) + 12) % 12;
+}
+
+function polarToCartesian(cx: number, cy: number, radius: number, angleDeg: number) {
+  const angle = (angleDeg * Math.PI) / 180;
+  return {
+    x: cx + radius * Math.cos(angle),
+    y: cy + radius * Math.sin(angle),
+  };
+}
+
+function ringSegmentPath(index: number, innerR: number, outerR: number) {
+  const start = -90 + index * 30;
+  const end = start + 30;
+
+  const p1 = polarToCartesian(210, 210, outerR, start);
+  const p2 = polarToCartesian(210, 210, outerR, end);
+  const p3 = polarToCartesian(210, 210, innerR, end);
+  const p4 = polarToCartesian(210, 210, innerR, start);
+
+  return [
+    `M ${p1.x} ${p1.y}`,
+    `A ${outerR} ${outerR} 0 0 1 ${p2.x} ${p2.y}`,
+    `L ${p3.x} ${p3.y}`,
+    `A ${innerR} ${innerR} 0 0 0 ${p4.x} ${p4.y}`,
+    'Z',
+  ].join(' ');
+}
+
+function useChordFromLibrary(chordId: string | undefined) {
+  const [chord, setChord] = useState<Chord | null>(null);
+
+  useEffect(() => {
+    if (!chordId) {
+      setChord(null);
+      return;
+    }
+    let cancelled = false;
+    getChordFromLibrary(chordId).then((c) => {
+      if (!cancelled) setChord(c ?? null);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [chordId]);
+
+  return chord;
 }
 
 export function CircleOfFifthsPage() {
@@ -33,12 +76,31 @@ export function CircleOfFifthsPage() {
   const [minorIndex, setMinorIndex] = useState(0);
   const [ringFocus, setRingFocus] = useState<RingFocus>('major');
   const [minorMode, setMinorMode] = useState<MinorMode>('relative');
+  const [scaleType, setScaleType] = useState<ScaleType>('major');
+  const [selectedDegree, setSelectedDegree] = useState<Degree>(1);
+  const [instrument, setInstrument] = useState<InstrumentMode>('guitar');
 
   const selectedMajor = MAJOR_KEYS[majorIndex];
   const selectedMinorIndex = minorMode === 'relative' ? majorIndex : minorIndex;
   const selectedMinor = MINOR_KEYS[selectedMinorIndex];
 
-  const chords = useMemo(() => DIATONIC_CHORDS[selectedMajor] ?? [], [selectedMajor]);
+  const degreeEntries = useMemo(() => buildScaleChords(scaleType), [scaleType]);
+
+  const chords = useMemo(
+    () => degreeEntries.map((entry) => ({
+      degree: entry.degree,
+      label: getChordName(scaleType, entry.degree, selectedMajor),
+      chordId: entry.chordId,
+    })),
+    [degreeEntries, scaleType, selectedMajor]
+  );
+
+  const activeChordId = chords.find((c) => c.degree === selectedDegree)?.chordId;
+  const activeChord = useChordFromLibrary(activeChordId);
+
+  useEffect(() => {
+    setSelectedDegree(1);
+  }, [scaleType, selectedMajor]);
 
   const moveClockwise = (direction: 1 | -1) => {
     if (ringFocus === 'major' || minorMode === 'relative') {
@@ -81,7 +143,7 @@ export function CircleOfFifthsPage() {
           <CardHeader className="space-y-2 pb-3 sm:pb-4">
             <CardTitle className="font-display text-2xl sm:text-3xl text-foreground">Circle of Fifths</CardTitle>
             <CardDescription className="text-sm sm:text-base">
-              Use arrow keys to move around the circle (←/→ = clockwise/counterclockwise, ↑/↓ = major/minor ring).
+              Segmented circle + chord visualization. Arrow keys: ←/→ rotate, ↑/↓ switch outer/inner ring focus.
             </CardDescription>
           </CardHeader>
 
@@ -107,6 +169,20 @@ export function CircleOfFifthsPage() {
               </Button>
             </div>
 
+            <div className="flex flex-wrap gap-2" role="group" aria-label="Scale type">
+              {SCALE_TYPES.map((type) => (
+                <Button
+                  key={type}
+                  size="sm"
+                  variant={scaleType === type ? 'default' : 'outline'}
+                  onClick={() => setScaleType(type)}
+                  className={cn(scaleType === type && 'bg-[var(--accent-color)] hover:bg-[var(--accent-hover)] text-white')}
+                >
+                  {SCALE_TYPE_NAMES[type]}
+                </Button>
+              ))}
+            </div>
+
             <div
               tabIndex={0}
               onKeyDown={onKeyDown}
@@ -115,30 +191,35 @@ export function CircleOfFifthsPage() {
             >
               <svg viewBox="0 0 420 420" className="mx-auto w-full max-w-[360px] sm:max-w-[420px]">
                 {MAJOR_KEYS.map((key, i) => {
-                  const angle = ((i - 3) * 30 * Math.PI) / 180;
-                  const x = 210 + Math.cos(angle) * 156;
-                  const y = 210 + Math.sin(angle) * 156;
                   const selected = i === majorIndex;
+                  const angle = -90 + i * 30 + 15;
+                  const labelPoint = polarToCartesian(210, 210, 160, angle);
                   return (
                     <g key={key} onClick={() => { setMajorIndex(i); setRingFocus('major'); }} className="cursor-pointer">
-                      <circle
-                        cx={x}
-                        cy={y}
-                        r={22}
+                      <path
+                        d={ringSegmentPath(i, 132, 192)}
                         fill={selected ? 'var(--accent-color)' : 'hsl(var(--color-card))'}
-                        stroke={selected ? 'var(--accent-color)' : 'hsl(var(--color-border))'}
-                        strokeWidth="1.5"
+                        stroke={'hsl(var(--color-border))'}
+                        strokeWidth="1.2"
                       />
-                      <text x={x} y={y + 5} textAnchor="middle" fontSize="14" fill={selected ? '#fff' : 'var(--ink-primary)'}>{key}</text>
+                      <text
+                        x={labelPoint.x}
+                        y={labelPoint.y + 4}
+                        textAnchor="middle"
+                        fontSize="14"
+                        fill={selected ? '#fff' : 'var(--ink-primary)'}
+                        fontWeight={selected ? '700' : '500'}
+                      >
+                        {key}
+                      </text>
                     </g>
                   );
                 })}
 
                 {MINOR_KEYS.map((key, i) => {
-                  const angle = ((i - 3) * 30 * Math.PI) / 180;
-                  const x = 210 + Math.cos(angle) * 108;
-                  const y = 210 + Math.sin(angle) * 108;
                   const selected = i === selectedMinorIndex;
+                  const angle = -90 + i * 30 + 15;
+                  const labelPoint = polarToCartesian(210, 210, 112, angle);
                   return (
                     <g
                       key={key}
@@ -152,51 +233,87 @@ export function CircleOfFifthsPage() {
                       }}
                       className="cursor-pointer"
                     >
-                      <circle
-                        cx={x}
-                        cy={y}
-                        r={17}
+                      <path
+                        d={ringSegmentPath(i, 84, 126)}
                         fill={selected ? 'var(--accent-light)' : 'hsl(var(--color-secondary))'}
-                        stroke={selected ? 'var(--accent-color)' : 'hsl(var(--color-border))'}
-                        strokeWidth="1.25"
+                        stroke={'hsl(var(--color-border))'}
+                        strokeWidth="1"
                       />
-                      <text x={x} y={y + 4} textAnchor="middle" fontSize="12" fill={selected ? 'var(--accent-color)' : 'var(--ink-secondary)'}>{key}</text>
+                      <text
+                        x={labelPoint.x}
+                        y={labelPoint.y + 3}
+                        textAnchor="middle"
+                        fontSize="12"
+                        fill={selected ? 'var(--accent-color)' : 'var(--ink-secondary)'}
+                        fontWeight={selected ? '700' : '500'}
+                      >
+                        {key}
+                      </text>
                     </g>
                   );
                 })}
 
-                <circle cx="210" cy="210" r="62" fill="hsl(var(--color-background))" stroke="hsl(var(--color-border))" />
-                <text x="210" y="200" textAnchor="middle" fill="var(--ink-secondary)" fontSize="12">Selected Key</text>
-                <text x="210" y="223" textAnchor="middle" fill="var(--ink-primary)" fontSize="26">{selectedMajor}</text>
-                <text x="210" y="242" textAnchor="middle" fill="var(--ink-tertiary)" fontSize="11">Relative: {selectedMinor}</text>
+                <circle cx="210" cy="210" r="72" fill="hsl(var(--color-background))" stroke="hsl(var(--color-border))" />
+                <text x="210" y="192" textAnchor="middle" fill="var(--ink-secondary)" fontSize="12">{SCALE_TYPE_NAMES[scaleType]}</text>
+                <text x="210" y="216" textAnchor="middle" fill="var(--ink-primary)" fontSize="26">{selectedMajor}</text>
+                <text x="210" y="236" textAnchor="middle" fill="var(--ink-tertiary)" fontSize="11">Relative: {selectedMinor}</text>
               </svg>
             </div>
 
-            <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
-              <Card className="border-border/70 bg-card shadow-[var(--shadow-warm-sm)]">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg font-display">{selectedMajor} major diatonic chords</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="grid grid-cols-2 gap-2 text-sm sm:text-base">
-                    {chords.map((chord) => (
-                      <li key={chord} className="rounded-md border border-border/60 bg-secondary px-3 py-2">{chord}</li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
+            <Card className="border-border/70 bg-card shadow-[var(--shadow-warm-sm)]">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg font-display">{selectedMajor} · {SCALE_TYPE_NAMES[scaleType]} chord set</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-4">
+                  {chords.map((chord) => (
+                    <button
+                      key={`${chord.degree}-${chord.label}`}
+                      type="button"
+                      onClick={() => setSelectedDegree(chord.degree)}
+                      className={cn(
+                        'rounded-md border px-3 py-2 text-left transition',
+                        selectedDegree === chord.degree
+                          ? 'border-[var(--accent-color)] bg-[var(--accent-light)]'
+                          : 'border-border/60 bg-secondary hover:bg-secondary/80'
+                      )}
+                    >
+                      <div className="text-[10px] uppercase tracking-wider text-[var(--ink-tertiary)]">Degree {chord.degree}</div>
+                      <div className="text-sm font-medium">{chord.label}</div>
+                    </button>
+                  ))}
+                </div>
 
-              <Card className="border-border/70 bg-card shadow-[var(--shadow-warm-sm)]">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg font-display">Navigation</CardTitle>
-                </CardHeader>
-                <CardContent className="text-sm text-[var(--ink-secondary)] space-y-2">
-                  <p>• Ring focus: <span className="text-foreground">{ringFocus === 'major' ? 'Major (outer)' : 'Minor (inner)'}</span></p>
-                  <p>• Minor mode: <span className="text-foreground">{minorMode === 'relative' ? 'Relative to selected major' : 'Independent minor selection'}</span></p>
-                  <p>• Mobile spacing tightened for small screens while keeping 44px tap targets.</p>
-                </CardContent>
-              </Card>
-            </div>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    size="sm"
+                    variant={instrument === 'guitar' ? 'default' : 'outline'}
+                    onClick={() => setInstrument('guitar')}
+                  >
+                    Guitar
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={instrument === 'piano' ? 'default' : 'outline'}
+                    onClick={() => setInstrument('piano')}
+                  >
+                    Piano
+                  </Button>
+                </div>
+
+                {activeChord ? (
+                  <ChordVoicingDisplay
+                    chord={activeChord}
+                    externalInstrument={instrument}
+                    onInstrumentChange={setInstrument}
+                  />
+                ) : (
+                  <p className="text-sm text-[var(--ink-tertiary)]">
+                    Chord visualization unavailable for this quality in the current library.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
           </CardContent>
         </Card>
       </div>
