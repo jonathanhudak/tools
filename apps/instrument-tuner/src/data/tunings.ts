@@ -1,4 +1,5 @@
 import { Note } from 'tonal';
+import { MICROTONAL_CATEGORY } from './microtonal-tunings';
 
 // Types for tunings
 export interface TuningNote {
@@ -6,6 +7,7 @@ export interface TuningNote {
   name: string; // Display name, e.g., "E", "A"
   string: number; // String number (1 = highest pitch)
   frequency: number;
+  centsOffset?: number; // Deviation from 12-TET in cents (microtonal tunings)
 }
 
 export interface Tuning {
@@ -473,6 +475,7 @@ export const INSTRUMENT_CATEGORIES: InstrumentCategory[] = [
     icon: '🎸',
     tunings: PIPA_TUNINGS,
   },
+  MICROTONAL_CATEGORY,
 ];
 
 // ============================================================================
