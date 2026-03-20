@@ -585,3 +585,38 @@ export function searchTunings(query: string): Array<{ tuning: Tuning; category: 
 
   return results;
 }
+
+export interface TuningContext {
+  category: InstrumentCategory;
+  section: string;
+}
+
+export function inferTuningSection(tuning: Tuning): string {
+  const text = `${tuning.name} ${tuning.description || ''}`.toLowerCase();
+
+  if (text.includes('microtonal') || text.includes('quarter') || text.includes('maqam') || text.includes('just intonation') || text.includes('24-tet')) return 'Microtonal';
+  if (text.includes('drop ')) return 'Drop';
+  if (text.includes('open ')) return 'Open';
+  if (text.includes('half step') || text.includes('full step') || text.includes('step down') || text.includes('standard') || text.includes('eadg') || text.includes('eadgbe')) return 'Standard & Step';
+  if (text.includes('custom')) return 'Custom';
+  return 'Alternate';
+}
+
+export function getTuningContext(tuning: Tuning): TuningContext | null {
+  for (const category of INSTRUMENT_CATEGORIES) {
+    if (category.tunings.some((t) => t.id === tuning.id)) {
+      return { category, section: inferTuningSection(tuning) };
+    }
+  }
+  return null;
+}
+
+export function getTuningsBySection(category: InstrumentCategory): Record<string, Tuning[]> {
+  const grouped: Record<string, Tuning[]> = {};
+  for (const tuning of category.tunings) {
+    const section = inferTuningSection(tuning);
+    if (!grouped[section]) grouped[section] = [];
+    grouped[section].push(tuning);
+  }
+  return grouped;
+}
