@@ -27,6 +27,7 @@ import {
   type Tuning,
   INSTRUMENT_CATEGORIES,
   findTuningById,
+  getTuningContext,
 } from '../data/tunings';
 import { parseTuningFromUrl, getTuningFromParams, updateUrlWithTuning } from '../utils/tuning-url';
 
@@ -65,6 +66,7 @@ function TunerPage() {
   const [showSettings, setShowSettings] = useState(false);
   const [showTuningSelector, setShowTuningSelector] = useState(false);
   const [showCustomBuilder, setShowCustomBuilder] = useState(false);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [autoDetectString, setAutoDetectString] = useState(true);
   const [highlightedString, setHighlightedString] = useState<number | null>(null);
   const [isStale, setIsStale] = useState(false);
@@ -91,6 +93,11 @@ function TunerPage() {
 
     if (urlTuning) {
       setCurrentTuning(urlTuning);
+      const ctx = getTuningContext(urlTuning);
+      if (ctx) setSelectedCategoryId(ctx.category.id);
+    } else {
+      const ctx = getTuningContext(DEFAULT_TUNING);
+      if (ctx) setSelectedCategoryId(ctx.category.id);
     }
   }, []);
 
@@ -107,6 +114,8 @@ function TunerPage() {
   // Update URL when tuning changes + scroll to strings (3.7)
   const handleTuningChange = useCallback((tuning: Tuning) => {
     setCurrentTuning(tuning);
+    const ctx = getTuningContext(tuning);
+    if (ctx) setSelectedCategoryId(ctx.category.id);
     updateUrlWithTuning(tuning);
     setShowTuningSelector(false);
     setShowCustomBuilder(false);
@@ -360,6 +369,8 @@ function TunerPage() {
     return 'grid-cols-4 sm:grid-cols-6 lg:grid-cols-8';
   }, [currentTuning.notes.length]);
 
+
+  const tuningContext = useMemo(() => getTuningContext(currentTuning), [currentTuning]);
   // Get tuning display
   const tuningDisplay = useMemo(() => {
     const notes = [...currentTuning.notes]
@@ -412,10 +423,20 @@ function TunerPage() {
           </div>
         </div>
 
+        <div className="text-xs text-muted-foreground px-1 flex items-center gap-1">
+          <button className="hover:text-foreground" onClick={() => setShowTuningSelector(true)}>{tuningContext?.category.name || 'Instrument'}</button>
+          <span>›</span>
+          <span>{tuningContext?.section || 'Section'}</span>
+          <span>›</span>
+          <span className="text-foreground font-medium">{currentTuning.name}</span>
+        </div>
+
         {/* Tuning Selector (collapsible) */}
         {showTuningSelector && !showCustomBuilder && (
           <TuningSelector
             currentTuning={currentTuning}
+            selectedCategoryId={selectedCategoryId}
+            onCategoryChange={setSelectedCategoryId}
             onTuningSelect={handleTuningChange}
             onCustomTuningClick={() => {
               setShowCustomBuilder(true);
