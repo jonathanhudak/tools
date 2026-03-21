@@ -1,4 +1,4 @@
-import { createRoute } from '@tanstack/react-router';
+import { createRoute, Link } from '@tanstack/react-router';
 import { Route as rootRoute } from './__root';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Note } from 'tonal';
@@ -12,8 +12,6 @@ import {
   Mic,
   MicOff,
   Settings as SettingsIcon,
-  ChevronDown,
-  ChevronUp,
   Sun,
   Moon,
   Monitor,
@@ -32,7 +30,6 @@ import {
 import { parseTuningFromUrl, getTuningFromParams, updateUrlWithTuning } from '../utils/tuning-url';
 
 // Components
-import { TuningSelector } from '../components/TuningSelector';
 import { CustomTuningBuilder } from '../components/CustomTuningBuilder';
 import { ShareTuning } from '../components/ShareTuning';
 import { useTheme } from '../hooks/use-theme';
@@ -64,9 +61,7 @@ function TunerPage() {
   const [pitchSensitivity, setPitchSensitivity] = useState(10);
   const [pitchSmoothing, setPitchSmoothing] = useState(0.7);
   const [showSettings, setShowSettings] = useState(false);
-  const [showTuningSelector, setShowTuningSelector] = useState(false);
   const [showCustomBuilder, setShowCustomBuilder] = useState(false);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [autoDetectString, setAutoDetectString] = useState(true);
   const [highlightedString, setHighlightedString] = useState<number | null>(null);
   const [isStale, setIsStale] = useState(false);
@@ -93,11 +88,7 @@ function TunerPage() {
 
     if (urlTuning) {
       setCurrentTuning(urlTuning);
-      const ctx = getTuningContext(urlTuning);
-      if (ctx) setSelectedCategoryId(ctx.category.id);
     } else {
-      const ctx = getTuningContext(DEFAULT_TUNING);
-      if (ctx) setSelectedCategoryId(ctx.category.id);
     }
   }, []);
 
@@ -114,10 +105,7 @@ function TunerPage() {
   // Update URL when tuning changes + scroll to strings (3.7)
   const handleTuningChange = useCallback((tuning: Tuning) => {
     setCurrentTuning(tuning);
-    const ctx = getTuningContext(tuning);
-    if (ctx) setSelectedCategoryId(ctx.category.id);
     updateUrlWithTuning(tuning);
-    setShowTuningSelector(false);
     setShowCustomBuilder(false);
     setHighlightedString(null);
     highlightedStringRef.current = null;
@@ -390,15 +378,13 @@ function TunerPage() {
             <h1 className="text-lg font-bold">Instrument Tuner</h1>
           </div>
           <div className="h-5 w-px bg-border hidden sm:block" />
-          {/* Tuning selector trigger */}
-          <button
-            onClick={() => setShowTuningSelector(!showTuningSelector)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-accent transition-colors cursor-pointer"
-          >
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-accent/40">
             <span className="font-semibold">{currentTuning.name}</span>
             <span className="text-sm text-muted-foreground font-mono hidden sm:inline">{tuningDisplay}</span>
-            {showTuningSelector ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
-          </button>
+          </div>
+          <Link to="/tunings">
+            <Button variant="outline" size="sm">Browse tunings</Button>
+          </Link>
           {/* Right-side controls */}
           <div className="flex items-center gap-1 ml-auto">
             <ShareTuning tuning={currentTuning} />
@@ -424,26 +410,14 @@ function TunerPage() {
         </div>
 
         <div className="text-xs text-muted-foreground px-1 flex items-center gap-1">
-          <button className="hover:text-foreground" onClick={() => setShowTuningSelector(true)}>{tuningContext?.category.name || 'Instrument'}</button>
+          <Link to="/tunings">Tunings</Link>
           <span>›</span>
-          <span>{tuningContext?.section || 'Section'}</span>
+          <Link to="/tunings/$instrumentId" params={{ instrumentId: tuningContext?.category.id || 'guitar' }}>{tuningContext?.category.name || 'Instrument'}</Link>
+          <span>›</span>
+          <Link to="/tunings/$instrumentId/$sectionId" params={{ instrumentId: tuningContext?.category.id || 'guitar', sectionId: (tuningContext?.section || 'alternate').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') }}>{tuningContext?.section || 'Section'}</Link>
           <span>›</span>
           <span className="text-foreground font-medium">{currentTuning.name}</span>
         </div>
-
-        {/* Tuning Selector (collapsible) */}
-        {showTuningSelector && !showCustomBuilder && (
-          <TuningSelector
-            currentTuning={currentTuning}
-            selectedCategoryId={selectedCategoryId}
-            onCategoryChange={setSelectedCategoryId}
-            onTuningSelect={handleTuningChange}
-            onCustomTuningClick={() => {
-              setShowCustomBuilder(true);
-              setShowTuningSelector(false);
-            }}
-          />
-        )}
 
         {/* Custom Tuning Builder */}
         {showCustomBuilder && (

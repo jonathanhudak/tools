@@ -620,3 +620,24 @@ export function getTuningsBySection(category: InstrumentCategory): Record<string
   }
   return grouped;
 }
+
+
+export function getSectionId(section: string): string {
+  return section.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
+export function getSectionsForCategory(category: InstrumentCategory): Array<{ id: string; name: string; count: number }> {
+  const map = new Map<string, number>();
+  for (const tuning of category.tunings) {
+    const name = inferTuningSection(tuning);
+    map.set(name, (map.get(name) || 0) + 1);
+  }
+  return [...map.entries()].map(([name, count]) => ({ id: getSectionId(name), name, count }));
+}
+
+export function getSectionNameById(category: InstrumentCategory, sectionId: string): string | null {
+  for (const { name } of getSectionsForCategory(category)) {
+    if (getSectionId(name) === sectionId) return name;
+  }
+  return null;
+}
