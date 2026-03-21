@@ -12,8 +12,6 @@ import {
   Mic,
   MicOff,
   Settings as SettingsIcon,
-  ChevronDown,
-  ChevronUp,
   Sun,
   Moon,
   Monitor,
@@ -28,13 +26,13 @@ import {
   INSTRUMENT_CATEGORIES,
   findTuningById,
 } from '../data/tunings';
-import { parseTuningFromUrl, getTuningFromParams, updateUrlWithTuning } from '../utils/tuning-url';
+import { parseTuningFromUrl, getTuningFromParams } from '../utils/tuning-url';
 
 // Components
-import { TuningSelector } from '../components/TuningSelector';
-import { CustomTuningBuilder } from '../components/CustomTuningBuilder';
 import { ShareTuning } from '../components/ShareTuning';
+import { TuningBreadcrumbs } from '../components/TuningBreadcrumbs';
 import { useTheme } from '../hooks/use-theme';
+import { getInstrumentForTuning, getSectionForTuning } from '../utils/tuning-navigation';
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
@@ -63,8 +61,6 @@ function TunerPage() {
   const [pitchSensitivity, setPitchSensitivity] = useState(10);
   const [pitchSmoothing, setPitchSmoothing] = useState(0.7);
   const [showSettings, setShowSettings] = useState(false);
-  const [showTuningSelector, setShowTuningSelector] = useState(false);
-  const [showCustomBuilder, setShowCustomBuilder] = useState(false);
   const [autoDetectString, setAutoDetectString] = useState(true);
   const [highlightedString, setHighlightedString] = useState<number | null>(null);
   const [isStale, setIsStale] = useState(false);
@@ -102,23 +98,6 @@ function TunerPage() {
       }
     }, 500);
     return () => clearInterval(interval);
-  }, []);
-
-  // Update URL when tuning changes + scroll to strings (3.7)
-  const handleTuningChange = useCallback((tuning: Tuning) => {
-    setCurrentTuning(tuning);
-    updateUrlWithTuning(tuning);
-    setShowTuningSelector(false);
-    setShowCustomBuilder(false);
-    setHighlightedString(null);
-    highlightedStringRef.current = null;
-    toast.success('Tuning changed', {
-      description: `Now using ${tuning.name}`,
-    });
-    // Scroll to strings after selection
-    setTimeout(() => {
-      stringsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
   }, []);
 
   // Handle pitch detection with throttling (1.1) and hysteresis (1.2)
@@ -369,33 +348,31 @@ function TunerPage() {
     return notes;
   }, [currentTuning]);
 
+
+  const currentInstrument = useMemo(() => getInstrumentForTuning(currentTuning.id), [currentTuning.id]);
+  const currentSection = useMemo(
+    () => (currentInstrument ? getSectionForTuning(currentInstrument.id, currentTuning.id) : null),
+    [currentInstrument, currentTuning.id]
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
       <div className="container mx-auto px-4 py-3 space-y-3 max-w-5xl">
-        {/* Compact header bar: title + tuning + controls all in one row */}
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="flex items-center gap-2">
-            <Music className="h-6 w-6 text-primary" />
-            <h1 className="text-lg font-bold">Instrument Tuner</h1>
+        <div className="flex items-start gap-3 flex-wrap">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <Music className="h-6 w-6 text-primary" />
+              <h1 className="text-lg font-bold">Instrument Tuner</h1>
+            </div>
+            <p className="text-sm text-muted-foreground">{currentTuning.name} · {tuningDisplay}</p>
           </div>
-          <div className="h-5 w-px bg-border hidden sm:block" />
-          {/* Tuning selector trigger */}
-          <button
-            onClick={() => setShowTuningSelector(!showTuningSelector)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-accent transition-colors cursor-pointer"
-          >
-            <span className="font-semibold">{currentTuning.name}</span>
-            <span className="text-sm text-muted-foreground font-mono hidden sm:inline">{tuningDisplay}</span>
-            {showTuningSelector ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
-          </button>
-          {/* Right-side controls */}
           <div className="flex items-center gap-1 ml-auto">
             <ShareTuning tuning={currentTuning} />
             <Button
               onClick={toggleMicrophone}
               variant={microphoneActive ? 'default' : 'outline'}
               size="sm"
-              className="gap-1.5"
+              className="gap-1.5 h-10 px-3"
             >
               {microphoneActive ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
               <span className="hidden sm:inline">{microphoneActive ? 'Mic On' : 'Mic Off'}</span>
@@ -404,7 +381,7 @@ function TunerPage() {
               onClick={() => setShowSettings(!showSettings)}
               variant="ghost"
               size="icon"
-              className="h-8 w-8"
+              className="h-10 w-10"
               aria-label={showSettings ? 'Hide settings' : 'Show settings'}
             >
               <SettingsIcon className="h-4 w-4" />
@@ -412,25 +389,18 @@ function TunerPage() {
           </div>
         </div>
 
-        {/* Tuning Selector (collapsible) */}
-        {showTuningSelector && !showCustomBuilder && (
-          <TuningSelector
-            currentTuning={currentTuning}
-            onTuningSelect={handleTuningChange}
-            onCustomTuningClick={() => {
-              setShowCustomBuilder(true);
-              setShowTuningSelector(false);
-            }}
-          />
-        )}
-
-        {/* Custom Tuning Builder */}
-        {showCustomBuilder && (
-          <CustomTuningBuilder
-            onTuningCreate={handleTuningChange}
-            onCancel={() => setShowCustomBuilder(false)}
-          />
-        )}
+        <TuningBreadcrumbs
+          items={[
+            { label: 'Tunings', to: '/tunings' },
+            ...(currentInstrument
+              ? [{ label: currentInstrument.name, to: '/tunings/$instrumentId', params: { instrumentId: currentInstrument.id } }]
+              : []),
+            ...(currentInstrument && currentSection
+              ? [{ label: currentSection.name, to: '/tunings/$instrumentId/$sectionId', params: { instrumentId: currentInstrument.id, sectionId: currentSection.id } }]
+              : []),
+            { label: currentTuning.name },
+          ]}
+        />
 
         {/* Settings Panel */}
         {showSettings && (
