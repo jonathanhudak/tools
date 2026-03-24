@@ -1,3 +1,11 @@
+# [1.37.0](https://github.com/jonathanhudak/tools/compare/v1.36.0...v1.37.0) (2026-03-24)
+
+
+### Features
+
+* tuner style improve ([42daa3a](https://github.com/jonathanhudak/tools/commit/42daa3ac07e12d154a410f1a8ad7aafb19e2f767))
+* **tuner:** add mobile route-based tuning navigation ([be3b094](https://github.com/jonathanhudak/tools/commit/be3b094b470b6c0b6cd6ebd5d3167646c5f6e2b1))
+
 # [1.36.0](https://github.com/jonathanhudak/tools/compare/v1.35.0...v1.36.0) (2026-02-24)
 
 
