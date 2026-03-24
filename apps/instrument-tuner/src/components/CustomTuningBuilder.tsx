@@ -111,7 +111,7 @@ export function CustomTuningBuilder({ onTuningCreate, onCancel }: CustomTuningBu
   };
 
   return (
-    <Card>
+    <Card className="tuner-card-surface">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Wand2 className="h-5 w-5" />
@@ -202,7 +202,7 @@ export function CustomTuningBuilder({ onTuningCreate, onCancel }: CustomTuningBu
         {/* Preview */}
         <div className="space-y-2">
           <Label>Preview</Label>
-          <div className="p-3 bg-muted rounded-md">
+          <div className="tuner-note-surface rounded-md border p-3">
             <div className="text-lg font-mono">
               {notes.map((n) => Note.pitchClass(n) || n.replace(/\d/g, '')).join(' - ')}
             </div>

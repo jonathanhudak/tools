@@ -55,7 +55,7 @@ export function TuningSelector({
       : 'w-full justify-start h-auto py-2';
 
   return (
-    <Card>
+    <Card className="tuner-card-surface">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <Music2 className="h-5 w-5" />

@@ -8,7 +8,6 @@ import { Card, CardContent } from '@hudak/ui';
 import { Button } from '@hudak/ui';
 import { Label } from '@hudak/ui';
 import {
-  Music,
   Mic,
   MicOff,
   Settings as SettingsIcon,
@@ -30,7 +29,9 @@ import { parseTuningFromUrl, getTuningFromParams } from '../utils/tuning-url';
 
 // Components
 import { ShareTuning } from '../components/ShareTuning';
+import { TunerPageHeader } from '../components/TunerPageHeader';
 import { TuningBreadcrumbs } from '../components/TuningBreadcrumbs';
+import { useReferenceTonePlayer } from '../hooks/use-reference-tone-player';
 import { useTheme } from '../hooks/use-theme';
 import { getInstrumentForTuning, getSectionForTuning } from '../utils/tuning-navigation';
 
@@ -64,7 +65,7 @@ function TunerPage() {
   const [autoDetectString, setAutoDetectString] = useState(true);
   const [highlightedString, setHighlightedString] = useState<number | null>(null);
   const [isStale, setIsStale] = useState(false);
-  const [playingString, setPlayingString] = useState<number | null>(null);
+  const { playingString, startTone, stopTone } = useReferenceTonePlayer();
 
   // Refs
   const audioManager = useRef<AudioManager | null>(null);
@@ -73,11 +74,6 @@ function TunerPage() {
   const lastPitchUpdateRef = useRef(0);
   const lastPitchTimeRef = useRef(0);
   const highlightedStringRef = useRef<number | null>(null);
-  const stringsRef = useRef<HTMLDivElement>(null);
-  const toneContextRef = useRef<AudioContext | null>(null);
-  const toneOscRef = useRef<OscillatorNode | null>(null);
-  const toneGainRef = useRef<GainNode | null>(null);
-  const toneTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Parse tuning from URL on mount
   useEffect(() => {
@@ -233,94 +229,6 @@ function TunerPage() {
     }
   }, [microphoneActive, initAudio]);
 
-  // Stop the current reference tone with a smooth fade-out
-  const stopTone = useCallback(() => {
-    if (toneTimeoutRef.current) {
-      clearTimeout(toneTimeoutRef.current);
-      toneTimeoutRef.current = null;
-    }
-    setPlayingString(null);
-
-    const gain = toneGainRef.current;
-    const osc = toneOscRef.current;
-    const ctx = toneContextRef.current;
-    if (!gain || !osc || !ctx) return;
-
-    // Clear refs immediately to prevent double-stop
-    toneGainRef.current = null;
-    toneOscRef.current = null;
-
-    try {
-      const now = ctx.currentTime;
-      gain.gain.cancelScheduledValues(now);
-      gain.gain.setValueAtTime(gain.gain.value, now);
-      gain.gain.linearRampToValueAtTime(0, now + 0.15);
-      osc.stop(now + 0.2);
-    } catch {
-      // Oscillator already stopped — ignore
-    }
-  }, []);
-
-  // Start a reference tone (plays until stopTone, max 5s safety)
-  const startTone = useCallback((frequency: number, stringNum?: number) => {
-    if (stringNum !== undefined) setPlayingString(stringNum);
-
-    // Stop any currently playing tone first
-    stopTone();
-
-    // Create or reuse AudioContext for tone playback
-    if (!toneContextRef.current || toneContextRef.current.state === 'closed') {
-      toneContextRef.current = new AudioContext();
-    }
-    const ctx = toneContextRef.current;
-    if (ctx.state === 'suspended') ctx.resume();
-
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.value = frequency;
-    gain.gain.value = 0;
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    // Fade in over 50ms, sustain until release
-    const now = ctx.currentTime;
-    gain.gain.setValueAtTime(0, now);
-    gain.gain.linearRampToValueAtTime(0.3, now + 0.05);
-
-    osc.start(now);
-    toneOscRef.current = osc;
-    toneGainRef.current = gain;
-
-    // Safety timeout — auto-stop after 5s in case release event is lost
-    toneTimeoutRef.current = setTimeout(stopTone, 5000);
-  }, [stopTone]);
-
-  // Global safety net: stop tone if pointer/touch released anywhere on the page
-  useEffect(() => {
-    const handleGlobalRelease = () => {
-      if (toneOscRef.current) stopTone();
-    };
-    window.addEventListener('pointerup', handleGlobalRelease);
-    window.addEventListener('pointercancel', handleGlobalRelease);
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) handleGlobalRelease();
-    });
-    return () => {
-      window.removeEventListener('pointerup', handleGlobalRelease);
-      window.removeEventListener('pointercancel', handleGlobalRelease);
-    };
-  }, [stopTone]);
-
-  // Cleanup tone context on unmount
-  useEffect(() => {
-    return () => {
-      if (toneTimeoutRef.current) clearTimeout(toneTimeoutRef.current);
-      toneOscRef.current?.stop();
-      toneContextRef.current?.close();
-    };
-  }, []);
-
   // Sort notes by string number (high to low for display)
   const sortedNotes = useMemo(() => {
     return [...currentTuning.notes].sort((a, b) => a.string - b.string);
@@ -356,17 +264,12 @@ function TunerPage() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
-      <div className="container mx-auto px-4 py-3 space-y-3 max-w-5xl">
-        <div className="flex items-start gap-3 flex-wrap">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <Music className="h-6 w-6 text-primary" />
-              <h1 className="text-lg font-bold">Instrument Tuner</h1>
-            </div>
-            <p className="text-sm text-muted-foreground">{currentTuning.name} · {tuningDisplay}</p>
-          </div>
-          <div className="flex items-center gap-1 ml-auto">
+    <div className="bg-tuner-shell min-h-screen">
+      <div className="container mx-auto max-w-6xl space-y-6 px-4 py-5 motion-safe:animate-[tuner-fade-up_220ms_ease-out] sm:space-y-8 sm:px-6 sm:py-8 lg:px-8">
+        <TunerPageHeader
+          subtitle={`${currentTuning.name} · ${tuningDisplay}`}
+          actions={
+            <>
             <ShareTuning tuning={currentTuning} />
             <Button
               onClick={toggleMicrophone}
@@ -386,8 +289,9 @@ function TunerPage() {
             >
               <SettingsIcon className="h-4 w-4" />
             </Button>
-          </div>
-        </div>
+            </>
+          }
+        />
 
         <TuningBreadcrumbs
           items={[
@@ -404,7 +308,7 @@ function TunerPage() {
 
         {/* Settings Panel */}
         {showSettings && (
-          <Card>
+          <Card className="tuner-card-surface">
             <CardContent className="pt-4 pb-4 space-y-3">
               {/* Auto Detect String */}
               <div className="flex items-center justify-between">
@@ -490,7 +394,7 @@ function TunerPage() {
         )}
 
         {/* Unified Tuning View: Strings + Gauge (1.4) */}
-        <div ref={stringsRef} className="lg:flex lg:gap-6 space-y-4 lg:space-y-0">
+        <div className="lg:flex lg:gap-6 space-y-4 lg:space-y-0">
           {/* Strings Grid */}
           <div className="lg:flex-1 min-w-0">
             <div className={`grid ${gridCols} gap-3`}>
@@ -505,23 +409,37 @@ function TunerPage() {
                 return (
                   <div
                     key={tuning.string}
-                    onPointerDown={(e) => { e.preventDefault(); startTone(tuning.frequency, tuning.string); }}
+                    onPointerDown={(e) => {
+                      e.preventDefault();
+                      void startTone(tuning.frequency, {
+                        key: `string-${tuning.string}`,
+                        stringNumber: tuning.string,
+                      });
+                    }}
                     onPointerUp={stopTone}
                     onPointerLeave={stopTone}
                     onPointerCancel={stopTone}
                     role="button"
                     tabIndex={0}
-                    onKeyDown={(e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); startTone(tuning.frequency, tuning.string); } }}
+                    onKeyDown={(e) => {
+                      if (e.key === ' ' || e.key === 'Enter') {
+                        e.preventDefault();
+                        void startTone(tuning.frequency, {
+                          key: `string-${tuning.string}`,
+                          stringNumber: tuning.string,
+                        });
+                      }
+                    }}
                     onKeyUp={(e) => { if (e.key === ' ' || e.key === 'Enter') stopTone(); }}
                     style={{ touchAction: 'none' }}
-                    className={`p-3 rounded-lg border-2 text-center transition-all duration-150 ease-in-out cursor-pointer select-none ${
-                      isPlaying ? 'scale-95 brightness-110 ' : ''
+                    className={`tuner-note-button tuner-note-surface relative rounded-lg border p-3 text-center transition-[border-color,background-image,box-shadow,filter] duration-150 ease-in-out cursor-pointer select-none ${
+                      isPlaying ? 'brightness-105 ' : ''
                     }${
                       isHighlighted
                         ? isInTune
-                          ? 'border-green-500 bg-green-50 dark:bg-green-950/30 ring-2 ring-green-500/30 animate-[in-tune-pulse_300ms_ease-out]'
-                          : 'border-blue-500 bg-blue-50 dark:bg-blue-950/30'
-                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                          ? 'tuner-note-active tuner-note-active-success ring-1 ring-green-500/20 animate-[in-tune-pulse_300ms_ease-out]'
+                          : 'tuner-note-active'
+                        : ''
                     }`}
                   >
                     <div className="text-xs text-muted-foreground mb-1">
