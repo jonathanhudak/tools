@@ -345,10 +345,10 @@ export function buildScaleChords(scaleType: ScaleType): ChordScaleEntry[] {
  * const info = getDegreeInfo("melodicMinor", 4);
  * // Returns: { chordQuality: "7", modeName: "Lydian Dominant", ... }
  */
-export function getDegreeInfo(scaleType: ScaleType, degree: Degree): ChordScaleEntry | null {
+export function getDegreeInfo(scaleType: ScaleType, degree: Degree): ChordScaleEntry | undefined {
   return CHORD_SCALE_MATRIX.find(
     entry => entry.scaleType === scaleType && entry.degree === degree
-  ) || null;
+  ) || undefined;
 }
 
 /**

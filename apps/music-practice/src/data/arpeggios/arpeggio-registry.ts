@@ -122,7 +122,7 @@ const seventhArpeggios: ArpeggioDefinition[] = [
   {
     id: 'minMaj7',
     name: 'Minor Major 7th',
-    chordTypeId: 'm-maj7',
+    chordTypeId: 'mMaj7',
     semitones: [0, 3, 7, 11, 12],
     intervals: ['R', 'm3', 'P5', 'M7', 'R(8va)'],
     family: 'seventh',
@@ -158,7 +158,7 @@ const seventhArpeggios: ArpeggioDefinition[] = [
   {
     id: 'augMaj7',
     name: 'Augmented Major 7th',
-    chordTypeId: 'aug-maj7',
+    chordTypeId: 'augMaj7',
     semitones: [0, 4, 8, 11, 12],
     intervals: ['R', 'M3', 'aug5', 'M7', 'R(8va)'],
     family: 'seventh',
@@ -296,7 +296,7 @@ const alteredArpeggios: ArpeggioDefinition[] = [
   {
     id: 'dom7sharp5',
     name: 'Dominant 7th ♯5',
-    chordTypeId: '7sharp5',
+    chordTypeId: 'aug7',
     semitones: [0, 4, 8, 10],
     intervals: ['R', 'M3', 'aug5', 'm7'],
     family: 'altered',
@@ -314,7 +314,7 @@ const alteredArpeggios: ArpeggioDefinition[] = [
   {
     id: 'dom7sharp9',
     name: 'Dominant 7th ♯9',
-    chordTypeId: '7sharp9',
+    chordTypeId: '7#9',
     semitones: [0, 4, 7, 10, 15],
     intervals: ['R', 'M3', 'P5', 'm7', 'aug9'],
     family: 'altered',
@@ -323,7 +323,7 @@ const alteredArpeggios: ArpeggioDefinition[] = [
   {
     id: 'dom7sharp11',
     name: 'Dominant 7th ♯11',
-    chordTypeId: '7sharp11',
+    chordTypeId: '7#11',
     semitones: [0, 4, 7, 10, 18],
     intervals: ['R', 'M3', 'P5', 'm7', 'aug11'],
     family: 'altered',

@@ -633,8 +633,8 @@ export const CHORD_TYPES: ChordTypeDefinition[] = [
   {
     id: '13sus4',
     name: 'Thirteenth Suspended Fourth',
-    symbols: ['C13sus4'],
-    primarySymbol: 'C13sus4',
+    symbols: ['13sus4'],
+    primarySymbol: '13sus4',
     semitones: [0, 5, 7, 10, 14, 21],
     intervals: ['P1', 'P4', 'P5', 'm7', 'M9', 'M13'],
     family: 'suspended',

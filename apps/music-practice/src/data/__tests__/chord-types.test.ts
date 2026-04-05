@@ -158,4 +158,25 @@ describe('Chord Types', () => {
       });
     }
   });
+
+  // ── 8. getChordsByFamily & getChordsByCategory ──────────────────────────
+  describe('getChordsByFamily', () => {
+    it('returns entries for "major" family', () => {
+      const results = getChordsByFamily('major');
+      expect(results.length).toBeGreaterThan(0);
+      for (const chord of results) {
+        expect(chord.family).toBe('major');
+      }
+    });
+  });
+
+  describe('getChordsByCategory', () => {
+    it('returns entries for "triad" category', () => {
+      const results = getChordsByCategory('triad');
+      expect(results.length).toBeGreaterThan(0);
+      for (const chord of results) {
+        expect(chord.category).toBe('triad');
+      }
+    });
+  });
 });

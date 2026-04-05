@@ -253,12 +253,12 @@ export const EXTENDED_CHORD_SCALE_MAPPINGS: readonly ExtendedChordScaleMapping[]
  */
 export function getExtendedScalesForChord(
   quality: string,
-): { primaryScale: string; secondaryScales: string[] } | null {
+): { primaryScale: string; secondaryScales: string[] } | undefined {
   const mapping = EXTENDED_CHORD_SCALE_MAPPINGS.find(
     (m) => m.chordQuality === quality,
   );
 
-  if (!mapping) return null;
+  if (!mapping) return undefined;
 
   return {
     primaryScale: mapping.primaryScale,

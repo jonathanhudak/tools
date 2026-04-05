@@ -167,11 +167,11 @@ export const AVOID_NOTES: AvoidNoteEntry[] = [
 export function getAvoidNotes(
   scaleId: string,
   chordQuality: string,
-): AvoidNoteEntry | null {
+): AvoidNoteEntry | undefined {
   return (
     AVOID_NOTES.find(
       (entry) =>
         entry.scaleId === scaleId && entry.chordQuality === chordQuality,
-    ) ?? null
+    ) ?? undefined
   );
 }
