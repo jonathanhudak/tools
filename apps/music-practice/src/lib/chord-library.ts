@@ -78,9 +78,38 @@ export function getChordById(id: string): Chord | undefined {
   return CHORD_LIBRARY.find(c => c.id === id);
 }
 
-/** Look up a chord by its shortName (e.g. "C", "Dm", "G7"). Case-sensitive exact match. */
+/** Look up a chord by its shortName (e.g. "C", "Dm", "G7"). 
+ *  Tries exact match, case-insensitive, and normalized quality suffixes. */
 export function getChordByShortName(shortName: string): Chord | undefined {
-  return CHORD_LIBRARY.find(c => c.shortName === shortName);
+  // Exact match
+  const exact = CHORD_LIBRARY.find(c => c.shortName === shortName);
+  if (exact) return exact;
+  
+  // Case-insensitive match (handles Cmaj7 vs CMaj7)
+  const lower = shortName.toLowerCase();
+  const caseMatch = CHORD_LIBRARY.find(c => c.shortName.toLowerCase() === lower);
+  if (caseMatch) return caseMatch;
+  
+  // Normalized quality aliases: mMaj7 → m(maj7), Maj7#5 → aug etc.
+  const rootMatch = shortName.match(/^([A-G][b#]?)(.*)/);
+  if (rootMatch) {
+    const [, root, quality] = rootMatch;
+    const aliases: Record<string, string[]> = {
+      'mMaj7': ['m(maj7)', 'mmaj7'],
+      'mmaj7': ['m(maj7)', 'mMaj7'],
+      'Maj7#5': ['aug(maj7)', 'augmaj7', 'aug'],
+      'maj7#5': ['aug(maj7)', 'augmaj7', 'aug'],
+      'dim7': ['dim7', 'o7'],
+    };
+    const alts = aliases[quality] || aliases[quality.toLowerCase()] || [];
+    for (const alt of alts) {
+      const altName = `${root}${alt}`;
+      const found = CHORD_LIBRARY.find(c => c.shortName.toLowerCase() === altName.toLowerCase());
+      if (found) return found;
+    }
+  }
+  
+  return undefined;
 }
 
 // PHASE 1: 50 BEGINNER CHORDS

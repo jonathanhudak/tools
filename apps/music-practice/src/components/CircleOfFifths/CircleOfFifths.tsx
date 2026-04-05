@@ -90,69 +90,51 @@ function accidentalLabel(entry: CircleOfFifthsEntry): string {
   return `${Math.abs(entry.accidentals)}♭`;
 }
 
-// ─── Chord display for a single chord in the grid ───────────────────────────
+// ─── Full chord card (renders diagram inline) ───────────────────────────────
 
-interface ChordMiniDisplayProps {
+interface ChordCardProps {
   chordName: string;
   label: string;
-  isFirst: boolean;
-  isSelected: boolean;
-  onSelect: () => void;
-}
-
-function ChordMiniDisplay({ chordName, label, isFirst, isSelected, onSelect }: ChordMiniDisplayProps) {
-
-  return (
-    <button
-      onClick={onSelect}
-      className={[
-        'flex-1 min-w-[3.5rem] text-center rounded-lg border py-2 px-1 transition-all cursor-pointer',
-        isSelected
-          ? 'border-[var(--accent-color)] bg-[var(--accent-light)] shadow-md'
-          : 'border-border/50 bg-muted/30 hover:border-[var(--accent-color)]',
-      ].join(' ')}
-    >
-      <div className="text-[10px] text-muted-foreground mb-1.5">
-        {label}
-      </div>
-      <Badge
-        variant={isFirst ? 'default' : 'secondary'}
-        className="text-xs w-full justify-center whitespace-nowrap"
-      >
-        {chordName}
-      </Badge>
-    </button>
-  );
-}
-
-// ─── Selected chord detail panel ─────────────────────────────────────────────
-
-interface ChordDetailPanelProps {
-  chord: Chord;
   instrument: 'guitar' | 'piano';
 }
 
-function ChordDetailPanel({ chord, instrument }: ChordDetailPanelProps) {
-  const voicing = chord.voicings[0];
-  if (!voicing) return null;
+function ChordCard({ chordName, label, instrument }: ChordCardProps) {
+  const chord = useMemo(() => getChordByShortName(chordName), [chordName]);
+  const voicing = chord?.voicings[0];
 
   return (
-    <div className="space-y-3 py-2">
-      <p className="text-sm font-semibold text-foreground">{chord.name}</p>
-      {instrument === 'guitar' && voicing.guitar ? (
-        <div className="flex flex-col items-center gap-3">
-          <ChordDiagram chord={chord} voicing={voicing} />
-        </div>
-      ) : instrument === 'piano' && voicing.piano ? (
-        <div className="flex flex-col items-center gap-3">
-          <PianoChordDiagram voicing={voicing} chordName={chord.name} />
-          {voicing.piano!.notes.length > 0 && (
-            <StaffDisplay notes={voicing.piano!.notes} clef="treble" />
-          )}
-        </div>
-      ) : (
-        <p className="text-xs text-muted-foreground italic">No {instrument} voicing available</p>
-      )}
+    <div className="rounded-xl border border-border/50 bg-[var(--surface-card,hsl(var(--card)))] overflow-hidden"
+      style={{ boxShadow: 'var(--shadow-sm)' }}
+    >
+      {/* Header */}
+      <div className="p-3 border-b border-border/30">
+        <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest">
+          {label}
+        </p>
+        <p className="text-lg font-semibold text-foreground leading-tight" style={{ fontFamily: 'var(--font-display)' }}>
+          {chordName}
+        </p>
+      </div>
+
+      {/* Chord diagram */}
+      <div className="p-3 flex flex-col items-center">
+        {chord && voicing ? (
+          instrument === 'guitar' && voicing.guitar ? (
+            <ChordDiagram chord={chord} voicing={voicing} size="small" />
+          ) : instrument === 'piano' && voicing.piano ? (
+            <>
+              <PianoChordDiagram voicing={voicing} chordName={chordName} size="small" />
+              {voicing.piano.notes.length > 0 && (
+                <StaffDisplay notes={voicing.piano.notes} clef="treble" />
+              )}
+            </>
+          ) : (
+            <p className="text-[10px] text-muted-foreground italic py-4">No {instrument} voicing</p>
+          )
+        ) : (
+          <p className="text-[10px] text-muted-foreground italic py-4">Not in library</p>
+        )}
+      </div>
     </div>
   );
 }
@@ -162,7 +144,6 @@ function ChordDetailPanel({ chord, instrument }: ChordDetailPanelProps) {
 export function CircleOfFifths() {
   const [selectedKey, setSelectedKey] = useState<string>('C');
   const [instrument, setInstrument] = useState<'guitar' | 'piano'>('guitar');
-  const [selectedChordName, setSelectedChordName] = useState<string | null>(null);
 
   const selectedEntry = useMemo(() => getKeyInfo(selectedKey), [selectedKey]);
   const fifthAbove = useMemo(() => getFifthAbove(selectedKey), [selectedKey]);
@@ -174,7 +155,6 @@ export function CircleOfFifths() {
 
   const handleKeyClick = useCallback((key: string) => {
     setSelectedKey(key);
-    setSelectedChordName(null);
   }, []);
 
   return (
@@ -435,69 +415,43 @@ export function CircleOfFifths() {
               <InstrumentToggle instrument={instrument} onChange={setInstrument} />
             </div>
 
-            {/* Diatonic Triads */}
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">Diatonic Triads</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex flex-wrap gap-2">
-                  {selectedEntry.chords.triads.map((chordName, i) => (
-                    <ChordMiniDisplay
-                      key={chordName}
+            {/* Diatonic Triads — horizontal card carousel */}
+            <div>
+              <h3 className="text-sm font-semibold text-foreground mb-2">Diatonic Triads</h3>
+              <div
+                className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory lg:grid lg:grid-cols-7 lg:overflow-visible"
+                style={{ scrollbarWidth: 'none' }}
+              >
+                {selectedEntry.chords.triads.map((chordName, i) => (
+                  <div key={chordName} className="snap-start flex-shrink-0 w-[160px] lg:w-auto">
+                    <ChordCard
                       chordName={chordName}
                       label={TRIAD_LABELS[i]}
-                      isFirst={i === 0}
-                      isSelected={selectedChordName === chordName}
-                      onSelect={() => setSelectedChordName(prev => prev === chordName ? null : chordName)}
+                      instrument={instrument}
                     />
-                  ))}
-                </div>
-                {/* Chord detail when a triad is selected */}
-                {selectedChordName && selectedEntry.chords.triads.includes(selectedChordName) && (() => {
-                  const chord = getChordByShortName(selectedChordName);
-                  return chord ? (
-                    <ChordDetailPanel chord={chord} instrument={instrument} />
-                  ) : (
-                    <p className="text-xs text-muted-foreground italic text-center py-2">
-                      Chord "{selectedChordName}" not in library yet
-                    </p>
-                  );
-                })()}
-              </CardContent>
-            </Card>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-            {/* Diatonic 7th Chords */}
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">Diatonic 7th Chords</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex flex-wrap gap-2">
-                  {selectedEntry.chords.sevenths.map((chordName, i) => (
-                    <ChordMiniDisplay
-                      key={chordName}
+            {/* Diatonic 7th Chords — horizontal card carousel */}
+            <div>
+              <h3 className="text-sm font-semibold text-foreground mb-2">Diatonic 7th Chords</h3>
+              <div
+                className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory lg:grid lg:grid-cols-7 lg:overflow-visible"
+                style={{ scrollbarWidth: 'none' }}
+              >
+                {selectedEntry.chords.sevenths.map((chordName, i) => (
+                  <div key={chordName} className="snap-start flex-shrink-0 w-[160px] lg:w-auto">
+                    <ChordCard
                       chordName={chordName}
                       label={SEVENTH_LABELS[i]}
-                      isFirst={i === 0}
-                      isSelected={selectedChordName === chordName}
-                      onSelect={() => setSelectedChordName(prev => prev === chordName ? null : chordName)}
+                      instrument={instrument}
                     />
-                  ))}
-                </div>
-                {/* Chord detail when a 7th chord is selected */}
-                {selectedChordName && selectedEntry.chords.sevenths.includes(selectedChordName) && (() => {
-                  const chord = getChordByShortName(selectedChordName);
-                  return chord ? (
-                    <ChordDetailPanel chord={chord} instrument={instrument} />
-                  ) : (
-                    <p className="text-xs text-muted-foreground italic text-center py-2">
-                      Chord "{selectedChordName}" not in library yet
-                    </p>
-                  );
-                })()}
-              </CardContent>
-            </Card>
+                  </div>
+                ))}
+              </div>
+            </div>
 
             {/* Quick key selector */}
             <Card>
