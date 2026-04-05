@@ -13,6 +13,8 @@
  */
 
 import { Note } from 'tonal';
+import { NOTE_TO_SEMITONE } from './intervals';
+import { CHORD_TYPES } from './chords/chord-types';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -34,6 +36,16 @@ export interface KeySpelling {
 }
 
 // ---------------------------------------------------------------------------
+// Module-level constants
+// ---------------------------------------------------------------------------
+
+const LETTERS: string[] = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+
+const LETTER_TO_NATURAL: Record<string, number> = {
+  'C': 0, 'D': 2, 'E': 4, 'F': 5, 'G': 7, 'A': 9, 'B': 11,
+};
+
+// ---------------------------------------------------------------------------
 // ENHARMONIC_MAP — semitone 0-11 → sharp & flat spellings
 // ---------------------------------------------------------------------------
 
@@ -41,7 +53,7 @@ export interface KeySpelling {
  * Maps each semitone (0-11) to its sharp and flat enharmonic spellings.
  * For natural notes the sharp and flat spellings are identical.
  */
-export const ENHARMONIC_MAP: Record<number, EnharmonicPair> = {
+export const ENHARMONIC_MAP: Record<Semitone, EnharmonicPair> = {
   0:  { sharp: 'C',  flat: 'C' },
   1:  { sharp: 'C#', flat: 'Db' },
   2:  { sharp: 'D',  flat: 'D' },
@@ -61,29 +73,22 @@ export const ENHARMONIC_MAP: Record<number, EnharmonicPair> = {
 // ---------------------------------------------------------------------------
 
 /** Normalise a semitone value to 0-11 */
-function mod12(n: number): number {
-  return ((n % 12) + 12) % 12;
+function mod12(n: number): Semitone {
+  return (((n % 12) + 12) % 12) as Semitone;
 }
 
 /** Convert a note name to its semitone (0-11). Uses Tonal for robustness. */
 function noteToSemitone(name: string): number {
   const midi = Note.midi(name + '4'); // add octave for Tonal
   if (midi == null) {
-    // Fallback manual map for edge cases Tonal may not handle
-    return manualNoteToSemitone(name);
+    // Fallback to canonical NOTE_TO_SEMITONE from intervals.ts
+    const semitone = NOTE_TO_SEMITONE[name];
+    if (semitone === undefined) {
+      throw new Error(`Unrecognized note name: ${name}`);
+    }
+    return semitone;
   }
   return mod12(midi);
-}
-
-/** Manual fallback mapping */
-function manualNoteToSemitone(name: string): number {
-  const map: Record<string, number> = {
-    'C': 0, 'C#': 1, 'Db': 1, 'D': 2, 'D#': 3, 'Eb': 3,
-    'E': 4, 'Fb': 4, 'E#': 5, 'F': 5, 'F#': 6, 'Gb': 6,
-    'G': 7, 'G#': 8, 'Ab': 8, 'A': 9, 'A#': 10, 'Bb': 10,
-    'B': 11, 'Cb': 11, 'B#': 0,
-  };
-  return map[name] ?? 0;
 }
 
 /** Extract the letter (A-G) from a note name */
@@ -284,13 +289,8 @@ function spellScaleFromRoot(
   root: string,
   rootSemitone: number,
 ): string[] {
-  const letters = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
-  const letterToNatural: Record<string, number> = {
-    'C': 0, 'D': 2, 'E': 4, 'F': 5, 'G': 7, 'A': 9, 'B': 11,
-  };
-
   const rootLetter = noteLetter(root);
-  const rootLetterIndex = letters.indexOf(rootLetter);
+  const rootLetterIndex = LETTERS.indexOf(rootLetter);
 
   const result: string[] = [];
 
@@ -300,8 +300,8 @@ function spellScaleFromRoot(
     // For 7-note scales, assign letters sequentially
     if (semitones.length <= 7) {
       const letterIndex = (rootLetterIndex + i) % 7;
-      const letter = letters[letterIndex];
-      const natural = letterToNatural[letter];
+      const letter = LETTERS[letterIndex];
+      const natural = LETTER_TO_NATURAL[letter];
       const diff = mod12(targetSemitone - natural);
 
       if (diff === 0) {
@@ -337,40 +337,10 @@ function spellScaleFromRoot(
 // ---------------------------------------------------------------------------
 
 /**
- * Chord types where we know the expected interval structure.
- * Maps chord type keywords to arrays of [intervalName, semitonesFromRoot].
+ * Dynamic lookup from chord type id → semitone array.
+ * Built from the canonical CHORD_TYPES registry.
  */
-const CHORD_TYPE_INTERVALS: Record<string, Array<[string, number]>> = {
-  // Triads
-  'major':      [['1',0], ['3',4], ['5',7]],
-  'minor':      [['1',0], ['b3',3], ['5',7]],
-  'diminished': [['1',0], ['b3',3], ['b5',6]],
-  'augmented':  [['1',0], ['3',4], ['#5',8]],
-
-  // 7th chords
-  'maj7':  [['1',0], ['3',4], ['5',7], ['7',11]],
-  'min7':  [['1',0], ['b3',3], ['5',7], ['b7',10]],
-  'dom7':  [['1',0], ['3',4], ['5',7], ['b7',10]],
-  '7':     [['1',0], ['3',4], ['5',7], ['b7',10]],
-  'dim7':  [['1',0], ['b3',3], ['b5',6], ['bb7',9]],
-  'hdim7': [['1',0], ['b3',3], ['b5',6], ['b7',10]],
-  'm7b5':  [['1',0], ['b3',3], ['b5',6], ['b7',10]],
-  'minmaj7': [['1',0], ['b3',3], ['5',7], ['7',11]],
-
-  // Extended dominants
-  'dom9':    [['1',0], ['3',4], ['5',7], ['b7',10], ['9',2]],
-  'dom11':   [['1',0], ['3',4], ['5',7], ['b7',10], ['9',2], ['11',5]],
-  'dom13':   [['1',0], ['3',4], ['5',7], ['b7',10], ['9',2], ['11',5], ['13',9]],
-
-  // Altered dominants
-  'dom7#9':  [['1',0], ['3',4], ['5',7], ['b7',10], ['#9',3]],
-  'dom7b9':  [['1',0], ['3',4], ['5',7], ['b7',10], ['b9',1]],
-  'dom7#5':  [['1',0], ['3',4], ['#5',8], ['b7',10]],
-  'dom7b5':  [['1',0], ['3',4], ['b5',6], ['b7',10]],
-  'dom7#11': [['1',0], ['3',4], ['5',7], ['b7',10], ['9',2], ['#11',6]],
-  'dom7b13': [['1',0], ['3',4], ['5',7], ['b7',10], ['9',2], ['b13',8]],
-  'alt':     [['1',0], ['3',4], ['b5',6], ['b7',10], ['b9',1], ['#9',3], ['b13',8]],
-};
+const chordIntervalMap = new Map(CHORD_TYPES.map(c => [c.id, c.semitones]));
 
 /**
  * Resolves the proper enharmonic spelling of a note in a chord context.
@@ -398,84 +368,20 @@ export function resolveForChord(
   const rootSemi = noteToSemitone(chordRoot);
   const intervalSemitones = mod12(noteSemi - rootSemi);
 
-  // Look up the chord type
+  // Look up the chord type from the dynamic map
   const normalizedType = chordType.toLowerCase().replace(/[-\s]/g, '');
-  const intervals = CHORD_TYPE_INTERVALS[normalizedType];
+  const semitones = chordIntervalMap.get(normalizedType);
 
-  if (intervals) {
-    // Find the interval that matches this semitone distance
-    const match = intervals.find(([, semi]) => semi === intervalSemitones);
-    if (match) {
-      const [intervalName] = match;
-      return spellNoteForInterval(chordRoot, rootSemi, intervalName, intervalSemitones);
+  if (semitones) {
+    // Check if this interval distance is a chord tone
+    const matchSemitone = semitones.find(s => (s % 12) === intervalSemitones);
+    if (matchSemitone !== undefined) {
+      return resolveForKey(noteSemi, chordRoot);
     }
   }
 
   // Fallback: use the key of the chord root
   return resolveForKey(noteSemi, chordRoot);
-}
-
-/**
- * Spells a note correctly for a given interval from a root.
- *
- * Interval naming determines the letter:
- * - '1','b9','9','#9' → root letter + 1
- * - '3','b3' → root letter + 2
- * - '11','#11','b5','5','#5' → etc.
- */
-function spellNoteForInterval(
-  rootName: string,
-  rootSemitone: number,
-  intervalName: string,
-  intervalSemitones: number,
-): string {
-  const letters = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
-  const letterToNatural: Record<string, number> = {
-    'C': 0, 'D': 2, 'E': 4, 'F': 5, 'G': 7, 'A': 9, 'B': 11,
-  };
-
-  const rootLetter = noteLetter(rootName);
-  const rootLetterIndex = letters.indexOf(rootLetter);
-
-  // Map interval names to scale degree offsets (how many letters above root)
-  const intervalToLetterOffset: Record<string, number> = {
-    '1': 0,
-    'b2': 1, '2': 1, 'b9': 1, '9': 1, '#9': 1,
-    'b3': 2, '3': 2,
-    '4': 3, '11': 3, '#11': 3,
-    'b5': 3, '5': 4, '#5': 4,   // b5 uses the 4th letter, 5/#5 the 5th
-    'b6': 5, '6': 5, 'b13': 5, '13': 5,
-    'bb7': 5, 'b7': 6, '7': 6,
-  };
-
-  // Special handling: b5 should use the 5th letter (same as 5), not the 4th
-  // This distinguishes b5 from #11 which use different letters
-  const letterOffsetOverrides: Record<string, number> = {
-    'b5': 4,  // b5 = 5th letter flatted
-    '#11': 3, // #11 = 4th letter sharped
-    '#5': 5,  // #5 = 5th letter sharped → actually uses 5th
-    'b13': 5, // b13 = 6th letter flatted
-    'bb7': 6, // diminished 7th
-  };
-
-  const letterOffset = letterOffsetOverrides[intervalName]
-    ?? intervalToLetterOffset[intervalName]
-    ?? 0;
-
-  const targetLetterIndex = (rootLetterIndex + letterOffset) % 7;
-  const targetLetter = letters[targetLetterIndex];
-  const naturalSemitone = letterToNatural[targetLetter];
-  const targetSemitone = mod12(rootSemitone + intervalSemitones);
-  const diff = mod12(targetSemitone - naturalSemitone);
-
-  if (diff === 0) return targetLetter;
-  if (diff === 1) return targetLetter + '#';
-  if (diff === 11) return targetLetter + 'b';
-  if (diff === 2) return targetLetter + '##';
-  if (diff === 10) return targetLetter + 'bb';
-
-  // Shouldn't happen for standard intervals, but fallback
-  return getPreferredSpelling(targetSemitone, rootName.includes('b') && rootName !== 'B');
 }
 
 // ---------------------------------------------------------------------------
@@ -545,21 +451,4 @@ export function noteNames12(preferFlats: boolean): string[] {
   return Array.from({ length: 12 }, (_, i) => getPreferredSpelling(i, preferFlats));
 }
 
-// ---------------------------------------------------------------------------
-// Default export: clean API object
-// ---------------------------------------------------------------------------
 
-export const enharmonics = {
-  ENHARMONIC_MAP,
-  KEY_SPELLING,
-  resolveForKey,
-  resolveForChord,
-  resolveForScale,
-  getPreferredSpelling,
-  getAllSpellings,
-  areEnharmonic,
-  chromaticInKey,
-  noteNames12,
-} as const;
-
-export default enharmonics;

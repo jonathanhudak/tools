@@ -48,12 +48,14 @@ export interface ChordTypeDefinition {
   family: ChordFamily;
   /** Chord category */
   category: ChordCategory;
-  /** Chord tones that are commonly omitted in voicings */
-  optionalOmissions?: string[];
+  /** Chord tones that are commonly omitted in voicings (semitone values) */
+  optionalOmissions?: number[];
   /** Short description */
   description: string;
   /** Searchable tags */
   tags: string[];
+  /** Associated scale IDs from the scale registry */
+  scales?: string[];
 }
 
 // ─── Chord Type Definitions ──────────────────────────────────────────────────
@@ -563,7 +565,7 @@ export const CHORD_TYPES: ChordTypeDefinition[] = [
     intervals: ['P1', 'M3', 'P5', 'M7', 'M9', 'M13'],
     family: 'major',
     category: 'thirteenth',
-    optionalOmissions: ['P11'],
+    optionalOmissions: [17],
     description: 'Major thirteenth — full major extension (11th typically omitted).',
     tags: ['jazz', 'thirteenth', 'major'],
   },
@@ -576,7 +578,7 @@ export const CHORD_TYPES: ChordTypeDefinition[] = [
     intervals: ['P1', 'M3', 'P5', 'm7', 'M9', 'M13'],
     family: 'dominant',
     category: 'thirteenth',
-    optionalOmissions: ['P11'],
+    optionalOmissions: [17],
     description: 'Dominant thirteenth — full dominant stack (11th typically omitted).',
     tags: ['dominant', 'thirteenth', 'jazz', 'funk'],
   },
@@ -627,6 +629,18 @@ export const CHORD_TYPES: ChordTypeDefinition[] = [
     category: 'thirteenth',
     description: 'Dominant 7♭13 — dark dominant with a lowered thirteenth.',
     tags: ['dominant', 'thirteenth', 'altered'],
+  },
+  {
+    id: '13sus4',
+    name: 'Thirteenth Suspended Fourth',
+    symbols: ['C13sus4'],
+    primarySymbol: 'C13sus4',
+    semitones: [0, 5, 7, 10, 14, 21],
+    intervals: ['P1', 'P4', 'P5', 'm7', 'M9', 'M13'],
+    family: 'suspended',
+    category: 'thirteenth',
+    description: 'Dominant sus4 with 13th extension',
+    tags: ['jazz', 'sus', 'thirteenth'],
   },
 
   // ── Altered Dominants ────────────────────────────────────────────────────
@@ -843,13 +857,21 @@ export const CHORD_TYPES: ChordTypeDefinition[] = [
   },
 ];
 
+// ─── Lookup Map (built once for O(1) access) ────────────────────────────────
+
+const chordById = new Map<string, ChordTypeDefinition>();
+
+for (const chord of CHORD_TYPES) {
+  chordById.set(chord.id, chord);
+}
+
 // ─── Helper Functions ────────────────────────────────────────────────────────
 
 /**
- * Look up a chord type by its unique id.
+ * Look up a chord type by its unique id (O(1) via Map).
  */
 export function getChordType(id: string): ChordTypeDefinition | undefined {
-  return CHORD_TYPES.find((c) => c.id === id);
+  return chordById.get(id);
 }
 
 /**
@@ -864,4 +886,23 @@ export function getChordsByFamily(family: ChordFamily): ChordTypeDefinition[] {
  */
 export function getChordsByCategory(category: ChordCategory): ChordTypeDefinition[] {
   return CHORD_TYPES.filter((c) => c.category === category);
+}
+
+/**
+ * Search chords by name, symbol, id, or tag (case-insensitive substring match).
+ * @param query - Search string
+ * @returns Array of matching chord type definitions
+ */
+export function searchChords(query: string): ChordTypeDefinition[] {
+  const q = query.toLowerCase().trim();
+  if (!q) return [];
+
+  return CHORD_TYPES.filter((chord) => {
+    if (chord.name.toLowerCase().includes(q)) return true;
+    if (chord.id.toLowerCase().includes(q)) return true;
+    if (chord.symbols.some((s) => s.toLowerCase().includes(q))) return true;
+    if (chord.tags.some((t) => t.toLowerCase().includes(q))) return true;
+    if (chord.description.toLowerCase().includes(q)) return true;
+    return false;
+  });
 }

@@ -35,13 +35,17 @@ export const INTERVALS: IntervalDefinition[] = [
   { semitones: 1,  shortName: 'm2',  fullName: 'Minor Second',         quality: 'minor',      number: 2, isCompound: false, inversion: 'M7' },
   { semitones: 2,  shortName: 'M2',  fullName: 'Major Second',         quality: 'major',      number: 2, isCompound: false, inversion: 'm7' },
   { semitones: 3,  shortName: 'm3',  fullName: 'Minor Third',          quality: 'minor',      number: 3, isCompound: false, inversion: 'M6' },
+  { semitones: 3,  shortName: 'A2',  fullName: 'Augmented Second',     quality: 'augmented',  number: 2, isCompound: false, inversion: 'd7' },
   { semitones: 4,  shortName: 'M3',  fullName: 'Major Third',          quality: 'major',      number: 3, isCompound: false, inversion: 'm6' },
+  { semitones: 4,  shortName: 'd4',  fullName: 'Diminished Fourth',    quality: 'diminished', number: 4, isCompound: false, inversion: 'A5' },
   { semitones: 5,  shortName: 'P4',  fullName: 'Perfect Fourth',       quality: 'perfect',    number: 4, isCompound: false, inversion: 'P5' },
   { semitones: 6,  shortName: 'A4',  fullName: 'Augmented Fourth',     quality: 'augmented',  number: 4, isCompound: false, inversion: 'd5' },
   { semitones: 6,  shortName: 'd5',  fullName: 'Diminished Fifth',     quality: 'diminished', number: 5, isCompound: false, inversion: 'A4' },
   { semitones: 7,  shortName: 'P5',  fullName: 'Perfect Fifth',        quality: 'perfect',    number: 5, isCompound: false, inversion: 'P4' },
+  { semitones: 8,  shortName: 'A5',  fullName: 'Augmented Fifth',      quality: 'augmented',  number: 5, isCompound: false, inversion: 'd4' },
   { semitones: 8,  shortName: 'm6',  fullName: 'Minor Sixth',          quality: 'minor',      number: 6, isCompound: false, inversion: 'M3' },
   { semitones: 9,  shortName: 'M6',  fullName: 'Major Sixth',          quality: 'major',      number: 6, isCompound: false, inversion: 'm3' },
+  { semitones: 9,  shortName: 'd7',  fullName: 'Diminished Seventh',   quality: 'diminished', number: 7, isCompound: false, inversion: 'A2' },
   { semitones: 10, shortName: 'm7',  fullName: 'Minor Seventh',        quality: 'minor',      number: 7, isCompound: false, inversion: 'M2' },
   { semitones: 11, shortName: 'M7',  fullName: 'Major Seventh',        quality: 'major',      number: 7, isCompound: false, inversion: 'm2' },
   { semitones: 12, shortName: 'P8',  fullName: 'Perfect Octave',       quality: 'perfect',    number: 8, isCompound: false, inversion: 'P1' },
@@ -52,6 +56,7 @@ export const INTERVALS: IntervalDefinition[] = [
 export const COMPOUND_INTERVALS: IntervalDefinition[] = [
   { semitones: 13, shortName: 'm9',  fullName: 'Minor Ninth',          quality: 'minor',      number: 9,  isCompound: true, simpleEquivalent: 'm2', inversion: 'M7' },
   { semitones: 14, shortName: 'M9',  fullName: 'Major Ninth',          quality: 'major',      number: 9,  isCompound: true, simpleEquivalent: 'M2', inversion: 'm7' },
+  { semitones: 15, shortName: 'A9',  fullName: 'Augmented Ninth',      quality: 'augmented',  number: 9,  isCompound: true, simpleEquivalent: 'A2', inversion: 'd7' },
   { semitones: 15, shortName: 'm10', fullName: 'Minor Tenth',          quality: 'minor',      number: 10, isCompound: true, simpleEquivalent: 'm3', inversion: 'M6' },
   { semitones: 16, shortName: 'M10', fullName: 'Major Tenth',          quality: 'major',      number: 10, isCompound: true, simpleEquivalent: 'M3', inversion: 'm6' },
   { semitones: 17, shortName: 'P11', fullName: 'Perfect Eleventh',     quality: 'perfect',    number: 11, isCompound: true, simpleEquivalent: 'P4', inversion: 'P5' },
@@ -66,7 +71,7 @@ export const ALL_INTERVALS: IntervalDefinition[] = [...INTERVALS, ...COMPOUND_IN
 
 // ─── Chromatic note mapping (for semitonesBetween) ───────────────────────────
 
-const NOTE_TO_SEMITONE: Record<string, number> = {
+export const NOTE_TO_SEMITONE: Record<string, number> = {
   'C': 0, 'B#': 0,
   'C#': 1, 'Db': 1,
   'D': 2,
@@ -87,7 +92,7 @@ const NOTE_TO_SEMITONE: Record<string, number> = {
  * Get the first interval definition matching the given semitone count.
  * Searches simple intervals first, then compound.
  */
-export function getInterval(semitones: number): IntervalDefinition | undefined {
+export function getIntervalBySemitones(semitones: number): IntervalDefinition | undefined {
   return ALL_INTERVALS.find((i) => i.semitones === semitones);
 }
 
@@ -95,7 +100,7 @@ export function getInterval(semitones: number): IntervalDefinition | undefined {
  * Get the short name of the first interval matching the semitone count.
  */
 export function getIntervalName(semitones: number): string | undefined {
-  return getInterval(semitones)?.shortName;
+  return getIntervalBySemitones(semitones)?.shortName;
 }
 
 /**

@@ -50,6 +50,10 @@ export interface ScaleDefinition {
   description: string;
   /** Searchable tags */
   tags: string[];
+  /** Chord qualities naturally produced by this scale's harmonization */
+  chordQualities?: string[];
+  /** Notes to avoid in certain harmonic contexts */
+  avoidNotes?: { degree: number; reason: string }[];
 }
 
 // ─── Diatonic Modes ──────────────────────────────────────────────────────────
