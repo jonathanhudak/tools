@@ -14,7 +14,7 @@ import { motion } from 'framer-motion';
 type View = 'menu' | 'reference' | 'quiz';
 
 export function ScaleLearningHub(): JSX.Element {
-  const [view, setView] = useState<View>('menu');
+  const [view, setView] = useState<View>('reference');
 
   // Reference View
   if (view === 'reference') {

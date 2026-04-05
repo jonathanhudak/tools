@@ -11,6 +11,7 @@ import { PianoChordDiagram } from '../ChordReference/PianoChordDiagram';
 import { ChordPlayer } from '../ChordReference/ChordPlayer';
 import { InstrumentToggle } from '../Piano/InstrumentToggle';
 import { TabDisplay } from '../notation/TabDisplay';
+import { StaffDisplay } from '../notation/StaffDisplay';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@hudak/ui/components/select';
 import { Label } from '@hudak/ui/components/label';
 import { motion } from 'framer-motion';
@@ -158,6 +159,9 @@ export function ChordVoicingDisplay({
                   voicing={currentVoicing}
                   chordName={chord.name}
                 />
+                {currentVoicing.piano!.notes.length > 0 && (
+                  <StaffDisplay notes={currentVoicing.piano!.notes} clef="treble" />
+                )}
                 <p className="text-xs text-muted-foreground text-center max-w-xs">
                   {currentVoicing.piano.description}
                 </p>

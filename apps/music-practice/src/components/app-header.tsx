@@ -5,11 +5,12 @@ import { ThemeToggle } from './theme-toggle';
 import { Button } from '@hudak/ui/components/button';
 
 const navLinks = [
-  { to: '/' as const, label: 'Practice' },
-  { to: '/scales-quiz' as const, label: 'Scales Quiz' },
-  { to: '/chord-quiz' as const, label: 'Chord Quiz' },
+  { to: '/' as const, label: 'Home' },
+  { to: '/scales-quiz' as const, label: 'Scales' },
+  { to: '/chord-quiz' as const, label: 'Chords' },
   { to: '/chord-scale' as const, label: 'Chord-Scale Matrix' },
   { to: '/circle-of-fifths' as const, label: 'Circle of Fifths' },
+  { to: '/play' as const, label: 'Sight Reading' },
 ] as const;
 
 export function AppHeader() {

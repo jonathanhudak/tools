@@ -21,7 +21,7 @@ interface QuizConfig {
 }
 
 export function ChordLearningHub(): JSX.Element {
-  const [view, setView] = useState<View>('menu');
+  const [view, setView] = useState<View>('reference');
   const [quizConfig, setQuizConfig] = useState<QuizConfig | null>(null);
 
   const handleStartQuiz = (mode: QuizMode, difficulty: Difficulty) => {

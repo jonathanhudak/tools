@@ -362,15 +362,15 @@ export function CircleOfFifths() {
                 <CardTitle className="text-base">Diatonic Triads</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-7 gap-1">
+                <div className="flex flex-wrap gap-2">
                   {selectedEntry.chords.triads.map((chord, i) => (
-                    <div key={chord} className="text-center">
-                      <div className="text-[10px] text-muted-foreground mb-1">
+                    <div key={chord} className="flex-1 min-w-[3.5rem] text-center rounded-lg border border-border/50 bg-muted/30 py-2 px-1">
+                      <div className="text-[10px] text-muted-foreground mb-1.5">
                         {TRIAD_LABELS[i]}
                       </div>
                       <Badge
                         variant={i === 0 ? 'default' : 'secondary'}
-                        className="text-xs w-full justify-center"
+                        className="text-xs w-full justify-center whitespace-nowrap"
                       >
                         {chord}
                       </Badge>
@@ -386,15 +386,15 @@ export function CircleOfFifths() {
                 <CardTitle className="text-base">Diatonic 7th Chords</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-7 gap-1">
+                <div className="flex flex-wrap gap-2">
                   {selectedEntry.chords.sevenths.map((chord, i) => (
-                    <div key={chord} className="text-center">
-                      <div className="text-[10px] text-muted-foreground mb-1">
+                    <div key={chord} className="flex-1 min-w-[3.5rem] text-center rounded-lg border border-border/50 bg-muted/30 py-2 px-1">
+                      <div className="text-[10px] text-muted-foreground mb-1.5">
                         {SEVENTH_LABELS[i]}
                       </div>
                       <Badge
                         variant={i === 0 ? 'default' : 'secondary'}
-                        className="text-xs w-full justify-center"
+                        className="text-xs w-full justify-center whitespace-nowrap"
                       >
                         {chord}
                       </Badge>

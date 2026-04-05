@@ -6,6 +6,7 @@
 import { useMemo } from 'react';
 import { Note } from 'tonal';
 import { TabDisplay } from '../notation/TabDisplay';
+import { StaffDisplay } from '../notation/StaffDisplay';
 import { PianoScaleDiagram } from './PianoScaleDiagram';
 import { getModeNotes, getModeNotesAsMidi } from '@/data/chord-scale-matrix';
 import type { ScaleType, Degree } from '@/data/chord-scale-matrix';
@@ -35,7 +36,12 @@ export function ScaleDisplay({ scaleType, degree, modeName, instrument, rootKey 
       {instrument === 'guitar' ? (
         <TabDisplay midiNotes={midiNotes} />
       ) : (
-        <PianoScaleDiagram notes={notes} rootNote={notes[0]} />
+        <>
+          <PianoScaleDiagram notes={notes} rootNote={notes[0]} />
+          {notes.length > 0 && (
+            <StaffDisplay notes={notes} clef="treble" />
+          )}
+        </>
       )}
     </div>
   );

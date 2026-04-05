@@ -23,12 +23,7 @@ function ChordQuizPage() {
           Back
         </Button>
 
-        <div className="bg-card backdrop-blur rounded-lg p-8 border border-border">
-          <h1 className="text-3xl font-bold font-display text-foreground mb-2">Chord Quiz</h1>
-          <p className="text-muted-foreground mb-8">Learn and practice chords with visual reference and interactive quizzes. Toggle between guitar and piano.</p>
-          
-          <ChordLearningHub />
-        </div>
+        <ChordLearningHub />
       </div>
     </div>
   )

@@ -11,7 +11,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Badge } from '@hudak/ui/components/badge';
 import { InstrumentToggle } from '../Piano/InstrumentToggle';
 import { ScaleDisplay } from '../ScaleReference/ScaleDisplay';
@@ -281,86 +281,41 @@ interface MobileCarouselProps {
 function MobileCarousel({
   degrees, rootKey, selectedDegree, onSelect, instrument, onInstrumentChange,
 }: MobileCarouselProps) {
-  const [activePage, setActivePage] = useState(0);
-
-  const goLeft = () => setActivePage(p => Math.max(0, p - 1));
-  const goRight = () => setActivePage(p => Math.min(degrees.length - 1, p + 1));
-
-  const entry = degrees[activePage];
-  const isSelected = selectedDegree === entry.degree;
-
-  // When scale type changes, reset to page 0
-  useEffect(() => { setActivePage(0); }, [degrees]);
+  const selectedEntry = selectedDegree !== null
+    ? degrees.find(d => d.degree === selectedDegree) ?? null
+    : null;
 
   return (
     <div className="space-y-3">
-      {/* Navigation row */}
-      <div className="flex items-center gap-2">
-        <button
-          onClick={goLeft}
-          disabled={activePage === 0}
-          className="p-2 rounded-lg border border-[var(--border-medium)] bg-[var(--surface-card)] disabled:opacity-30 transition-opacity"
-          aria-label="Previous degree"
-        >
-          <ChevronLeft className="w-4 h-4 text-[var(--ink-secondary)]" />
-        </button>
-
-        {/* Degree dot indicators */}
-        <div className="flex gap-1.5 flex-1 justify-center">
-          {degrees.map((d, i) => (
-            <button
-              key={d.degree}
-              onClick={() => setActivePage(i)}
-              className={[
-                'w-2 h-2 rounded-full transition-all',
-                i === activePage
-                  ? 'bg-[var(--accent)] scale-125'
-                  : 'bg-[var(--border-medium)]',
-              ].join(' ')}
-              aria-label={`Degree ${d.degree}`}
+      {/* Horizontal scrollable row of all 7 cards */}
+      <div
+        className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory"
+        style={{ scrollbarWidth: 'none' }}
+      >
+        {degrees.map(entry => (
+          <div key={entry.degree} className="snap-center flex-shrink-0 w-[140px]">
+            <DegreeCard
+              entry={entry}
+              rootKey={rootKey}
+              isSelected={selectedDegree === entry.degree}
+              onSelect={() => onSelect(entry.degree)}
+              compact
             />
-          ))}
-        </div>
-
-        <button
-          onClick={goRight}
-          disabled={activePage === degrees.length - 1}
-          className="p-2 rounded-lg border border-[var(--border-medium)] bg-[var(--surface-card)] disabled:opacity-30 transition-opacity"
-          aria-label="Next degree"
-        >
-          <ChevronRight className="w-4 h-4 text-[var(--ink-secondary)]" />
-        </button>
+          </div>
+        ))}
       </div>
 
-      {/* Active degree card */}
+      {/* Expanded detail — shown below when a degree is selected */}
       <AnimatePresence mode="wait">
-        <motion.div
-          key={`${entry.degree}-${entry.scaleType}-${rootKey}`}
-          initial={{ opacity: 0, x: 12 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -12 }}
-          transition={{ duration: 0.15 }}
-        >
-          <DegreeCard
-            entry={entry}
-            rootKey={rootKey}
-            isSelected={isSelected}
-            onSelect={() => onSelect(entry.degree)}
-            compact
-          />
-        </motion.div>
-      </AnimatePresence>
-
-      {/* Expanded detail — always shown on mobile below the card */}
-      <AnimatePresence>
-        {isSelected && (
+        {selectedEntry && (
           <motion.div
+            key={`${selectedEntry.degree}-${selectedEntry.scaleType}-${rootKey}`}
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
           >
             <DegreeDetail
-              entry={entry}
+              entry={selectedEntry}
               rootKey={rootKey}
               instrument={instrument}
               onInstrumentChange={onInstrumentChange}
@@ -463,25 +418,26 @@ export function ChordScaleMatrix({
       </div>
 
       {/* ── Desktop: Grid + detail panel (hidden below md) ───────── */}
-      <div className="hidden md:flex gap-6">
+      <div className="hidden md:block lg:flex gap-6">
         {/* 7-column grid */}
         <div className="flex-1 min-w-0">
-          <div className="grid grid-cols-7 gap-2 mb-1 px-0.5">
+          <div className="flex gap-2 overflow-x-auto pb-1 lg:grid lg:grid-cols-7 lg:overflow-visible mb-1 px-0.5" style={{ scrollbarWidth: 'none' }}>
             {[1, 2, 3, 4, 5, 6, 7].map(d => (
-              <div key={d} className="text-center text-[9px] font-mono text-[var(--ink-tertiary)] uppercase">
+              <div key={d} className="flex-shrink-0 w-[140px] lg:w-auto text-center text-[9px] font-mono text-[var(--ink-tertiary)] uppercase">
                 {d}
               </div>
             ))}
           </div>
-          <div className="grid grid-cols-7 gap-2">
+          <div className="flex gap-2 overflow-x-auto pb-2 lg:grid lg:grid-cols-7 lg:overflow-visible" style={{ scrollbarWidth: 'none' }}>
             {degrees.map(entry => (
-              <DegreeCard
-                key={entry.degree}
+              <div key={entry.degree} className="flex-shrink-0 w-[140px] lg:w-auto lg:flex-1">
+                <DegreeCard
                 entry={entry}
                 rootKey={selectedKey}
                 isSelected={selectedDegree === entry.degree}
                 onSelect={() => handleDegreeSelect(entry.degree)}
               />
+              </div>
             ))}
           </div>
           {!selectedDegree && (
@@ -499,7 +455,7 @@ export function ChordScaleMatrix({
               initial={{ opacity: 0, x: 16 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 16 }}
-              className="w-80 shrink-0"
+              className="w-full mt-4 lg:mt-0 lg:w-80 shrink-0"
             >
               <DegreeDetail
                 entry={selectedEntry}
