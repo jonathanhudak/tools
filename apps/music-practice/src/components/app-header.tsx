@@ -9,6 +9,7 @@ const navLinks = [
   { to: '/scales-quiz' as const, label: 'Scales Quiz' },
   { to: '/chord-quiz' as const, label: 'Chord Quiz' },
   { to: '/chord-scale' as const, label: 'Chord-Scale Matrix' },
+  { to: '/circle-of-fifths' as const, label: 'Circle of Fifths' },
 ] as const;
 
 export function AppHeader() {
