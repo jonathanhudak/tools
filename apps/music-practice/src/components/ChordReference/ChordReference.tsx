@@ -247,7 +247,7 @@ export function ChordReference({ onStartQuiz }: ChordReferenceProps): JSX.Elemen
                             </div>
                             {/* Staff notation */}
                             {currentVoicing.piano!.notes.length > 0 && (
-                              <StaffDisplay notes={currentVoicing.piano!.notes} clef="treble" />
+                              <StaffDisplay notes={currentVoicing.piano!.notes} clef="treble" asChord />
                             )}
                             <p className="text-sm text-muted-foreground text-center">
                               {currentVoicing.piano.description}

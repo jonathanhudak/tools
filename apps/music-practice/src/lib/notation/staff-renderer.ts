@@ -213,8 +213,81 @@ export class StaffRenderer {
     }
 
     /**
-     * Render multiple notes on the staff
-     * @param notes - Array of VexFlow notes
+     * Convert standard note name (e.g. "C4", "Eb5", "F#4") to VexFlow format ("c/4", "eb/5", "f#/4")
+     */
+    private toVexflowFormat(note: string): string {
+        // Already in VexFlow format (has slash)
+        if (note.includes('/')) return note;
+        // Match standard format: note name + octave
+        const match = note.match(/^([A-Ga-g][b#]?)(\d)$/);
+        if (match) {
+            return `${match[1].toLowerCase()}/${match[2]}`;
+        }
+        return note.toLowerCase();
+    }
+
+    /**
+     * Render a chord (all notes stacked simultaneously) on the staff
+     * @param notes - Array of notes in standard ("C4") or VexFlow ("c/4") format
+     */
+    renderChord(notes: string[]): void {
+        if (!this.context) {
+            console.error('Renderer not initialized');
+            return;
+        }
+
+        try {
+            const VF = Vex.Flow;
+            if (!this.container) return;
+
+            const vexNotes = notes.map(n => this.toVexflowFormat(n));
+
+            // Clear previous content
+            this.context.clear();
+            this.container.innerHTML = '';
+
+            // Recreate context
+            this.renderer = new VF.Renderer(this.container, VF.Renderer.Backends.SVG);
+            this.renderer.resize(300, 180);
+            this.context = this.renderer.getContext();
+
+            // Create a stave
+            const stave = new VF.Stave(10, 20, 250);
+            stave.addClef(this.clef);
+            stave.setContext(this.context).draw();
+
+            // Create ONE stave note with ALL keys (chord)
+            const chordNote = new VF.StaveNote({
+                keys: vexNotes,
+                duration: 'w',
+                clef: this.clef
+            });
+
+            // Add accidentals
+            vexNotes.forEach((vn, i) => {
+                if (vn.includes('#')) chordNote.addModifier(new VF.Accidental('#'), i);
+                else if (vn.includes('b')) chordNote.addModifier(new VF.Accidental('b'), i);
+            });
+
+            const voice = new VF.Voice({ num_beats: 4, beat_value: 4 });
+            voice.addTickable(chordNote);
+
+            new VF.Formatter().joinVoices([voice]).format([voice], 200);
+            voice.draw(this.context, stave);
+
+            // Apply theme styling
+            const svg = this.container?.querySelector('svg');
+            if (svg) this.applyThemeToSVG(svg);
+
+        } catch (error) {
+            console.error('Failed to render chord on staff:', error);
+            this.showError('Unable to display chord');
+        }
+    }
+
+    /**
+     * Render multiple notes on the staff (sequential)
+     * @param notes - Array of notes in standard ("C4") or VexFlow ("c/4") format
      */
     renderNotes(notes: string[]): void {
         if (!this.context) {
@@ -244,13 +317,17 @@ export class StaffRenderer {
             stave.addClef(this.clef);
             stave.setContext(this.context).draw();
 
-            // Create notes
+            // Create notes (convert to VexFlow format)
             const staveNotes = notes.map(note => {
-                return new VF.StaveNote({
-                    keys: [note],
-                    duration: 'q', // Quarter note
+                const vn = this.toVexflowFormat(note);
+                const sn = new VF.StaveNote({
+                    keys: [vn],
+                    duration: 'q',
                     clef: this.clef
                 });
+                if (vn.includes('#')) sn.addModifier(new VF.Accidental('#'), 0);
+                else if (vn.includes('b')) sn.addModifier(new VF.Accidental('b'), 0);
+                return sn;
             });
 
             // Create a voice

@@ -120,12 +120,12 @@ function ChordCard({ chordName, label, instrument }: ChordCardProps) {
       <div className="p-3 flex flex-col items-center">
         {chord && voicing ? (
           instrument === 'guitar' && voicing.guitar ? (
-            <ChordDiagram chord={chord} voicing={voicing} size="small" />
+            <ChordDiagram chord={chord} voicing={voicing} />
           ) : instrument === 'piano' && voicing.piano ? (
             <>
               <PianoChordDiagram voicing={voicing} chordName={chordName} size="small" />
               {voicing.piano.notes.length > 0 && (
-                <StaffDisplay notes={voicing.piano.notes} clef="treble" />
+                <StaffDisplay notes={voicing.piano.notes} clef="treble" asChord />
               )}
             </>
           ) : (
@@ -419,11 +419,11 @@ export function CircleOfFifths() {
             <div>
               <h3 className="text-sm font-semibold text-foreground mb-2">Diatonic Triads</h3>
               <div
-                className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory lg:grid lg:grid-cols-7 lg:overflow-visible"
+                className="flex gap-4 overflow-x-auto pb-3 snap-x snap-mandatory lg:grid lg:grid-cols-7 lg:overflow-visible"
                 style={{ scrollbarWidth: 'none' }}
               >
                 {selectedEntry.chords.triads.map((chordName, i) => (
-                  <div key={chordName} className="snap-start flex-shrink-0 w-[160px] lg:w-auto">
+                  <div key={chordName} className="snap-start flex-shrink-0 w-[85vw] sm:w-[280px] lg:w-auto">
                     <ChordCard
                       chordName={chordName}
                       label={TRIAD_LABELS[i]}
@@ -438,11 +438,11 @@ export function CircleOfFifths() {
             <div>
               <h3 className="text-sm font-semibold text-foreground mb-2">Diatonic 7th Chords</h3>
               <div
-                className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory lg:grid lg:grid-cols-7 lg:overflow-visible"
+                className="flex gap-4 overflow-x-auto pb-3 snap-x snap-mandatory lg:grid lg:grid-cols-7 lg:overflow-visible"
                 style={{ scrollbarWidth: 'none' }}
               >
                 {selectedEntry.chords.sevenths.map((chordName, i) => (
-                  <div key={chordName} className="snap-start flex-shrink-0 w-[160px] lg:w-auto">
+                  <div key={chordName} className="snap-start flex-shrink-0 w-[85vw] sm:w-[280px] lg:w-auto">
                     <ChordCard
                       chordName={chordName}
                       label={SEVENTH_LABELS[i]}

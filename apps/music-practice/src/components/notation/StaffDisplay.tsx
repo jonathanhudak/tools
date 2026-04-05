@@ -5,10 +5,12 @@ interface StaffDisplayProps {
   note?: string;
   notes?: string[];
   clef?: ClefType;
+  /** When true, render all notes stacked as a chord instead of sequential */
+  asChord?: boolean;
   className?: string;
 }
 
-export function StaffDisplay({ note, notes, clef = 'treble', className }: StaffDisplayProps) {
+export function StaffDisplay({ note, notes, clef = 'treble', asChord = false, className }: StaffDisplayProps) {
   const id = useId().replace(/:/g, '-');
   const containerId = `staff-${id}`;
   const rendererRef = useRef<StaffRenderer | null>(null);
@@ -22,13 +24,17 @@ export function StaffDisplay({ note, notes, clef = 'treble', className }: StaffD
     if (!rendererRef.current) return;
     rendererRef.current.setClef(clef);
     if (notes && notes.length > 0) {
-      rendererRef.current.renderNotes(notes);
+      if (asChord) {
+        rendererRef.current.renderChord(notes);
+      } else {
+        rendererRef.current.renderNotes(notes);
+      }
     } else if (note) {
       rendererRef.current.renderNote(note);
     } else {
       rendererRef.current.showWelcome();
     }
-  }, [note, notes, clef]);
+  }, [note, notes, clef, asChord]);
 
   return <div id={containerId} className={className} />;
 }

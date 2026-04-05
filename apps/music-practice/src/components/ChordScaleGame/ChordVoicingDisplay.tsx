@@ -143,7 +143,7 @@ export function ChordVoicingDisplay({
                   chordName={chord.name}
                 />
                 {currentVoicing.piano!.notes.length > 0 && (
-                  <StaffDisplay notes={currentVoicing.piano!.notes} clef="treble" />
+                  <StaffDisplay notes={currentVoicing.piano!.notes} clef="treble" asChord />
                 )}
                 <p className="text-xs text-muted-foreground text-center max-w-xs">
                   {currentVoicing.piano.description}
