@@ -245,7 +245,7 @@ export function ChordReference({ onStartQuiz }: ChordReferenceProps): JSX.Elemen
                                 .map((fret, i) => fret >= 0 ? STANDARD_TUNING[i] + fret : null)
                                 .filter((n): n is number => n !== null);
                               return midiNotes.length > 0 ? (
-                                <TabDisplay midiNotes={midiNotes} instrumentId="guitar" />
+                                <TabDisplay midiNotes={midiNotes} instrumentId="guitar" asChord />
                               ) : null;
                             })()}
                             <p className="text-sm text-muted-foreground text-center">

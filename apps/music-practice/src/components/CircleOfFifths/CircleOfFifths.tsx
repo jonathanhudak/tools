@@ -7,9 +7,7 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import {
-  CIRCLE_OF_FIFTHS,
   getKeyInfo,
-  getClockwiseOrder,
   getFifthAbove,
   getFifthBelow,
 } from '../../data/circle-of-fifths';
@@ -17,6 +15,15 @@ import type { CircleOfFifthsEntry } from '../../data/circle-of-fifths';
 import { Card, CardContent, CardHeader, CardTitle } from '@hudak/ui/components/card';
 import { Badge } from '@hudak/ui/components/badge';
 import { Button } from '@hudak/ui/components/button';
+import { InstrumentToggle } from '../Piano/InstrumentToggle';
+import { ChordDiagram } from '../ChordReference/ChordDiagram';
+import { PianoChordDiagram } from '../ChordReference/PianoChordDiagram';
+import { TabDisplay } from '../notation/TabDisplay';
+import { StaffDisplay } from '../notation/StaffDisplay';
+import { getChordByShortName } from '../../lib/chord-library';
+import type { Chord } from '../../lib/chord-library';
+
+const STANDARD_TUNING = [40, 45, 50, 55, 59, 64]; // E2, A2, D3, G3, B3, E4
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -86,10 +93,88 @@ function accidentalLabel(entry: CircleOfFifthsEntry): string {
   return `${Math.abs(entry.accidentals)}♭`;
 }
 
+// ─── Chord display for a single chord in the grid ───────────────────────────
+
+interface ChordMiniDisplayProps {
+  chordName: string;
+  label: string;
+  isFirst: boolean;
+  isSelected: boolean;
+  onSelect: () => void;
+}
+
+function ChordMiniDisplay({ chordName, label, isFirst, isSelected, onSelect }: ChordMiniDisplayProps) {
+
+  return (
+    <button
+      onClick={onSelect}
+      className={[
+        'flex-1 min-w-[3.5rem] text-center rounded-lg border py-2 px-1 transition-all cursor-pointer',
+        isSelected
+          ? 'border-[var(--accent-color)] bg-[var(--accent-light)] shadow-md'
+          : 'border-border/50 bg-muted/30 hover:border-[var(--accent-color)]',
+      ].join(' ')}
+    >
+      <div className="text-[10px] text-muted-foreground mb-1.5">
+        {label}
+      </div>
+      <Badge
+        variant={isFirst ? 'default' : 'secondary'}
+        className="text-xs w-full justify-center whitespace-nowrap"
+      >
+        {chordName}
+      </Badge>
+    </button>
+  );
+}
+
+// ─── Selected chord detail panel ─────────────────────────────────────────────
+
+interface ChordDetailPanelProps {
+  chord: Chord;
+  instrument: 'guitar' | 'piano';
+}
+
+function ChordDetailPanel({ chord, instrument }: ChordDetailPanelProps) {
+  const voicing = chord.voicings[0];
+  if (!voicing) return null;
+
+  return (
+    <div className="space-y-3 py-2">
+      <p className="text-sm font-semibold text-foreground">{chord.name}</p>
+      {instrument === 'guitar' && voicing.guitar ? (
+        <div className="flex flex-col items-center gap-3">
+          <ChordDiagram chord={chord} voicing={voicing} />
+          {(() => {
+            const frets = voicing.guitar!.frets;
+            const midiNotes = frets
+              .map((fret, i) => fret >= 0 ? STANDARD_TUNING[i] + fret : null)
+              .filter((n): n is number => n !== null);
+            return midiNotes.length > 0 ? (
+              <TabDisplay midiNotes={midiNotes} instrumentId="guitar" asChord />
+            ) : null;
+          })()}
+        </div>
+      ) : instrument === 'piano' && voicing.piano ? (
+        <div className="flex flex-col items-center gap-3">
+          <PianoChordDiagram voicing={voicing} chordName={chord.name} />
+          {voicing.piano!.notes.length > 0 && (
+            <StaffDisplay notes={voicing.piano!.notes} clef="treble" />
+          )}
+        </div>
+      ) : (
+        <p className="text-xs text-muted-foreground italic">No {instrument} voicing available</p>
+      )}
+    </div>
+  );
+}
+
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function CircleOfFifths() {
   const [selectedKey, setSelectedKey] = useState<string>('C');
+  const [instrument, setInstrument] = useState<'guitar' | 'piano'>('guitar');
+  const [selectedChordName, setSelectedChordName] = useState<string | null>(null);
 
   const selectedEntry = useMemo(() => getKeyInfo(selectedKey), [selectedKey]);
   const fifthAbove = useMemo(() => getFifthAbove(selectedKey), [selectedKey]);
@@ -101,6 +186,7 @@ export function CircleOfFifths() {
 
   const handleKeyClick = useCallback((key: string) => {
     setSelectedKey(key);
+    setSelectedChordName(null);
   }, []);
 
   return (
@@ -356,27 +442,40 @@ export function CircleOfFifths() {
               </CardContent>
             </Card>
 
+            {/* Instrument toggle */}
+            <div className="flex justify-center">
+              <InstrumentToggle instrument={instrument} onChange={setInstrument} />
+            </div>
+
             {/* Diatonic Triads */}
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-base">Diatonic Triads</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-3">
                 <div className="flex flex-wrap gap-2">
-                  {selectedEntry.chords.triads.map((chord, i) => (
-                    <div key={chord} className="flex-1 min-w-[3.5rem] text-center rounded-lg border border-border/50 bg-muted/30 py-2 px-1">
-                      <div className="text-[10px] text-muted-foreground mb-1.5">
-                        {TRIAD_LABELS[i]}
-                      </div>
-                      <Badge
-                        variant={i === 0 ? 'default' : 'secondary'}
-                        className="text-xs w-full justify-center whitespace-nowrap"
-                      >
-                        {chord}
-                      </Badge>
-                    </div>
+                  {selectedEntry.chords.triads.map((chordName, i) => (
+                    <ChordMiniDisplay
+                      key={chordName}
+                      chordName={chordName}
+                      label={TRIAD_LABELS[i]}
+                      isFirst={i === 0}
+                      isSelected={selectedChordName === chordName}
+                      onSelect={() => setSelectedChordName(prev => prev === chordName ? null : chordName)}
+                    />
                   ))}
                 </div>
+                {/* Chord detail when a triad is selected */}
+                {selectedChordName && selectedEntry.chords.triads.includes(selectedChordName) && (() => {
+                  const chord = getChordByShortName(selectedChordName);
+                  return chord ? (
+                    <ChordDetailPanel chord={chord} instrument={instrument} />
+                  ) : (
+                    <p className="text-xs text-muted-foreground italic text-center py-2">
+                      Chord "{selectedChordName}" not in library yet
+                    </p>
+                  );
+                })()}
               </CardContent>
             </Card>
 
@@ -385,22 +484,30 @@ export function CircleOfFifths() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-base">Diatonic 7th Chords</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-3">
                 <div className="flex flex-wrap gap-2">
-                  {selectedEntry.chords.sevenths.map((chord, i) => (
-                    <div key={chord} className="flex-1 min-w-[3.5rem] text-center rounded-lg border border-border/50 bg-muted/30 py-2 px-1">
-                      <div className="text-[10px] text-muted-foreground mb-1.5">
-                        {SEVENTH_LABELS[i]}
-                      </div>
-                      <Badge
-                        variant={i === 0 ? 'default' : 'secondary'}
-                        className="text-xs w-full justify-center whitespace-nowrap"
-                      >
-                        {chord}
-                      </Badge>
-                    </div>
+                  {selectedEntry.chords.sevenths.map((chordName, i) => (
+                    <ChordMiniDisplay
+                      key={chordName}
+                      chordName={chordName}
+                      label={SEVENTH_LABELS[i]}
+                      isFirst={i === 0}
+                      isSelected={selectedChordName === chordName}
+                      onSelect={() => setSelectedChordName(prev => prev === chordName ? null : chordName)}
+                    />
                   ))}
                 </div>
+                {/* Chord detail when a 7th chord is selected */}
+                {selectedChordName && selectedEntry.chords.sevenths.includes(selectedChordName) && (() => {
+                  const chord = getChordByShortName(selectedChordName);
+                  return chord ? (
+                    <ChordDetailPanel chord={chord} instrument={instrument} />
+                  ) : (
+                    <p className="text-xs text-muted-foreground italic text-center py-2">
+                      Chord "{selectedChordName}" not in library yet
+                    </p>
+                  );
+                })()}
               </CardContent>
             </Card>
 

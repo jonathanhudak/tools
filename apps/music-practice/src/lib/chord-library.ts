@@ -78,6 +78,11 @@ export function getChordById(id: string): Chord | undefined {
   return CHORD_LIBRARY.find(c => c.id === id);
 }
 
+/** Look up a chord by its shortName (e.g. "C", "Dm", "G7"). Case-sensitive exact match. */
+export function getChordByShortName(shortName: string): Chord | undefined {
+  return CHORD_LIBRARY.find(c => c.shortName === shortName);
+}
+
 // PHASE 1: 50 BEGINNER CHORDS
 export const CHORD_LIBRARY: Chord[] = [
   // ===== MAJOR TRIADS (12) =====

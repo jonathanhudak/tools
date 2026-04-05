@@ -280,7 +280,86 @@ export class TabRenderer {
     }
 
     /**
-     * Render multiple notes on the tab staff
+     * Render a chord (all notes stacked simultaneously) on the tab staff
+     * @param midiNotes - Array of MIDI note numbers to stack as a chord
+     */
+    renderChord(midiNotes: number[]): void {
+        if (!this.context) {
+            console.error('Renderer not initialized');
+            return;
+        }
+
+        try {
+            const VF = Vex.Flow;
+
+            if (!this.container) return;
+
+            // Convert MIDI notes to tab positions
+            const tabPositions = midiNotes
+                .map(midi => midiToTabPosition(midi, this.instrumentId))
+                .filter((pos): pos is TabPosition => pos !== null);
+
+            if (tabPositions.length === 0) {
+                console.error('No valid tab positions found');
+                return;
+            }
+
+            // Clear previous content
+            this.context.clear();
+            this.container.innerHTML = '';
+
+            // Recreate context
+            this.renderer = new VF.Renderer(
+                this.container,
+                VF.Renderer.Backends.SVG
+            );
+            this.renderer.resize(500, 180);
+            this.context = this.renderer.getContext();
+
+            // Create a tab stave
+            const tabStave = new VF.TabStave(10, 20, 400);
+            tabStave.addTabGlyph();
+            tabStave.setContext(this.context).draw();
+
+            // Create ONE tab note with ALL positions stacked (chord)
+            const positions = tabPositions.map(pos => ({
+                str: this.getOrientedString(pos.string),
+                fret: pos.fret,
+            }));
+
+            const chordNote = new VF.TabNote({
+                positions,
+                duration: 'w' // Whole note
+            });
+
+            // Create a voice
+            const voice = new VF.Voice({
+                num_beats: 4,
+                beat_value: 4
+            });
+            voice.addTickable(chordNote);
+
+            // Format and draw
+            new VF.Formatter()
+                .joinVoices([voice])
+                .format([voice], 350);
+
+            voice.draw(this.context, tabStave);
+
+            // Apply theme styling
+            const svg = this.container?.querySelector('svg');
+            if (svg) {
+                this.applyThemeToSVG(svg);
+            }
+
+        } catch (error) {
+            console.error('Failed to render tab chord:', error);
+            this.showError('Unable to display tab chord');
+        }
+    }
+
+    /**
+     * Render multiple notes on the tab staff (sequential — for scales)
      * @param midiNotes - Array of MIDI note numbers
      */
     renderNotes(midiNotes: number[]): void {

@@ -145,6 +145,7 @@ export function ChordVoicingDisplay({
                     <TabDisplay
                       midiNotes={midiNotes}
                       instrumentId="guitar"
+                      asChord
                       className="w-full max-w-sm"
                     />
                   ) : null;
