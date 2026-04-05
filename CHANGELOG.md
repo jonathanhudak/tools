@@ -1,3 +1,10 @@
+# [1.39.0](https://github.com/jonathanhudak/tools/compare/v1.38.0...v1.39.0) (2026-04-05)
+
+
+### Features
+
+* **music-practice:** S3/CloudFront deploy, GuitarFretboard component, /styleguide route, scales UX overhaul ([53b5335](https://github.com/jonathanhudak/tools/commit/53b53359874abf9068ab0bf6b173d8fab0d23349))
+
 # [1.38.0](https://github.com/jonathanhudak/tools/compare/v1.37.0...v1.38.0) (2026-04-05)
 
 
