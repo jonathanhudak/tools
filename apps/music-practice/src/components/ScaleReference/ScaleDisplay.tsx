@@ -5,10 +5,9 @@
 
 import { useMemo } from 'react';
 import { Note } from 'tonal';
-import { TabDisplay } from '../notation/TabDisplay';
 import { StaffDisplay } from '../notation/StaffDisplay';
 import { PianoScaleDiagram } from './PianoScaleDiagram';
-import { getModeNotes, getModeNotesAsMidi } from '@/data/chord-scale-matrix';
+import { getModeNotes } from '@/data/chord-scale-matrix';
 import type { ScaleType, Degree } from '@/data/chord-scale-matrix';
 
 interface ScaleDisplayProps {
@@ -23,7 +22,6 @@ interface ScaleDisplayProps {
 export function ScaleDisplay({ scaleType, degree, modeName, instrument, rootKey = 'C' }: ScaleDisplayProps): JSX.Element {
   const rootOctave = instrument === 'guitar' ? 3 : 4;
   const notes = useMemo(() => getModeNotes(scaleType, degree, rootKey, rootOctave), [scaleType, degree, rootKey, rootOctave]);
-  const midiNotes = useMemo(() => getModeNotesAsMidi(scaleType, degree, rootKey, rootOctave), [scaleType, degree, rootKey, rootOctave]);
   const pitchClasses = useMemo(() => notes.map(n => Note.get(n).pc), [notes]);
 
   return (
@@ -34,7 +32,10 @@ export function ScaleDisplay({ scaleType, degree, modeName, instrument, rootKey 
       </div>
 
       {instrument === 'guitar' ? (
-        <TabDisplay midiNotes={midiNotes} />
+        <>
+          {/* TODO: Guitar fretboard scale diagram */}
+          <p className="text-sm font-mono text-muted-foreground">{pitchClasses.join(' – ')}</p>
+        </>
       ) : (
         <>
           <PianoScaleDiagram notes={notes} rootNote={notes[0]} />

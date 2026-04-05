@@ -28,7 +28,7 @@ function isBlackKey(noteIndex: number): boolean {
   return BLACK_KEYS_PATTERN.includes(noteIndex % 12);
 }
 
-export function PianoChordDiagram({ voicing, size = 'large' }: PianoChordDiagramProps) {
+export function PianoChordDiagram({ voicing, size = 'medium' }: PianoChordDiagramProps) {
   if (!voicing.piano) {
     return (
       <div className="text-center text-muted-foreground">
@@ -82,11 +82,12 @@ export function PianoChordDiagram({ voicing, size = 'large' }: PianoChordDiagram
       animate={{ opacity: 1, scale: 1 }}
       className="flex flex-col items-center gap-4 w-full"
     >
-      <div className="w-full overflow-x-auto rounded-lg border border-border">
+      <div className="w-full rounded-lg border border-border">
         <svg
-          width={totalWidth + 4}
-          height={whiteKeyHeight + 50}
-          style={{ minWidth: totalWidth + 4, display: 'block', margin: '0 auto' }}
+          viewBox={`0 0 ${totalWidth + 4} ${whiteKeyHeight + 50}`}
+          width="100%"
+          style={{ display: 'block', maxWidth: totalWidth + 4, margin: '0 auto' }}
+          preserveAspectRatio="xMidYMid meet"
         >
           {/* White keys */}
           {whiteKeys.map(({ midiNum, x }) => {

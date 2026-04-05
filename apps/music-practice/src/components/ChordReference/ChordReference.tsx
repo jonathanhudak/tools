@@ -15,7 +15,6 @@ import { ChordSearch } from './ChordSearch';
 import { ChordTierFilter } from './ChordTierFilter';
 import { ChordProgressionBuilder } from './ChordProgressionBuilder';
 import { InstrumentToggle } from '../Piano/InstrumentToggle';
-import { TabDisplay } from '../notation/TabDisplay';
 import { StaffDisplay } from '../notation/StaffDisplay';
 import { Shuffle, BookOpen, Info, Grid3x3, BarChart3 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -33,8 +32,6 @@ interface ChordReferenceProps {
 type Instrument = 'guitar' | 'piano';
 type Difficulty = 'beginner' | 'intermediate' | 'advanced' | 'jazz';
 type ViewMode = 'browser' | 'progression' | 'comparison';
-
-const STANDARD_TUNING = [40, 45, 50, 55, 59, 64]; // E2, A2, D3, G3, B3, E4
 
 export function ChordReference({ onStartQuiz }: ChordReferenceProps): JSX.Element {
   const [selectedChord, setSelectedChord] = useState<Chord | null>(() => CHORD_LIBRARY[0]);
@@ -238,16 +235,6 @@ export function ChordReference({ onStartQuiz }: ChordReferenceProps): JSX.Elemen
                             <div className="flex justify-center py-4">
                               <ChordDiagram chord={selectedChord} voicing={currentVoicing} size="large" />
                             </div>
-                            {/* Tab notation */}
-                            {(() => {
-                              const frets = currentVoicing.guitar!.frets;
-                              const midiNotes = frets
-                                .map((fret, i) => fret >= 0 ? STANDARD_TUNING[i] + fret : null)
-                                .filter((n): n is number => n !== null);
-                              return midiNotes.length > 0 ? (
-                                <TabDisplay midiNotes={midiNotes} instrumentId="guitar" asChord />
-                              ) : null;
-                            })()}
                             <p className="text-sm text-muted-foreground text-center">
                               {currentVoicing.guitar.description}
                             </p>

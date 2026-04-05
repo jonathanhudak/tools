@@ -18,12 +18,9 @@ import { Button } from '@hudak/ui/components/button';
 import { InstrumentToggle } from '../Piano/InstrumentToggle';
 import { ChordDiagram } from '../ChordReference/ChordDiagram';
 import { PianoChordDiagram } from '../ChordReference/PianoChordDiagram';
-import { TabDisplay } from '../notation/TabDisplay';
 import { StaffDisplay } from '../notation/StaffDisplay';
 import { getChordByShortName } from '../../lib/chord-library';
 import type { Chord } from '../../lib/chord-library';
-
-const STANDARD_TUNING = [40, 45, 50, 55, 59, 64]; // E2, A2, D3, G3, B3, E4
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -145,15 +142,6 @@ function ChordDetailPanel({ chord, instrument }: ChordDetailPanelProps) {
       {instrument === 'guitar' && voicing.guitar ? (
         <div className="flex flex-col items-center gap-3">
           <ChordDiagram chord={chord} voicing={voicing} />
-          {(() => {
-            const frets = voicing.guitar!.frets;
-            const midiNotes = frets
-              .map((fret, i) => fret >= 0 ? STANDARD_TUNING[i] + fret : null)
-              .filter((n): n is number => n !== null);
-            return midiNotes.length > 0 ? (
-              <TabDisplay midiNotes={midiNotes} instrumentId="guitar" asChord />
-            ) : null;
-          })()}
         </div>
       ) : instrument === 'piano' && voicing.piano ? (
         <div className="flex flex-col items-center gap-3">

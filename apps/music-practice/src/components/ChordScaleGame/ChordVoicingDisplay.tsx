@@ -10,13 +10,10 @@ import { ChordDiagram } from '../ChordReference/ChordDiagram';
 import { PianoChordDiagram } from '../ChordReference/PianoChordDiagram';
 import { ChordPlayer } from '../ChordReference/ChordPlayer';
 import { InstrumentToggle } from '../Piano/InstrumentToggle';
-import { TabDisplay } from '../notation/TabDisplay';
 import { StaffDisplay } from '../notation/StaffDisplay';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@hudak/ui/components/select';
 import { Label } from '@hudak/ui/components/label';
 import { motion } from 'framer-motion';
-
-const STANDARD_TUNING = [40, 45, 50, 55, 59, 64]; // E2, A2, D3, G3, B3, E4
 
 interface ChordVoicingDisplayProps {
   chord: Chord;
@@ -135,21 +132,6 @@ export function ChordVoicingDisplay({
                   chord={chord}
                   voicing={currentVoicing}
                 />
-                {/* Tab notation for guitar voicing */}
-                {(() => {
-                  const frets = currentVoicing.guitar!.frets;
-                  const midiNotes = frets
-                    .map((fret, i) => fret >= 0 ? STANDARD_TUNING[i] + fret : null)
-                    .filter((n): n is number => n !== null);
-                  return midiNotes.length > 0 ? (
-                    <TabDisplay
-                      midiNotes={midiNotes}
-                      instrumentId="guitar"
-                      asChord
-                      className="w-full max-w-sm"
-                    />
-                  ) : null;
-                })()}
                 <p className="text-xs text-muted-foreground text-center max-w-xs">
                   {currentVoicing.guitar.description}
                 </p>
