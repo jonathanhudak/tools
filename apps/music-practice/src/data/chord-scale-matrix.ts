@@ -393,6 +393,44 @@ export async function getChordFromLibrary(chordId: string) {
 }
 
 /**
+ * Look up the correct chord for a given scale degree in any key.
+ * This is KEY-AWARE: it computes the transposed chord name and looks it up
+ * by shortName, falling back to chordId for the default key of C.
+ *
+ * @param scaleType - The scale family
+ * @param degree - Scale degree (1-7)
+ * @param rootKey - Key root (e.g., 'D', 'Bb'). Defaults to 'C'.
+ * @returns The Chord object or null
+ *
+ * @example
+ * // In D major, degree 3 = F#m7
+ * const chord = await getChordForDegree('major', 3, 'D');
+ */
+export async function getChordForDegree(
+  scaleType: ScaleType,
+  degree: Degree,
+  rootKey = 'C',
+) {
+  const { getChordByShortName, CHORD_LIBRARY } = await import('@/lib/chord-library');
+
+  // Compute the transposed chord name (e.g., "F#m7" for degree 3 in D major)
+  const chordName = getChordName(scaleType, degree, rootKey);
+  if (!chordName) return null;
+
+  // First try exact shortName match (key-aware)
+  const byName = getChordByShortName(chordName);
+  if (byName) return byName;
+
+  // Fallback: try the hardcoded chordId (only correct for key of C)
+  const entry = getDegreeInfo(scaleType, degree);
+  if (entry?.chordId) {
+    return CHORD_LIBRARY.find(c => c.id === entry.chordId) ?? null;
+  }
+
+  return null;
+}
+
+/**
  * Maps ScaleType to tonal library scale names
  */
 const SCALE_TYPE_TO_TONAL: Record<ScaleType, string> = {

@@ -788,7 +788,7 @@ export const CHORD_LIBRARY: Chord[] = [
     name: 'E Minor 7',
     shortName: 'Em7',
     root: 'E',
-    type: 'extended',
+    type: 'minor',
     difficulty: 'beginner',
     theory: {
       intervals: ['R', 'm3', 'P5', 'm7'],
@@ -800,21 +800,21 @@ export const CHORD_LIBRARY: Chord[] = [
         voicingName: 'Open Position',
         position: 1,
         guitar: {
-          frets: [-1, -1, 2, 4, 3, 3],
-          fingers: ['muted', 'muted', '1', '4', '2', '3'],
-          muted: [1, 2],
+          frets: [0, 2, 0, 0, 0, 0],
+          fingers: ['open', '1', 'open', 'open', 'open', 'open'],
+          muted: [],
           barred: false,
-          description: 'Just 1 finger! Smooth and jazzy.',
+          description: 'Open Em7. Just one finger on A string fret 2. All other strings open.',
         },
         piano: {
           notes: ['E4', 'G4', 'B4', 'D5'],
           octaveRange: [4, 5],
-          description: 'Root position.',
+          description: 'Root position E Minor 7th.',
         },
       },
     ],
-    description: 'Incredibly easy. Jazz foundation.',
-    tags: ['beginner', 'extended', 'jazz', 'open-position'],
+    description: 'E Minor 7th chord. One of the easiest chords on guitar.',
+    tags: ['beginner', 'minor', 'seventh', 'open-position'],
   },
 
   {

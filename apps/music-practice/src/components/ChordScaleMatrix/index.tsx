@@ -21,7 +21,7 @@ import {
   buildScaleChords,
   getModeNoteNames,
   getChordName,
-  getChordFromLibrary,
+  getChordForDegree,
   SCALE_TYPE_NAMES,
   type ScaleType,
   type Degree,
@@ -61,17 +61,20 @@ const MODAL_CHARACTER: Record<string, { character: string; function: string; col
 
 // ─── Chord library hook ───────────────────────────────────────────────────────
 
-/** Async-loads a chord from the chord library by its chordId */
-function useChordFromLibrary(chordId: string | undefined): Chord | null {
+/** Async-loads the correct chord for a scale degree in a specific key */
+function useChordForDegree(
+  scaleType: ScaleType,
+  degree: Degree,
+  rootKey: string,
+): Chord | null {
   const [chord, setChord] = useState<Chord | null>(null);
   useEffect(() => {
-    if (!chordId) { setChord(null); return; }
     let cancelled = false;
-    getChordFromLibrary(chordId).then(c => {
+    getChordForDegree(scaleType, degree, rootKey).then(c => {
       if (!cancelled) setChord(c ?? null);
     });
     return () => { cancelled = true; };
-  }, [chordId]);
+  }, [scaleType, degree, rootKey]);
   return chord;
 }
 
@@ -170,8 +173,8 @@ function DegreeDetail({ entry, rootKey, instrument, onInstrumentChange }: Degree
     [entry.scaleType, entry.degree, rootKey],
   );
   const modal = MODAL_CHARACTER[entry.modeName];
-  // Async-load chord voicing from library
-  const chord = useChordFromLibrary(entry.chordId);
+  // Key-aware chord lookup — gets the correct chord for the selected key
+  const chord = useChordForDegree(entry.scaleType, entry.degree as Degree, rootKey);
 
   return (
     <div
