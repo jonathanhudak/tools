@@ -1,17 +1,12 @@
 /**
  * ChordScaleMatrix — Interactive Chord-Scale Reference
  *
- * The visual 7-column grid from Jeff Schneider's system.
- * Pick any key and scale type to see all 7 degrees: chord name,
- * Roman numeral, mode, and notes. Click a column to expand details.
- *
- * Mobile: horizontal scroll carousel (one card visible at a time, swipe through)
- * Desktop: 7-column grid with right-side detail panel
+ * All 7 degrees render as full cards with chord voicing + scale info.
+ * Mobile: horizontal swipeable carousel
+ * Desktop (lg+): 7-column grid
  */
 
 import { useState, useMemo, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Badge } from '@hudak/ui/components/badge';
 import { InstrumentToggle } from '../Piano/InstrumentToggle';
 import { ScaleDisplay } from '../ScaleReference/ScaleDisplay';
@@ -61,7 +56,6 @@ const MODAL_CHARACTER: Record<string, { character: string; function: string; col
 
 // ─── Chord library hook ───────────────────────────────────────────────────────
 
-/** Async-loads the correct chord for a scale degree in a specific key */
 function useChordForDegree(
   scaleType: ScaleType,
   degree: Degree,
@@ -78,92 +72,16 @@ function useChordForDegree(
   return chord;
 }
 
-// ─── Degree card (shared between mobile + desktop) ────────────────────────────
+// ─── Full degree card (replaces old DegreeCard + DegreeDetail) ───────────────
 
-interface DegreeCardProps {
-  entry: ReturnType<typeof buildScaleChords>[number];
-  rootKey: RootKey;
-  isSelected: boolean;
-  onSelect: () => void;
-  compact?: boolean; // mobile: hide note pills to save space
-}
-
-function DegreeCard({ entry, rootKey, isSelected, onSelect, compact }: DegreeCardProps) {
-  const chordName = useMemo(
-    () => getChordName(entry.scaleType, entry.degree, rootKey),
-    [entry.scaleType, entry.degree, rootKey],
-  );
-  const noteNames = useMemo(
-    () => getModeNoteNames(entry.scaleType, entry.degree, rootKey),
-    [entry.scaleType, entry.degree, rootKey],
-  );
-
-  return (
-    <button
-      onClick={onSelect}
-      className={[
-        'flex flex-col gap-1 p-3 rounded-xl border-2 transition-all text-left w-full h-full',
-        'hover:border-[var(--accent)] hover:bg-[var(--surface-subtle)]',
-        isSelected
-          ? 'border-[var(--accent)] bg-[var(--accent-light)] shadow-md'
-          : 'border-[var(--border-medium)] bg-[var(--surface-card)]',
-      ].join(' ')}
-    >
-      {/* Roman numeral */}
-      <span className="font-mono text-[10px] text-[var(--ink-tertiary)] uppercase tracking-widest">
-        {entry.romanNumeral}
-      </span>
-
-      {/* Chord name */}
-      <span
-        className="font-semibold text-sm leading-tight text-[var(--ink-primary)]"
-        style={{ fontFamily: 'var(--font-display)' }}
-      >
-        {chordName}
-      </span>
-
-      {/* Mode name */}
-      <span className="text-[10px] text-[var(--ink-secondary)] leading-snug">{entry.modeName}</span>
-
-      {/* Note pills — hidden on compact/mobile */}
-      {!compact && (
-        <div className="flex flex-wrap gap-0.5 mt-1">
-          {noteNames.map((n, i) => (
-            <span
-              key={i}
-              className={[
-                'font-mono text-[9px] px-1 py-0.5 rounded',
-                i === 0
-                  ? 'bg-[var(--accent)] text-white'
-                  : 'bg-[var(--surface-subtle)] text-[var(--ink-secondary)]',
-              ].join(' ')}
-            >
-              {n}
-            </span>
-          ))}
-        </div>
-      )}
-
-      {/* Expand chevron */}
-      <div className="flex justify-end mt-auto pt-1">
-        {isSelected
-          ? <ChevronUp className="w-3 h-3 text-[var(--accent)]" />
-          : <ChevronDown className="w-3 h-3 text-[var(--ink-tertiary)]" />}
-      </div>
-    </button>
-  );
-}
-
-// ─── Degree detail panel ──────────────────────────────────────────────────────
-
-interface DegreeDetailProps {
+interface FullDegreeCardProps {
   entry: ReturnType<typeof buildScaleChords>[number];
   rootKey: RootKey;
   instrument: 'guitar' | 'piano';
   onInstrumentChange: (i: 'guitar' | 'piano') => void;
 }
 
-function DegreeDetail({ entry, rootKey, instrument, onInstrumentChange }: DegreeDetailProps) {
+function FullDegreeCard({ entry, rootKey, instrument, onInstrumentChange }: FullDegreeCardProps) {
   const chordName = useMemo(
     () => getChordName(entry.scaleType, entry.degree, rootKey),
     [entry.scaleType, entry.degree, rootKey],
@@ -173,47 +91,43 @@ function DegreeDetail({ entry, rootKey, instrument, onInstrumentChange }: Degree
     [entry.scaleType, entry.degree, rootKey],
   );
   const modal = MODAL_CHARACTER[entry.modeName];
-  // Key-aware chord lookup — gets the correct chord for the selected key
   const chord = useChordForDegree(entry.scaleType, entry.degree as Degree, rootKey);
 
   return (
     <div
-      className="p-4 rounded-xl border border-[var(--border-medium)] bg-[var(--surface-card)] space-y-4"
-      style={{ boxShadow: 'var(--shadow-md)' }}
+      className="rounded-xl border border-[var(--border-medium)] bg-[var(--surface-card)] overflow-hidden"
+      style={{ boxShadow: 'var(--shadow-sm)' }}
     >
       {/* Header */}
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <p className="font-mono text-[10px] text-[var(--ink-tertiary)] uppercase tracking-widest mb-0.5">
-            Degree {entry.degree} · {entry.romanNumeral}
-          </p>
-          <h3
-            className="text-xl font-semibold text-[var(--ink-primary)]"
-            style={{ fontFamily: 'var(--font-display)' }}
-          >
-            {chordName}
-          </h3>
-          <p className="text-sm text-[var(--ink-secondary)]">{entry.modeName}</p>
+      <div className="p-3 border-b border-[var(--border-medium)]">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <p className="font-mono text-[10px] text-[var(--ink-tertiary)] uppercase tracking-widest">
+              {entry.romanNumeral}
+            </p>
+            <h3
+              className="text-lg font-semibold text-[var(--ink-primary)] leading-tight"
+              style={{ fontFamily: 'var(--font-display)' }}
+            >
+              {chordName}
+            </h3>
+            <p className="text-[11px] text-[var(--ink-secondary)]">{entry.modeName}</p>
+          </div>
+          {modal && (
+            <Badge className={`text-[10px] shrink-0 ${modal.color}`}>{entry.chordQuality}</Badge>
+          )}
         </div>
-        {modal && (
-          <Badge className={`text-xs shrink-0 ${modal.color}`}>{entry.chordQuality}</Badge>
-        )}
-      </div>
 
-      {/* Notes */}
-      <div>
-        <p className="text-[10px] font-medium text-[var(--ink-tertiary)] uppercase tracking-wide mb-1.5">
-          Notes
-        </p>
-        <div className="flex flex-wrap gap-1">
+        {/* Note pills */}
+        <div className="flex flex-wrap gap-0.5 mt-2">
           {noteNames.map((n, i) => (
             <span
               key={i}
               className={[
-                'font-mono text-sm px-2 py-1 rounded-lg',
+                'font-mono text-[10px] px-1.5 py-0.5 rounded',
                 i === 0
                   ? 'bg-[var(--accent)] text-white font-semibold'
-                  : 'bg-[var(--surface-subtle)] text-[var(--ink-primary)]',
+                  : 'bg-[var(--surface-subtle)] text-[var(--ink-secondary)]',
               ].join(' ')}
             >
               {n}
@@ -222,110 +136,30 @@ function DegreeDetail({ entry, rootKey, instrument, onInstrumentChange }: Degree
         </div>
       </div>
 
-      {/* Modal character */}
-      {modal && (
-        <div className="space-y-0.5">
-          <p className="text-[10px] font-medium text-[var(--ink-tertiary)] uppercase tracking-wide">
-            Character
-          </p>
-          <p className="text-sm text-[var(--ink-primary)]">{modal.character}</p>
-          <p className="text-xs text-[var(--ink-secondary)]">{modal.function}</p>
-        </div>
-      )}
-
-      {/* ── Instrument toggle (shared for both diagrams below) ── */}
-      <InstrumentToggle instrument={instrument} onChange={onInstrumentChange} />
-
-      {/* ── Chord voicing (tablature / piano chord) ────────────── */}
-      {chord ? (
-        <div>
-          <p className="text-[10px] font-medium text-[var(--ink-tertiary)] uppercase tracking-wide mb-2">
-            Chord Voicing
-          </p>
+      {/* Chord voicing — renders immediately, no click needed */}
+      <div className="p-3">
+        {chord ? (
           <ChordVoicingDisplay
             chord={chord}
             voicingIndex={entry.voicingIndex ?? 0}
             externalInstrument={instrument}
             onInstrumentChange={onInstrumentChange}
           />
-        </div>
-      ) : entry.chordId ? (
-        <p className="text-xs text-[var(--ink-tertiary)] italic">Loading voicing…</p>
-      ) : null}
-
-      {/* ── Scale diagram (ascending scale on tab / piano) ─────── */}
-      <div>
-        <p className="text-[10px] font-medium text-[var(--ink-tertiary)] uppercase tracking-wide mb-2">
-          Scale Run
-        </p>
-        <ScaleDisplay
-          scaleType={entry.scaleType}
-          degree={entry.degree as Degree}
-          modeName={entry.modeName}
-          instrument={instrument}
-          rootKey={rootKey}
-        />
-      </div>
-    </div>
-  );
-}
-
-// ─── Mobile carousel ──────────────────────────────────────────────────────────
-
-interface MobileCarouselProps {
-  degrees: ReturnType<typeof buildScaleChords>;
-  rootKey: RootKey;
-  selectedDegree: number | null;
-  onSelect: (degree: number) => void;
-  instrument: 'guitar' | 'piano';
-  onInstrumentChange: (i: 'guitar' | 'piano') => void;
-}
-
-function MobileCarousel({
-  degrees, rootKey, selectedDegree, onSelect, instrument, onInstrumentChange,
-}: MobileCarouselProps) {
-  const selectedEntry = selectedDegree !== null
-    ? degrees.find(d => d.degree === selectedDegree) ?? null
-    : null;
-
-  return (
-    <div className="space-y-3">
-      {/* Horizontal scrollable row of all 7 cards */}
-      <div
-        className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory"
-        style={{ scrollbarWidth: 'none' }}
-      >
-        {degrees.map(entry => (
-          <div key={entry.degree} className="snap-center flex-shrink-0 w-[140px]">
-            <DegreeCard
-              entry={entry}
-              rootKey={rootKey}
-              isSelected={selectedDegree === entry.degree}
-              onSelect={() => onSelect(entry.degree)}
-              compact
-            />
+        ) : entry.chordId ? (
+          <div className="py-6 text-center">
+            <p className="text-xs text-[var(--ink-tertiary)] italic">Loading…</p>
           </div>
-        ))}
+        ) : null}
       </div>
 
-      {/* Expanded detail — shown below when a degree is selected */}
-      <AnimatePresence mode="wait">
-        {selectedEntry && (
-          <motion.div
-            key={`${selectedEntry.degree}-${selectedEntry.scaleType}-${rootKey}`}
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-          >
-            <DegreeDetail
-              entry={selectedEntry}
-              rootKey={rootKey}
-              instrument={instrument}
-              onInstrumentChange={onInstrumentChange}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Modal character — compact */}
+      {modal && (
+        <div className="px-3 pb-3">
+          <p className="text-[10px] text-[var(--ink-secondary)] leading-snug italic">
+            {modal.character}
+          </p>
+        </div>
+      )}
     </div>
   );
 }
@@ -343,35 +177,20 @@ export function ChordScaleMatrix({
 }: ChordScaleMatrixProps) {
   const [selectedKey, setSelectedKey] = useState<RootKey>(initialKey);
   const [selectedScale, setSelectedScale] = useState<ScaleType>(initialScaleType);
-  const [selectedDegree, setSelectedDegree] = useState<number | null>(null);
-  const [instrument, setInstrument] = useState<'guitar' | 'piano'>('piano');
+  const [instrument, setInstrument] = useState<'guitar' | 'piano'>('guitar');
 
   const degrees = useMemo(() => buildScaleChords(selectedScale), [selectedScale]);
-
-  const selectedEntry = useMemo(
-    () => selectedDegree !== null ? degrees.find(d => d.degree === selectedDegree) : null,
-    [degrees, selectedDegree],
-  );
-
-  const handleDegreeSelect = (degree: number) => {
-    setSelectedDegree(prev => prev === degree ? null : degree);
-  };
-
-  const handleScaleChange = (scale: ScaleType) => {
-    setSelectedScale(scale);
-    setSelectedDegree(null);
-  };
 
   return (
     <div className="space-y-5">
       {/* ── Controls ─────────────────────────────────────────────── */}
       <div className="space-y-3">
-        {/* Key picker — horizontal scroll on mobile */}
+        {/* Key picker */}
         <div>
           <p className="text-[10px] font-medium text-[var(--ink-tertiary)] uppercase tracking-wide mb-1.5">
             Key
           </p>
-          <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-hide">
+          <div className="flex gap-1 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
             {CHROMATIC_KEYS.map(key => (
               <button
                 key={key}
@@ -389,86 +208,61 @@ export function ChordScaleMatrix({
           </div>
         </div>
 
-        {/* Scale type tabs — horizontal scroll on mobile */}
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-          {SCALE_TYPES.map(scale => (
-            <button
-              key={scale}
-              onClick={() => handleScaleChange(scale)}
-              className={[
-                'text-xs px-3 py-1.5 rounded-full border-2 font-medium transition-all flex-shrink-0',
-                selectedScale === scale
-                  ? 'border-[var(--accent)] bg-[var(--accent)] text-white'
-                  : 'border-[var(--border-medium)] text-[var(--ink-secondary)] hover:border-[var(--accent)]',
-              ].join(' ')}
-            >
-              {SCALE_TYPE_NAMES[scale]}
-            </button>
-          ))}
+        {/* Scale type + Instrument toggle */}
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex gap-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+            {SCALE_TYPES.map(scale => (
+              <button
+                key={scale}
+                onClick={() => setSelectedScale(scale)}
+                className={[
+                  'text-xs px-3 py-1.5 rounded-full border-2 font-medium transition-all flex-shrink-0',
+                  selectedScale === scale
+                    ? 'border-[var(--accent)] bg-[var(--accent)] text-white'
+                    : 'border-[var(--border-medium)] text-[var(--ink-secondary)] hover:border-[var(--accent)]',
+                ].join(' ')}
+              >
+                {SCALE_TYPE_NAMES[scale]}
+              </button>
+            ))}
+          </div>
+          <InstrumentToggle instrument={instrument} onChange={setInstrument} />
         </div>
       </div>
 
-      {/* ── Mobile: Carousel (hidden on md+) ─────────────────────── */}
-      <div className="md:hidden">
-        <MobileCarousel
-          degrees={degrees}
-          rootKey={selectedKey}
-          selectedDegree={selectedDegree}
-          onSelect={handleDegreeSelect}
-          instrument={instrument}
-          onInstrumentChange={setInstrument}
-        />
+      {/* ── Degree cards ──────────────────────────────────────────── */}
+
+      {/* Mobile: horizontal swipeable carousel */}
+      <div
+        className="flex gap-4 overflow-x-auto pb-3 snap-x snap-mandatory lg:hidden"
+        style={{ scrollbarWidth: 'none' }}
+      >
+        {degrees.map(entry => (
+          <div
+            key={`${entry.degree}-${selectedScale}-${selectedKey}`}
+            className="snap-start flex-shrink-0 w-[85vw] sm:w-[340px]"
+          >
+            <FullDegreeCard
+              entry={entry}
+              rootKey={selectedKey}
+              instrument={instrument}
+              onInstrumentChange={setInstrument}
+            />
+          </div>
+        ))}
       </div>
 
-      {/* ── Desktop: Grid + detail panel (hidden below md) ───────── */}
-      <div className="hidden md:block lg:flex gap-6">
-        {/* 7-column grid */}
-        <div className="flex-1 min-w-0">
-          <div className="flex gap-2 overflow-x-auto pb-1 lg:grid lg:grid-cols-7 lg:overflow-visible mb-1 px-0.5" style={{ scrollbarWidth: 'none' }}>
-            {[1, 2, 3, 4, 5, 6, 7].map(d => (
-              <div key={d} className="flex-shrink-0 w-[140px] lg:w-auto text-center text-[9px] font-mono text-[var(--ink-tertiary)] uppercase">
-                {d}
-              </div>
-            ))}
-          </div>
-          <div className="flex gap-2 overflow-x-auto pb-2 lg:grid lg:grid-cols-7 lg:overflow-visible" style={{ scrollbarWidth: 'none' }}>
-            {degrees.map(entry => (
-              <div key={entry.degree} className="flex-shrink-0 w-[140px] lg:w-auto lg:flex-1">
-                <DegreeCard
-                entry={entry}
-                rootKey={selectedKey}
-                isSelected={selectedDegree === entry.degree}
-                onSelect={() => handleDegreeSelect(entry.degree)}
-              />
-              </div>
-            ))}
-          </div>
-          {!selectedDegree && (
-            <p className="text-center text-xs text-[var(--ink-tertiary)] mt-3">
-              Click any degree to see chord voicing + scale run
-            </p>
-          )}
-        </div>
-
-        {/* Detail panel — right side */}
-        <AnimatePresence mode="wait">
-          {selectedEntry && (
-            <motion.div
-              key={`${selectedEntry.degree}-${selectedScale}-${selectedKey}`}
-              initial={{ opacity: 0, x: 16 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 16 }}
-              className="w-full mt-4 lg:mt-0 lg:w-80 shrink-0"
-            >
-              <DegreeDetail
-                entry={selectedEntry}
-                rootKey={selectedKey}
-                instrument={instrument}
-                onInstrumentChange={setInstrument}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
+      {/* Desktop (lg+): all 7 visible in a grid */}
+      <div className="hidden lg:grid lg:grid-cols-7 gap-3">
+        {degrees.map(entry => (
+          <FullDegreeCard
+            key={`${entry.degree}-${selectedScale}-${selectedKey}`}
+            entry={entry}
+            rootKey={selectedKey}
+            instrument={instrument}
+            onInstrumentChange={setInstrument}
+          />
+        ))}
       </div>
     </div>
   );
