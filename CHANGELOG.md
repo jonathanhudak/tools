@@ -1,3 +1,20 @@
+# [1.38.0](https://github.com/jonathanhudak/tools/compare/v1.37.0...v1.38.0) (2026-04-05)
+
+
+### Bug Fixes
+
+* final aspect review remediation — P0 cross-refs + P1 consistency ([a0e6215](https://github.com/jonathanhudak/tools/commit/a0e6215f4e5f8acfcfcef2ec919af99418447456))
+* Phase 1 aspect review remediation — 3 P0s + 11 P1s resolved ([4020e84](https://github.com/jonathanhudak/tools/commit/4020e84b673f4c3bf45601f97439da2f0ba7f010))
+* Phases 4-6 aspect review remediation — 2 P0s + 8 P1s resolved ([cd55d00](https://github.com/jonathanhudak/tools/commit/cd55d009a96e36c73e66a88173dddd2e5530216e))
+
+
+### Features
+
+* circle of fifths — complete key relationship data with diatonic chords ([6c32abb](https://github.com/jonathanhudak/tools/commit/6c32abb2801bc75d9019ac762a6e9f1810a8d8f4))
+* Circle of Fifths interactive page with navigation ([d96eb30](https://github.com/jonathanhudak/tools/commit/d96eb30f3bb2f396f1a59a848b5bfa20f8e42fec))
+* Phase 1 — foundation data layer for comprehensive theory library ([8e74e1e](https://github.com/jonathanhudak/tools/commit/8e74e1e7c8b427fe9d218e12d9a26c08b72b81c5))
+* Phases 4-6 — chord-scale matrix, arpeggios, progressions ([cdadd9a](https://github.com/jonathanhudak/tools/commit/cdadd9a3d8dadccc570672c1bbd02899f6ad865d))
+
 # [1.37.0](https://github.com/jonathanhudak/tools/compare/v1.36.0...v1.37.0) (2026-03-24)
 
 
