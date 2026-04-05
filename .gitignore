@@ -9,3 +9,4 @@ CHANGELOG.md
 *.tsbuildinfo
 package-lock.json
 docs/music-practice/assets/
+apps/music-practice/.tanstack/

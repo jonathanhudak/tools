@@ -13,7 +13,8 @@
     "test": "node test-sight-reading.js",
     "test:unit": "vitest run",
     "test:watch": "vitest",
-    "test:build": "pnpm run build && pnpm run test"
+    "test:build": "pnpm run build && pnpm run test",
+    "deploy": "vite build --base / --outDir dist --emptyOutDir && aws s3 sync dist/ s3://learn-music-hudak-land/ --delete && aws cloudfront create-invalidation --distribution-id E1IL5LSQHQUG3Y --paths '/*'"
   },
   "keywords": [],
   "author": "Jonathan Hudak",

@@ -1,21 +1,23 @@
 /**
  * ScaleReference - Interactive scale family explorer
- * Displays all 4 scale families with their 7 degrees, modes, and chord voicings
+ *
+ * Flat grid layout (no accordions). Click a degree to see its full
+ * detail panel with fretboard, piano, and staff notation.
+ * UX mirrors the chord-scale matrix and circle-of-fifths pages.
  */
 
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@hudak/ui/components/card';
-import { Button } from '@hudak/ui/components/button';
+import { useState, useMemo } from 'react';
 import { Badge } from '@hudak/ui/components/badge';
-import { ArrowLeft, ChevronDown, ChevronUp, Music } from 'lucide-react';
-import { InstrumentToggle } from '../Piano/InstrumentToggle';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Note } from 'tonal';
+import { GuitarFretboard } from '../GuitarFretboard/GuitarFretboard';
+import { PianoScaleDiagram } from './PianoScaleDiagram';
+import { StaffDisplay } from '../notation/StaffDisplay';
 import { ChordVoicingDisplay } from '../ChordScaleGame/ChordVoicingDisplay';
-import { ScaleDisplay } from './ScaleDisplay';
 import { getChordById } from '@/lib/chord-library';
-import type { Chord } from '@/lib/chord-library';
 import {
   buildScaleChords,
+  getModeNotes,
+  getModeNoteNames,
   SCALE_TYPE_NAMES,
   type ScaleType,
   type Degree,
@@ -34,179 +36,200 @@ const SCALE_DESCRIPTIONS: Record<ScaleType, string> = {
   harmonicMinor: 'Minor scale with raised 7th only. Creates the dominant V7 chord in minor keys.',
 };
 
+const ROOT_KEYS = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
+
 export function ScaleReference({ onBack }: ScaleReferenceProps): JSX.Element {
   const [activeScale, setActiveScale] = useState<ScaleType>('major');
-  const [expandedDegree, setExpandedDegree] = useState<number | null>(null);
-  const [instrument, setInstrument] = useState<'guitar' | 'piano'>('guitar');
+  const [selectedDegree, setSelectedDegree] = useState<Degree>(1);
+  const [rootKey, setRootKey] = useState('C');
+  const [showDegreeNumbers, setShowDegreeNumbers] = useState(false);
 
   const degrees = buildScaleChords(activeScale);
+  const selectedEntry = degrees.find(d => d.degree === selectedDegree)!;
 
-  const handleScaleChange = (scale: ScaleType) => {
-    setActiveScale(scale);
-    setExpandedDegree(null);
-  };
+  // Compute notes for the selected degree/mode
+  const modeNotes = useMemo(
+    () => getModeNotes(activeScale, selectedDegree, rootKey, 3),
+    [activeScale, selectedDegree, rootKey]
+  );
+  const modeNoteNames = useMemo(
+    () => getModeNoteNames(activeScale, selectedDegree, rootKey),
+    [activeScale, selectedDegree, rootKey]
+  );
+  const pitchClasses = useMemo(
+    () => modeNotes.map(n => Note.get(n).pc),
+    [modeNotes]
+  );
+  const modeRoot = pitchClasses[0] || rootKey;
 
-  const handleDegreeToggle = (degree: number) => {
-    setExpandedDegree(prev => (prev === degree ? null : degree));
-  };
+  // Piano notes (octave 4 for better rendering)
+  const pianoNotes = useMemo(
+    () => getModeNotes(activeScale, selectedDegree, rootKey, 4),
+    [activeScale, selectedDegree, rootKey]
+  );
 
-  // Look up the chord for the expanded degree
-  const getExpandedChord = (chordId?: string): Chord | undefined => {
-    if (!chordId) return undefined;
-    return getChordById(chordId);
-  };
+  // Chord for this degree
+  const chord = selectedEntry.chordId ? getChordById(selectedEntry.chordId) : undefined;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 md:p-6">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="max-w-5xl mx-auto"
-      >
-        {/* Top bar */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onBack}
-          className="mb-6 gap-2"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Menu
-        </Button>
-
-        {/* Header */}
-        <div className="text-center mb-8">
-          <motion.div
-            initial={{ scale: 0.9 }}
-            animate={{ scale: 1 }}
-            className="inline-flex items-center gap-3 mb-4"
+    <div className="space-y-6">
+      {/* ── Scale Family Tabs ──────────────────────────── */}
+      <div className="flex gap-1 border-b border-[var(--border-subtle)] pb-0 overflow-x-auto">
+        {SCALE_TYPES.map(scale => (
+          <button
+            key={scale}
+            onClick={() => { setActiveScale(scale); setSelectedDegree(1); }}
+            className={[
+              'px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-all whitespace-nowrap',
+              activeScale === scale
+                ? 'border-[var(--accent-color)] text-[var(--accent-color)]'
+                : 'border-transparent text-[var(--ink-secondary)] hover:text-[var(--ink-primary)] hover:border-[var(--border-strong)]',
+            ].join(' ')}
           >
-            <div className="p-3 rounded-2xl bg-[var(--accent-color)] shadow-lg">
-              <Music className="h-8 w-8 text-white" />
-            </div>
-          </motion.div>
-          <h1 className="text-3xl md:text-4xl font-bold font-display text-foreground">
-            Scales &amp; Modes Reference
-          </h1>
-          <p className="text-muted-foreground mt-2 text-sm md:text-lg">
-            Explore scale families, their modes, and chord relationships
-          </p>
-        </div>
+            {SCALE_TYPE_NAMES[scale]}
+          </button>
+        ))}
+      </div>
 
-        {/* Scale Family Selector + Instrument Toggle */}
-        <div className="flex flex-col items-center gap-4 mb-8">
-          <div className="flex flex-wrap justify-center gap-2">
-            {SCALE_TYPES.map(scale => (
-              <Button
-                key={scale}
-                variant={activeScale === scale ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => handleScaleChange(scale)}
-                className="text-xs md:text-sm"
-              >
-                {SCALE_TYPE_NAMES[scale]}
-              </Button>
+      {/* ── Controls row ───────────────────────────────── */}
+      <div className="flex flex-wrap items-center gap-4">
+        <div className="flex items-center gap-2">
+          <label className="text-xs font-semibold text-[var(--ink-secondary)] uppercase tracking-wider">Key</label>
+          <select
+            value={rootKey}
+            onChange={e => setRootKey(e.target.value)}
+            className="text-sm px-2 py-1 bg-[hsl(var(--color-card))] border border-[var(--border-subtle)] text-[var(--ink-primary)] font-mono-app"
+          >
+            {ROOT_KEYS.map(k => (
+              <option key={k} value={k}>{k}</option>
             ))}
-          </div>
-          <InstrumentToggle instrument={instrument} onChange={setInstrument} />
+          </select>
         </div>
+        <label className="flex items-center gap-2 text-xs text-[var(--ink-secondary)] cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={showDegreeNumbers}
+            onChange={e => setShowDegreeNumbers(e.target.checked)}
+            className="accent-[var(--accent-color)]"
+          />
+          Degree numbers on fretboard
+        </label>
+        <p className="text-xs text-[var(--ink-tertiary)] ml-auto hidden sm:block">
+          {SCALE_DESCRIPTIONS[activeScale]}
+        </p>
+      </div>
 
-        {/* Scale Description */}
-        <Card className="mb-6 bg-[var(--accent-light)] border-2">
-          <CardContent className="py-4">
-            <p className="text-sm text-center text-foreground">
-              <span className="font-semibold">{SCALE_TYPE_NAMES[activeScale]}:</span>{' '}
-              {SCALE_DESCRIPTIONS[activeScale]}
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Degrees Grid */}
-        <div className="space-y-3">
-          {degrees.map(entry => {
-            const isExpanded = expandedDegree === entry.degree;
-            const chord = isExpanded ? getExpandedChord(entry.chordId) : undefined;
-
-            return (
-              <motion.div
-                key={entry.degree}
-                layout
-                transition={{ duration: 0.2 }}
+      {/* ── Degree Grid ────────────────────────────────── */}
+      <div className="grid grid-cols-7 gap-1 sm:gap-2">
+        {degrees.map(entry => {
+          const isActive = selectedDegree === entry.degree;
+          return (
+            <button
+              key={entry.degree}
+              onClick={() => setSelectedDegree(entry.degree as Degree)}
+              className={[
+                'flex flex-col items-center gap-1 p-2 sm:p-3 text-center transition-all border-2',
+                isActive
+                  ? 'border-[var(--accent-color)] bg-[var(--accent-light)]'
+                  : 'border-[var(--border-subtle)] hover:border-[var(--border-strong)] bg-[hsl(var(--color-card))]',
+              ].join(' ')}
+            >
+              <span className={[
+                'text-[10px] sm:text-xs font-mono-app',
+                isActive ? 'text-[var(--accent-color)]' : 'text-[var(--ink-tertiary)]',
+              ].join(' ')}>
+                {entry.romanNumeral}
+              </span>
+              <span className={[
+                'text-xs sm:text-sm font-semibold leading-tight',
+                isActive ? 'text-[var(--ink-primary)]' : 'text-[var(--ink-secondary)]',
+              ].join(' ')}>
+                {entry.modeName}
+              </span>
+              <Badge
+                variant="secondary"
+                className="text-[9px] sm:text-[10px] px-1 py-0 h-4"
               >
-                <Card
-                  className={`border-2 cursor-pointer transition-all hover:shadow-md ${
-                    isExpanded ? 'border-[var(--accent-color)] shadow-lg' : ''
-                  }`}
-                  onClick={() => handleDegreeToggle(entry.degree)}
-                >
-                  <CardHeader className="py-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <span className="text-sm font-medium text-muted-foreground w-16">
-                          Degree {entry.degree}
-                        </span>
-                        <CardTitle className="text-base md:text-lg">
-                          {entry.modeName}
-                        </CardTitle>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary" className="text-xs">
-                          {entry.chordQuality}
-                        </Badge>
-                        <Badge variant="outline" className="text-xs font-mono">
-                          {entry.romanNumeral}
-                        </Badge>
-                        {isExpanded ? (
-                          <ChevronUp className="w-4 h-4 text-muted-foreground" />
-                        ) : (
-                          <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                        )}
-                      </div>
-                    </div>
-                  </CardHeader>
+                {entry.chordQuality}
+              </Badge>
+            </button>
+          );
+        })}
+      </div>
 
-                  <AnimatePresence>
-                    {isExpanded && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="overflow-hidden"
-                      >
-                        <CardContent
-                          className="pt-0 pb-6"
-                          onClick={e => e.stopPropagation()}
-                        >
-                          <ScaleDisplay
-                            scaleType={activeScale}
-                            degree={entry.degree as Degree}
-                            modeName={entry.modeName}
-                            instrument={instrument}
-                          />
-                          {chord && (
-                            <>
-                              <div className="my-6 border-t border-border" />
-                              <p className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wide">
-                                Built on this degree
-                              </p>
-                              <ChordVoicingDisplay
-                                chord={chord}
-                                voicingIndex={entry.voicingIndex ?? 0}
-                                externalInstrument={instrument}
-                              />
-                            </>
-                          )}
-                        </CardContent>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </Card>
-              </motion.div>
-            );
-          })}
+      {/* ── Detail Panel ───────────────────────────────── */}
+      <div className="border-2 border-[var(--border-subtle)] bg-[hsl(var(--color-card))] p-4 sm:p-6 space-y-6">
+        {/* Mode header */}
+        <div className="flex items-baseline gap-3 flex-wrap">
+          <h3
+            className="text-xl font-semibold text-[var(--ink-primary)]"
+            style={{ fontFamily: 'var(--font-display)' }}
+          >
+            {modeRoot} {selectedEntry.modeName}
+          </h3>
+          <span className="text-sm font-mono-app text-[var(--ink-tertiary)]">
+            {pitchClasses.join(' – ')}
+          </span>
+          <Badge variant="outline" className="text-xs font-mono-app">
+            {selectedEntry.romanNumeral} — {selectedEntry.chordQuality}
+          </Badge>
         </div>
-      </motion.div>
+
+        {/* ── Guitar Fretboard ──────────────────────── */}
+        <div>
+          <h4 className="text-xs font-semibold text-[var(--ink-secondary)] uppercase tracking-wider mb-2">
+            Guitar Fretboard
+          </h4>
+          <div className="overflow-x-auto bg-[hsl(var(--color-background))] border border-[var(--border-subtle)] p-3">
+            <GuitarFretboard
+              notes={modeNoteNames}
+              root={modeRoot}
+              fretCount={15}
+              showNoteNames={!showDegreeNumbers}
+              showDegrees={showDegreeNumbers}
+            />
+          </div>
+        </div>
+
+        {/* ── Piano + Staff side by side ─────────────── */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div>
+            <h4 className="text-xs font-semibold text-[var(--ink-secondary)] uppercase tracking-wider mb-2">
+              Piano
+            </h4>
+            <div className="bg-[hsl(var(--color-background))] border border-[var(--border-subtle)] p-3 flex justify-center">
+              <PianoScaleDiagram
+                notes={pianoNotes}
+                rootNote={pianoNotes[0]}
+                size="large"
+              />
+            </div>
+          </div>
+          <div>
+            <h4 className="text-xs font-semibold text-[var(--ink-secondary)] uppercase tracking-wider mb-2">
+              Staff Notation
+            </h4>
+            <div className="bg-[hsl(var(--color-background))] border border-[var(--border-subtle)] p-3 flex justify-center">
+              {modeNotes.length > 0 && (
+                <StaffDisplay notes={modeNotes} clef="treble" />
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* ── Chord on this degree ──────────────────── */}
+        {chord && (
+          <div>
+            <h4 className="text-xs font-semibold text-[var(--ink-secondary)] uppercase tracking-wider mb-2">
+              Built on Degree {selectedEntry.degree}
+            </h4>
+            <ChordVoicingDisplay
+              chord={chord}
+              voicingIndex={selectedEntry.voicingIndex ?? 0}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 }

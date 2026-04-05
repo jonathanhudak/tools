@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as StyleguideRouteImport } from './routes/styleguide'
 import { Route as ScalesQuizRouteImport } from './routes/scales-quiz'
 import { Route as PlayRouteImport } from './routes/play'
 import { Route as DevRouteImport } from './routes/dev'
@@ -18,6 +19,11 @@ import { Route as ChordQuizRouteImport } from './routes/chord-quiz'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 
+const StyleguideRoute = StyleguideRouteImport.update({
+  id: '/styleguide',
+  path: '/styleguide',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ScalesQuizRoute = ScalesQuizRouteImport.update({
   id: '/scales-quiz',
   path: '/scales-quiz',
@@ -68,6 +74,7 @@ export interface FileRoutesByFullPath {
   '/dev': typeof DevRoute
   '/play': typeof PlayRoute
   '/scales-quiz': typeof ScalesQuizRoute
+  '/styleguide': typeof StyleguideRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -78,6 +85,7 @@ export interface FileRoutesByTo {
   '/dev': typeof DevRoute
   '/play': typeof PlayRoute
   '/scales-quiz': typeof ScalesQuizRoute
+  '/styleguide': typeof StyleguideRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -89,6 +97,7 @@ export interface FileRoutesById {
   '/dev': typeof DevRoute
   '/play': typeof PlayRoute
   '/scales-quiz': typeof ScalesQuizRoute
+  '/styleguide': typeof StyleguideRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -101,6 +110,7 @@ export interface FileRouteTypes {
     | '/dev'
     | '/play'
     | '/scales-quiz'
+    | '/styleguide'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -111,6 +121,7 @@ export interface FileRouteTypes {
     | '/dev'
     | '/play'
     | '/scales-quiz'
+    | '/styleguide'
   id:
     | '__root__'
     | '/'
@@ -121,6 +132,7 @@ export interface FileRouteTypes {
     | '/dev'
     | '/play'
     | '/scales-quiz'
+    | '/styleguide'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -132,10 +144,18 @@ export interface RootRouteChildren {
   DevRoute: typeof DevRoute
   PlayRoute: typeof PlayRoute
   ScalesQuizRoute: typeof ScalesQuizRoute
+  StyleguideRoute: typeof StyleguideRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/styleguide': {
+      id: '/styleguide'
+      path: '/styleguide'
+      fullPath: '/styleguide'
+      preLoaderRoute: typeof StyleguideRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/scales-quiz': {
       id: '/scales-quiz'
       path: '/scales-quiz'
@@ -204,6 +224,7 @@ const rootRouteChildren: RootRouteChildren = {
   DevRoute: DevRoute,
   PlayRoute: PlayRoute,
   ScalesQuizRoute: ScalesQuizRoute,
+  StyleguideRoute: StyleguideRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
