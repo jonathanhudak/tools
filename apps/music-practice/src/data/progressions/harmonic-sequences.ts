@@ -160,10 +160,15 @@ const modulationTypes: HarmonicSequence[] = [
 // ---------------------------------------------------------------------------
 
 /** Complete registry of all harmonic sequences and modulation types */
-export const ALL_SEQUENCES: HarmonicSequence[] = [
+export const HARMONIC_SEQUENCES: readonly HarmonicSequence[] = [
   ...sequences,
   ...modulationTypes,
 ];
+
+/** O(1) lookup of sequences by ID */
+export const sequenceById: ReadonlyMap<string, HarmonicSequence> = new Map(
+  HARMONIC_SEQUENCES.map((s) => [s.id, s]),
+);
 
 // ---------------------------------------------------------------------------
 // Lookup Functions
@@ -175,7 +180,7 @@ export const ALL_SEQUENCES: HarmonicSequence[] = [
  * @returns The matching HarmonicSequence or undefined
  */
 export function getSequence(id: string): HarmonicSequence | undefined {
-  return ALL_SEQUENCES.find((s) => s.id === id);
+  return HARMONIC_SEQUENCES.find((s) => s.id === id);
 }
 
 /**
@@ -184,5 +189,5 @@ export function getSequence(id: string): HarmonicSequence | undefined {
  * @returns Array of matching HarmonicSequences
  */
 export function getSequencesByType(type: HarmonicSequence['type']): HarmonicSequence[] {
-  return ALL_SEQUENCES.filter((s) => s.type === type);
+  return HARMONIC_SEQUENCES.filter((s) => s.type === type);
 }

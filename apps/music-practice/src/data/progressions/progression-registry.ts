@@ -5,12 +5,13 @@
 
 export type ProgressionFamily = 'jazz' | 'blues' | 'pop' | 'classical' | 'modal';
 export type ProgressionDifficulty = 'beginner' | 'intermediate' | 'advanced';
+export type HarmonicFunction = 'tonic' | 'subdominant' | 'dominant' | 'predominant' | 'subtonic' | 'mediant';
 
 export interface ProgressionStep {
   /** Roman numeral with quality, e.g. 'IVmaj7', 'ii7', 'V7' */
   romanNumeral: string;
-  /** Harmonic function: 'tonic', 'subdominant', 'dominant', 'predominant' */
-  function: string;
+  /** Harmonic function of this chord */
+  function: HarmonicFunction;
   /** How many bars this chord lasts */
   bars: number;
 }
@@ -213,6 +214,25 @@ const jazzProgressions: ProgressionDefinition[] = [
     tags: ['chromatic', 'inner-voice', 'minor', 'line-cliche'],
     totalBars: 4,
   },
+  {
+    id: 'bird-changes',
+    name: 'Bird Changes',
+    family: 'jazz',
+    difficulty: 'advanced',
+    steps: [
+      { romanNumeral: 'Imaj7', function: 'tonic', bars: 1 },
+      { romanNumeral: '#ivø7', function: 'predominant', bars: 1 },
+      { romanNumeral: 'VII7', function: 'dominant', bars: 1 },
+      { romanNumeral: 'iiim7', function: 'tonic', bars: 1 },
+      { romanNumeral: 'VI7', function: 'dominant', bars: 1 },
+      { romanNumeral: 'iim7', function: 'predominant', bars: 1 },
+      { romanNumeral: 'V7', function: 'dominant', bars: 1 },
+      { romanNumeral: 'Imaj7', function: 'tonic', bars: 1 },
+    ],
+    description: 'Bebop turnaround with secondary dominants',
+    tags: ['jazz', 'bebop', 'turnaround', 'advanced'],
+    totalBars: 8,
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -297,6 +317,30 @@ const bluesProgressions: ProgressionDefinition[] = [
     description: 'Compact 8-bar blues form. Used in "Heartbreak Hotel", "How Long Blues", etc.',
     tags: ['blues-form', '8-bar', 'compact'],
     totalBars: 8,
+  },
+  {
+    id: 'bird-blues',
+    name: 'Bird Blues',
+    family: 'blues',
+    difficulty: 'advanced',
+    steps: [
+      { romanNumeral: 'Imaj7', function: 'tonic', bars: 1 },
+      { romanNumeral: 'bII7', function: 'dominant', bars: 1 },
+      { romanNumeral: 'I7', function: 'tonic', bars: 1 },
+      { romanNumeral: '#ivø7', function: 'predominant', bars: 1 },
+      { romanNumeral: 'VII7', function: 'dominant', bars: 1 },
+      { romanNumeral: 'iiim7', function: 'tonic', bars: 1 },
+      { romanNumeral: 'VI7', function: 'dominant', bars: 1 },
+      { romanNumeral: 'iim7', function: 'predominant', bars: 1 },
+      { romanNumeral: 'V7', function: 'dominant', bars: 1 },
+      { romanNumeral: 'iiim7', function: 'tonic', bars: 1 },
+      { romanNumeral: 'VI7', function: 'dominant', bars: 1 },
+      { romanNumeral: 'iim7', function: 'predominant', bars: 1 },
+      { romanNumeral: 'V7', function: 'dominant', bars: 1 },
+    ],
+    description: 'Charlie Parker\'s bebop reharmonization of the 12-bar blues with Bird Changes substitutions.',
+    tags: ['blues', 'jazz', 'bebop', 'advanced'],
+    totalBars: 12,
   },
 ];
 
@@ -534,12 +578,17 @@ const classicalProgressions: ProgressionDefinition[] = [
 // ---------------------------------------------------------------------------
 
 /** Complete registry of all progression definitions */
-export const ALL_PROGRESSIONS: ProgressionDefinition[] = [
+export const PROGRESSION_REGISTRY: readonly ProgressionDefinition[] = [
   ...jazzProgressions,
   ...bluesProgressions,
   ...popProgressions,
   ...classicalProgressions,
 ];
+
+/** O(1) lookup of progressions by ID */
+export const progressionById: ReadonlyMap<string, ProgressionDefinition> = new Map(
+  PROGRESSION_REGISTRY.map((p) => [p.id, p]),
+);
 
 // ---------------------------------------------------------------------------
 // Lookup Functions
@@ -551,7 +600,7 @@ export const ALL_PROGRESSIONS: ProgressionDefinition[] = [
  * @returns The matching ProgressionDefinition or undefined
  */
 export function getProgression(id: string): ProgressionDefinition | undefined {
-  return ALL_PROGRESSIONS.find((p) => p.id === id);
+  return PROGRESSION_REGISTRY.find((p) => p.id === id);
 }
 
 /**
@@ -560,7 +609,7 @@ export function getProgression(id: string): ProgressionDefinition | undefined {
  * @returns Array of matching ProgressionDefinitions
  */
 export function getProgressionsByFamily(family: ProgressionFamily): ProgressionDefinition[] {
-  return ALL_PROGRESSIONS.filter((p) => p.family === family);
+  return PROGRESSION_REGISTRY.filter((p) => p.family === family);
 }
 
 /**
@@ -569,7 +618,7 @@ export function getProgressionsByFamily(family: ProgressionFamily): ProgressionD
  * @returns Array of matching ProgressionDefinitions
  */
 export function getProgressionsByDifficulty(difficulty: ProgressionDifficulty): ProgressionDefinition[] {
-  return ALL_PROGRESSIONS.filter((p) => p.difficulty === difficulty);
+  return PROGRESSION_REGISTRY.filter((p) => p.difficulty === difficulty);
 }
 
 /**
@@ -579,7 +628,7 @@ export function getProgressionsByDifficulty(difficulty: ProgressionDifficulty): 
  */
 export function searchProgressions(query: string): ProgressionDefinition[] {
   const q = query.toLowerCase();
-  return ALL_PROGRESSIONS.filter((p) => {
+  return PROGRESSION_REGISTRY.filter((p) => {
     return (
       p.id.toLowerCase().includes(q) ||
       p.name.toLowerCase().includes(q) ||

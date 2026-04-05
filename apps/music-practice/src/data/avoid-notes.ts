@@ -77,7 +77,7 @@ export const AVOID_NOTES: AvoidNoteEntry[] = [
     degree: 3,
     avoidNotes: [
       {
-        scaleDegree: 1,
+        scaleDegree: 2,
         intervalFromRoot: 'm2',
         reason: 'b9 from root',
       },
@@ -118,7 +118,7 @@ export const AVOID_NOTES: AvoidNoteEntry[] = [
     degree: 7,
     avoidNotes: [
       {
-        scaleDegree: 1,
+        scaleDegree: 2,
         intervalFromRoot: 'm2',
         reason: 'b9 from root',
       },
@@ -132,7 +132,7 @@ export const AVOID_NOTES: AvoidNoteEntry[] = [
     degree: 2,
     avoidNotes: [
       {
-        scaleDegree: 1,
+        scaleDegree: 2,
         intervalFromRoot: 'm2',
         reason: 'b9 from root',
       },

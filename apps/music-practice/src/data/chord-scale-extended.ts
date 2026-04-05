@@ -10,7 +10,7 @@
  * Scale IDs reference the scale-registry.ts identifiers.
  */
 
-import type { ChordScaleEntry, Degree } from './chord-scale-matrix';
+import type { Degree } from './chord-scale-matrix';
 
 // ─── Extended Scale Type ─────────────────────────────────────────────────────
 
@@ -21,6 +21,17 @@ export type ExtendedScaleType =
   | 'melodicMinor'
   | 'harmonicMinor'
   | 'harmonicMajor';
+
+/** Chord-scale entry that supports ExtendedScaleType (including harmonicMajor) */
+export interface ExtendedChordScaleEntry {
+  scaleType: ExtendedScaleType;
+  degree: Degree;
+  chordQuality: string;
+  modeName: string;
+  romanNumeral: string;
+  chordId?: string;
+  voicingIndex?: number;
+}
 
 // ─── Harmonic Major Matrix ───────────────────────────────────────────────────
 
@@ -39,51 +50,51 @@ export type ExtendedScaleType =
  * | 6      | Maj7#5    | Lydian Augmented #2    | bVIMaj7#5     |
  * | 7      | dim7      | Locrian bb7            | viidim7       |
  */
-export const HARMONIC_MAJOR_MATRIX: ChordScaleEntry[] = [
+export const HARMONIC_MAJOR_MATRIX: readonly ExtendedChordScaleEntry[] = [
   {
-    scaleType: 'harmonicMajor' as any,
+    scaleType: 'harmonicMajor',
     degree: 1 as Degree,
     chordQuality: 'Maj7',
     modeName: 'Harmonic Major',
     romanNumeral: 'IMaj7',
   },
   {
-    scaleType: 'harmonicMajor' as any,
+    scaleType: 'harmonicMajor',
     degree: 2 as Degree,
     chordQuality: 'm7b5',
     modeName: 'Dorian b5',
     romanNumeral: 'iim7b5',
   },
   {
-    scaleType: 'harmonicMajor' as any,
+    scaleType: 'harmonicMajor',
     degree: 3 as Degree,
     chordQuality: 'm7',
     modeName: 'Phrygian b4',
     romanNumeral: 'iiim7',
   },
   {
-    scaleType: 'harmonicMajor' as any,
+    scaleType: 'harmonicMajor',
     degree: 4 as Degree,
     chordQuality: 'mMaj7',
     modeName: 'Lydian b3',
     romanNumeral: 'ivmMaj7',
   },
   {
-    scaleType: 'harmonicMajor' as any,
+    scaleType: 'harmonicMajor',
     degree: 5 as Degree,
     chordQuality: '7',
     modeName: 'Mixolydian b2',
     romanNumeral: 'V7',
   },
   {
-    scaleType: 'harmonicMajor' as any,
+    scaleType: 'harmonicMajor',
     degree: 6 as Degree,
     chordQuality: 'Maj7#5',
     modeName: 'Lydian Augmented #2',
     romanNumeral: 'bVIMaj7#5',
   },
   {
-    scaleType: 'harmonicMajor' as any,
+    scaleType: 'harmonicMajor',
     degree: 7 as Degree,
     chordQuality: 'dim7',
     modeName: 'Locrian bb7',
@@ -118,7 +129,7 @@ export interface ExtendedChordScaleMapping {
  * sus chords, and sixth chords — situations where the basic diatonic
  * matrix doesn't provide a direct answer.
  */
-export const EXTENDED_CHORD_SCALE_MAPPINGS: ExtendedChordScaleMapping[] = [
+export const EXTENDED_CHORD_SCALE_MAPPINGS: readonly ExtendedChordScaleMapping[] = [
   {
     chordQuality: '7#11',
     primaryScale: 'lydian-dominant',
