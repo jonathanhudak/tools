@@ -340,7 +340,7 @@ const bluesProgressions: ProgressionDefinition[] = [
     ],
     description: 'Charlie Parker\'s bebop reharmonization of the 12-bar blues with Bird Changes substitutions.',
     tags: ['blues', 'jazz', 'bebop', 'advanced'],
-    totalBars: 12,
+    totalBars: 13,
   },
 ];
 
