@@ -107,7 +107,9 @@ function ChordCard({ chordName, label, instrument }: ChordCardProps) {
             <>
               <PianoChordDiagram voicing={voicing} chordName={chordName} size="small" />
               {voicing.piano.notes.length > 0 && (
-                <StaffDisplay notes={voicing.piano.notes} clef="treble" asChord />
+                <div className="w-full overflow-hidden" style={{ transform: 'scale(0.75)', transformOrigin: 'top center', marginBottom: '-1rem' }}>
+                  <StaffDisplay notes={voicing.piano.notes} clef="treble" asChord />
+                </div>
               )}
             </>
           ) : (
