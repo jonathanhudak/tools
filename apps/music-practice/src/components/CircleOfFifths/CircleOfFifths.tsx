@@ -397,16 +397,16 @@ export function CircleOfFifths() {
         )}
       </div>
 
-      {/* ── Diatonic chord grids — FULL WIDTH below ────── */}
+      {/* ── Diatonic chord grids — break out of max-w container on lg+ ── */}
       {selectedEntry && (
-        <div className="space-y-6">
+        <div className="space-y-6 lg:w-[100vw] lg:relative lg:left-1/2 lg:-translate-x-1/2">
           {/* Diatonic Triads */}
           <section className="space-y-2">
-            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest font-mono-app">
+            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest font-mono-app px-4 lg:px-8">
               Diatonic Triads
             </h2>
             <div
-              className="flex gap-3 overflow-x-auto pb-3 snap-x snap-mandatory lg:grid lg:grid-cols-7 lg:overflow-visible"
+              className="flex gap-3 overflow-x-auto pb-3 snap-x snap-mandatory px-4 lg:px-8 lg:grid lg:grid-cols-7 lg:overflow-visible"
               style={{ scrollbarWidth: 'none' }}
             >
               {selectedEntry.chords.triads.map((chordName, i) => (
@@ -423,11 +423,11 @@ export function CircleOfFifths() {
 
           {/* Diatonic 7th Chords */}
           <section className="space-y-2">
-            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest font-mono-app">
+            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest font-mono-app px-4 lg:px-8">
               Diatonic 7th Chords
             </h2>
             <div
-              className="flex gap-3 overflow-x-auto pb-3 snap-x snap-mandatory lg:grid lg:grid-cols-7 lg:overflow-visible"
+              className="flex gap-3 overflow-x-auto pb-3 snap-x snap-mandatory px-4 lg:px-8 lg:grid lg:grid-cols-7 lg:overflow-visible"
               style={{ scrollbarWidth: 'none' }}
             >
               {selectedEntry.chords.sevenths.map((chordName, i) => (
