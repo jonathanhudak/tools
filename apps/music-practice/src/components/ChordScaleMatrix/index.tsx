@@ -230,39 +230,40 @@ export function ChordScaleMatrix({
         </div>
       </div>
 
-      {/* ── Degree cards ──────────────────────────────────────────── */}
+      {/* ── Degree cards — break out of max-w container on lg+ ────── */}
+      <div className="lg:w-[100vw] lg:relative lg:left-1/2 lg:-translate-x-1/2">
+        {/* Mobile: horizontal swipeable carousel */}
+        <div
+          className="flex gap-4 overflow-x-auto pb-3 snap-x snap-mandatory px-4 lg:hidden"
+          style={{ scrollbarWidth: 'none' }}
+        >
+          {degrees.map(entry => (
+            <div
+              key={`${entry.degree}-${selectedScale}-${selectedKey}`}
+              className="snap-start flex-shrink-0 w-[75vw] sm:w-[280px]"
+            >
+              <FullDegreeCard
+                entry={entry}
+                rootKey={selectedKey}
+                instrument={instrument}
+                onInstrumentChange={setInstrument}
+              />
+            </div>
+          ))}
+        </div>
 
-      {/* Mobile: horizontal swipeable carousel */}
-      <div
-        className="flex gap-4 overflow-x-auto pb-3 snap-x snap-mandatory lg:hidden"
-        style={{ scrollbarWidth: 'none' }}
-      >
-        {degrees.map(entry => (
-          <div
-            key={`${entry.degree}-${selectedScale}-${selectedKey}`}
-            className="snap-start flex-shrink-0 w-[85vw] sm:w-[340px]"
-          >
+        {/* Desktop (lg+): all 7 visible in a grid */}
+        <div className="hidden lg:grid lg:grid-cols-7 gap-3 px-8">
+          {degrees.map(entry => (
             <FullDegreeCard
+              key={`${entry.degree}-${selectedScale}-${selectedKey}`}
               entry={entry}
               rootKey={selectedKey}
               instrument={instrument}
               onInstrumentChange={setInstrument}
             />
-          </div>
-        ))}
-      </div>
-
-      {/* Desktop (lg+): all 7 visible in a grid */}
-      <div className="hidden lg:grid lg:grid-cols-7 gap-3">
-        {degrees.map(entry => (
-          <FullDegreeCard
-            key={`${entry.degree}-${selectedScale}-${selectedKey}`}
-            entry={entry}
-            rootKey={selectedKey}
-            instrument={instrument}
-            onInstrumentChange={setInstrument}
-          />
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );
