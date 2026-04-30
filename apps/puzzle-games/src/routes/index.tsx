@@ -44,6 +44,14 @@ function Home() {
             <small>Reveal pixel pictures</small>
           </button>
         </Link>
+
+        <Link to="/blockworld" className="link-button">
+          <button style={{ width: "100%" }}>
+            🧱 Blockworld
+            <br />
+            <small>Build with isometric blocks</small>
+          </button>
+        </Link>
       </div>
     </div>
   );

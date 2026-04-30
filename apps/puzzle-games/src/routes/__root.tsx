@@ -10,12 +10,12 @@ const GAME_ROUTES: GameRoute[] = ["sokoban", "word-search", "nonogram"];
 function RootLayout() {
   const location = useLocation();
   const pathname = location.pathname.replace(/^\/tools\/puzzle-games/, "").replace(/^\//, "") || "/";
-  
-  // Determine if we're on a game page
+
   const currentGame = GAME_ROUTES.find((g) => pathname === g || pathname === `/${g}`);
+  const isBlockworld = pathname === "blockworld" || pathname === "/blockworld";
 
   return (
-    <div className="container">
+    <div className={isBlockworld ? "container container-wide" : "container"}>
       <header className="app-header">
         {currentGame && <HowToPlay game={currentGame} showOnFirstVisit={true} />}
         <PlayerSelect />

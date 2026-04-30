@@ -351,3 +351,320 @@ h2 {
 .game-cell-selecting {
   background: var(--cell-active) !important;
 }
+
+/* =========================
+   Blockworld styles
+   ========================= */
+.container-wide {
+  max-width: 100%;
+  padding: 8px;
+}
+
+.blockworld-page {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: calc(100vh - 80px); /* leave room for app-header */
+  min-height: 500px;
+}
+
+.blockworld-topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.blockworld {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-height: 0;
+}
+
+.blockworld-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 8px;
+  border: 2px solid var(--fg);
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+
+.tool-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.tool-btn,
+.tex-btn {
+  padding: 8px 10px;
+  font-size: 0.875rem;
+  min-height: 40px;
+  min-width: 40px;
+  border: 2px solid var(--fg);
+  background: var(--bg);
+  color: var(--fg);
+  border-radius: var(--radius);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tool-btn.active,
+.tex-btn.active {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+.tex-glyph {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.tex-label {
+  font-size: 0.75rem;
+}
+
+.blockworld-stage {
+  border: 2px solid var(--fg);
+  border-radius: var(--radius);
+  background: var(--bg);
+  overflow: hidden;
+  flex: 1;
+  min-height: 400px;
+  width: 100%;
+  position: relative;
+}
+
+.blockworld-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: grab;
+  shape-rendering: geometricPrecision;
+  user-select: none;
+}
+
+.blockworld-svg:active {
+  cursor: grabbing;
+}
+
+.bw-face {
+  cursor: pointer;
+}
+
+.bw-ground {
+  cursor: pointer;
+  opacity: 0.85;
+}
+
+.bw-ground:hover {
+  fill: var(--cell-active) !important;
+}
+
+.bw-face:hover {
+  stroke-width: 2;
+}
+
+.blockworld-hint {
+  font-size: 0.8125rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 4px;
+}
+
+.blockworld-hint-pan {
+  opacity: 0.7;
+}
+
+/* Dark mode: invert the SVG so black patterns read on dark bg */
+[data-theme="dark"] .blockworld-svg {
+  filter: invert(1);
+}
+
+/* Project bar */
+.blockworld-projectbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 2px solid var(--fg);
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+
+.bw-name,
+.bw-name-form {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  background: transparent;
+  border: none;
+  color: var(--fg);
+  font-size: 1rem;
+  text-align: left;
+  cursor: pointer;
+  min-height: 36px;
+}
+
+.bw-name:hover {
+  background: var(--cell-active);
+}
+
+.bw-name-label {
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bw-name-edit {
+  opacity: 0.5;
+  font-size: 0.875rem;
+}
+
+.bw-name-form input {
+  flex: 1;
+  min-width: 0;
+  font-size: 1rem;
+}
+
+.bw-save-status {
+  font-size: 0.75rem;
+  opacity: 0.6;
+  min-width: 60px;
+  text-align: right;
+}
+
+.bw-save-saving {
+  opacity: 1;
+}
+
+.bw-save-saved {
+  opacity: 1;
+}
+
+.bw-projectbar-actions {
+  display: flex;
+  gap: 4px;
+}
+
+/* Projects list modal */
+.bw-projects {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bw-projects-new {
+  width: 100%;
+  padding: 12px;
+  font-weight: bold;
+}
+
+.bw-projects-empty {
+  text-align: center;
+  opacity: 0.6;
+  margin: 16px 0;
+}
+
+.bw-projects-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.bw-projects-item {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.bw-projects-item.current {
+  border-color: var(--fg);
+  border-width: 2px;
+}
+
+.bw-projects-name {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  color: var(--fg);
+  text-align: left;
+  cursor: pointer;
+  min-width: 0;
+}
+
+.bw-projects-name:hover {
+  background: var(--cell-active);
+}
+
+.bw-projects-name .name {
+  font-weight: bold;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.bw-projects-name .meta {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+.bw-projects-rename {
+  flex: 1;
+  display: flex;
+  padding: 6px;
+}
+
+.bw-projects-rename input {
+  flex: 1;
+  min-width: 0;
+}
+
+.bw-projects-actions {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 4px;
+  gap: 2px;
+}
+
+.bw-projects-actions button {
+  padding: 4px 8px;
+  min-height: 28px;
+  min-width: 32px;
+  font-size: 0.875rem;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--fg);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.bw-projects-actions button:hover {
+  background: var(--cell-active);
+}
