@@ -318,7 +318,7 @@ export function Blockworld() {
     }, 0);
   };
 
-  const onWheel = (e: React.WheelEvent<SVGSVGElement>) => {
+  const onWheel = (e: WheelEvent) => {
     e.preventDefault();
     const delta = -e.deltaY * 0.002;
     setCamera((c) => {
@@ -326,6 +326,15 @@ export function Blockworld() {
       return { ...c, scale: Math.max(12, Math.min(160, next)) };
     });
   };
+
+  // Attach wheel non-passively (React makes onWheel passive by default → preventDefault warns).
+  useEffect(() => {
+    const el = svgRef.current;
+    if (!el) return;
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Keyboard: Q/E rotate, R reset
   useEffect(() => {
@@ -539,7 +548,6 @@ export function Blockworld() {
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerUp}
-          onWheel={onWheel}
           onContextMenu={(e) => e.preventDefault()}
           style={{ touchAction: "none" }}
         >
