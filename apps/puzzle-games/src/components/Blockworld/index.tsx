@@ -75,17 +75,6 @@ export function Blockworld() {
 
   const svgRef = useRef<SVGSVGElement | null>(null);
   const didDragRef = useRef(false);
-  const dragModeRef = useRef<"orbit" | "pan" | null>(null);
-  const dragStartRef = useRef<{
-    x: number;
-    y: number;
-    yaw: number;
-    pitch: number;
-    panX: number;
-    panY: number;
-    pointerId: number;
-    captured: boolean;
-  } | null>(null);
 
   /* -------- mutations -------- */
 
@@ -262,68 +251,191 @@ export function Blockworld() {
 
   /* -------- camera interactions -------- */
 
+  // Multi-pointer tracking: supports 1-finger orbit + 2-finger pinch/pan on touch,
+  // and mouse drag / shift-drag / wheel on desktop.
+  const pointersRef = useRef<
+    Map<number, { x: number; y: number; pointerType: string }>
+  >(new Map());
+
+  // Gesture state snapshot (captured at gesture start / when finger count changes)
+  const gestureRef = useRef<{
+    mode: "orbit" | "pan" | "pinch" | null;
+    startYaw: number;
+    startPitch: number;
+    startScale: number;
+    startPanX: number;
+    startPanY: number;
+    anchorX: number; // midpoint x at gesture start
+    anchorY: number;
+    startDist: number; // pointer distance for pinch
+    captured: boolean;
+    capturedId: number | null;
+    moved: boolean;
+  }>({
+    mode: null,
+    startYaw: 0,
+    startPitch: 0,
+    startScale: 0,
+    startPanX: 0,
+    startPanY: 0,
+    anchorX: 0,
+    anchorY: 0,
+    startDist: 0,
+    captured: false,
+    capturedId: null,
+    moved: false,
+  });
+
+  // Sensitivity tuned for touch — lower means less flinchy
+  const ORBIT_SENSITIVITY = 0.005; // rad per px  (was 0.01)
+  const DRAG_THRESHOLD_PX = 6; // was 4
+
+  const computeGestureAnchor = () => {
+    const pts = [...pointersRef.current.values()];
+    let sx = 0;
+    let sy = 0;
+    for (const p of pts) {
+      sx += p.x;
+      sy += p.y;
+    }
+    const n = Math.max(1, pts.length);
+    return { x: sx / n, y: sy / n };
+  };
+
+  const computeGestureDist = () => {
+    const pts = [...pointersRef.current.values()];
+    if (pts.length < 2) return 0;
+    const dx = pts[0].x - pts[1].x;
+    const dy = pts[0].y - pts[1].y;
+    return Math.hypot(dx, dy);
+  };
+
+  const snapshotGesture = (shiftKey: boolean) => {
+    const g = gestureRef.current;
+    const count = pointersRef.current.size;
+    const anchor = computeGestureAnchor();
+    g.anchorX = anchor.x;
+    g.anchorY = anchor.y;
+    g.startYaw = camera.yaw;
+    g.startPitch = camera.pitch;
+    g.startScale = camera.scale;
+    g.startPanX = panScreen.x;
+    g.startPanY = panScreen.y;
+    g.startDist = computeGestureDist();
+    g.moved = false;
+    if (count >= 2) {
+      g.mode = "pinch";
+    } else {
+      // Mouse right-click / middle-click / shift = pan; otherwise orbit
+      g.mode = shiftKey ? "pan" : "orbit";
+    }
+  };
+
   const onPointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
-    const isPan = e.shiftKey || e.button === 1 || e.button === 2;
-    dragModeRef.current = isPan ? "pan" : "orbit";
-    dragStartRef.current = {
+    // Mouse middle / right click → pan
+    const isMousePan =
+      e.pointerType === "mouse" && (e.button === 1 || e.button === 2);
+
+    pointersRef.current.set(e.pointerId, {
       x: e.clientX,
       y: e.clientY,
-      yaw: camera.yaw,
-      pitch: camera.pitch,
-      panX: panScreen.x,
-      panY: panScreen.y,
-      pointerId: e.pointerId,
-      captured: false,
-    };
+      pointerType: e.pointerType,
+    });
+
+    snapshotGesture(e.shiftKey || isMousePan);
     didDragRef.current = false;
   };
 
   const onPointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
-    const start = dragStartRef.current;
-    if (!start) return;
-    const dx = e.clientX - start.x;
-    const dy = e.clientY - start.y;
-    if (!didDragRef.current && dx * dx + dy * dy > 16) {
-      didDragRef.current = true;
-      // Capture only once drag is confirmed — before this, let clicks reach polygons
-      try {
-        e.currentTarget.setPointerCapture(start.pointerId);
-        start.captured = true;
-      } catch {}
-    }
-    if (!didDragRef.current) return;
+    const tracked = pointersRef.current.get(e.pointerId);
+    if (!tracked) return;
 
-    if (dragModeRef.current === "orbit") {
+    // Update tracked position
+    tracked.x = e.clientX;
+    tracked.y = e.clientY;
+
+    const g = gestureRef.current;
+    if (!g.mode) return;
+
+    const count = pointersRef.current.size;
+    const anchor = computeGestureAnchor();
+    const dx = anchor.x - g.anchorX;
+    const dy = anchor.y - g.anchorY;
+    const movedDistSq = dx * dx + dy * dy;
+
+    // Drag confirmation — block synthetic clicks once we've moved past threshold
+    if (!g.moved && movedDistSq > DRAG_THRESHOLD_PX * DRAG_THRESHOLD_PX) {
+      g.moved = true;
+      didDragRef.current = true;
+      // Capture pointer on single-touch gestures to keep receiving events even if finger leaves SVG
+      if (count === 1 && !g.captured) {
+        try {
+          e.currentTarget.setPointerCapture(e.pointerId);
+          g.captured = true;
+          g.capturedId = e.pointerId;
+        } catch {}
+      }
+    }
+    if (!g.moved) return;
+
+    if (g.mode === "pinch" && count >= 2) {
+      // Pinch zoom + two-finger pan
+      const dist = computeGestureDist();
+      if (g.startDist > 0 && dist > 0) {
+        const ratio = dist / g.startDist;
+        const nextScale = Math.max(12, Math.min(200, g.startScale * ratio));
+        setCamera((c) => ({ ...c, scale: nextScale }));
+      }
+      // Two-finger pan — move canvas with the midpoint of the two fingers
+      setPanScreen({ x: g.startPanX + dx, y: g.startPanY + dy });
+    } else if (g.mode === "orbit") {
       setCamera((c) => ({
         ...c,
-        yaw: start.yaw - dx * 0.01,
-        pitch: clampPitch(start.pitch - dy * 0.01),
+        yaw: g.startYaw - dx * ORBIT_SENSITIVITY,
+        pitch: clampPitch(g.startPitch - dy * ORBIT_SENSITIVITY),
       }));
-    } else if (dragModeRef.current === "pan") {
-      setPanScreen({ x: start.panX + dx, y: start.panY + dy });
+    } else if (g.mode === "pan") {
+      setPanScreen({ x: g.startPanX + dx, y: g.startPanY + dy });
     }
   };
 
-  const onPointerUp = (e: React.PointerEvent<SVGSVGElement>) => {
-    const start = dragStartRef.current;
-    dragStartRef.current = null;
-    dragModeRef.current = null;
-    if (start?.captured) {
+  const endPointer = (e: React.PointerEvent<SVGSVGElement>) => {
+    pointersRef.current.delete(e.pointerId);
+    const g = gestureRef.current;
+    if (g.capturedId === e.pointerId) {
       try {
-        e.currentTarget.releasePointerCapture(start.pointerId);
+        e.currentTarget.releasePointerCapture(e.pointerId);
       } catch {}
+      g.captured = false;
+      g.capturedId = null;
     }
-    setTimeout(() => {
-      didDragRef.current = false;
-    }, 0);
+    if (pointersRef.current.size === 0) {
+      g.mode = null;
+      // Reset drag guard next tick so the synthetic click is blocked
+      const wasMoved = g.moved;
+      setTimeout(() => {
+        didDragRef.current = false;
+        g.moved = false;
+      }, 0);
+      // If we didn't drag and it was a single tap, click fires naturally — nothing to do
+      void wasMoved;
+    } else {
+      // Re-snapshot for the remaining pointer(s) so lifting one finger of a pinch
+      // doesn't teleport anything.
+      snapshotGesture(e.shiftKey);
+    }
   };
+
+  const onPointerUp = (e: React.PointerEvent<SVGSVGElement>) => endPointer(e);
+  const onPointerCancel = (e: React.PointerEvent<SVGSVGElement>) => endPointer(e);
 
   const onWheel = (e: WheelEvent) => {
     e.preventDefault();
-    const delta = -e.deltaY * 0.002;
+    // Much gentler zoom — wheel ticks are coarse, especially on trackpads
+    const delta = -e.deltaY * 0.0012;
     setCamera((c) => {
       const next = c.scale * Math.exp(delta);
-      return { ...c, scale: Math.max(12, Math.min(160, next)) };
+      return { ...c, scale: Math.max(12, Math.min(200, next)) };
     });
   };
 
@@ -547,7 +659,7 @@ export function Blockworld() {
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
-          onPointerCancel={onPointerUp}
+          onPointerCancel={onPointerCancel}
           onContextMenu={(e) => e.preventDefault()}
           style={{ touchAction: "none" }}
         >
@@ -586,7 +698,7 @@ export function Blockworld() {
           {tool === "paint" && ` — click a block to apply ${TEXTURES.find((t) => t.id === selectedTexture)?.label}. `}
         </span>
         <span className="blockworld-hint-pan">
-          Drag = orbit · Shift+drag = pan · Scroll = zoom · Q/E = rotate · R = reset
+          1 finger = orbit · 2 fingers = pinch/pan · scroll/pinch = zoom
         </span>
       </div>
 
