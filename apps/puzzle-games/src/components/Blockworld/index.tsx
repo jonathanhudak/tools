@@ -310,7 +310,7 @@ export function Blockworld() {
     return Math.hypot(dx, dy);
   };
 
-  const snapshotGesture = (shiftKey: boolean) => {
+  const snapshotGesture = (shiftKey: boolean, preserveMoved = false) => {
     const g = gestureRef.current;
     const count = pointersRef.current.size;
     const anchor = computeGestureAnchor();
@@ -322,7 +322,7 @@ export function Blockworld() {
     g.startPanX = panScreen.x;
     g.startPanY = panScreen.y;
     g.startDist = computeGestureDist();
-    g.moved = false;
+    if (!preserveMoved) g.moved = false;
     if (count >= 2) {
       g.mode = "pinch";
     } else {
@@ -336,14 +336,18 @@ export function Blockworld() {
     const isMousePan =
       e.pointerType === "mouse" && (e.button === 1 || e.button === 2);
 
+    const wasActive = pointersRef.current.size > 0;
+
     pointersRef.current.set(e.pointerId, {
       x: e.clientX,
       y: e.clientY,
       pointerType: e.pointerType,
     });
 
-    snapshotGesture(e.shiftKey || isMousePan);
-    didDragRef.current = false;
+    // If a gesture was already active (e.g. 2nd finger joins), preserve
+    // the moved flag so pan doesn't re-require the drag threshold.
+    snapshotGesture(e.shiftKey || isMousePan, wasActive);
+    if (!wasActive) didDragRef.current = false;
   };
 
   const onPointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
@@ -379,15 +383,19 @@ export function Blockworld() {
     if (!g.moved) return;
 
     if (g.mode === "pinch" && count >= 2) {
-      // Pinch zoom + two-finger pan
+      // Two-finger pan — always applied, anchored on midpoint
+      setPanScreen({ x: g.startPanX + dx, y: g.startPanY + dy });
+
+      // Pinch zoom — only apply when distance changes meaningfully (deadzone)
+      // avoids finger-jitter zoom fighting a pan gesture.
       const dist = computeGestureDist();
       if (g.startDist > 0 && dist > 0) {
         const ratio = dist / g.startDist;
-        const nextScale = Math.max(12, Math.min(200, g.startScale * ratio));
-        setCamera((c) => ({ ...c, scale: nextScale }));
+        if (Math.abs(ratio - 1) > 0.04) {
+          const nextScale = Math.max(12, Math.min(200, g.startScale * ratio));
+          setCamera((c) => ({ ...c, scale: nextScale }));
+        }
       }
-      // Two-finger pan — move canvas with the midpoint of the two fingers
-      setPanScreen({ x: g.startPanX + dx, y: g.startPanY + dy });
     } else if (g.mode === "orbit") {
       setCamera((c) => ({
         ...c,

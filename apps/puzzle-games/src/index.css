@@ -439,6 +439,8 @@ h2 {
   min-height: 400px;
   width: 100%;
   position: relative;
+  touch-action: none;
+  overscroll-behavior: none;
 }
 
 .blockworld-svg {
