@@ -2,10 +2,7 @@ import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import {
   Camera,
   DEFAULT_CAMERA,
-  project,
-  viewDir,
   clampPitch,
-  Vec3,
 } from "./camera";
 import {
   FACES,
@@ -354,58 +351,81 @@ export function Blockworld() {
     const tracked = pointersRef.current.get(e.pointerId);
     if (!tracked) return;
 
-    // Update tracked position
+    // Update tracked position immediately (sync — state is in a ref)
     tracked.x = e.clientX;
     tracked.y = e.clientY;
 
+    // Promote to drag synchronously so click-suppression works even if rAF hasn't fired
     const g = gestureRef.current;
     if (!g.mode) return;
-
-    const count = pointersRef.current.size;
-    const anchor = computeGestureAnchor();
-    const dx = anchor.x - g.anchorX;
-    const dy = anchor.y - g.anchorY;
-    const movedDistSq = dx * dx + dy * dy;
-
-    // Drag confirmation — block synthetic clicks once we've moved past threshold
-    if (!g.moved && movedDistSq > DRAG_THRESHOLD_PX * DRAG_THRESHOLD_PX) {
-      g.moved = true;
-      didDragRef.current = true;
-      // Capture pointer on single-touch gestures to keep receiving events even if finger leaves SVG
-      if (count === 1 && !g.captured) {
-        try {
-          e.currentTarget.setPointerCapture(e.pointerId);
-          g.captured = true;
-          g.capturedId = e.pointerId;
-        } catch {}
-      }
-    }
-    if (!g.moved) return;
-
-    if (g.mode === "pinch" && count >= 2) {
-      // Two-finger pan — always applied, anchored on midpoint
-      setPanScreen({ x: g.startPanX + dx, y: g.startPanY + dy });
-
-      // Pinch zoom — only apply when distance changes meaningfully (deadzone)
-      // avoids finger-jitter zoom fighting a pan gesture.
-      const dist = computeGestureDist();
-      if (g.startDist > 0 && dist > 0) {
-        const ratio = dist / g.startDist;
-        if (Math.abs(ratio - 1) > 0.04) {
-          const nextScale = Math.max(12, Math.min(200, g.startScale * ratio));
-          setCamera((c) => ({ ...c, scale: nextScale }));
+    if (!g.moved) {
+      const anchor = computeGestureAnchor();
+      const dx = anchor.x - g.anchorX;
+      const dy = anchor.y - g.anchorY;
+      if (dx * dx + dy * dy > DRAG_THRESHOLD_PX * DRAG_THRESHOLD_PX) {
+        g.moved = true;
+        didDragRef.current = true;
+        if (pointersRef.current.size === 1 && !g.captured) {
+          try {
+            e.currentTarget.setPointerCapture(e.pointerId);
+            g.captured = true;
+            g.capturedId = e.pointerId;
+          } catch {}
         }
       }
-    } else if (g.mode === "orbit") {
-      setCamera((c) => ({
-        ...c,
-        yaw: g.startYaw - dx * ORBIT_SENSITIVITY,
-        pitch: clampPitch(g.startPitch - dy * ORBIT_SENSITIVITY),
-      }));
-    } else if (g.mode === "pan") {
-      setPanScreen({ x: g.startPanX + dx, y: g.startPanY + dy });
     }
+
+    // Coalesce state updates to one per animation frame for smooth touch perf
+    scheduleCameraUpdate();
   };
+
+  // rAF-throttled camera/pan update. Reads latest pointer state from refs.
+  const rafIdRef = useRef<number | null>(null);
+  const scheduleCameraUpdate = useCallback(() => {
+    if (rafIdRef.current !== null) return;
+    rafIdRef.current = requestAnimationFrame(() => {
+      rafIdRef.current = null;
+      const g = gestureRef.current;
+      if (!g.mode || !g.moved) return;
+      const count = pointersRef.current.size;
+      const anchor = computeGestureAnchor();
+      const dx = anchor.x - g.anchorX;
+      const dy = anchor.y - g.anchorY;
+
+      if (g.mode === "pinch" && count >= 2) {
+        // Two-finger pan — always applied
+        setPanScreen({ x: g.startPanX + dx, y: g.startPanY + dy });
+
+        // Pinch zoom with 4% deadzone
+        const dist = computeGestureDist();
+        if (g.startDist > 0 && dist > 0) {
+          const ratio = dist / g.startDist;
+          if (Math.abs(ratio - 1) > 0.04) {
+            const nextScale = Math.max(12, Math.min(200, g.startScale * ratio));
+            setCamera((c) =>
+              c.scale === nextScale ? c : { ...c, scale: nextScale },
+            );
+          }
+        }
+      } else if (g.mode === "orbit") {
+        const yaw = g.startYaw - dx * ORBIT_SENSITIVITY;
+        const pitch = clampPitch(g.startPitch - dy * ORBIT_SENSITIVITY);
+        setCamera((c) =>
+          c.yaw === yaw && c.pitch === pitch ? c : { ...c, yaw, pitch },
+        );
+      } else if (g.mode === "pan") {
+        setPanScreen({ x: g.startPanX + dx, y: g.startPanY + dy });
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Cancel any pending rAF on unmount
+  useEffect(() => {
+    return () => {
+      if (rafIdRef.current !== null) cancelAnimationFrame(rafIdRef.current);
+    };
+  }, []);
 
   const endPointer = (e: React.PointerEvent<SVGSVGElement>) => {
     pointersRef.current.delete(e.pointerId);
@@ -476,38 +496,57 @@ export function Blockworld() {
   /* -------- build visible face list -------- */
 
   const faceList: Face[] = useMemo(() => {
-    const view = viewDir(camera);
+    // Precompute rotation trig + view direction ONCE per render.
+    const cy = Math.cos(camera.yaw);
+    const sy = Math.sin(camera.yaw);
+    const cp = Math.cos(camera.pitch);
+    const sp = Math.sin(camera.pitch);
+    const scale = camera.scale;
+
+    // Inline projection: replaces project(camera, [x,y,z])
+    const proj = (x: number, y: number, z: number): [number, number, number] => {
+      // rotate yaw
+      const x1 = cy * x + sy * z;
+      const z1 = -sy * x + cy * z;
+      // rotate pitch
+      const y2 = cp * y - sp * z1;
+      const z2 = sp * y + cp * z1;
+      return [x1 * scale, -y2 * scale, z2];
+    };
+
+    // View direction (same formula as viewDir()):
+    const vx = sy * cp;
+    const vy = -sp;
+    const vz = -cy * cp;
+
     const out: Face[] = [];
 
-    // Ground tiles — only the top faces of empty ground cells
-    for (let x = -WORLD_RADIUS; x <= WORLD_RADIUS; x++) {
-      for (let z = -WORLD_RADIUS; z <= WORLD_RADIUS; z++) {
-        if (blocks.has(blockKey(x, 0, z))) continue;
-        // top face of a "ground slab" at y=0 (slab fills y in [-0.01, 0]); treat as top at y=0
-        const corners: [Vec3, Vec3, Vec3, Vec3] = [
-          [x, 0, z],
-          [x + 1, 0, z],
-          [x + 1, 0, z + 1],
-          [x, 0, z + 1],
-        ];
-        // back-face cull: normal is +y
-        const normal: Vec3 = [0, 1, 0];
-        const dot = normal[0] * view[0] + normal[1] * view[1] + normal[2] * view[2];
-        if (dot >= 0) continue; // camera looking away
-        const projected = corners.map((c) => project(camera, c));
-        const points = projected.map(([sx, sy]) => [sx, sy] as [number, number]);
-        const depth =
-          (projected[0][2] + projected[1][2] + projected[2][2] + projected[3][2]) / 4;
-        out.push({
-          bx: x,
-          by: 0,
-          bz: z,
-          texture: "plain",
-          face: "top",
-          points,
-          depth,
-          isGround: true,
-        });
+    // Ground tiles — only the top faces of empty ground cells.
+    // Normal is (0, 1, 0) — dot with view = vy. Cull once globally, not per-tile.
+    if (vy < 0) {
+      for (let x = -WORLD_RADIUS; x <= WORLD_RADIUS; x++) {
+        for (let z = -WORLD_RADIUS; z <= WORLD_RADIUS; z++) {
+          if (blocks.has(blockKey(x, 0, z))) continue;
+          const p0 = proj(x, 0, z);
+          const p1 = proj(x + 1, 0, z);
+          const p2 = proj(x + 1, 0, z + 1);
+          const p3 = proj(x, 0, z + 1);
+          out.push({
+            bx: x,
+            by: 0,
+            bz: z,
+            texture: "plain",
+            face: "top",
+            points: [
+              [p0[0], p0[1]],
+              [p1[0], p1[1]],
+              [p2[0], p2[1]],
+              [p3[0], p3[1]],
+            ],
+            depth: (p0[2] + p1[2] + p2[2] + p3[2]) * 0.25,
+            isGround: true,
+          });
+        }
       }
     }
 
@@ -516,33 +555,37 @@ export function Blockworld() {
       const [x, y, z] = parseKey(key);
       const tex = blocks.get(key)!;
       for (const f of FACES) {
-        // Skip face if adjacent block exists
         const [nx, ny, nz] = f.normal;
+        // Skip face if adjacent block exists
         if (blocks.has(blockKey(x + nx, y + ny, z + nz))) continue;
         // Back-face cull
-        const dot = nx * viewDir(camera)[0] + ny * viewDir(camera)[1] + nz * viewDir(camera)[2];
-        if (dot >= 0) continue;
-        // Project 4 corners (corners are in unit-cube space, offset by block origin)
-        const worldCorners: Vec3[] = f.corners.map(
-          ([cx, cy, cz]) => [x + cx, y + cy, z + cz] as Vec3,
-        );
-        const projected = worldCorners.map((c) => project(camera, c));
-        const points = projected.map(([sx, sy]) => [sx, sy] as [number, number]);
-        const depth =
-          projected.reduce((a, b) => a + b[2], 0) / projected.length;
+        if (nx * vx + ny * vy + nz * vz >= 0) continue;
+        const c0 = f.corners[0];
+        const c1 = f.corners[1];
+        const c2 = f.corners[2];
+        const c3 = f.corners[3];
+        const p0 = proj(x + c0[0], y + c0[1], z + c0[2]);
+        const p1 = proj(x + c1[0], y + c1[1], z + c1[2]);
+        const p2 = proj(x + c2[0], y + c2[1], z + c2[2]);
+        const p3 = proj(x + c3[0], y + c3[1], z + c3[2]);
         out.push({
           bx: x,
           by: y,
           bz: z,
           texture: tex,
           face: f.id,
-          points,
-          depth,
+          points: [
+            [p0[0], p0[1]],
+            [p1[0], p1[1]],
+            [p2[0], p2[1]],
+            [p3[0], p3[1]],
+          ],
+          depth: (p0[2] + p1[2] + p2[2] + p3[2]) * 0.25,
         });
       }
     }
 
-    // Painter's sort: farthest first (smaller depth = farther when camera looks toward +z)
+    // Painter's sort: farthest first
     out.sort((a, b) => a.depth - b.depth);
     return out;
   }, [blocks, camera]);
@@ -561,6 +604,27 @@ export function Blockworld() {
   }, []);
 
   const viewBox = `${-svgSize.w / 2 - panScreen.x} ${-svgSize.h / 2 - panScreen.y} ${svgSize.w} ${svgSize.h}`;
+
+  // Precompute shade per face id once
+  const shadeForFace = useMemo(() => {
+    const m: Record<string, "top" | "side" | "dark"> = {};
+    for (const f of FACES) m[f.id] = faceShade(f.normal);
+    return m;
+  }, []);
+
+  // Delegated click on the SVG — reads target's data attrs. Avoids N closures per render.
+  const onSvgClick = (e: React.MouseEvent<SVGSVGElement>) => {
+    if (didDragRef.current) return;
+    const target = e.target as SVGElement;
+    const bx = target.getAttribute("data-bx");
+    if (bx === null) return;
+    const by = target.getAttribute("data-by");
+    const bz = target.getAttribute("data-bz");
+    const face = target.getAttribute("data-face") as FaceId | null;
+    const isGround = target.getAttribute("data-ground") === "1";
+    if (!by || !bz || !face) return;
+    onFaceClick(Number(bx), Number(by), Number(bz), face, isGround);
+  };
 
   const clearAll = () => setBlocks(new Map());
 
@@ -668,30 +732,31 @@ export function Blockworld() {
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerCancel}
+          onClick={onSvgClick}
           onContextMenu={(e) => e.preventDefault()}
           style={{ touchAction: "none" }}
         >
           <defs>
             <PatternDefs />
           </defs>
-          {faceList.map((f, i) => {
-            const ptsStr = f.points.map(([x, y]) => `${x},${y}`).join(" ");
-            const shade = f.isGround
-              ? "top"
-              : faceShade(FACES.find((fd) => fd.id === f.face)!.normal);
+          {faceList.map((f) => {
+            const ptsStr = `${f.points[0][0]},${f.points[0][1]} ${f.points[1][0]},${f.points[1][1]} ${f.points[2][0]},${f.points[2][1]} ${f.points[3][0]},${f.points[3][1]}`;
+            const shade = f.isGround ? "top" : shadeForFace[f.face];
             const fill = f.isGround ? "#ffffff" : fillRef(f.texture, shade);
             return (
               <polygon
-                key={`${f.bx},${f.by},${f.bz}-${f.face}-${i}`}
+                key={`${f.bx},${f.by},${f.bz}-${f.face}`}
                 points={ptsStr}
                 fill={fill}
                 stroke="#000"
                 strokeWidth={1}
                 strokeLinejoin="miter"
                 className={f.isGround ? "bw-ground" : "bw-face"}
-                onClick={() =>
-                  onFaceClick(f.bx, f.by, f.bz, f.face, !!f.isGround)
-                }
+                data-bx={f.bx}
+                data-by={f.by}
+                data-bz={f.bz}
+                data-face={f.face}
+                data-ground={f.isGround ? "1" : undefined}
               />
             );
           })}

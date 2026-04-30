@@ -13,7 +13,10 @@ export interface Camera {
 }
 
 export const ISO_YAW = Math.PI / 4; // 45°
-export const ISO_PITCH = Math.atan(1 / Math.sqrt(2)); // ~35.26°, true isometric
+// Game-iso: 30° pitch → clean 2:1 tile ratio on screen (classic retro look).
+// True mathematical iso would be atan(1/√2) ≈ 35.26°, but 30° reads as more
+// natural and matches what most voxel/block games use.
+export const ISO_PITCH = Math.PI / 6; // 30°
 
 export const DEFAULT_CAMERA: Camera = {
   yaw: ISO_YAW,
