@@ -1,3 +1,10 @@
+# [1.44.0](https://github.com/jonathanhudak/tools/compare/v1.43.0...v1.44.0) (2026-05-16)
+
+
+### Features
+
+* **tape-looper:** localStorage project save/load/new ([316fe24](https://github.com/jonathanhudak/tools/commit/316fe24a93d71909fb08c7246e52b382387eecc6))
+
 # [1.43.0](https://github.com/jonathanhudak/tools/compare/v1.42.0...v1.43.0) (2026-05-16)
 
 
