@@ -1,3 +1,10 @@
+# [1.43.0](https://github.com/jonathanhudak/tools/compare/v1.42.0...v1.43.0) (2026-05-16)
+
+
+### Features
+
+* **tape-looper:** slide-up touch piano + external MIDI keyboard support ([743d373](https://github.com/jonathanhudak/tools/commit/743d3735afa853ceb85d7a1426affc4cd3883d4f))
+
 # [1.42.0](https://github.com/jonathanhudak/tools/compare/v1.41.1...v1.42.0) (2026-05-16)
 
 
