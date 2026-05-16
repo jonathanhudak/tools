@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JS Synth Engine Research</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500&display=swap');
+
+  :root {
+    --ink: #0a0a0a;
+    --paper: #f5f2ee;
+    --accent: #e8e3dc;
+    --rule: #c8c0b4;
+    --dim: #8a8278;
+    --highlight: #1a1a1a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  .grain {
+    position: fixed; inset: 0; pointer-events: none; z-index: 100;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 200px;
+  }
+
+  .layout {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 48px 32px 80px;
+  }
+
+  /* Header */
+  .header {
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 20px;
+    margin-bottom: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  .header-left {}
+
+  .stamp {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 6px;
+  }
+
+  h1 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    font-size: 22px;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+
+  .header-right {
+    text-align: right;
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  /* Section */
+  .section-label {
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 16px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  /* Recommendation banner */
+  .recommendation {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 24px 28px;
+    margin-bottom: 40px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 24px;
+    align-items: center;
+  }
+
+  .rec-label {
+    font-size: 8px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--rule);
+    margin-bottom: 8px;
+  }
+
+  .rec-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .rec-body {
+    font-weight: 300;
+    color: #c8c0b4;
+    font-size: 12px;
+    line-height: 1.7;
+    max-width: 520px;
+  }
+
+  .rec-badge {
+    text-align: center;
+    border: 1px solid #3a3a3a;
+    padding: 16px 20px;
+    white-space: nowrap;
+  }
+
+  .badge-stars {
+    font-size: 22px;
+    font-weight: 600;
+    display: block;
+  }
+
+  .badge-label {
+    font-size: 9px;
+    color: var(--dim);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  /* Library cards grid */
+  .cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--rule);
+    margin-bottom: 40px;
+  }
+
+  .card {
+    background: var(--paper);
+    padding: 24px;
+  }
+
+  .card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 14px;
+  }
+
+  .card-name {
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: -0.01em;
+  }
+
+  .card-tier {
+    font-size: 8px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    border: 1px solid var(--rule);
+    padding: 2px 7px;
+    color: var(--dim);
+  }
+
+  .card-tier.primary { border-color: var(--ink); color: var(--ink); }
+  .card-tier.secondary { border-color: var(--dim); }
+  .card-tier.advanced { border-color: #c0b898; color: #7a7060; }
+
+  .card-desc {
+    font-weight: 300;
+    color: #4a4640;
+    margin-bottom: 16px;
+    font-size: 12px;
+    line-height: 1.7;
+  }
+
+  .card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+
+  .tag {
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: var(--accent);
+    padding: 2px 8px;
+    color: var(--dim);
+  }
+
+  .tag.good { background: #e0ede0; color: #4a6a4a; }
+  .tag.warn { background: #ede8e0; color: #7a6a4a; }
+
+  .card-url {
+    font-size: 10px;
+    color: var(--dim);
+    text-decoration: none;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 1px;
+  }
+
+  .card-stars {
+    font-size: 10px;
+    color: var(--dim);
+    margin-top: 10px;
+  }
+
+  /* Tone.js deep dive */
+  .deepdive {
+    border: 1px solid var(--rule);
+    padding: 28px;
+    margin-bottom: 40px;
+  }
+
+  .deepdive-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 24px;
+    margin-top: 20px;
+  }
+
+  .deepdive-section h3 {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .deepdive-section ul {
+    list-style: none;
+  }
+
+  .deepdive-section li {
+    font-size: 12px;
+    padding: 3px 0;
+    color: #3a3630;
+    font-weight: 300;
+  }
+
+  .deepdive-section li::before {
+    content: '—  ';
+    color: var(--rule);
+  }
+
+  code {
+    font-family: 'IBM Plex Mono', monospace;
+    background: var(--accent);
+    padding: 1px 5px;
+    font-size: 11px;
+    color: #3a3630;
+  }
+
+  /* Strategy table */
+  .strategy {
+    margin-bottom: 40px;
+  }
+
+  .strategy-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .strategy-table th {
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--dim);
+    font-weight: 500;
+    text-align: left;
+    padding: 10px 16px;
+    border-bottom: 2px solid var(--ink);
+    background: var(--paper);
+  }
+
+  .strategy-table td {
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--rule);
+    font-size: 12px;
+    vertical-align: top;
+    font-weight: 300;
+  }
+
+  .strategy-table tr:last-child td { border-bottom: none; }
+
+  .strategy-table tr:nth-child(even) td { background: var(--accent); }
+
+  .yes { color: #3a6a3a; font-weight: 500; }
+  .no { color: #8a6a4a; }
+  .partial { color: #6a6040; }
+
+  /* UI components note */
+  .ui-note {
+    background: var(--accent);
+    padding: 24px 28px;
+    margin-bottom: 40px;
+  }
+
+  .ui-note h2 {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    margin-bottom: 14px;
+  }
+
+  .ui-components {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .ui-component {
+    font-size: 12px;
+    font-weight: 300;
+    color: #4a4640;
+  }
+
+  .ui-component strong {
+    font-weight: 500;
+    color: var(--ink);
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  /* Path forward */
+  .path {
+    border-left: 2px solid var(--ink);
+    padding-left: 24px;
+  }
+
+  .path-step {
+    margin-bottom: 20px;
+    position: relative;
+  }
+
+  .path-step::before {
+    content: attr(data-n);
+    position: absolute;
+    left: -32px;
+    top: 0;
+    font-size: 10px;
+    color: var(--dim);
+    font-weight: 600;
+  }
+
+  .path-step h3 {
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .path-step p {
+    font-size: 12px;
+    font-weight: 300;
+    color: #5a5650;
+    line-height: 1.7;
+  }
+
+  .footer {
+    margin-top: 60px;
+    padding-top: 16px;
+    border-top: 1px solid var(--rule);
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 0.1em;
+    display: flex;
+    justify-content: space-between;
+  }
+</style>
+</head>
+<body>
+<div class="grain"></div>
+<div class="layout">
+
+  <div class="header">
+    <div class="header-left">
+      <div class="stamp">Research / Audio Engineering</div>
+      <h1>JavaScript Synth Engine Libraries<br>for MIDI Sound Design UI</h1>
+    </div>
+    <div class="header-right">
+      May 2026<br>
+      Music Practice Suite<br>
+      Ref: Ableton Operator
+    </div>
+  </div>
+
+  <!-- Recommendation -->
+  <div class="section-label">Primary Recommendation</div>
+  <div class="recommendation">
+    <div>
+      <div class="rec-label">Best fit for your use case</div>
+      <div class="rec-title">Tone.js + custom React UI</div>
+      <div class="rec-body">
+        The only library that gives you a real DAW-grade synthesis engine (FM, AM, subtractive, poly), 
+        a transport and scheduling system, and zero UI opinions — so your minimal B&W aesthetic is 
+        entirely in your hands. TypeScript-native, actively maintained, and pairs cleanly with your 
+        existing React/AWS CDK stack.
+      </div>
+    </div>
+    <div class="rec-badge">
+      <span class="badge-stars">14.4k</span>
+      <span class="badge-label">GitHub stars</span>
+    </div>
+  </div>
+
+  <!-- Library cards -->
+  <div class="section-label">Library Landscape</div>
+  <div class="cards">
+
+    <div class="card">
+      <div class="card-head">
+        <span class="card-name">Tone.js</span>
+        <span class="card-tier primary">Recommended</span>
+      </div>
+      <div class="card-desc">
+        Web Audio framework with DAW-grade features: FMSynth, AMSynth, PolySynth, 
+        NoiseSynth, effects chain, global transport, and sample-accurate scheduling. 
+        All parameters are modulatable signals — think Ableton's modulation routing, but in code.
+      </div>
+      <div class="card-meta">
+        <span class="tag good">TypeScript native</span>
+        <span class="tag good">Actively maintained</span>
+        <span class="tag good">No UI lock-in</span>
+        <span class="tag good">MIDI-ready</span>
+        <span class="tag">npm install tone</span>
+      </div>
+      <a class="card-url" href="https://tonejs.github.io">tonejs.github.io</a>
+      <div class="card-stars">★ 14,400</div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <span class="card-name">Faust + FaustWasm</span>
+        <span class="card-tier advanced">Advanced / Future</span>
+      </div>
+      <div class="card-desc">
+        DSP language that compiles to WebAssembly AudioWorklets. Near-native performance 
+        and the most expressive synthesis possible in a browser — you write the DSP algorithm 
+        directly. Steep learning curve but allows you to design synths impossible with Web Audio nodes.
+      </div>
+      <div class="card-meta">
+        <span class="tag good">WASM performance</span>
+        <span class="tag good">Polyphonic MIDI</span>
+        <span class="tag warn">Requires Faust DSL</span>
+        <span class="tag">npm: faustwasm</span>
+      </div>
+      <a class="card-url" href="https://github.com/grame-cncm/faustwasm">grame-cncm/faustwasm</a>
+      <div class="card-stars">★ (part of Faust ecosystem)</div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <span class="card-name">Gibberish.js</span>
+        <span class="card-tier secondary">Interesting Alt</span>
+      </div>
+      <div class="card-desc">
+        Per-sample processing JS library — every synth unit generates one sample at a time. 
+        Enables true feedback loops and complex signal routing not possible with Web Audio's 
+        block-based graph. More research-grade but beautifully designed for synthesis purists.
+      </div>
+      <div class="card-meta">
+        <span class="tag good">Per-sample processing</span>
+        <span class="tag good">True feedback loops</span>
+        <span class="tag warn">Less maintained</span>
+        <span class="tag warn">Sparse docs</span>
+      </div>
+      <a class="card-url" href="http://charlie-roberts.com/gibberish/">charlie-roberts.com/gibberish</a>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <span class="card-name">Tuna.js</span>
+        <span class="card-tier secondary">Effects Layer</span>
+      </div>
+      <div class="card-desc">
+        Audio effects library for Web Audio API — reverb, compressor, delay, chorus, 
+        bitcrusher, phaser, EQ, tremolo. Not a synth engine itself, but a perfect 
+        companion to Tone.js for effect chain customization beyond what Tone ships.
+      </div>
+      <div class="card-meta">
+        <span class="tag good">Rich effects palette</span>
+        <span class="tag good">Web Audio native</span>
+        <span class="tag">Pairs with Tone.js</span>
+      </div>
+      <a class="card-url" href="https://github.com/Theodeus/tuna">github/Theodeus/tuna</a>
+      <div class="card-stars">★ 1,800+</div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <span class="card-name">Strudel</span>
+        <span class="card-tier secondary">Pattern Engine</span>
+      </div>
+      <div class="card-desc">
+        TidalCycles live-coding port for the browser — pattern-based algorithmic music, 
+        not an instrument designer. But its synthesis layer (FM, additive, wavetable) and 
+        the experimental Strudel Flow (React Flow node graph UI) are both interesting 
+        reference architecture for your own pattern → synth pipeline.
+      </div>
+      <div class="card-meta">
+        <span class="tag">Pattern-focused</span>
+        <span class="tag warn">Not MIDI instrument design</span>
+        <span class="tag good">FM additive synths built-in</span>
+      </div>
+      <a class="card-url" href="https://strudel.cc">strudel.cc</a>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <span class="card-name">Ameobea / web-synth</span>
+        <span class="card-tier secondary">Reference Arch</span>
+      </div>
+      <div class="card-desc">
+        Full browser-based DAW and synthesis platform with dozens of effects, synths, and 
+        modular routing built in Rust/WASM. Not embeddable as a library, but a remarkable 
+        reference for what's architecturally possible in the browser — especially for modular 
+        patch routing UI inspiration.
+      </div>
+      <div class="card-meta">
+        <span class="tag">Rust + WASM</span>
+        <span class="tag warn">Not embeddable</span>
+        <span class="tag good">UI inspiration</span>
+      </div>
+      <a class="card-url" href="https://github.com/Ameobea/web-synth">Ameobea/web-synth</a>
+    </div>
+
+  </div>
+
+  <!-- Tone.js deep dive -->
+  <div class="section-label">Tone.js — Synthesis Capabilities</div>
+  <div class="deepdive">
+    <div style="font-size:12px; font-weight:300; color:#4a4640; max-width: 600px;">
+      Mapping Ableton Operator's architecture to what Tone.js provides natively. Each synth type 
+      is monophonic; wrap in <code>PolySynth</code> for polyphony.
+    </div>
+    <div class="deepdive-grid">
+      <div class="deepdive-section">
+        <h3>Synth Engines</h3>
+        <ul>
+          <li><code>FMSynth</code> — 2-op FM (Operator-like)</li>
+          <li><code>AMSynth</code> — Amplitude mod</li>
+          <li><code>Synth</code> — Osc + ADSR</li>
+          <li><code>NoiseSynth</code> — Filtered noise</li>
+          <li><code>MetalSynth</code> — Cymbal synthesis</li>
+          <li><code>MembraneSynth</code> — Kick drums</li>
+          <li><code>DuoSynth</code> — 2 voices + LFO</li>
+          <li><code>PolySynth</code> — Polyphonic wrapper</li>
+        </ul>
+      </div>
+      <div class="deepdive-section">
+        <h3>Effects Chain</h3>
+        <ul>
+          <li><code>Reverb</code> — Convolution</li>
+          <li><code>FeedbackDelay</code></li>
+          <li><code>PingPongDelay</code></li>
+          <li><code>Chorus</code> / <code>Phaser</code></li>
+          <li><code>Distortion</code> / <code>BitCrusher</code></li>
+          <li><code>Filter</code> — LP/HP/BP/Notch</li>
+          <li><code>AutoFilter</code> + <code>AutoWah</code></li>
+          <li><code>Compressor</code> / <code>Limiter</code></li>
+        </ul>
+      </div>
+      <div class="deepdive-section">
+        <h3>Modulation & Control</h3>
+        <ul>
+          <li><code>LFO</code> — modulatable signal</li>
+          <li><code>Envelope</code> — ADSR</li>
+          <li><code>FrequencyEnvelope</code></li>
+          <li><code>Signal</code> — sample-accurate</li>
+          <li><code>Transport</code> — global BPM</li>
+          <li><code>Part</code> / <code>Sequence</code></li>
+          <li>All params automatable</li>
+          <li>WebMIDI via midi.js</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feature comparison -->
+  <div class="section-label">Comparison Matrix</div>
+  <div class="strategy">
+    <table class="strategy-table">
+      <thead>
+        <tr>
+          <th>Library</th>
+          <th>Sound Design UI</th>
+          <th>FM Synthesis</th>
+          <th>MIDI</th>
+          <th>TypeScript</th>
+          <th>Custom UI</th>
+          <th>Complexity</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Tone.js</strong></td>
+          <td><span class="no">None (build yours)</span></td>
+          <td><span class="yes">✓ Native</span></td>
+          <td><span class="yes">✓ WebMIDI</span></td>
+          <td><span class="yes">✓ First-class</span></td>
+          <td><span class="yes">✓ Total freedom</span></td>
+          <td>Low–Med</td>
+        </tr>
+        <tr>
+          <td><strong>Faust/WASM</strong></td>
+          <td><span class="partial">Auto-generated</span></td>
+          <td><span class="yes">✓ You design it</span></td>
+          <td><span class="yes">✓ Built-in</span></td>
+          <td><span class="partial">Partial</span></td>
+          <td><span class="yes">✓ Headless</span></td>
+          <td>High</td>
+        </tr>
+        <tr>
+          <td><strong>Gibberish.js</strong></td>
+          <td><span class="no">None</span></td>
+          <td><span class="yes">✓ Per-sample</span></td>
+          <td><span class="partial">Manual</span></td>
+          <td><span class="no">✗</span></td>
+          <td><span class="yes">✓</span></td>
+          <td>High</td>
+        </tr>
+        <tr>
+          <td><strong>Strudel</strong></td>
+          <td><span class="yes">✓ REPL + node graph</span></td>
+          <td><span class="yes">✓</span></td>
+          <td><span class="yes">✓</span></td>
+          <td><span class="partial">Partial</span></td>
+          <td><span class="no">Limited</span></td>
+          <td>Med</td>
+        </tr>
+        <tr>
+          <td><strong>webaudio-tinysynth</strong></td>
+          <td><span class="partial">Built-in (GM map)</span></td>
+          <td><span class="partial">GM preset</span></td>
+          <td><span class="yes">✓</span></td>
+          <td><span class="no">✗</span></td>
+          <td><span class="no">No</span></td>
+          <td>Low</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- UI layer note -->
+  <div class="section-label">UI Component Layer (for your B&W aesthetic)</div>
+  <div class="ui-note">
+    <h2>Tone.js has no UI — that's the point. You'll need these pieces:</h2>
+    <div class="ui-components">
+      <div class="ui-component">
+        <strong>Knobs / sliders</strong>
+        react-knob-headless (headless, fully styleable), or build SVG knobs — 
+        rotate on drag, no library required, total aesthetic control.
+      </div>
+      <div class="ui-component">
+        <strong>Envelope editor</strong>
+        Custom SVG path component — 4 draggable handles (A, D, S, R) 
+        updating Tone.js envelope params in real time.
+      </div>
+      <div class="ui-component">
+        <strong>Oscilloscope / spectrum</strong>
+        Tone.js ships <code>Analyser</code> and <code>FFT</code> nodes — 
+        render via Canvas or SVG. Raw waveform display works perfectly for minimal aesthetics.
+      </div>
+      <div class="ui-component">
+        <strong>FM routing matrix</strong>
+        SVG grid or node graph (React Flow / xyflow) showing operator-to-operator 
+        modulation routing — very Operator-like, fully ownable aesthetically.
+      </div>
+    </div>
+  </div>
+
+  <!-- Path forward -->
+  <div class="section-label">Suggested Build Path</div>
+  <div class="path">
+    <div class="path-step" data-n="01">
+      <h3>Install Tone.js, wire to WebMIDI</h3>
+      <p>
+        <code>npm install tone</code> — Create a <code>PolySynth(FMSynth)</code> instance. 
+        Connect WebMIDI noteOn/noteOff to <code>triggerAttack</code> / <code>triggerRelease</code>. 
+        You have a playable FM instrument in under 30 lines.
+      </p>
+    </div>
+    <div class="path-step" data-n="02">
+      <h3>Build a patch state object</h3>
+      <p>
+        Design a JSON schema for a synth patch: oscillator type, harmonicity, modulation index, 
+        ADSR values, filter cutoff, effects wet/dry. This becomes your serialization format — 
+        save/load presets per MIDI track.
+      </p>
+    </div>
+    <div class="path-step" data-n="03">
+      <h3>Build the sound designer UI in React</h3>
+      <p>
+        Start with an ADSR envelope SVG editor and oscillator selector. Add FM parameter controls 
+        (harmonicity, modulation index). Keep it monochrome — coarse grid lines, heavy mono type, 
+        waveform preview as the hero visual element.
+      </p>
+    </div>
+    <div class="path-step" data-n="04">
+      <h3>Add Tuna.js effects rack</h3>
+      <p>
+        Layer Tuna.js on top for reverb, delay, and distortion — route Tone.js output through 
+        Tuna nodes before reaching the destination. Design an effects chain UI that matches your 
+        panel aesthetic.
+      </p>
+    </div>
+    <div class="path-step" data-n="05">
+      <h3>Later: Faust for custom DSP</h3>
+      <p>
+        Once the core UX is solid, explore FaustWasm for instruments that can't be assembled from 
+        Web Audio primitives — physical modeling, waveshaping algorithms, spectral synthesis. 
+        Faust-compiled nodes slot into the same AudioContext graph.
+      </p>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>Music Practice Suite / Synth Engine Research</span>
+    <span>Tone.js → tonejs.github.io &nbsp;|&nbsp; FaustWasm → grame-cncm/faustwasm &nbsp;|&nbsp; Tuna.js → Theodeus/tuna</span>
+  </div>
+
+</div>
+</body>
+</html>

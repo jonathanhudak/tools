@@ -2,7 +2,7 @@ import { useRef, useEffect, useCallback, useState } from 'react';
 import { useStore } from './lib/store';
 import { getCtx, getMasterGain, startRecording, boostGain } from './lib/audio-engine';
 import { synthTrack } from './lib/midi-engine';
-import { initMIDI, setMIDICallbacks, disposeMIDI } from './lib/midi-input';
+import { initMIDI, setMIDICallbacks } from './lib/midi-input';
 import { PianoKeyboard } from './components/piano-keyboard';
 import {
   serializeTracks, deserializeTracks, saveProject, listProjects,
@@ -111,11 +111,23 @@ function TransportBar({
   onPlay,
   onRecord,
   onSeekToStart,
+  onOpenProjects,
+  onNewProject,
+  onSave,
+  saveStatus,
+  midiConnected,
+  onConnectMIDI,
 }: {
   playheadTime: number;
   onPlay: () => void;
   onRecord: () => void;
   onSeekToStart: () => void;
+  onOpenProjects: () => void;
+  onNewProject: () => void;
+  onSave: () => void;
+  saveStatus: 'idle' | 'saving' | 'saved';
+  midiConnected: boolean;
+  onConnectMIDI: () => void;
 }) {
   const transport = useStore((s) => s.transport);
   const bpm = useStore((s) => s.bpm);
@@ -136,6 +148,13 @@ function TransportBar({
 
   return (
     <div className="transport-bar">
+      {/* Project controls */}
+      <button className="track-btn" onClick={onOpenProjects} style={{ fontWeight: 700, fontSize: 13 }}>📂 Load</button>
+      <button className="track-btn" onClick={onNewProject}>+ New</button>
+      <button className="track-btn" onClick={onSave}>{saveStatus === 'saved' ? '✓ Saved' : '💾 Save'}</button>
+      <EditableProjectName />
+      <span style={{ width: 8, borderLeft: '1px solid var(--color-border)', height: 24 }} />
+
       <button className="transport-btn" onClick={onSeekToStart} title="Jump to start [H]" disabled={isPlaying}>⏮</button>
       <button className={`transport-btn ${isPlaying ? 'active' : ''}`} onClick={onPlay} title="Play/Stop [Space]">{isPlaying ? '■' : '▶'}</button>
       <button className={`transport-btn record ${transport === 'recording' ? 'active armed' : armedTrackId ? 'armed' : ''}`} onClick={onRecord} title="Record [R]">●</button>
@@ -163,7 +182,17 @@ function TransportBar({
       <span style={{ fontFamily: 'var(--font-mono)', fontSize: 14, fontWeight: 700 }}>{bpm}</span>
       <span style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>BPM</span>
 
+      {!midiConnected && (
+        <button className="track-btn" onClick={onConnectMIDI} style={{ marginLeft: 4 }} title="Connect MIDI keyboard">🎹 MIDI</button>
+      )}
+      {midiConnected && (
+        <span style={{ fontSize: 10, color: 'var(--color-text-muted)', fontWeight: 700 }}>🎹</span>
+      )}
+
       <div style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontSize: 16 }}>{fmtTime(playheadTime)}</div>
+      <span style={{ fontSize: 10, color: 'var(--color-text-muted)', marginLeft: 12, whiteSpace: 'nowrap' }}>
+        [Space] play · [R] rec · [H] start · [↑↓] zoom
+      </span>
     </div>
   );
 }
@@ -488,7 +517,12 @@ export function App() {
 
   const [playheadTime, setPlayheadTime] = useState(0);
   const [activeNotes, setActiveNotes] = useState<Set<number>>(new Set());
+  // MIDI keyboard — requires user gesture, init on first click
   const [midiConnected, setMIDIConnected] = useState(false);
+  const connectMIDI = useCallback(async () => {
+    const connected = await initMIDI();
+    setMIDIConnected(connected);
+  }, []);
 
   const playingSourcesRef = useRef<AudioBufferSourceNode[]>([]);
   const recordingRef = useRef<{ stop: () => Promise<AudioBuffer> } | null>(null);
@@ -584,7 +618,7 @@ export function App() {
     const id = newProjectId();
     setProjectId(id);
     setProjectName('Untitled');
-    setTracks([{ id: 't1', name: 'Audio 1', armed: false, muted: false, solo: false, trackType: 'audio' as const, waveform: 'sine' as const, clips: [], notes: [] }]);
+    setTracks([{ id: 't1', name: 'Audio 1', armed: false, muted: false, solo: false, trackType: 'audio' as const, waveform: 'sine' as const, patchId: null, clips: [], notes: [] }]);
     setProjectsOpen(false);
   }, [handleSave, setProjectId, setProjectName, setTracks]);
 
@@ -593,7 +627,7 @@ export function App() {
     const project = await getProject(id);
     if (!project) return;
     const loaded = await deserializeTracks(project.tracks);
-    setTracks(loaded.length > 0 ? loaded : [{ id: 't1', name: 'Audio 1', armed: false, muted: false, solo: false, trackType: 'audio' as const, waveform: 'sine' as const, clips: [], notes: [] }]);
+    setTracks(loaded.length > 0 ? loaded : [{ id: 't1', name: 'Audio 1', armed: false, muted: false, solo: false, trackType: 'audio' as const, waveform: 'sine' as const, patchId: null, clips: [], notes: [] }]);
     setProjectId(project.id);
     setProjectName(project.name);
     setProjectsOpen(false);
@@ -860,12 +894,6 @@ export function App() {
     return () => tracksEl.removeEventListener('wheel', onWheel as EventListener);
   }, []);
 
-  // MIDI keyboard init
-  useEffect(() => {
-    initMIDI().then((connected) => setMIDIConnected(connected));
-    return () => disposeMIDI();
-  }, []);
-
   // Wire MIDI callbacks — re-wired when playNote/stopNote change
   useEffect(() => {
     setMIDICallbacks(playNote, stopNote, setMIDIConnected);
@@ -876,7 +904,7 @@ export function App() {
   return (
     <div className="daw-app">
       <PatternDefs />
-      <TransportBar playheadTime={playheadTime} onPlay={handlePlay} onRecord={handleRecord} onSeekToStart={handleSeekToStart} />
+      <TransportBar playheadTime={playheadTime} onPlay={handlePlay} onRecord={handleRecord} onSeekToStart={handleSeekToStart} onOpenProjects={() => setProjectsOpen(true)} onNewProject={handleNewProject} onSave={handleSave} saveStatus={saveStatus} midiConnected={midiConnected} onConnectMIDI={connectMIDI} />
       <PianoKeyboard
         onNoteOn={playNote}
         onNoteOff={stopNote}
@@ -890,18 +918,6 @@ export function App() {
         ))}
         <button className="add-track-btn" onClick={addAudioTrack}>+ Audio Track</button>
         <button className="add-track-btn" onClick={addMidiTrack} style={{ borderStyle: 'dashed' }}>+ MIDI Track</button>
-      </div>
-      {/* Project controls */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 16px', borderTop: '1px solid var(--color-border)', fontFamily: 'var(--font-mono)', fontSize: 12 }}>
-        <button className="track-btn" onClick={() => setProjectsOpen(true)} style={{ fontWeight: 700, fontSize: 13, padding: '4px 12px' }}>📂 Load Project</button>
-        <button className="track-btn" onClick={handleNewProject}>+ New</button>
-        <button className="track-btn" onClick={handleSave}>
-          {saveStatus === 'saved' ? '✓ Saved' : '💾 Save'}
-        </button>
-        <EditableProjectName />
-        <span style={{ color: 'var(--color-text-muted)', marginLeft: 'auto' }}>
-          {projectId ? `(${projectId.slice(-6)})` : ''}
-        </span>
       </div>
       {/* Projects panel modal */}
       {projectsOpen && (
@@ -934,19 +950,6 @@ export function App() {
           </div>
         </div>
       )}
-      <div className="help-bar">
-        [SPACE] play/stop &nbsp; [R] record &nbsp; [H] jump start &nbsp; [↑↓] zoom ({zoom}px/s) &nbsp; scroll to pan
-        {armedTrackId && transport === 'stopped' && (
-          <span style={{ marginLeft: 12, fontWeight: 700 }}>
-            ⬤ {tracks.find((t) => t.id === armedTrackId)?.name} armed
-            {isMIDIArmed
-              ? midiConnected
-                ? ' — play external MIDI keyboard, press ● to record'
-                : ' — use keyboard keys or tap piano below, press ● to record'
-              : ' — press ● to record'}
-          </span>
-        )}
-      </div>
     </div>
   );
 }

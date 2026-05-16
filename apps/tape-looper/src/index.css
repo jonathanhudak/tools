@@ -36,14 +36,14 @@ body {
   font-family: var(--font-sans);
   background: var(--color-bg);
   color: var(--color-text);
-  overflow: hidden;
   height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
 }
 
 #root {
   height: 100vh;
-  display: flex;
-  flex-direction: column;
+  height: 100dvh;
 }
 
 /* ── SVG Texture Patterns (same style as Blockworld) ── */
@@ -65,6 +65,7 @@ body {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh; /* dynamic viewport — works with browser chrome on mobile */
   font-family: var(--font-mono);
 }
 
@@ -140,11 +141,18 @@ body {
   text-align: right;
 }
 
+/* ── Project Bar Spacer ── */
+.project-bar-spacer {
+  height: 40px;
+}
+
 /* ── Tracks ── */
 .tracks-container {
-  flex: 1;
+  flex: 1 1 0%;
+  height: 0; /* force scrollable */
   overflow-y: auto;
   overflow-x: auto;
+  min-height: 0;
 }
 
 .track-row {

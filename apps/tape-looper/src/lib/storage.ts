@@ -18,6 +18,7 @@ interface SavedTrack {
   name: string;
   trackType: 'audio' | 'midi';
   waveform: string;
+  patchId: string | null;
   clips: SavedClip[];
   notes: NoteEvent[];
 }
@@ -220,6 +221,7 @@ export async function serializeTracks(tracks: Track[]): Promise<SavedTrack[]> {
       name: t.name,
       trackType: t.trackType,
       waveform: t.waveform,
+      patchId: t.patchId,
       clips: savedClips,
       notes: t.notes,
     });
@@ -263,6 +265,7 @@ export async function deserializeTracks(saved: SavedTrack[]): Promise<Track[]> {
       solo: false,
       trackType: st.trackType as 'audio' | 'midi',
       waveform: (st.waveform as any) ?? 'sine',
+      patchId: st.patchId ?? null,
       clips: clips.sort((a, b) => a.startTime - b.startTime),
       notes: st.notes,
     });

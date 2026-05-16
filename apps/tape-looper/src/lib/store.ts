@@ -25,6 +25,7 @@ interface DAWStore {
   setProjectName: (name: string) => void;
   renameTrack: (id: string, name: string) => void;
   setWaveform: (id: string, wf: Waveform) => void;
+  setPatchId: (id: string, patchId: string | null) => void;
 
   overwriteClip: (trackId: string, buffer: AudioBuffer, startTime: number) => void;
   overwriteNotes: (trackId: string, notes: NoteEvent[], startTime: number) => void;
@@ -45,6 +46,7 @@ function freshTrack(type: TrackType): Track {
     solo: false,
     trackType: type,
     waveform: 'sine',
+    patchId: null,
     clips: [],
     notes: [],
   };
@@ -98,6 +100,8 @@ export const useStore = create<DAWStore>((set) => ({
     set((s) => ({ tracks: s.tracks.map((t) => (t.id === id ? { ...t, name } : t)) })),
   setWaveform: (id, waveform) =>
     set((s) => ({ tracks: s.tracks.map((t) => (t.id === id ? { ...t, waveform } : t)) })),
+  setPatchId: (id, patchId) =>
+    set((s) => ({ tracks: s.tracks.map((t) => (t.id === id ? { ...t, patchId } : t)) })),
 
   overwriteClip: (trackId, buffer, startTime) =>
     set((s) => ({
