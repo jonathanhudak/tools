@@ -17,12 +17,13 @@ export async function initMIDI(): Promise<boolean> {
     midiAccess = await navigator.requestMIDIAccess();
     connectFirstInput();
 
-    midiAccess.onstatechange = () => {
-      if (midiInput && midiInput.state === 'disconnected') {
+    midiAccess.onstatechange = (e) => {
+      const port = (e as MIDIConnectionEvent).port;
+      if (port?.type === 'input' && port.state === 'disconnected' && midiInput?.id === port.id) {
         midiInput = null;
         onChange?.(false);
       }
-      if (!midiInput) connectFirstInput();
+      connectFirstInput();
     };
 
     return midiInput !== null;
@@ -33,13 +34,12 @@ export async function initMIDI(): Promise<boolean> {
 
 function connectFirstInput() {
   if (!midiAccess) return;
+  // Don't filter by state — some browsers/OS (e.g. Daylight) don't report 'connected'
   for (const input of midiAccess.inputs.values()) {
-    if (input.state === 'connected') {
-      midiInput = input;
-      midiInput.onmidimessage = handleMIDIMessage;
-      onChange?.(true);
-      return;
-    }
+    midiInput = input;
+    midiInput.onmidimessage = handleMIDIMessage;
+    onChange?.(true);
+    return;
   }
 }
 

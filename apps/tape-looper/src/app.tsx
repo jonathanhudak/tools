@@ -3,7 +3,6 @@ import { useStore } from './lib/store';
 import { getCtx, getMasterGain, startRecording, boostGain } from './lib/audio-engine';
 import { synthTrack } from './lib/midi-engine';
 import { initMIDI, setMIDICallbacks } from './lib/midi-input';
-import { PianoKeyboard } from './components/piano-keyboard';
 import {
   serializeTracks, deserializeTracks, saveProject, listProjects,
   getProject, newProjectId, deleteProject,
@@ -508,8 +507,7 @@ export function App() {
   const zoom = useStore((s) => s.zoom);
 
   const [playheadTime, setPlayheadTime] = useState(0);
-  const [activeNotes, setActiveNotes] = useState<Set<number>>(new Set());
-  // MIDI keyboard — try auto-init (works if permission granted), fallback to button
+  // MIDI — try auto-init (works if permission granted), fallback to button
   const [midiConnected, setMIDIConnected] = useState(false);
   const connectMIDI = useCallback(async () => {
     const connected = await initMIDI();
@@ -556,21 +554,26 @@ export function App() {
   useEffect(() => {
     if (hasHydrated.current) return;
     hasHydrated.current = true;
+    // Set a project ID synchronously so Save works immediately (before DB resolves)
+    const tempId = newProjectId();
+    setProjectId(tempId);
     (async () => {
-      const savedId = await getCurrentProjectId();
-      if (savedId) {
-        const project = await getProject(savedId);
-        if (project) {
-          const loadedTracks = await deserializeTracks(project.tracks);
-          if (loadedTracks.length > 0) setTracks(loadedTracks);
-          setProjectId(project.id);
-          setProjectName(project.name);
-          return;
+      try {
+        const savedId = await getCurrentProjectId();
+        if (savedId) {
+          const project = await getProject(savedId);
+          if (project) {
+            const loadedTracks = await deserializeTracks(project.tracks);
+            if (loadedTracks.length > 0) setTracks(loadedTracks);
+            setProjectId(project.id);
+            setProjectName(project.name);
+            return;
+          }
         }
+      } catch (err) {
+        console.warn('Failed to load saved project:', err);
       }
-      // No saved project — create a fresh one
-      const id = newProjectId();
-      setProjectId(id);
+      // No saved project or load failed — use tempId already set above
       setProjectName('Untitled');
     })();
   }, [setTracks, setProjectId, setProjectName]);
@@ -595,18 +598,24 @@ export function App() {
 
   // Save handlers
   const handleSave = useCallback(async () => {
-    if (!projectId) return;
-    const proj = {
-      id: projectId,
-      name: projectName,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      tracks: await serializeTracks(tracks),
-    };
-    await saveProject(proj);
-    setSaveStatus('saved');
-    setTimeout(() => setSaveStatus('idle'), 1500);
-  }, [projectId, projectName, tracks]);
+    const id = projectId ?? newProjectId();
+    if (!projectId) setProjectId(id);
+    try {
+      const proj = {
+        id,
+        name: projectName,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        tracks: await serializeTracks(tracks),
+      };
+      await saveProject(proj);
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus('idle'), 1500);
+    } catch (err) {
+      console.error('Save failed:', err);
+      setSaveStatus('idle');
+    }
+  }, [projectId, projectName, tracks, setProjectId]);
 
   const handleNewProject = useCallback(async () => {
     await handleSave();
@@ -795,7 +804,6 @@ export function App() {
     osc.connect(gain);
     osc.start();
     activeOscillatorsRef.current.set(midiNote, osc);
-    setActiveNotes((prev) => new Set(prev).add(midiNote));
 
     // MIDI recording capture (works for touch + keyboard)
     if (midiRecordingRef.current) {
@@ -811,7 +819,6 @@ export function App() {
       osc.disconnect();
       activeOscillatorsRef.current.delete(midiNote);
     }
-    setActiveNotes((prev) => { const n = new Set(prev); n.delete(midiNote); return n; });
 
     // MIDI recording capture (works for touch + keyboard)
     if (midiRecordingRef.current) {
@@ -830,7 +837,6 @@ export function App() {
       osc.disconnect();
     });
     activeOscillatorsRef.current.clear();
-    setActiveNotes(new Set());
   }, []);
 
   useEffect(() => {
@@ -894,19 +900,10 @@ export function App() {
     setMIDICallbacks(playNote, stopNote, setMIDIConnected);
   }, [playNote, stopNote]);
 
-  const isMIDIArmed = tracks.find((t) => t.id === armedTrackId)?.trackType === 'midi';
-
   return (
     <div className="daw-app">
       <PatternDefs />
       <TransportBar playheadTime={playheadTime} onPlay={handlePlay} onRecord={handleRecord} onSeekToStart={handleSeekToStart} onOpenProjects={() => setProjectsOpen(true)} onNewProject={handleNewProject} onSave={handleSave} saveStatus={saveStatus} midiConnected={midiConnected} onConnectMIDI={connectMIDI} />
-      <PianoKeyboard
-        onNoteOn={playNote}
-        onNoteOff={stopNote}
-        activeNotes={activeNotes}
-        visible={isMIDIArmed && transport === 'stopped'}
-        midiConnected={midiConnected}
-      />
       <div className="tracks-container">
         {tracks.map((track, i) => (
           <TrackRow key={track.id} track={track} idx={i} playheadTime={playheadTime} transport={transport} onSeek={seekTo} zoom={zoom} />
