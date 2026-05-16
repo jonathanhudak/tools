@@ -361,6 +361,27 @@ body {
   pointer-events: none;
 }
 
+/* ── Projects Panel ── */
+.projects-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.projects-panel {
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  padding: 20px;
+  width: 90vw;
+  max-width: 480px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
 /* ── Tooltip / Help ── */
 .help-bar {
   padding: 6px 16px;

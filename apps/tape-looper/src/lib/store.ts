@@ -10,6 +10,8 @@ interface DAWStore {
   armedTrackId: string | null;
   inputGain: number;
   zoom: number;
+  projectId: string | null;
+  projectName: string;
 
   addTrack: () => void;
   removeTrack: (id: string) => void;
@@ -18,6 +20,9 @@ interface DAWStore {
   toggleArm: (id: string) => void;
   clearArmed: () => void;
   toggleTrackType: (id: string) => void;
+  setTracks: (tracks: Track[]) => void;
+  setProjectId: (id: string | null) => void;
+  setProjectName: (name: string) => void;
 
   overwriteClip: (trackId: string, buffer: AudioBuffer, startTime: number) => void;
   overwriteNotes: (trackId: string, notes: NoteEvent[], startTime: number) => void;
@@ -48,6 +53,8 @@ export const useStore = create<DAWStore>((set) => ({
   armedTrackId: null,
   inputGain: 4,
   zoom: 80,
+  projectId: null,
+  projectName: 'Untitled',
 
   addTrack: () => set((s) => ({ tracks: [...s.tracks, freshTrack()] })),
 
@@ -90,6 +97,10 @@ export const useStore = create<DAWStore>((set) => ({
           : t,
       ),
     })),
+
+  setTracks: (tracks) => set({ tracks }),
+  setProjectId: (projectId) => set({ projectId }),
+  setProjectName: (projectName) => set({ projectName }),
 
   overwriteClip: (trackId, buffer, startTime) =>
     set((s) => ({

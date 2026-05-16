@@ -4,6 +4,11 @@ import { getCtx, getMasterGain, startRecording, boostGain } from './lib/audio-en
 import { synthTrack } from './lib/midi-engine';
 import { initMIDI, setMIDICallbacks, hasMIDI, disposeMIDI } from './lib/midi-input';
 import { PianoKeyboard } from './components/piano-keyboard';
+import {
+  serializeTracks, deserializeTracks, saveProject, listProjects,
+  getProject, newProjectId, deleteProject, renameProject,
+  getCurrentProjectId, setCurrentProjectId,
+} from './lib/storage';
 import type { Clip, NoteEvent } from './lib/types';
 
 /* ── SVG Pattern Defs ── */
@@ -442,6 +447,91 @@ export function App() {
   const midiNoteStartRef = useRef<Map<number, number>>(new Map());
   const activeOscillatorsRef = useRef<Map<number, OscillatorNode>>(new Map());
 
+  // Project state
+  const [projectsOpen, setProjectsOpen] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const setProjectId = useStore((s) => s.setProjectId);
+  const setProjectName = useStore((s) => s.setProjectName);
+  const setTracks = useStore((s) => s.setTracks);
+  const projectId = useStore((s) => s.projectId);
+  const projectName = useStore((s) => s.projectName);
+  const hasHydrated = useRef(false);
+
+  // Hydrate: load the last project on mount
+  useEffect(() => {
+    if (hasHydrated.current) return;
+    hasHydrated.current = true;
+    const savedId = getCurrentProjectId();
+    if (savedId) {
+      const project = getProject(savedId);
+      if (project) {
+        deserializeTracks(project.tracks).then((loadedTracks) => {
+          if (loadedTracks.length > 0) setTracks(loadedTracks);
+          setProjectId(project.id);
+          setProjectName(project.name);
+        });
+        return;
+      }
+    }
+    // No saved project — create a fresh one
+    const id = newProjectId();
+    setProjectId(id);
+    setProjectName('Untitled');
+  }, [setTracks, setProjectId, setProjectName]);
+
+  // Auto-save on track changes (debounced)
+  useEffect(() => {
+    if (!hasHydrated.current || !projectId) return;
+    const timer = setTimeout(() => {
+      const proj = {
+        id: projectId,
+        name: projectName,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        tracks: serializeTracks(tracks),
+      };
+      saveProject(proj);
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus('idle'), 1500);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [tracks, projectId, projectName]);
+
+  // Save handlers
+  const handleSave = useCallback(() => {
+    if (!projectId) return;
+    const proj = {
+      id: projectId,
+      name: projectName,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      tracks: serializeTracks(tracks),
+    };
+    saveProject(proj);
+    setSaveStatus('saved');
+    setTimeout(() => setSaveStatus('idle'), 1500);
+  }, [projectId, projectName, tracks]);
+
+  const handleNewProject = useCallback(async () => {
+    handleSave();
+    const id = newProjectId();
+    setProjectId(id);
+    setProjectName('Untitled');
+    setTracks([{ id: 't1', name: 'Track 1', armed: false, muted: false, solo: false, trackType: 'audio', clips: [], notes: [] }]);
+    setProjectsOpen(false);
+  }, [handleSave, setProjectId, setProjectName, setTracks]);
+
+  const handleLoadProject = useCallback(async (id: string) => {
+    handleSave();
+    const project = getProject(id);
+    if (!project) return;
+    const loaded = await deserializeTracks(project.tracks);
+    setTracks(loaded.length > 0 ? loaded : [{ id: 't1', name: 'Track 1', armed: false, muted: false, solo: false, trackType: 'audio', clips: [], notes: [] }]);
+    setProjectId(project.id);
+    setProjectName(project.name);
+    setProjectsOpen(false);
+  }, [handleSave, setTracks, setProjectId, setProjectName]);
+
   const seekTo = useCallback((time: number) => {
     if (transport !== 'stopped') return;
     const t = Math.max(0, time);
@@ -709,6 +799,49 @@ export function App() {
         ))}
         <button className="add-track-btn" onClick={addTrack}>+ Add Track</button>
       </div>
+      {/* Project controls */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 16px', borderTop: '1px solid var(--color-border)', fontFamily: 'var(--font-mono)', fontSize: 12 }}>
+        <button className="track-btn" onClick={() => setProjectsOpen(true)}>📂 Projects</button>
+        <button className="track-btn" onClick={handleNewProject}>+ New</button>
+        <button className="track-btn" onClick={handleSave}>
+          {saveStatus === 'saved' ? '✓ Saved' : '💾 Save'}
+        </button>
+        <span style={{ marginLeft: 8, fontWeight: 700 }}>{projectName}</span>
+        <span style={{ color: 'var(--color-text-muted)', marginLeft: 'auto' }}>
+          {projectId ? `(${projectId.slice(-6)})` : ''}
+        </span>
+      </div>
+      {/* Projects panel modal */}
+      {projectsOpen && (
+        <div className="projects-overlay" onClick={(e) => { if (e.target === e.currentTarget) setProjectsOpen(false); }}>
+          <div className="projects-panel">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <h3 style={{ margin: 0, fontFamily: 'var(--font-mono)', fontSize: 16 }}>Projects</h3>
+              <button className="track-btn" onClick={() => setProjectsOpen(false)}>✕</button>
+            </div>
+            <div style={{ maxHeight: 300, overflowY: 'auto' }}>
+              {listProjects().length === 0 && (
+                <p style={{ color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)', fontSize: 13 }}>No saved projects yet.</p>
+              )}
+              {listProjects().map((p) => (
+                <div key={p.id} className="project-item" style={{
+                  display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px',
+                  border: p.id === projectId ? '2px solid var(--color-text)' : '1px solid var(--color-border)',
+                  marginBottom: 4, fontFamily: 'var(--font-mono)', fontSize: 13,
+                  background: p.id === projectId ? 'var(--color-surface)' : 'transparent',
+                }}>
+                  <span style={{ flex: 1, fontWeight: p.id === projectId ? 700 : 400 }}>{p.name}</span>
+                  <span style={{ fontSize: 10, color: 'var(--color-text-muted)' }}>
+                    {new Date(p.updatedAt).toLocaleDateString()}
+                  </span>
+                  <button className="track-btn" onClick={() => handleLoadProject(p.id)}>Load</button>
+                  <button className="track-btn" onClick={() => { deleteProject(p.id); setProjectsOpen(false); }}>✕</button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
       <div className="help-bar">
         [SPACE] play/stop &nbsp; [R] record &nbsp; [H] jump start &nbsp; [↑↓] zoom ({zoom}px/s) &nbsp; scroll to pan
         {armedTrackId && transport === 'stopped' && (
