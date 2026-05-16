@@ -1,3 +1,10 @@
+## [1.44.1](https://github.com/jonathanhudak/tools/compare/v1.44.0...v1.44.1) (2026-05-16)
+
+
+### Bug Fixes
+
+* **tape-looper:** separate audio/MIDI tracks, fix recording, Safari support ([17965e3](https://github.com/jonathanhudak/tools/commit/17965e33f22fdb2b55e6764754b9bfd22a6ba2a5))
+
 # [1.44.0](https://github.com/jonathanhudak/tools/compare/v1.43.0...v1.44.0) (2026-05-16)
 
 
