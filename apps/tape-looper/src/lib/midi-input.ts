@@ -11,10 +11,16 @@ let onNoteOn: NoteCallback | null = null;
 let onNoteOff: NoteCallback | null = null;
 let onChange: ((connected: boolean) => void) | null = null;
 
-export async function initMIDI(): Promise<boolean> {
+export type MIDIInitResult =
+  | { ok: true; connected: boolean }
+  | { ok: false; reason: string };
+
+export async function initMIDI(): Promise<MIDIInitResult> {
+  if (!navigator.requestMIDIAccess) {
+    return { ok: false, reason: 'Web MIDI API not supported in this browser' };
+  }
   try {
-    if (!navigator.requestMIDIAccess) return false;
-    midiAccess = await navigator.requestMIDIAccess();
+    midiAccess = await navigator.requestMIDIAccess({ sysex: false });
     connectFirstInput();
 
     midiAccess.onstatechange = (e) => {
@@ -26,9 +32,13 @@ export async function initMIDI(): Promise<boolean> {
       connectFirstInput();
     };
 
-    return midiInput !== null;
-  } catch {
-    return false;
+    const inputCount = [...midiAccess.inputs.values()].length;
+    console.log(`[MIDI] access granted, ${inputCount} input(s) found`);
+    return { ok: true, connected: midiInput !== null };
+  } catch (err) {
+    const reason = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
+    console.error('[MIDI] init failed:', reason);
+    return { ok: false, reason };
   }
 }
 

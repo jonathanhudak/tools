@@ -116,6 +116,7 @@ function TransportBar({
   saveStatus,
   midiConnected,
   onConnectMIDI,
+  midiError,
   octaveOffset,
   onOctaveDown,
   onOctaveUp,
@@ -130,6 +131,7 @@ function TransportBar({
   saveStatus: 'idle' | 'saving' | 'saved';
   midiConnected: boolean;
   onConnectMIDI: () => void;
+  midiError: string | null;
   octaveOffset: number;
   onOctaveDown: () => void;
   onOctaveUp: () => void;
@@ -161,10 +163,13 @@ function TransportBar({
         <button className="track-btn" onClick={onNewProject}>+ New</button>
         <button className="track-btn" onClick={onSave}>{saveStatus === 'saved' ? '✓ Saved' : '💾 Save'}</button>
         {!midiConnected && (
-          <button className="track-btn" onClick={onConnectMIDI} title="Connect MIDI keyboard">🎹 MIDI</button>
+          <button className="track-btn" onClick={onConnectMIDI} title={midiError ?? 'Connect MIDI keyboard'}
+            style={midiError ? { borderColor: '#e53e3e', color: '#e53e3e' } : undefined}>
+            🎹 {midiError ? 'MIDI ⚠' : 'MIDI'}
+          </button>
         )}
         {midiConnected && (
-          <span style={{ fontSize: 14 }} title="MIDI connected">🎹</span>
+          <span style={{ fontSize: 14 }} title="MIDI connected">🎹 ✓</span>
         )}
       </div>
       {/* Row 2: Playback controls — aligned left */}
@@ -523,9 +528,17 @@ export function App() {
   const octaveOffsetRef = useRef(0);
   // MIDI — try auto-init (works if permission granted), fallback to button
   const [midiConnected, setMIDIConnected] = useState(false);
+  const [midiError, setMidiError] = useState<string | null>(null);
   const connectMIDI = useCallback(async () => {
-    const connected = await initMIDI();
-    setMIDIConnected(connected);
+    setMidiError(null);
+    const result = await initMIDI();
+    if (result.ok) {
+      setMIDIConnected(result.connected);
+      if (!result.connected) setMidiError('No MIDI device found');
+    } else {
+      setMIDIConnected(false);
+      setMidiError(result.reason);
+    }
   }, []);
 
   // Auto-detect MIDI on mount (works if permission already granted)
@@ -925,7 +938,7 @@ export function App() {
   return (
     <div className="daw-app">
       <PatternDefs />
-      <TransportBar playheadTime={playheadTime} onPlay={handlePlay} onRecord={handleRecord} onSeekToStart={handleSeekToStart} onOpenProjects={() => setProjectsOpen(true)} onNewProject={handleNewProject} onSave={handleSave} saveStatus={saveStatus} midiConnected={midiConnected} onConnectMIDI={connectMIDI} octaveOffset={octaveOffset} onOctaveDown={() => setOctaveOffset((o) => Math.max(-4, o - 1))} onOctaveUp={() => setOctaveOffset((o) => Math.min(4, o + 1))} />
+      <TransportBar playheadTime={playheadTime} onPlay={handlePlay} onRecord={handleRecord} onSeekToStart={handleSeekToStart} onOpenProjects={() => setProjectsOpen(true)} onNewProject={handleNewProject} onSave={handleSave} saveStatus={saveStatus} midiConnected={midiConnected} onConnectMIDI={connectMIDI} midiError={midiError} octaveOffset={octaveOffset} onOctaveDown={() => setOctaveOffset((o) => Math.max(-4, o - 1))} onOctaveUp={() => setOctaveOffset((o) => Math.min(4, o + 1))} />
       <div className="tracks-container">
         {tracks.map((track, i) => (
           <TrackRow key={track.id} track={track} idx={i} playheadTime={playheadTime} transport={transport} onSeek={seekTo} zoom={zoom} />
