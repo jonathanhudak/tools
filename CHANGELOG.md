@@ -1,3 +1,10 @@
+# [1.42.0](https://github.com/jonathanhudak/tools/compare/v1.41.1...v1.42.0) (2026-05-16)
+
+
+### Features
+
+* **tape-looper:** gain dropdown, zoom/scroll, waveform scaling, piano roll ([8a97a88](https://github.com/jonathanhudak/tools/commit/8a97a880c966a0528d81a0cde434fb6f3a033f23))
+
 ## [1.41.1](https://github.com/jonathanhudak/tools/compare/v1.41.0...v1.41.1) (2026-05-16)
 
 
