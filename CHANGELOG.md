@@ -1,3 +1,15 @@
+# [1.45.0](https://github.com/jonathanhudak/tools/compare/v1.44.2...v1.45.0) (2026-05-16)
+
+
+### Bug Fixes
+
+* **tape-looper:** remove fallback keyboard, fix MIDI detection and save reliability ([7977a49](https://github.com/jonathanhudak/tools/commit/7977a49f90445f0f08fc9d3021c3cd46b60886b2))
+
+
+### Features
+
+* **tape-looper:** octave shift via Z/X keys, cleanup ([f1125bd](https://github.com/jonathanhudak/tools/commit/f1125bd36d7a907d670c352df6a1082ea2f0d3e0))
+
 ## [1.44.2](https://github.com/jonathanhudak/tools/compare/v1.44.1...v1.44.2) (2026-05-16)
 
 
