@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Track, TransportState, Clip, NoteEvent, TrackType } from './types';
+import type { Track, TransportState, NoteEvent, TrackType } from './types';
 import { applyOverwrite } from './tape-engine';
 import { applyNoteOverwrite } from './midi-engine';
 
@@ -13,13 +13,13 @@ interface DAWStore {
   projectId: string | null;
   projectName: string;
 
-  addTrack: () => void;
+  addAudioTrack: () => void;
+  addMidiTrack: () => void;
   removeTrack: (id: string) => void;
   toggleMute: (id: string) => void;
   toggleSolo: (id: string) => void;
   toggleArm: (id: string) => void;
   clearArmed: () => void;
-  toggleTrackType: (id: string) => void;
   setTracks: (tracks: Track[]) => void;
   setProjectId: (id: string | null) => void;
   setProjectName: (name: string) => void;
@@ -33,21 +33,22 @@ interface DAWStore {
 }
 
 let trackNum = 1;
-function freshTrack(): Track {
+function freshTrack(type: TrackType): Track {
+  const n = trackNum++;
   return {
-    id: `t${trackNum++}`,
-    name: `Track ${trackNum - 1}`,
+    id: `t${n}`,
+    name: `${type === 'midi' ? 'MIDI' : 'Audio'} ${n}`,
     armed: false,
     muted: false,
     solo: false,
-    trackType: 'audio',
+    trackType: type,
     clips: [],
     notes: [],
   };
 }
 
 export const useStore = create<DAWStore>((set) => ({
-  tracks: [freshTrack()],
+  tracks: [freshTrack('audio')],
   transport: 'stopped',
   bpm: 120,
   armedTrackId: null,
@@ -56,7 +57,8 @@ export const useStore = create<DAWStore>((set) => ({
   projectId: null,
   projectName: 'Untitled',
 
-  addTrack: () => set((s) => ({ tracks: [...s.tracks, freshTrack()] })),
+  addAudioTrack: () => set((s) => ({ tracks: [...s.tracks, freshTrack('audio')] })),
+  addMidiTrack: () => set((s) => ({ tracks: [...s.tracks, freshTrack('midi')] })),
 
   removeTrack: (id) =>
     set((s) => ({
@@ -87,15 +89,6 @@ export const useStore = create<DAWStore>((set) => ({
     set((s) => ({
       armedTrackId: null,
       tracks: s.tracks.map((t) => ({ ...t, armed: false })),
-    })),
-
-  toggleTrackType: (id) =>
-    set((s) => ({
-      tracks: s.tracks.map((t) =>
-        t.id === id
-          ? { ...t, trackType: t.trackType === 'audio' ? 'midi' : ('audio' as TrackType) }
-          : t,
-      ),
     })),
 
   setTracks: (tracks) => set({ tracks }),

@@ -301,6 +301,26 @@ body {
   color: var(--color-text);
 }
 
+/* ── Track type distinction ── */
+.midi-track .track-controls {
+  border-left: 3px solid var(--color-text);
+}
+
+.audio-track .track-controls {
+  border-left: 3px solid var(--color-text);
+  background: var(--color-bg);
+}
+
+.midi-track .track-controls {
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 7px,
+    rgba(0,0,0,0.04) 7px,
+    rgba(0,0,0,0.04) 8px
+  );
+}
+
 /* ── Utility ── */
 .mono {
   font-family: var(--font-mono);

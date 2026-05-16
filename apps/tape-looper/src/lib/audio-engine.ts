@@ -1,7 +1,6 @@
 /**
  * AudioEngine — singleton managing Web Audio lifecycle.
- * Recording via MediaRecorder (simple, works everywhere).
- * Playback via AudioBufferSourceNode (no Tone.js dependency for POC).
+ * Recording via MediaRecorder with Safari fallback support.
  */
 
 let ctx: AudioContext | null = null;
@@ -23,7 +22,7 @@ export function getMasterGain(): GainNode {
   return masterGain!;
 }
 
-export async function getInputStream(): Promise<MediaStream> {
+async function getInputStream(): Promise<MediaStream> {
   return navigator.mediaDevices.getUserMedia({
     audio: {
       echoCancellation: false,
@@ -33,35 +32,54 @@ export async function getInputStream(): Promise<MediaStream> {
   });
 }
 
-/** Record audio, returns AudioBuffer on stop */
-export function startRecording(): { stop: () => Promise<AudioBuffer> } {
-  let chunks: Blob[] = [];
-  let mediaRecorder: MediaRecorder | null = null;
+/** Find best supported mime type — Chrome=webm, Safari=mp4 */
+function getMimeType(): string {
+  const types = [
+    'audio/webm;codecs=opus',
+    'audio/webm',
+    'audio/mp4',
+    'audio/mpeg',
+    'audio/ogg;codecs=opus',
+  ];
+  for (const t of types) {
+    if (MediaRecorder.isTypeSupported(t)) return t;
+  }
+  return 'audio/webm'; // last resort
+}
 
-  const startPromise = getInputStream().then((stream) => {
-    mediaRecorder = new MediaRecorder(stream, {
-      mimeType: MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-        ? 'audio/webm;codecs=opus'
-        : 'audio/webm',
-    });
-    mediaRecorder.ondataavailable = (e) => {
-      if (e.data.size > 0) chunks.push(e.data);
-    };
-    mediaRecorder.start(100);
-  });
+/** Record audio, returns AudioBuffer on stop. Throws if mic access denied. */
+export async function startRecording(): Promise<{ stop: () => Promise<AudioBuffer> }> {
+  let chunks: Blob[] = [];
+  let mediaRecorder: MediaRecorder;
+
+  const stream = await getInputStream();
+  const mimeType = getMimeType();
+
+  mediaRecorder = new MediaRecorder(stream, { mimeType });
+  mediaRecorder.ondataavailable = (e) => {
+    if (e.data.size > 0) chunks.push(e.data);
+  };
+  mediaRecorder.start(100);
 
   const stop = async (): Promise<AudioBuffer> => {
-    await startPromise;
     return new Promise((resolve, reject) => {
-      if (!mediaRecorder) return reject('Not recording');
       mediaRecorder.onstop = async () => {
-        const blob = new Blob(chunks, { type: 'audio/webm' });
-        const arrayBuffer = await blob.arrayBuffer();
-        const audioBuffer = await getCtx().decodeAudioData(arrayBuffer);
-        mediaRecorder!.stream.getTracks().forEach((t) => t.stop());
-        resolve(audioBuffer);
+        try {
+          const blob = new Blob(chunks, { type: mimeType });
+          const arrayBuffer = await blob.arrayBuffer();
+          const audioBuffer = await getCtx().decodeAudioData(arrayBuffer);
+          mediaRecorder.stream.getTracks().forEach((t) => t.stop());
+          resolve(audioBuffer);
+        } catch (e) {
+          reject(e);
+        }
       };
-      mediaRecorder.stop();
+      mediaRecorder.onerror = (e) => reject(e);
+      if (mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+      } else {
+        reject('MediaRecorder not recording');
+      }
     });
   };
 
@@ -83,27 +101,6 @@ export function playBuffer(
   src.connect(dest);
   src.start(c.currentTime + when, offset, duration);
   return src;
-}
-
-/** Play all clips on all tracks, respecting mute/solo */
-export function playAllClips(
-  clips: { buffer: AudioBuffer; startTime: number; duration: number; muted: boolean }[]
-): AudioBufferSourceNode[] {
-  const sources: AudioBufferSourceNode[] = [];
-  const master = getMasterGain();
-
-  for (const clip of clips) {
-    if (clip.muted) continue;
-    const gain = getCtx().createGain();
-    gain.gain.value = 0.8;
-    gain.connect(master);
-    const src = getCtx().createBufferSource();
-    src.buffer = clip.buffer;
-    src.connect(gain);
-    src.start(getCtx().currentTime + 0.05, 0, clip.duration);
-    sources.push(src);
-  }
-  return sources;
 }
 
 export function dispose(): void {

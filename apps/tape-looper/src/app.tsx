@@ -385,17 +385,21 @@ function TrackRow({
   const toggleMute = useStore((s) => s.toggleMute);
   const toggleSolo = useStore((s) => s.toggleSolo);
   const toggleArm = useStore((s) => s.toggleArm);
-  const toggleTrackType = useStore((s) => s.toggleTrackType);
   const removeTrack = useStore((s) => s.removeTrack);
-  const trackCount = useStore((s) => s.tracks.length);
   const canArm = transport === 'stopped' || (transport === 'recording' && track.armed);
   const isMIDI = track.trackType === 'midi';
 
   return (
-    <div className="track-row">
+    <div className={`track-row ${isMIDI ? 'midi-track' : 'audio-track'}`}>
       <div className="track-controls">
         <div className="track-name">{track.name}</div>
-        <div className="track-type-badge" style={{ fontSize: 10, color: 'var(--color-text-muted)', marginBottom: 4 }}>
+        <div className="track-type-badge" style={{
+          fontSize: 10, fontWeight: 700, marginBottom: 4,
+          background: isMIDI ? 'none' : 'var(--color-text)',
+          padding: isMIDI ? 0 : '1px 6px',
+          display: 'inline-block',
+          color: isMIDI ? 'var(--color-text)' : 'var(--color-bg)',
+        }}>
           {isMIDI ? '🎹 MIDI' : '🎤 AUDIO'}
         </div>
         <div className="track-btns">
@@ -404,12 +408,7 @@ function TrackRow({
           </button>
           <button className={`track-btn ${track.muted ? 'on' : ''}`} onClick={() => toggleMute(track.id)}>M</button>
           <button className={`track-btn ${track.solo ? 'on' : ''}`} onClick={() => toggleSolo(track.id)}>S</button>
-          <button className="track-btn" onClick={() => toggleTrackType(track.id)} title="Toggle audio/MIDI">
-            {isMIDI ? 'AUD' : 'MID'}
-          </button>
-          {trackCount > 1 && (
-            <button className="track-btn" onClick={() => removeTrack(track.id)}>✕</button>
-          )}
+          <button className="track-btn" onClick={() => removeTrack(track.id)}>✕</button>
         </div>
       </div>
       <TrackLane track={track} patternIdx={idx} playheadTime={playheadTime} transport={transport} onSeek={onSeek} zoom={zoom} />
@@ -420,7 +419,8 @@ function TrackRow({
 /* ── Main App ── */
 export function App() {
   const tracks = useStore((s) => s.tracks);
-  const addTrack = useStore((s) => s.addTrack);
+  const addAudioTrack = useStore((s) => s.addAudioTrack);
+  const addMidiTrack = useStore((s) => s.addMidiTrack);
   const transport = useStore((s) => s.transport);
   const setTransport = useStore((s) => s.setTransport);
   const armedTrackId = useStore((s) => s.armedTrackId);
@@ -517,7 +517,7 @@ export function App() {
     const id = newProjectId();
     setProjectId(id);
     setProjectName('Untitled');
-    setTracks([{ id: 't1', name: 'Track 1', armed: false, muted: false, solo: false, trackType: 'audio', clips: [], notes: [] }]);
+    setTracks([{ id: 't1', name: 'Audio 1', armed: false, muted: false, solo: false, trackType: 'audio' as const, clips: [], notes: [] }]);
     setProjectsOpen(false);
   }, [handleSave, setProjectId, setProjectName, setTracks]);
 
@@ -526,7 +526,7 @@ export function App() {
     const project = getProject(id);
     if (!project) return;
     const loaded = await deserializeTracks(project.tracks);
-    setTracks(loaded.length > 0 ? loaded : [{ id: 't1', name: 'Track 1', armed: false, muted: false, solo: false, trackType: 'audio', clips: [], notes: [] }]);
+    setTracks(loaded.length > 0 ? loaded : [{ id: 't1', name: 'Audio 1', armed: false, muted: false, solo: false, trackType: 'audio' as const, clips: [], notes: [] }]);
     setProjectId(project.id);
     setProjectName(project.name);
     setProjectsOpen(false);
@@ -651,8 +651,7 @@ export function App() {
       midiRecordingRef.current = true;
       midiNotesRef.current = [];
     } else {
-      const rec = startRecording();
-      recordingRef.current = rec;
+      recordingRef.current = await startRecording();
       recordStartTimeRef.current = getCtx().currentTime;
     }
     setTransport('recording');
@@ -797,7 +796,8 @@ export function App() {
         {tracks.map((track, i) => (
           <TrackRow key={track.id} track={track} idx={i} playheadTime={playheadTime} transport={transport} onSeek={seekTo} zoom={zoom} />
         ))}
-        <button className="add-track-btn" onClick={addTrack}>+ Add Track</button>
+        <button className="add-track-btn" onClick={addAudioTrack}>+ Audio Track</button>
+        <button className="add-track-btn" onClick={addMidiTrack} style={{ borderStyle: 'dashed' }}>+ MIDI Track</button>
       </div>
       {/* Project controls */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 16px', borderTop: '1px solid var(--color-border)', fontFamily: 'var(--font-mono)', fontSize: 12 }}>
