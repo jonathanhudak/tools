@@ -1,3 +1,10 @@
+## [1.41.1](https://github.com/jonathanhudak/tools/compare/v1.41.0...v1.41.1) (2026-05-16)
+
+
+### Bug Fixes
+
+* **tape-looper:** stop button halts recording, boost input gain 4x ([d9c0602](https://github.com/jonathanhudak/tools/commit/d9c060221be615f6e845d19a31c47687b068ed75))
+
 # [1.41.0](https://github.com/jonathanhudak/tools/compare/v1.40.1...v1.41.0) (2026-05-16)
 
 
