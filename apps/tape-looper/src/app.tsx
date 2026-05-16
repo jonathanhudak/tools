@@ -441,6 +441,10 @@ export function App() {
   const startCtxTimeRef = useRef(0);
   const rafRef = useRef(0);
 
+  // Transport ref for keyboard handler (avoids stale closure)
+  const transportRef = useRef(transport);
+  transportRef.current = transport;
+
   // MIDI recording state
   const midiRecordingRef = useRef(false);
   const midiNotesRef = useRef<NoteEvent[]>([]);
@@ -673,17 +677,32 @@ export function App() {
     osc.start();
     activeOscillatorsRef.current.set(midiNote, osc);
     setActiveNotes((prev) => new Set(prev).add(midiNote));
+
+    // MIDI recording capture (works for touch + keyboard)
+    if (midiRecordingRef.current) {
+      const t = getCtx().currentTime - startCtxTimeRef.current;
+      midiNoteStartRef.current.set(midiNote, t);
+    }
   }, []);
 
   const stopNote = useCallback((midiNote: number) => {
     const osc = activeOscillatorsRef.current.get(midiNote);
     if (osc) {
-      const gain = (osc as any).context?.createGain?.();
       try { osc.stop(); } catch {}
       osc.disconnect();
       activeOscillatorsRef.current.delete(midiNote);
     }
     setActiveNotes((prev) => { const n = new Set(prev); n.delete(midiNote); return n; });
+
+    // MIDI recording capture (works for touch + keyboard)
+    if (midiRecordingRef.current) {
+      const startTime = midiNoteStartRef.current.get(midiNote);
+      if (startTime !== undefined) {
+        const endTime = getCtx().currentTime - startCtxTimeRef.current;
+        midiNotesRef.current.push({ midiNote, startTime, duration: Math.max(0.05, endTime - startTime) });
+        midiNoteStartRef.current.delete(midiNote);
+      }
+    }
   }, []);
 
   const endAllMIDINotes = useCallback(() => {
@@ -699,30 +718,12 @@ export function App() {
     const handler = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
 
-      // Piano keys (only when a MIDI track is armed and recording or previewing)
       const key = e.key.toLowerCase();
       if (PIANO_KEY_SET.has(key)) {
         if (e.repeat) return;
         const midiNote = PIANO_NOTE_MAP[key];
-        const ctxTime = getCtx().currentTime;
-
         if (e.type === 'keydown') {
           playNote(midiNote);
-          // If recording on a MIDI track, capture note start
-          if (midiRecordingRef.current && transport === 'recording') {
-            midiNoteStartRef.current.set(midiNote, ctxTime - startCtxTimeRef.current);
-          }
-        } else {
-          stopNote(midiNote);
-          // If recording on a MIDI track, capture note end
-          if (midiRecordingRef.current && transport === 'recording') {
-            const startTime = midiNoteStartRef.current.get(midiNote);
-            if (startTime !== undefined) {
-              const endTime = ctxTime - startCtxTimeRef.current;
-              midiNotesRef.current.push({ midiNote, startTime, duration: Math.max(0.05, endTime - startTime) });
-              midiNoteStartRef.current.delete(midiNote);
-            }
-          }
         }
         e.preventDefault();
         return;
@@ -741,7 +742,8 @@ export function App() {
     const keyupHandler = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
       if (PIANO_KEY_SET.has(key)) {
-        handler({ ...e, type: 'keyup' } as any);
+        const midiNote = PIANO_NOTE_MAP[key];
+        stopNote(midiNote);
       }
     };
 
@@ -751,7 +753,7 @@ export function App() {
       window.removeEventListener('keydown', handler);
       window.removeEventListener('keyup', keyupHandler);
     };
-  }, [handlePlay, handleRecord, handleSeekToStart, transport, playNote, stopNote]);
+  }, [handlePlay, handleRecord, handleSeekToStart, playNote, stopNote]);
 
   // Scroll wheel: horizontal scroll pans, no modifier zooms
   useEffect(() => {
