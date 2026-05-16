@@ -1,4 +1,4 @@
-import { useRef, useCallback, useEffect, useState } from 'react';
+import { useRef, useCallback, useEffect } from 'react';
 
 interface PianoKeyboardProps {
   onNoteOn: (midiNote: number) => void;
@@ -8,9 +8,10 @@ interface PianoKeyboardProps {
   midiConnected: boolean;
 }
 
-/** 25 keys: C3 (48) to C5 (72) */
-const LOW_NOTE = 48;
-const HIGH_NOTE = 72;
+/** Full 88 keys: A0 (21) to C8 (108) — horizontally scrollable */
+const LOW_NOTE = 21;
+const HIGH_NOTE = 108;
+const MIDDLE_C = 60;
 const NOTE_COUNT = HIGH_NOTE - LOW_NOTE + 1;
 
 const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -25,7 +26,6 @@ function noteLabel(midiNote: number): string {
   return `${NOTE_NAMES[midiNote % 12]}${octave}`;
 }
 
-/** Compact: white keys only (no black key gaps shown) */
 function WhiteKeyOnly({ midiNote, active, onPress, onRelease }: {
   midiNote: number;
   active: boolean;
@@ -46,34 +46,44 @@ function WhiteKeyOnly({ midiNote, active, onPress, onRelease }: {
   }, [midiNote, onRelease]);
 
   const handleEnter = useCallback((e: React.PointerEvent) => {
-    if (e.buttons > 0) {
-      onPress(midiNote);
-    }
+    if (e.buttons > 0) onPress(midiNote);
   }, [midiNote, onPress]);
 
   const handleLeave = useCallback(() => {
     if (active) onRelease(midiNote);
   }, [midiNote, active, onRelease]);
 
+  const isC = midiNote % 12 === 0;
   return (
     <div
       ref={ref}
-      className={`pk-white ${active ? 'active' : ''}`}
+      className={`pk-white ${active ? 'active' : ''} ${isC ? 'pk-c' : ''}`}
       onPointerDown={handleDown}
       onPointerUp={handleUp}
       onPointerEnter={handleEnter}
       onPointerLeave={handleLeave}
     >
-      <span className="pk-label">{noteLabel(midiNote)}</span>
+      <span className="pk-label">{isC ? noteLabel(midiNote) : ''}</span>
     </div>
   );
 }
 
 export function PianoKeyboard({ onNoteOn, onNoteOff, activeNotes, visible, midiConnected }: PianoKeyboardProps) {
   const whiteKeys = Array.from({ length: NOTE_COUNT }, (_, i) => LOW_NOTE + i).filter((n) => !isBlackKey(n));
-
-  // Track pressed notes for the active set (using local state for pointer tracking)
   const pressedRef = useRef<Set<number>>(new Set());
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to middle C on mount
+  useEffect(() => {
+    if (!scrollRef.current) return;
+    const mcIdx = whiteKeys.findIndex((n) => n === MIDDLE_C);
+    if (mcIdx >= 0) {
+      const keyEl = scrollRef.current.children[mcIdx] as HTMLElement;
+      if (keyEl) {
+        keyEl.scrollIntoView({ inline: 'center', block: 'nearest' });
+      }
+    }
+  }, []);
 
   const handlePress = useCallback((midiNote: number) => {
     if (pressedRef.current.has(midiNote)) return;
@@ -86,7 +96,6 @@ export function PianoKeyboard({ onNoteOn, onNoteOff, activeNotes, visible, midiC
     onNoteOff(midiNote);
   }, [onNoteOff]);
 
-  // Clean up on unmount
   useEffect(() => {
     return () => {
       pressedRef.current.forEach((n) => onNoteOff(n));
@@ -98,7 +107,7 @@ export function PianoKeyboard({ onNoteOn, onNoteOff, activeNotes, visible, midiC
 
   return (
     <div className="piano-keyboard-slide">
-      <div className="pk-scroll">
+      <div className="pk-scroll" ref={scrollRef}>
         {whiteKeys.map((midiNote) => (
           <WhiteKeyOnly
             key={midiNote}

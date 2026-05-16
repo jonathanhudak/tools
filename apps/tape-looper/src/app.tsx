@@ -2,12 +2,12 @@ import { useRef, useEffect, useCallback, useState } from 'react';
 import { useStore } from './lib/store';
 import { getCtx, getMasterGain, startRecording, boostGain } from './lib/audio-engine';
 import { synthTrack } from './lib/midi-engine';
-import { initMIDI, setMIDICallbacks, hasMIDI, disposeMIDI } from './lib/midi-input';
+import { initMIDI, setMIDICallbacks, disposeMIDI } from './lib/midi-input';
 import { PianoKeyboard } from './components/piano-keyboard';
 import {
   serializeTracks, deserializeTracks, saveProject, listProjects,
-  getProject, newProjectId, deleteProject, renameProject,
-  getCurrentProjectId, setCurrentProjectId,
+  getProject, newProjectId, deleteProject,
+  getCurrentProjectId,
 } from './lib/storage';
 import type { Clip, NoteEvent } from './lib/types';
 
@@ -47,8 +47,6 @@ function PatternDefs() {
   );
 }
 
-const TRACK_PATTERNS = ['pat-dots', 'pat-diag', 'pat-cross', 'pat-lines', 'pat-brick'];
-
 /* ── Piano key mapping: 2 rows of computer keyboard → 1 octave ── */
 const PIANO_KEYS: { key: string; midiNote: number; label: string }[] = [
   { key: 'a', midiNote: 60, label: 'C' },
@@ -67,6 +65,45 @@ const PIANO_KEYS: { key: string; midiNote: number; label: string }[] = [
 ];
 const PIANO_KEY_SET = new Set(PIANO_KEYS.map((k) => k.key));
 const PIANO_NOTE_MAP = Object.fromEntries(PIANO_KEYS.map((k) => [k.key, k.midiNote]));
+
+/* ── Editable Project Name ── */
+function EditableProjectName() {
+  const projectName = useStore((s) => s.projectName);
+  const setProjectName = useStore((s) => s.setProjectName);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(projectName);
+
+  const submit = () => {
+    const trimmed = draft.trim();
+    if (trimmed && trimmed !== projectName) setProjectName(trimmed);
+    else setDraft(projectName);
+    setEditing(false);
+  };
+
+  if (editing) {
+    return (
+      <input
+        className="track-name-input"
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={submit}
+        onKeyDown={(e) => { if (e.key === 'Enter') submit(); if (e.key === 'Escape') { setDraft(projectName); setEditing(false); } }}
+        autoFocus
+        style={{ fontFamily: 'var(--font-mono)', fontSize: 14, fontWeight: 700, border: '2px solid var(--color-border)', padding: '2px 8px', background: 'var(--color-bg)', color: 'var(--color-text)', width: 200 }}
+      />
+    );
+  }
+
+  return (
+    <span
+      style={{ marginLeft: 8, fontWeight: 700, cursor: 'pointer', borderBottom: '2px dashed transparent', paddingBottom: 2 }}
+      onClick={() => { setDraft(projectName); setEditing(true); }}
+      title="Click to rename project"
+    >
+      {projectName}
+    </span>
+  );
+}
 
 /* ── Transport Bar ── */
 function TransportBar({
@@ -127,28 +164,6 @@ function TransportBar({
       <span style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>BPM</span>
 
       <div style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontSize: 16 }}>{fmtTime(playheadTime)}</div>
-    </div>
-  );
-}
-
-/* ── Piano Roll HUD ── */
-function PianoHUD({
-  activeNotes,
-}: {
-  activeNotes: Set<number>;
-}) {
-  const whiteKeys = PIANO_KEYS.filter((k) => !k.label.includes('#'));
-  return (
-    <div className="piano-hud">
-      {whiteKeys.map((k) => {
-        const isActive = activeNotes.has(k.midiNote);
-        return (
-          <div key={k.midiNote} className={`piano-key ${isActive ? 'active' : ''}`}>
-            <span className="piano-key-label">{k.key.toUpperCase()}</span>
-            <span className="piano-key-note">{k.label}</span>
-          </div>
-        );
-      })}
     </div>
   );
 }
@@ -314,8 +329,22 @@ function drawAudioClips(ctx: CanvasRenderingContext2D, clips: Clip[], w: number,
 }
 
 function drawPianoRoll(ctx: CanvasRenderingContext2D, notes: NoteEvent[], w: number, h: number, zoom: number) {
-  const minNote = 60; // C4
-  const maxNote = 72; // C5
+  if (notes.length === 0) {
+    ctx.fillStyle = '#999';
+    ctx.font = '14px "JetBrains Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('No notes — arm track, press ●, play keys (A-K row)', w / 2, h / 2);
+    ctx.textAlign = 'start';
+    return;
+  }
+
+  // Auto-range: cover all recorded notes with at least 1 octave padding
+  const allNotes = notes.map((n) => n.midiNote);
+  const rawMin = Math.min(...allNotes);
+  const rawMax = Math.max(...allNotes);
+  const pad = Math.max(6, Math.ceil((rawMax - rawMin) * 0.25));
+  const minNote = Math.max(0, rawMin - pad);
+  const maxNote = Math.min(127, rawMax + pad);
   const noteRange = maxNote - minNote + 1;
   const rowH = h / noteRange;
 
@@ -324,7 +353,7 @@ function drawPianoRoll(ctx: CanvasRenderingContext2D, notes: NoteEvent[], w: num
   ctx.lineWidth = 0.5;
   for (let n = minNote; n <= maxNote; n++) {
     const y = h - (n - minNote + 1) * rowH;
-    const isBlack = [61, 63, 66, 68, 70].includes(n);
+    const isBlack = [1, 3, 6, 8, 10].includes(n % 12);
     ctx.fillStyle = isBlack ? '#f0f0f0' : '#fff';
     ctx.fillRect(0, y, w, rowH);
     ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
@@ -339,15 +368,6 @@ function drawPianoRoll(ctx: CanvasRenderingContext2D, notes: NoteEvent[], w: num
     ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
   }
   ctx.setLineDash([]);
-
-  if (notes.length === 0) {
-    ctx.fillStyle = '#999';
-    ctx.font = '14px "JetBrains Mono", monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText('No notes — arm track, press ●, play keys (A-K row)', w / 2, h / 2);
-    ctx.textAlign = 'start';
-    return;
-  }
 
   // Note blocks
   for (const note of notes) {
@@ -375,7 +395,7 @@ function TrackRow({
   onSeek,
   zoom,
 }: {
-  track: { id: string; name: string; armed: boolean; muted: boolean; solo: boolean; trackType: string; clips: Clip[]; notes: NoteEvent[] };
+  track: { id: string; name: string; armed: boolean; muted: boolean; solo: boolean; trackType: string; waveform: string; clips: Clip[]; notes: NoteEvent[] };
   idx: number;
   playheadTime: number;
   transport: string;
@@ -386,22 +406,59 @@ function TrackRow({
   const toggleSolo = useStore((s) => s.toggleSolo);
   const toggleArm = useStore((s) => s.toggleArm);
   const removeTrack = useStore((s) => s.removeTrack);
+  const renameTrack = useStore((s) => s.renameTrack);
+  const setWaveform = useStore((s) => s.setWaveform);
   const canArm = transport === 'stopped' || (transport === 'recording' && track.armed);
   const isMIDI = track.trackType === 'midi';
+  const [editing, setEditing] = useState(false);
+  const [nameDraft, setNameDraft] = useState(track.name);
+
+  const handleNameSubmit = () => {
+    const trimmed = nameDraft.trim();
+    if (trimmed && trimmed !== track.name) renameTrack(track.id, trimmed);
+    else setNameDraft(track.name);
+    setEditing(false);
+  };
 
   return (
     <div className={`track-row ${isMIDI ? 'midi-track' : 'audio-track'}`}>
       <div className="track-controls">
-        <div className="track-name">{track.name}</div>
+        {editing ? (
+          <input
+            className="track-name-input"
+            value={nameDraft}
+            onChange={(e) => setNameDraft(e.target.value)}
+            onBlur={handleNameSubmit}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleNameSubmit(); if (e.key === 'Escape') { setNameDraft(track.name); setEditing(false); } }}
+            autoFocus
+            style={{ fontFamily: 'var(--font-mono)', fontSize: 14, fontWeight: 700, border: '2px solid var(--color-border)', padding: '2px 4px', background: 'var(--color-bg)', color: 'var(--color-text)', width: '100%', marginBottom: 4 }}
+          />
+        ) : (
+          <div className="track-name" onClick={() => { setNameDraft(track.name); setEditing(true); }} title="Click to rename">
+            {track.name}
+          </div>
+        )}
         <div className="track-type-badge" style={{
           fontSize: 10, fontWeight: 700, marginBottom: 4,
           background: isMIDI ? 'none' : 'var(--color-text)',
-          padding: isMIDI ? 0 : '1px 6px',
-          display: 'inline-block',
+          padding: isMIDI ? 0 : '1px 6px', display: 'inline-block',
           color: isMIDI ? 'var(--color-text)' : 'var(--color-bg)',
         }}>
           {isMIDI ? '🎹 MIDI' : '🎤 AUDIO'}
         </div>
+        {isMIDI && (
+          <select
+            className="waveform-select"
+            value={track.waveform}
+            onChange={(e) => setWaveform(track.id, e.target.value as any)}
+            title="Waveform"
+          >
+            <option value="sine">~ sine</option>
+            <option value="sawtooth">/\\ saw</option>
+            <option value="square">⎍ square</option>
+            <option value="triangle">△ tri</option>
+          </select>
+        )}
         <div className="track-btns">
           <button className={`track-btn arm ${track.armed ? 'on' : ''}`} onClick={() => canArm && toggleArm(track.id)} disabled={!canArm}>
             {track.armed ? '⬤ REC' : 'REC'}
@@ -424,7 +481,6 @@ export function App() {
   const transport = useStore((s) => s.transport);
   const setTransport = useStore((s) => s.setTransport);
   const armedTrackId = useStore((s) => s.armedTrackId);
-  const clearArmed = useStore((s) => s.clearArmed);
   const overwriteClip = useStore((s) => s.overwriteClip);
   const overwriteNotes = useStore((s) => s.overwriteNotes);
   const inputGain = useStore((s) => s.inputGain);
@@ -453,7 +509,13 @@ export function App() {
 
   // Project state
   const [projectsOpen, setProjectsOpen] = useState(false);
+  const [projectList, setProjectList] = useState<Awaited<ReturnType<typeof listProjects>>>([]);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+
+  // Load project list when modal opens
+  useEffect(() => {
+    if (projectsOpen) listProjects().then(setProjectList);
+  }, [projectsOpen]);
   const setProjectId = useStore((s) => s.setProjectId);
   const setProjectName = useStore((s) => s.setProjectName);
   const setTracks = useStore((s) => s.setTracks);
@@ -465,36 +527,37 @@ export function App() {
   useEffect(() => {
     if (hasHydrated.current) return;
     hasHydrated.current = true;
-    const savedId = getCurrentProjectId();
-    if (savedId) {
-      const project = getProject(savedId);
-      if (project) {
-        deserializeTracks(project.tracks).then((loadedTracks) => {
+    (async () => {
+      const savedId = await getCurrentProjectId();
+      if (savedId) {
+        const project = await getProject(savedId);
+        if (project) {
+          const loadedTracks = await deserializeTracks(project.tracks);
           if (loadedTracks.length > 0) setTracks(loadedTracks);
           setProjectId(project.id);
           setProjectName(project.name);
-        });
-        return;
+          return;
+        }
       }
-    }
-    // No saved project — create a fresh one
-    const id = newProjectId();
-    setProjectId(id);
-    setProjectName('Untitled');
+      // No saved project — create a fresh one
+      const id = newProjectId();
+      setProjectId(id);
+      setProjectName('Untitled');
+    })();
   }, [setTracks, setProjectId, setProjectName]);
 
   // Auto-save on track changes (debounced)
   useEffect(() => {
     if (!hasHydrated.current || !projectId) return;
-    const timer = setTimeout(() => {
+    const timer = setTimeout(async () => {
       const proj = {
         id: projectId,
         name: projectName,
         createdAt: Date.now(),
         updatedAt: Date.now(),
-        tracks: serializeTracks(tracks),
+        tracks: await serializeTracks(tracks),
       };
-      saveProject(proj);
+      await saveProject(proj);
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 1500);
     }, 2000);
@@ -502,35 +565,35 @@ export function App() {
   }, [tracks, projectId, projectName]);
 
   // Save handlers
-  const handleSave = useCallback(() => {
+  const handleSave = useCallback(async () => {
     if (!projectId) return;
     const proj = {
       id: projectId,
       name: projectName,
       createdAt: Date.now(),
       updatedAt: Date.now(),
-      tracks: serializeTracks(tracks),
+      tracks: await serializeTracks(tracks),
     };
-    saveProject(proj);
+    await saveProject(proj);
     setSaveStatus('saved');
     setTimeout(() => setSaveStatus('idle'), 1500);
   }, [projectId, projectName, tracks]);
 
   const handleNewProject = useCallback(async () => {
-    handleSave();
+    await handleSave();
     const id = newProjectId();
     setProjectId(id);
     setProjectName('Untitled');
-    setTracks([{ id: 't1', name: 'Audio 1', armed: false, muted: false, solo: false, trackType: 'audio' as const, clips: [], notes: [] }]);
+    setTracks([{ id: 't1', name: 'Audio 1', armed: false, muted: false, solo: false, trackType: 'audio' as const, waveform: 'sine' as const, clips: [], notes: [] }]);
     setProjectsOpen(false);
   }, [handleSave, setProjectId, setProjectName, setTracks]);
 
   const handleLoadProject = useCallback(async (id: string) => {
-    handleSave();
-    const project = getProject(id);
+    await handleSave();
+    const project = await getProject(id);
     if (!project) return;
     const loaded = await deserializeTracks(project.tracks);
-    setTracks(loaded.length > 0 ? loaded : [{ id: 't1', name: 'Audio 1', armed: false, muted: false, solo: false, trackType: 'audio' as const, clips: [], notes: [] }]);
+    setTracks(loaded.length > 0 ? loaded : [{ id: 't1', name: 'Audio 1', armed: false, muted: false, solo: false, trackType: 'audio' as const, waveform: 'sine' as const, clips: [], notes: [] }]);
     setProjectId(project.id);
     setProjectName(project.name);
     setProjectsOpen(false);
@@ -557,26 +620,50 @@ export function App() {
       rafRef.current = requestAnimationFrame(tick);
       return () => cancelAnimationFrame(rafRef.current);
     }
+    return undefined;
   }, [transport]);
+
+  // Restart playback when mute/solo changes during playback
+  const prevMuteSoloRef = useRef('');
+  useEffect(() => {
+    const hash = tracks.map((t) => `${t.id}:${t.muted}:${t.solo}`).join('|');
+    if (prevMuteSoloRef.current === hash) return;
+    const prev = prevMuteSoloRef.current;
+    prevMuteSoloRef.current = hash;
+    // Skip first render
+    if (!prev) return;
+    if (transportRef.current === 'playing') {
+      stopAllSources();
+      startPlayback(false);
+    } else if (transportRef.current === 'recording') {
+      stopAllSources();
+      startPlayback(true);
+    }
+  }, [tracks]);
 
   const stopAllSources = useCallback(() => {
     playingSourcesRef.current.forEach((s) => { try { s.stop(); } catch {} });
     playingSourcesRef.current = [];
   }, []);
 
-  const startPlayback = useCallback(() => {
+  const startPlayback = useCallback((skipArmed = false) => {
     stopAllSources();
     const ctx = getCtx();
     const master = getMasterGain();
-    const anySolo = tracks.some((t) => t.solo);
+    const state = useStore.getState();
+    const currentTracks = state.tracks;
+    const currentArmedId = state.armedTrackId;
+    const anySolo = currentTracks.some((t) => t.solo);
 
-    for (const track of tracks) {
+    for (const track of currentTracks) {
+      // When recording, skip the armed track (don't play back what we're overwriting)
+      if (skipArmed && track.armed && track.id === currentArmedId) continue;
       const effectiveMute = anySolo ? !track.solo : track.muted;
       if (effectiveMute) continue;
 
       if (track.trackType === 'midi') {
         // Synthesize MIDI notes into audio buffer and play
-        const buf = synthTrack(track.notes, ctx);
+        const buf = synthTrack(track.notes, ctx, track.waveform);
         if (buf) {
           const offset = playheadRef.current;
           const src = ctx.createBufferSource();
@@ -632,9 +719,9 @@ export function App() {
         }
       }
     }
-    clearArmed();
+    // Don't auto-disarm — let user manually disarm
     setTransport('stopped');
-  }, [armedTrackId, tracks, clearArmed, overwriteClip, overwriteNotes, inputGain, stopAllSources, setTransport]);
+  }, [armedTrackId, tracks, overwriteClip, overwriteNotes, inputGain, stopAllSources, setTransport]);
 
   const handlePlay = useCallback(() => {
     if (transport === 'playing') { stopAllSources(); setTransport('stopped'); return; }
@@ -649,7 +736,7 @@ export function App() {
     if (!armedTrackId) return;
 
     const armedTrack = tracks.find((t) => t.id === armedTrackId);
-    startPlayback();
+    startPlayback(true); // skip armed track during recording
 
     if (armedTrack?.trackType === 'midi') {
       midiRecordingRef.current = true;
@@ -667,8 +754,11 @@ export function App() {
   const playNote = useCallback((midiNote: number) => {
     const ctx = getCtx();
     const master = getMasterGain();
+    const state = useStore.getState();
+    const armedTrack = state.tracks.find((t) => t.id === state.armedTrackId);
+    const waveform = armedTrack?.waveform ?? 'sine';
     const osc = ctx.createOscillator();
-    osc.type = 'sine';
+    osc.type = waveform;
     osc.frequency.value = 440 * Math.pow(2, (midiNote - 69) / 12);
     const gain = ctx.createGain();
     gain.gain.value = 0.3;
@@ -766,8 +856,8 @@ export function App() {
         useStore.getState().setZoom(Math.max(10, Math.min(500, z - Math.sign(e.deltaY) * 30)));
       }
     };
-    tracksEl.addEventListener('wheel', onWheel, { passive: false });
-    return () => tracksEl.removeEventListener('wheel', onWheel);
+    tracksEl.addEventListener('wheel', onWheel as EventListener, { passive: false });
+    return () => tracksEl.removeEventListener('wheel', onWheel as EventListener);
   }, []);
 
   // MIDI keyboard init
@@ -803,12 +893,12 @@ export function App() {
       </div>
       {/* Project controls */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 16px', borderTop: '1px solid var(--color-border)', fontFamily: 'var(--font-mono)', fontSize: 12 }}>
-        <button className="track-btn" onClick={() => setProjectsOpen(true)}>📂 Projects</button>
+        <button className="track-btn" onClick={() => setProjectsOpen(true)} style={{ fontWeight: 700, fontSize: 13, padding: '4px 12px' }}>📂 Load Project</button>
         <button className="track-btn" onClick={handleNewProject}>+ New</button>
         <button className="track-btn" onClick={handleSave}>
           {saveStatus === 'saved' ? '✓ Saved' : '💾 Save'}
         </button>
-        <span style={{ marginLeft: 8, fontWeight: 700 }}>{projectName}</span>
+        <EditableProjectName />
         <span style={{ color: 'var(--color-text-muted)', marginLeft: 'auto' }}>
           {projectId ? `(${projectId.slice(-6)})` : ''}
         </span>
@@ -822,10 +912,10 @@ export function App() {
               <button className="track-btn" onClick={() => setProjectsOpen(false)}>✕</button>
             </div>
             <div style={{ maxHeight: 300, overflowY: 'auto' }}>
-              {listProjects().length === 0 && (
+              {projectList.length === 0 && (
                 <p style={{ color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)', fontSize: 13 }}>No saved projects yet.</p>
               )}
-              {listProjects().map((p) => (
+              {projectList.map((p) => (
                 <div key={p.id} className="project-item" style={{
                   display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px',
                   border: p.id === projectId ? '2px solid var(--color-text)' : '1px solid var(--color-border)',
@@ -837,7 +927,7 @@ export function App() {
                     {new Date(p.updatedAt).toLocaleDateString()}
                   </span>
                   <button className="track-btn" onClick={() => handleLoadProject(p.id)}>Load</button>
-                  <button className="track-btn" onClick={() => { deleteProject(p.id); setProjectsOpen(false); }}>✕</button>
+                  <button className="track-btn" onClick={async () => { await deleteProject(p.id); setProjectList(await listProjects()); }}>✕</button>
                 </div>
               ))}
             </div>

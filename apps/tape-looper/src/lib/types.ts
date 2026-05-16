@@ -16,6 +16,7 @@ export interface NoteEvent {
 }
 
 export type TrackType = 'audio' | 'midi';
+export type Waveform = 'sine' | 'sawtooth' | 'square' | 'triangle';
 
 /** Track: a horizontal lane */
 export interface Track {
@@ -25,6 +26,7 @@ export interface Track {
   muted: boolean;
   solo: boolean;
   trackType: TrackType;
+  waveform: Waveform;
   clips: Clip[];
   notes: NoteEvent[];
 }

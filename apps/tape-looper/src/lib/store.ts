@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Track, TransportState, NoteEvent, TrackType } from './types';
+import type { Track, TransportState, NoteEvent, TrackType, Waveform } from './types';
 import { applyOverwrite } from './tape-engine';
 import { applyNoteOverwrite } from './midi-engine';
 
@@ -23,6 +23,8 @@ interface DAWStore {
   setTracks: (tracks: Track[]) => void;
   setProjectId: (id: string | null) => void;
   setProjectName: (name: string) => void;
+  renameTrack: (id: string, name: string) => void;
+  setWaveform: (id: string, wf: Waveform) => void;
 
   overwriteClip: (trackId: string, buffer: AudioBuffer, startTime: number) => void;
   overwriteNotes: (trackId: string, notes: NoteEvent[], startTime: number) => void;
@@ -42,6 +44,7 @@ function freshTrack(type: TrackType): Track {
     muted: false,
     solo: false,
     trackType: type,
+    waveform: 'sine',
     clips: [],
     notes: [],
   };
@@ -79,10 +82,7 @@ export const useStore = create<DAWStore>((set) => ({
   toggleArm: (id) =>
     set((s) => ({
       armedTrackId: s.armedTrackId === id ? null : id,
-      tracks: s.tracks.map((t) => ({
-        ...t,
-        armed: t.id === id ? !t.armed : false,
-      })),
+      tracks: s.tracks.map((t) => ({ ...t, armed: t.id === id ? !t.armed : false })),
     })),
 
   clearArmed: () =>
@@ -94,22 +94,22 @@ export const useStore = create<DAWStore>((set) => ({
   setTracks: (tracks) => set({ tracks }),
   setProjectId: (projectId) => set({ projectId }),
   setProjectName: (projectName) => set({ projectName }),
+  renameTrack: (id, name) =>
+    set((s) => ({ tracks: s.tracks.map((t) => (t.id === id ? { ...t, name } : t)) })),
+  setWaveform: (id, waveform) =>
+    set((s) => ({ tracks: s.tracks.map((t) => (t.id === id ? { ...t, waveform } : t)) })),
 
   overwriteClip: (trackId, buffer, startTime) =>
     set((s) => ({
       tracks: s.tracks.map((t) =>
-        t.id === trackId
-          ? { ...t, clips: applyOverwrite(t.clips, buffer, startTime, trackId) }
-          : t,
+        t.id === trackId ? { ...t, clips: applyOverwrite(t.clips, buffer, startTime, trackId) } : t,
       ),
     })),
 
   overwriteNotes: (trackId, notes, startTime) =>
     set((s) => ({
       tracks: s.tracks.map((t) =>
-        t.id === trackId
-          ? { ...t, notes: applyNoteOverwrite(t.notes, notes, startTime) }
-          : t,
+        t.id === trackId ? { ...t, notes: applyNoteOverwrite(t.notes, notes, startTime) } : t,
       ),
     })),
 
