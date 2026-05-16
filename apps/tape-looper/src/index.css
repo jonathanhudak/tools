@@ -186,6 +186,11 @@ body {
   min-width: 32px;
 }
 
+.track-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .track-btn.on {
   background: var(--color-text);
   color: var(--color-bg);
@@ -239,10 +244,14 @@ body {
 
 /* ── Tooltip / Help ── */
 .help-bar {
-  padding: 4px 16px;
-  font-size: 11px;
+  padding: 6px 16px;
+  font-size: 12px;
   color: var(--color-text-muted);
   border-top: 1px solid var(--color-border);
   font-family: var(--font-mono);
-  text-align: center;
+  display: flex;
+  align-items: center;
+  min-height: 32px;
+  white-space: nowrap;
+  overflow: hidden;
 }

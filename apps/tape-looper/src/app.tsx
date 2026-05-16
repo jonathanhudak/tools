@@ -3,7 +3,7 @@ import { useStore } from './lib/store';
 import { getCtx, getMasterGain, startRecording } from './lib/audio-engine';
 import type { Clip } from './lib/types';
 
-/* ── SVG Pattern Defs (same style as Blockworld) ── */
+/* ── SVG Pattern Defs ── */
 function PatternDefs() {
   return (
     <svg width="0" height="0" style={{ position: 'absolute' }}>
@@ -31,215 +31,173 @@ function PatternDefs() {
           <path d="M0,0 L12,0 M0,6 L12,6 M0,12 L12,12" stroke="#000" strokeWidth="0.8" />
           <path d="M6,0 L6,6 M0,6 L0,12 M12,6 L12,12" stroke="#000" strokeWidth="0.8" />
         </pattern>
+        <pattern id="pat-solid" patternUnits="userSpaceOnUse" width="4" height="4">
+          <rect width="4" height="4" fill="#000" />
+        </pattern>
       </defs>
     </svg>
   );
 }
 
-const TRACK_PATTERNS = [
-  { bg: '#fff', texId: 'pat-dots' },
-  { bg: '#fff', texId: 'pat-diag' },
-  { bg: '#fff', texId: 'pat-cross' },
-  { bg: '#fff', texId: 'pat-lines' },
-  { bg: '#fff', texId: 'pat-brick' },
-];
+const TRACK_PATTERNS = ['pat-dots', 'pat-diag', 'pat-cross', 'pat-lines', 'pat-brick'];
+
+/* ── Shared: pixels per second for the timeline ── */
+const PX_PER_SEC = 80;
 
 /* ── Transport Bar ── */
-function TransportBar() {
+function TransportBar({
+  playheadTime,
+  onPlay,
+  onRecord,
+}: {
+  playheadTime: number;
+  onPlay: () => void;
+  onRecord: () => void;
+}) {
   const transport = useStore((s) => s.transport);
   const bpm = useStore((s) => s.bpm);
   const armedTrackId = useStore((s) => s.armedTrackId);
-  const setTransport = useStore((s) => s.setTransport);
-  const [time, setTime] = useState(0);
-  const timeRef = useRef(0);
-  const startRef = useRef(0);
-  const rafRef = useRef(0);
-
-  // Recording orchestration
-  const recordingRef = useRef<{ stop: () => Promise<AudioBuffer> } | null>(null);
-  const recordStartRef = useRef(0);
-  const overwriteClip = useStore((s) => s.overwriteClip);
-
-  // Playing orchestration
-  const playingSourcesRef = useRef<AudioBufferSourceNode[]>([]);
-  const tracks = useStore((s) => s.tracks);
-
-  // Timer RAF
-  useEffect(() => {
-    if (transport === 'playing' || transport === 'recording') {
-      startRef.current = getCtx().currentTime - timeRef.current;
-      const tick = () => {
-        setTime(getCtx().currentTime - startRef.current);
-        rafRef.current = requestAnimationFrame(tick);
-      };
-      rafRef.current = requestAnimationFrame(tick);
-      return () => cancelAnimationFrame(rafRef.current);
-    }
-  }, [transport]);
-
-  const handlePlay = useCallback(() => {
-    if (transport === 'playing') {
-      // Stop
-      playingSourcesRef.current.forEach((s) => {
-        try { s.stop(); } catch {}
-      });
-      playingSourcesRef.current = [];
-      setTransport('stopped');
-      timeRef.current = getCtx().currentTime - startRef.current;
-      return;
-    }
-
-    // Play all clips
-    const ctx = getCtx();
-    const master = getMasterGain();
-    const anySolo = tracks.some((t) => t.solo);
-
-    for (const track of tracks) {
-      const effectiveMute = anySolo ? !track.solo : track.muted;
-      if (effectiveMute) continue;
-
-      for (const clip of track.clips) {
-        const gain = ctx.createGain();
-        gain.gain.value = 0.8;
-        gain.connect(master);
-
-        const src = ctx.createBufferSource();
-        src.buffer = clip.buffer;
-        src.connect(gain);
-        const offset = timeRef.current - clip.startTime;
-        if (offset >= clip.duration) continue; // clip already finished
-        const when = Math.max(0, -offset); // start delay if we're past clip start
-        const clipOffset = Math.max(0, offset);
-        src.start(ctx.currentTime + when, clipOffset, clip.duration - clipOffset);
-        playingSourcesRef.current.push(src);
-      }
-    }
-
-    setTransport('playing');
-  }, [transport, tracks, setTransport]);
-
-  const handleRecord = useCallback(async () => {
-    if (transport === 'recording') {
-      // Stop recording
-      if (!recordingRef.current) return;
-      const buffer = await recordingRef.current.stop();
-      recordingRef.current = null;
-
-      const armedId = armedTrackId;
-      if (armedId && buffer.duration > 0.1) {
-        overwriteClip(armedId, buffer, recordStartRef.current - startRef.current);
-      }
-      setTransport('stopped');
-      timeRef.current = getCtx().currentTime - startRef.current;
-      return;
-    }
-
-    if (!armedTrackId) return;
-
-    // Start recording
-    const rec = startRecording();
-    recordingRef.current = rec;
-    recordStartRef.current = getCtx().currentTime;
-
-    // Also play existing clips for monitoring
-    handlePlay();
-    setTransport('recording');
-  }, [transport, armedTrackId, setTransport, overwriteClip, handlePlay]);
 
   const fmtTime = (t: number) => {
-    const m = Math.floor(t / 60);
-    const s = Math.floor(t % 60);
-    const ms = Math.floor((t % 1) * 10);
+    const m = Math.floor(Math.max(0, t) / 60);
+    const s = Math.floor(Math.max(0, t) % 60);
+    const ms = Math.floor((Math.max(0, t) % 1) * 10);
     return `${m}:${s.toString().padStart(2, '0')}.${ms}`;
   };
+
+  const isPlaying = transport === 'playing' || transport === 'recording';
 
   return (
     <div className="transport-bar">
       <button
-        className={`transport-btn ${transport === 'playing' || transport === 'recording' ? 'active' : ''}`}
-        onClick={handlePlay}
+        className={`transport-btn ${isPlaying ? 'active' : ''}`}
+        onClick={onPlay}
         title="Space: Play/Stop"
       >
-        {transport === 'playing' || transport === 'recording' ? '■' : '▶'}
+        {isPlaying ? '■' : '▶'}
       </button>
       <button
         className={`transport-btn record ${transport === 'recording' ? 'active armed' : armedTrackId ? 'armed' : ''}`}
-        onClick={handleRecord}
-        title="R: Record (arms last selected track)"
-        disabled={!armedTrackId && transport !== 'recording'}
+        onClick={onRecord}
+        title="R: Record/Stop (arm a track first)"
       >
         ●
       </button>
-      <div className="bpm-display">{bpm}</div>
+      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 14, fontWeight: 700 }}>{bpm}</div>
       <span style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>BPM</span>
-      <div className="time-display mono">{fmtTime(time)}</div>
+      <div style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontSize: 16 }}>
+        {fmtTime(playheadTime)}
+      </div>
     </div>
   );
 }
 
-/* ── Track Lane Canvas ── */
-function TrackLane({ clips, patternIdx }: { clips: Clip[]; patternIdx: number }) {
+/* ── Track Lane ── */
+function TrackLane({
+  clips,
+  patternIdx,
+  playheadTime,
+}: {
+  clips: Clip[];
+  patternIdx: number;
+  playheadTime: number;
+}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const rect = canvas.parentElement!.getBoundingClientRect();
-    canvas.width = rect.width * 2;
-    canvas.height = rect.height * 2;
+    const parent = canvas.parentElement!;
+    const rect = parent.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
     canvas.style.width = rect.width + 'px';
     canvas.style.height = rect.height + 'px';
 
     const ctx = canvas.getContext('2d')!;
-    ctx.scale(2, 2);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    // Background with texture pattern
-    const pat = TRACK_PATTERNS[patternIdx % TRACK_PATTERNS.length];
-    ctx.fillStyle = pat.bg;
-    ctx.fillRect(0, 0, rect.width, rect.height);
+    const w = rect.width;
+    const h = rect.height;
 
-    // Draw texture overlay via a small canvas trick
-    // (simplified — just draw thin horizontal lines for the pattern feel)
-    ctx.strokeStyle = patternIdx === 0 ? '#eee' : '#ddd';
+    // Background: white (inverted in dark mode via CSS filter)
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, w, h);
+
+    // Subtle horizontal texture lines (always black on white)
+    ctx.strokeStyle = patternIdx === 0 ? '#e0e0e0' : '#d5d5d5';
     ctx.lineWidth = 0.5;
-    for (let y = 2; y < rect.height; y += 8) {
+    for (let y = 4; y < h; y += 8) {
       ctx.beginPath();
       ctx.moveTo(0, y);
-      ctx.lineTo(rect.width, y);
+      ctx.lineTo(w, y);
       ctx.stroke();
     }
 
-    // Draw clips
-    const pixelsPerSecond = 80;
+    // If no clips, show empty state
+    if (clips.length === 0) {
+      ctx.fillStyle = '#999';
+      ctx.font = '14px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('No clips recorded yet — arm track & press ● to record', w / 2, h / 2);
+      ctx.textAlign = 'start';
+    }
+
+    // Draw each clip
     for (const clip of clips) {
-      const x = clip.startTime * pixelsPerSecond;
-      const clipW = Math.max(20, clip.duration * pixelsPerSecond);
+      const x = clip.startTime * PX_PER_SEC;
+      const clipW = Math.max(30, clip.duration * PX_PER_SEC);
 
-      // Clip background
+      // Clip block (black)
       ctx.fillStyle = '#000';
-      ctx.fillRect(x, 2, clipW, rect.height - 4);
+      ctx.fillRect(x, 2, clipW, h - 4);
 
-      // Waveform inside clip
+      // Waveform (white line inside black block)
       const data = clip.buffer.getChannelData(0);
-      const step = Math.max(1, Math.floor(data.length / clipW));
-      ctx.strokeStyle = '#fff';
-      ctx.lineWidth = 0.8;
-      ctx.beginPath();
-      for (let px = 0; px < clipW; px++) {
-        const idx = Math.floor((px / clipW) * data.length);
-        const sample = data[Math.min(idx, data.length - 1)];
-        const y = 2 + ((sample + 1) / 2) * (rect.height - 4);
-        if (px === 0) ctx.moveTo(x + px, y);
-        else ctx.lineTo(x + px, y);
+      if (data.length > 0) {
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (let px = 0; px < clipW; px += 2) {
+          const idx = Math.floor((px / clipW) * data.length);
+          const sample = data[Math.min(idx, data.length - 1)];
+          const y = 2 + ((sample + 1) / 2) * (h - 4);
+          if (px === 0) ctx.moveTo(x + px, y);
+          else ctx.lineTo(x + px, y);
+        }
+        ctx.stroke();
       }
-      ctx.stroke();
 
       // Clip label
       ctx.fillStyle = '#fff';
       ctx.font = '9px "JetBrains Mono", monospace';
       ctx.fillText(clip.name, x + 4, 14);
     }
-  }, [clips, patternIdx]);
+
+    // Draw playhead
+    const px = playheadTime * PX_PER_SEC;
+    if (px >= 0 && px < w + 50) {
+      ctx.strokeStyle = '#ff0000';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.moveTo(px, 0);
+      ctx.lineTo(px, h);
+      ctx.stroke();
+
+      // Small triangle at top
+      ctx.fillStyle = '#ff0000';
+      ctx.beginPath();
+      ctx.moveTo(px - 5, 0);
+      ctx.lineTo(px + 5, 0);
+      ctx.lineTo(px, 8);
+      ctx.closePath();
+      ctx.fill();
+    }
+  }, [clips, playheadTime, patternIdx]);
 
   return (
     <div className="track-lane">
@@ -249,12 +207,25 @@ function TrackLane({ clips, patternIdx }: { clips: Clip[]; patternIdx: number })
 }
 
 /* ── Track Row ── */
-function TrackRow({ track, idx }: { track: { id: string; name: string; armed: boolean; muted: boolean; solo: boolean; clips: Clip[] }; idx: number }) {
+function TrackRow({
+  track,
+  idx,
+  playheadTime,
+}: {
+  track: { id: string; name: string; armed: boolean; muted: boolean; solo: boolean; clips: Clip[] };
+  idx: number;
+  playheadTime: number;
+}) {
   const toggleMute = useStore((s) => s.toggleMute);
   const toggleSolo = useStore((s) => s.toggleSolo);
   const toggleArm = useStore((s) => s.toggleArm);
   const removeTrack = useStore((s) => s.removeTrack);
   const trackCount = useStore((s) => s.tracks.length);
+  const armedTrackId = useStore((s) => s.armedTrackId);
+  const transport = useStore((s) => s.transport);
+
+  // Only one track can be armed at a time, and only when stopped
+  const canArm = transport === 'stopped' || (transport === 'recording' && track.armed);
 
   return (
     <div className="track-row">
@@ -263,30 +234,38 @@ function TrackRow({ track, idx }: { track: { id: string; name: string; armed: bo
         <div className="track-btns">
           <button
             className={`track-btn arm ${track.armed ? 'on' : ''}`}
-            onClick={() => toggleArm(track.id)}
+            onClick={() => canArm && toggleArm(track.id)}
+            disabled={!canArm}
+            title="Arm for recording"
           >
-            REC
+            {track.armed ? '⬤ REC' : 'REC'}
           </button>
           <button
             className={`track-btn ${track.muted ? 'on' : ''}`}
             onClick={() => toggleMute(track.id)}
+            title="Mute"
           >
             M
           </button>
           <button
             className={`track-btn ${track.solo ? 'on' : ''}`}
             onClick={() => toggleSolo(track.id)}
+            title="Solo"
           >
             S
           </button>
           {trackCount > 1 && (
-            <button className="track-btn" onClick={() => removeTrack(track.id)}>
+            <button
+              className="track-btn"
+              onClick={() => removeTrack(track.id)}
+              title="Remove track"
+            >
               ✕
             </button>
           )}
         </div>
       </div>
-      <TrackLane clips={track.clips} patternIdx={idx} />
+      <TrackLane clips={track.clips} patternIdx={idx} playheadTime={playheadTime} />
     </div>
   );
 }
@@ -295,43 +274,176 @@ function TrackRow({ track, idx }: { track: { id: string; name: string; armed: bo
 export function App() {
   const tracks = useStore((s) => s.tracks);
   const addTrack = useStore((s) => s.addTrack);
+  const transport = useStore((s) => s.transport);
+  const setTransport = useStore((s) => s.setTransport);
+  const armedTrackId = useStore((s) => s.armedTrackId);
+  const clearArmed = useStore((s) => s.clearArmed);
+  const overwriteClip = useStore((s) => s.overwriteClip);
+
+  const [playheadTime, setPlayheadTime] = useState(0);
+
+  // Refs for the transport engine
+  const playingSourcesRef = useRef<AudioBufferSourceNode[]>([]);
+  const recordingRef = useRef<{ stop: () => Promise<AudioBuffer> } | null>(null);
+  const recordStartTimeRef = useRef(0);
+  const playheadRef = useRef(0);
+  const startCtxTimeRef = useRef(0);
+  const rafRef = useRef(0);
+
+  // Playhead animation
+  useEffect(() => {
+    if (transport === 'playing' || transport === 'recording') {
+      startCtxTimeRef.current = getCtx().currentTime - playheadRef.current;
+      const tick = () => {
+        const t = getCtx().currentTime - startCtxTimeRef.current;
+        playheadRef.current = t;
+        setPlayheadTime(t);
+        rafRef.current = requestAnimationFrame(tick);
+      };
+      rafRef.current = requestAnimationFrame(tick);
+      return () => cancelAnimationFrame(rafRef.current);
+    }
+  }, [transport]);
+
+  // Stop all playing sources
+  const stopAllSources = useCallback(() => {
+    playingSourcesRef.current.forEach((s) => {
+      try { s.stop(); } catch {}
+    });
+    playingSourcesRef.current = [];
+  }, []);
+
+  // Start playing all clips from current playhead position
+  const startPlayback = useCallback(() => {
+    stopAllSources();
+    const ctx = getCtx();
+    const master = getMasterGain();
+    const anySolo = tracks.some((t) => t.solo);
+
+    for (const track of tracks) {
+      const effectiveMute = anySolo ? !track.solo : track.muted;
+      if (effectiveMute) continue;
+
+      for (const clip of track.clips) {
+        const clipEnd = clip.startTime + clip.duration;
+        // Skip clips entirely before the playhead
+        if (clipEnd <= playheadRef.current) continue;
+
+        const offset = playheadRef.current - clip.startTime;
+        const clipOffset = Math.max(0, offset);
+        const when = Math.max(0, -offset);
+        const remaining = clip.duration - clipOffset;
+
+        const gain = ctx.createGain();
+        gain.gain.value = 0.8;
+        gain.connect(master);
+
+        const src = ctx.createBufferSource();
+        src.buffer = clip.buffer;
+        src.connect(gain);
+        src.start(ctx.currentTime + when, clipOffset, remaining);
+        playingSourcesRef.current.push(src);
+      }
+    }
+  }, [tracks, stopAllSources]);
+
+  // ── Transport handlers ──
+  const handlePlay = useCallback(() => {
+    if (transport === 'playing') {
+      // Stop
+      stopAllSources();
+      setTransport('stopped');
+      return;
+    }
+    if (transport === 'recording') {
+      // Can't play while recording — stop recording first
+      return;
+    }
+    // Start playing
+    startPlayback();
+    setTransport('playing');
+  }, [transport, setTransport, stopAllSources, startPlayback]);
+
+  const handleRecord = useCallback(async () => {
+    if (transport === 'recording') {
+      // Stop recording
+      stopAllSources();
+
+      if (recordingRef.current) {
+        const buffer = await recordingRef.current.stop();
+        recordingRef.current = null;
+
+        const armedId = armedTrackId;
+        if (armedId && buffer.duration > 0.1) {
+          const startTime = recordStartTimeRef.current - startCtxTimeRef.current;
+          overwriteClip(armedId, buffer, Math.max(0, startTime));
+        }
+      }
+
+      // Don't reset playhead — it stays where recording stopped
+      clearArmed();
+      setTransport('stopped');
+      return;
+    }
+
+    if (transport === 'playing') {
+      // Can't start recording while playing — stop first
+      return;
+    }
+
+    if (!armedTrackId) return; // nothing armed
+
+    // Start recording: begin playback for monitoring + start mic capture
+    startPlayback();
+    const rec = startRecording();
+    recordingRef.current = rec;
+    recordStartTimeRef.current = getCtx().currentTime;
+    setTransport('recording');
+  }, [transport, armedTrackId, setTransport, clearArmed, overwriteClip, stopAllSources, startPlayback]);
 
   // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement) return;
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
       switch (e.code) {
         case 'Space':
           e.preventDefault();
-          // Trigger play button
-          const playBtn = document.querySelector<HTMLButtonElement>('.transport-btn:first-of-type');
-          playBtn?.click();
+          handlePlay();
           break;
         case 'KeyR':
           e.preventDefault();
-          const recBtn = document.querySelector<HTMLButtonElement>('.transport-btn.record');
-          recBtn?.click();
+          handleRecord();
           break;
       }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, []);
+  }, [handlePlay, handleRecord]);
 
   return (
     <div className="daw-app">
       <PatternDefs />
-      <TransportBar />
+      <TransportBar playheadTime={playheadTime} onPlay={handlePlay} onRecord={handleRecord} />
       <div className="tracks-container">
         {tracks.map((track, i) => (
-          <TrackRow key={track.id} track={track} idx={i} />
+          <TrackRow key={track.id} track={track} idx={i} playheadTime={playheadTime} />
         ))}
         <button className="add-track-btn" onClick={addTrack}>
           + Add Track
         </button>
       </div>
       <div className="help-bar">
-        [SPACE] play/stop &nbsp; [R] record &nbsp; REC=arm track &nbsp; M=mute &nbsp; S=solo
+        [SPACE] play/stop &nbsp; [R] record/stop &nbsp; arm a track (REC) before recording
+        {armedTrackId && transport === 'stopped' && (
+          <span style={{ marginLeft: 12, fontWeight: 700 }}>
+            ⬤ {tracks.find((t) => t.id === armedTrackId)?.name} armed — press ● or R to record
+          </span>
+        )}
+        {!armedTrackId && transport === 'stopped' && (
+          <span style={{ marginLeft: 12, color: 'var(--color-text-muted)' }}>
+            Arm a track first, then record
+          </span>
+        )}
       </div>
     </div>
   );

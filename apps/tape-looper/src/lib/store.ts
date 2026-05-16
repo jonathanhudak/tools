@@ -8,18 +8,16 @@ interface DAWStore {
   bpm: number;
   armedTrackId: string | null;
 
-  // Track actions
   addTrack: () => void;
   removeTrack: (id: string) => void;
   toggleMute: (id: string) => void;
   toggleSolo: (id: string) => void;
   toggleArm: (id: string) => void;
+  clearArmed: () => void;
 
-  // Clip actions
   addClipToTrack: (trackId: string, clip: Clip) => void;
   overwriteClip: (trackId: string, buffer: AudioBuffer, startTime: number) => void;
 
-  // Transport
   setTransport: (s: TransportState) => void;
   setBpm: (bpm: number) => void;
 }
@@ -37,7 +35,7 @@ function freshTrack(): Track {
 }
 
 export const useStore = create<DAWStore>((set) => ({
-  tracks: [freshTrack(), freshTrack(), freshTrack()],
+  tracks: [freshTrack()],
   transport: 'stopped',
   bpm: 120,
   armedTrackId: null,
@@ -67,6 +65,12 @@ export const useStore = create<DAWStore>((set) => ({
         ...t,
         armed: t.id === id ? !t.armed : false,
       })),
+    })),
+
+  clearArmed: () =>
+    set((s) => ({
+      armedTrackId: null,
+      tracks: s.tracks.map((t) => ({ ...t, armed: false })),
     })),
 
   addClipToTrack: (trackId, clip) =>
