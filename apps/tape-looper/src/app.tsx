@@ -116,6 +116,9 @@ function TransportBar({
   saveStatus,
   midiConnected,
   onConnectMIDI,
+  octaveOffset,
+  onOctaveDown,
+  onOctaveUp,
 }: {
   playheadTime: number;
   onPlay: () => void;
@@ -127,6 +130,9 @@ function TransportBar({
   saveStatus: 'idle' | 'saving' | 'saved';
   midiConnected: boolean;
   onConnectMIDI: () => void;
+  octaveOffset: number;
+  onOctaveDown: () => void;
+  onOctaveUp: () => void;
 }) {
   const transport = useStore((s) => s.transport);
   const bpm = useStore((s) => s.bpm);
@@ -181,6 +187,12 @@ function TransportBar({
           style={{ fontFamily: 'var(--font-mono)', fontSize: 14, fontWeight: 700, width: 48, border: '2px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', textAlign: 'center', padding: '2px 0' }}
           title="BPM"
         />
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 2 }} title="Octave (Z/X)">
+          <button className="transport-btn" onClick={onOctaveDown} disabled={octaveOffset <= -4}>Z</button>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, minWidth: 36, textAlign: 'center' }}>Oct {octaveOffset >= 0 ? '+' : ''}{octaveOffset}</span>
+          <button className="transport-btn" onClick={onOctaveUp} disabled={octaveOffset >= 4}>X</button>
+        </div>
 
         <div style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontSize: 16 }}>{fmtTime(playheadTime)}</div>
       </div>
@@ -507,6 +519,8 @@ export function App() {
   const zoom = useStore((s) => s.zoom);
 
   const [playheadTime, setPlayheadTime] = useState(0);
+  const [octaveOffset, setOctaveOffset] = useState(0);
+  const octaveOffsetRef = useRef(0);
   // MIDI — try auto-init (works if permission granted), fallback to button
   const [midiConnected, setMIDIConnected] = useState(false);
   const connectMIDI = useCallback(async () => {
@@ -839,14 +853,22 @@ export function App() {
     activeOscillatorsRef.current.clear();
   }, []);
 
+  // Keep ref in sync so keydown handler reads latest octave without re-registering
+  useEffect(() => { octaveOffsetRef.current = octaveOffset; }, [octaveOffset]);
+
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
 
       const key = e.key.toLowerCase();
+
+      // Octave shift (Ableton-style: Z = down, X = up)
+      if (key === 'z') { e.preventDefault(); setOctaveOffset((o) => Math.max(-4, o - 1)); return; }
+      if (key === 'x') { e.preventDefault(); setOctaveOffset((o) => Math.min(4, o + 1)); return; }
+
       if (PIANO_KEY_SET.has(key)) {
         if (e.repeat) return;
-        const midiNote = PIANO_NOTE_MAP[key];
+        const midiNote = Math.max(0, Math.min(127, PIANO_NOTE_MAP[key] + octaveOffsetRef.current * 12));
         if (e.type === 'keydown') {
           playNote(midiNote);
         }
@@ -867,7 +889,7 @@ export function App() {
     const keyupHandler = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
       if (PIANO_KEY_SET.has(key)) {
-        const midiNote = PIANO_NOTE_MAP[key];
+        const midiNote = Math.max(0, Math.min(127, PIANO_NOTE_MAP[key] + octaveOffsetRef.current * 12));
         stopNote(midiNote);
       }
     };
@@ -903,7 +925,7 @@ export function App() {
   return (
     <div className="daw-app">
       <PatternDefs />
-      <TransportBar playheadTime={playheadTime} onPlay={handlePlay} onRecord={handleRecord} onSeekToStart={handleSeekToStart} onOpenProjects={() => setProjectsOpen(true)} onNewProject={handleNewProject} onSave={handleSave} saveStatus={saveStatus} midiConnected={midiConnected} onConnectMIDI={connectMIDI} />
+      <TransportBar playheadTime={playheadTime} onPlay={handlePlay} onRecord={handleRecord} onSeekToStart={handleSeekToStart} onOpenProjects={() => setProjectsOpen(true)} onNewProject={handleNewProject} onSave={handleSave} saveStatus={saveStatus} midiConnected={midiConnected} onConnectMIDI={connectMIDI} octaveOffset={octaveOffset} onOctaveDown={() => setOctaveOffset((o) => Math.max(-4, o - 1))} onOctaveUp={() => setOctaveOffset((o) => Math.min(4, o + 1))} />
       <div className="tracks-container">
         {tracks.map((track, i) => (
           <TrackRow key={track.id} track={track} idx={i} playheadTime={playheadTime} transport={transport} onSeek={seekTo} zoom={zoom} />

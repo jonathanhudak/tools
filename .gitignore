@@ -11,3 +11,4 @@ package-lock.json
 docs/music-practice/assets/
 apps/music-practice/.tanstack/
 .gstack/
+.hermes
