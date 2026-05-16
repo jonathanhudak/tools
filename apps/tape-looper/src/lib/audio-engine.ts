@@ -111,3 +111,17 @@ export function dispose(): void {
   ctx = null;
   masterGain = null;
 }
+
+/** Boost gain of an AudioBuffer by multiplying sample values */
+export function boostGain(buffer: AudioBuffer, multiplier: number): AudioBuffer {
+  const c = getCtx();
+  const boosted = c.createBuffer(buffer.numberOfChannels, buffer.length, buffer.sampleRate);
+  for (let ch = 0; ch < buffer.numberOfChannels; ch++) {
+    const src = buffer.getChannelData(ch);
+    const dst = boosted.getChannelData(ch);
+    for (let i = 0; i < src.length; i++) {
+      dst[i] = Math.max(-1, Math.min(1, src[i] * multiplier));
+    }
+  }
+  return boosted;
+}

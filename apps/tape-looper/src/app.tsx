@@ -1,6 +1,6 @@
 import { useRef, useEffect, useCallback, useState } from 'react';
 import { useStore } from './lib/store';
-import { getCtx, getMasterGain, startRecording } from './lib/audio-engine';
+import { getCtx, getMasterGain, startRecording, boostGain } from './lib/audio-engine';
 import type { Clip } from './lib/types';
 
 /* ── SVG Pattern Defs ── */
@@ -420,25 +420,34 @@ export function App() {
       setTransport('stopped');
       return;
     }
-    if (transport === 'recording') return;
+    if (transport === 'recording') {
+      // Stop recording the same way handleRecord does
+      stopRecording();
+      return;
+    }
     startPlayback();
     setTransport('playing');
   }, [transport, setTransport, stopAllSources, startPlayback]);
 
+  const stopRecording = useCallback(async () => {
+    stopAllSources();
+    if (recordingRef.current) {
+      const buffer = await recordingRef.current.stop();
+      recordingRef.current = null;
+      const armedId = armedTrackId;
+      if (armedId && buffer.duration > 0.1) {
+        const boosted = boostGain(buffer, 4.0);
+        const startTime = recordStartTimeRef.current - startCtxTimeRef.current;
+        overwriteClip(armedId, boosted, Math.max(0, startTime));
+      }
+    }
+    clearArmed();
+    setTransport('stopped');
+  }, [armedTrackId, setTransport, clearArmed, overwriteClip, stopAllSources]);
+
   const handleRecord = useCallback(async () => {
     if (transport === 'recording') {
-      stopAllSources();
-      if (recordingRef.current) {
-        const buffer = await recordingRef.current.stop();
-        recordingRef.current = null;
-        const armedId = armedTrackId;
-        if (armedId && buffer.duration > 0.1) {
-          const startTime = recordStartTimeRef.current - startCtxTimeRef.current;
-          overwriteClip(armedId, buffer, Math.max(0, startTime));
-        }
-      }
-      clearArmed();
-      setTransport('stopped');
+      await stopRecording();
       return;
     }
     if (transport === 'playing') return;
@@ -449,7 +458,7 @@ export function App() {
     recordingRef.current = rec;
     recordStartTimeRef.current = getCtx().currentTime;
     setTransport('recording');
-  }, [transport, armedTrackId, setTransport, clearArmed, overwriteClip, stopAllSources, startPlayback]);
+  }, [transport, armedTrackId, setTransport, stopRecording, startPlayback]);
 
   const handleSeekToStart = useCallback(() => {
     seekTo(0);
