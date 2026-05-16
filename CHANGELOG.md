@@ -1,3 +1,10 @@
+## [1.40.1](https://github.com/jonathanhudak/tools/compare/v1.40.0...v1.40.1) (2026-05-16)
+
+
+### Bug Fixes
+
+* **tape-looper:** add playhead, fix transport state machine, 1-track default ([f001630](https://github.com/jonathanhudak/tools/commit/f001630dbc08fa4b05cbf0b2403fe679bfba8787))
+
 # [1.40.0](https://github.com/jonathanhudak/tools/compare/v1.39.0...v1.40.0) (2026-05-16)
 
 
