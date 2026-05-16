@@ -1,3 +1,10 @@
+# [1.41.0](https://github.com/jonathanhudak/tools/compare/v1.40.1...v1.41.0) (2026-05-16)
+
+
+### Features
+
+* **tape-looper:** jump-to-start button, click/drag playhead to seek ([52a9816](https://github.com/jonathanhudak/tools/commit/52a981667de373692985c5fd3eea5f7dfe690c3e))
+
 ## [1.40.1](https://github.com/jonathanhudak/tools/compare/v1.40.0...v1.40.1) (2026-05-16)
 
 
