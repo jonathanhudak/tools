@@ -529,17 +529,22 @@ export function App() {
   // MIDI — try auto-init (works if permission granted), fallback to button
   const [midiConnected, setMIDIConnected] = useState(false);
   const [midiError, setMidiError] = useState<string | null>(null);
+  // Wrap setMIDIConnected so connecting via onstatechange also clears error
+  const handleMIDIConnected = useCallback((connected: boolean) => {
+    setMIDIConnected(connected);
+    if (connected) setMidiError(null);
+  }, []);
   const connectMIDI = useCallback(async () => {
     setMidiError(null);
     const result = await initMIDI();
     if (result.ok) {
-      setMIDIConnected(result.connected);
-      if (!result.connected) setMidiError('No MIDI device found');
+      handleMIDIConnected(result.connected);
+      if (!result.connected) setMidiError('No MIDI device found — plug in keyboard and try again');
     } else {
       setMIDIConnected(false);
       setMidiError(result.reason);
     }
-  }, []);
+  }, [handleMIDIConnected]);
 
   // Auto-detect MIDI on mount (works if permission already granted)
   useEffect(() => { connectMIDI(); }, [connectMIDI]);
@@ -932,7 +937,7 @@ export function App() {
 
   // Wire MIDI callbacks — re-wired when playNote/stopNote change
   useEffect(() => {
-    setMIDICallbacks(playNote, stopNote, setMIDIConnected);
+    setMIDICallbacks(playNote, stopNote, handleMIDIConnected);
   }, [playNote, stopNote]);
 
   return (

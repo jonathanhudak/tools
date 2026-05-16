@@ -21,7 +21,6 @@ export async function initMIDI(): Promise<MIDIInitResult> {
   }
   try {
     midiAccess = await navigator.requestMIDIAccess({ sysex: false });
-    connectFirstInput();
 
     midiAccess.onstatechange = (e) => {
       const port = (e as MIDIConnectionEvent).port;
@@ -32,8 +31,19 @@ export async function initMIDI(): Promise<MIDIInitResult> {
       connectFirstInput();
     };
 
+    connectFirstInput();
+
+    // Android enumerates devices async after permission grant — retry a few times
+    if (!midiInput) {
+      for (const delay of [200, 500, 1000]) {
+        await new Promise((r) => setTimeout(r, delay));
+        connectFirstInput();
+        if (midiInput) break;
+      }
+    }
+
     const inputCount = [...midiAccess.inputs.values()].length;
-    console.log(`[MIDI] access granted, ${inputCount} input(s) found`);
+    console.log(`[MIDI] access granted, ${inputCount} input(s) found, connected=${midiInput !== null}`);
     return { ok: true, connected: midiInput !== null };
   } catch (err) {
     const reason = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
