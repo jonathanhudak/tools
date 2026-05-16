@@ -44,6 +44,13 @@ const toolMetadata = {
     type: 'web-app',
     hasDeployment: true,
   },
+  'tape-looper': {
+    name: 'Tape Looper',
+    description: 'Browser multitrack tape-machine DAW. Record audio, overwrite like analog tape, play back multiple tracks. Minimal B&W interface optimized for Daylight e-ink.',
+    techStack: ['React', 'TypeScript', 'Vite', 'zustand', 'Web Audio API'],
+    type: 'web-app',
+    hasDeployment: true,
+  },
   'url-content-extractor': {
     name: 'URL Content Extractor',
     description: 'Extract clean, readable text from any URL. Perfect for quickly grabbing article content or blog posts without the clutter. Mobile-optimized with dark mode.',

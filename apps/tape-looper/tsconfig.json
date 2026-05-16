@@ -1,0 +1,16 @@
+{
+  "extends": "@tools/typescript-config/react.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@hudak/ui/*": ["../../packages/ui/src/*"]
+    },
+    "types": ["vite/client"],
+    "noEmit": true,
+    "allowJs": true
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"],
+  "references": [{ "path": "./tsconfig.node.json" }]
+}
