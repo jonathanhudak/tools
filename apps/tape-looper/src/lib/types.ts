@@ -2,11 +2,20 @@
 export interface Clip {
   id: string;
   trackId: string;
-  startTime: number;   // seconds from project start
-  duration: number;    // seconds
+  startTime: number;
+  duration: number;
   buffer: AudioBuffer;
   name: string;
 }
+
+/** NoteEvent: a MIDI note recorded in the piano roll */
+export interface NoteEvent {
+  midiNote: number;
+  startTime: number;
+  duration: number;
+}
+
+export type TrackType = 'audio' | 'midi';
 
 /** Track: a horizontal lane */
 export interface Track {
@@ -15,13 +24,9 @@ export interface Track {
   armed: boolean;
   muted: boolean;
   solo: boolean;
+  trackType: TrackType;
   clips: Clip[];
+  notes: NoteEvent[];
 }
 
 export type TransportState = 'stopped' | 'playing' | 'recording';
-
-export interface DAWState {
-  tracks: Track[];
-  transport: TransportState;
-  bpm: number;
-}

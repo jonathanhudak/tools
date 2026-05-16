@@ -1,12 +1,15 @@
 import { create } from 'zustand';
-import type { Track, TransportState, Clip } from './types';
+import type { Track, TransportState, Clip, NoteEvent, TrackType } from './types';
 import { applyOverwrite } from './tape-engine';
+import { applyNoteOverwrite } from './midi-engine';
 
 interface DAWStore {
   tracks: Track[];
   transport: TransportState;
   bpm: number;
   armedTrackId: string | null;
+  inputGain: number;
+  zoom: number;
 
   addTrack: () => void;
   removeTrack: (id: string) => void;
@@ -14,12 +17,14 @@ interface DAWStore {
   toggleSolo: (id: string) => void;
   toggleArm: (id: string) => void;
   clearArmed: () => void;
+  toggleTrackType: (id: string) => void;
 
-  addClipToTrack: (trackId: string, clip: Clip) => void;
   overwriteClip: (trackId: string, buffer: AudioBuffer, startTime: number) => void;
+  overwriteNotes: (trackId: string, notes: NoteEvent[], startTime: number) => void;
 
   setTransport: (s: TransportState) => void;
-  setBpm: (bpm: number) => void;
+  setInputGain: (gain: number) => void;
+  setZoom: (zoom: number) => void;
 }
 
 let trackNum = 1;
@@ -30,7 +35,9 @@ function freshTrack(): Track {
     armed: false,
     muted: false,
     solo: false,
+    trackType: 'audio',
     clips: [],
+    notes: [],
   };
 }
 
@@ -39,6 +46,8 @@ export const useStore = create<DAWStore>((set) => ({
   transport: 'stopped',
   bpm: 120,
   armedTrackId: null,
+  inputGain: 4,
+  zoom: 80,
 
   addTrack: () => set((s) => ({ tracks: [...s.tracks, freshTrack()] })),
 
@@ -73,11 +82,11 @@ export const useStore = create<DAWStore>((set) => ({
       tracks: s.tracks.map((t) => ({ ...t, armed: false })),
     })),
 
-  addClipToTrack: (trackId, clip) =>
+  toggleTrackType: (id) =>
     set((s) => ({
       tracks: s.tracks.map((t) =>
-        t.id === trackId
-          ? { ...t, clips: [...t.clips, clip].sort((a, b) => a.startTime - b.startTime) }
+        t.id === id
+          ? { ...t, trackType: t.trackType === 'audio' ? 'midi' : ('audio' as TrackType) }
           : t,
       ),
     })),
@@ -91,6 +100,16 @@ export const useStore = create<DAWStore>((set) => ({
       ),
     })),
 
+  overwriteNotes: (trackId, notes, startTime) =>
+    set((s) => ({
+      tracks: s.tracks.map((t) =>
+        t.id === trackId
+          ? { ...t, notes: applyNoteOverwrite(t.notes, notes, startTime) }
+          : t,
+      ),
+    })),
+
   setTransport: (transport) => set({ transport }),
-  setBpm: (bpm) => set({ bpm }),
+  setInputGain: (inputGain) => set({ inputGain }),
+  setZoom: (zoom) => set({ zoom }),
 }));

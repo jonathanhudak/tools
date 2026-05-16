@@ -144,13 +144,14 @@ body {
 .tracks-container {
   flex: 1;
   overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: auto;
 }
 
 .track-row {
   display: flex;
   border-bottom: 1px solid var(--color-border);
   min-height: 100px;
+  /* Don't clip — tracks stretch to content width */
 }
 
 .track-controls {
@@ -214,13 +215,71 @@ body {
   flex: 1;
   position: relative;
   min-height: 100px;
-  overflow: hidden;
+  overflow-x: visible;
+  overflow-y: hidden;
 }
 
 .track-lane canvas {
   display: block;
-  width: 100%;
   height: 100%;
+}
+
+/* ── Gain Select ── */
+.gain-select {
+  padding: 4px 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  border: 2px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text);
+  cursor: pointer;
+  min-height: 36px;
+}
+
+/* ── Piano HUD ── */
+.piano-hud {
+  display: flex;
+  border-bottom: 2px solid var(--color-border);
+  background: var(--color-surface);
+  padding: 4px 8px;
+  gap: 2px;
+  overflow-x: auto;
+}
+
+.piano-key {
+  flex: 1;
+  min-width: 32px;
+  height: 48px;
+  border: 2px solid var(--color-border);
+  background: var(--color-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  cursor: default;
+  transition: background 0.05s;
+}
+
+.piano-key.active {
+  background: var(--color-text);
+  color: var(--color-bg);
+}
+
+.piano-key-label {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.piano-key-note {
+  font-size: 9px;
+  color: inherit;
+  opacity: 0.6;
+}
+
+/* ── Track type badge ── */
+.track-type-badge {
+  font-family: var(--font-mono);
 }
 
 /* ── Add Track Button ── */
