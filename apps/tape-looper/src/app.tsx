@@ -131,6 +131,7 @@ function TransportBar({
 }) {
   const transport = useStore((s) => s.transport);
   const bpm = useStore((s) => s.bpm);
+  const setBpm = useStore((s) => s.setBpm);
   const armedTrackId = useStore((s) => s.armedTrackId);
   const inputGain = useStore((s) => s.inputGain);
   const setInputGain = useStore((s) => s.setInputGain);
@@ -148,51 +149,42 @@ function TransportBar({
 
   return (
     <div className="transport-bar">
-      {/* Project controls */}
-      <button className="track-btn" onClick={onOpenProjects} style={{ fontWeight: 700, fontSize: 13 }}>📂 Load</button>
-      <button className="track-btn" onClick={onNewProject}>+ New</button>
-      <button className="track-btn" onClick={onSave}>{saveStatus === 'saved' ? '✓ Saved' : '💾 Save'}</button>
-      <EditableProjectName />
-      <span style={{ width: 8, borderLeft: '1px solid var(--color-border)', height: 24 }} />
+      {/* Row 1: Project controls — aligned right */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 'auto' }}>
+        <EditableProjectName />
+        <button className="track-btn" onClick={onOpenProjects}>📂 Load</button>
+        <button className="track-btn" onClick={onNewProject}>+ New</button>
+        <button className="track-btn" onClick={onSave}>{saveStatus === 'saved' ? '✓ Saved' : '💾 Save'}</button>
+        {!midiConnected && (
+          <button className="track-btn" onClick={onConnectMIDI} title="Connect MIDI keyboard">🎹 MIDI</button>
+        )}
+        {midiConnected && (
+          <span style={{ fontSize: 14 }} title="MIDI connected">🎹</span>
+        )}
+      </div>
+      {/* Row 2: Playback controls — aligned left */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+        <button className="transport-btn" onClick={onSeekToStart} title="Jump to start" disabled={isPlaying}>⏮</button>
+        <button className={`transport-btn ${isPlaying ? 'active' : ''}`} onClick={onPlay} title="Play/Stop">{isPlaying ? '■' : '▶'}</button>
+        <button className={`transport-btn record ${transport === 'recording' ? 'active armed' : armedTrackId ? 'armed' : ''}`} onClick={onRecord} title="Record">●</button>
 
-      <button className="transport-btn" onClick={onSeekToStart} title="Jump to start [H]" disabled={isPlaying}>⏮</button>
-      <button className={`transport-btn ${isPlaying ? 'active' : ''}`} onClick={onPlay} title="Play/Stop [Space]">{isPlaying ? '■' : '▶'}</button>
-      <button className={`transport-btn record ${transport === 'recording' ? 'active armed' : armedTrackId ? 'armed' : ''}`} onClick={onRecord} title="Record [R]">●</button>
+        <select className="gain-select" value={inputGain} onChange={(e) => setInputGain(Number(e.target.value))} title="Input gain">
+          {[1, 2, 3, 4, 6, 8, 10, 14, 20].map((g) => (<option key={g} value={g}>{g}×</option>))}
+        </select>
 
-      <span style={{ width: 8 }} />
+        <button className="transport-btn" onClick={() => setZoom(Math.max(10, zoom - 30))}>−</button>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, minWidth: 32, textAlign: 'center' }}>{zoom}</span>
+        <button className="transport-btn" onClick={() => setZoom(Math.min(500, zoom + 30))}>+</button>
 
-      {/* Gain */}
-      <select
-        className="gain-select"
-        value={inputGain}
-        onChange={(e) => setInputGain(Number(e.target.value))}
-        title="Input gain"
-      >
-        {[1, 2, 3, 4, 6, 8, 10, 14, 20].map((g) => (
-          <option key={g} value={g}>{g}× gain</option>
-        ))}
-      </select>
+        <input
+          type="number" min={20} max={300} value={bpm}
+          onChange={(e) => setBpm(Math.max(20, Math.min(300, Number(e.target.value) || 120)))}
+          style={{ fontFamily: 'var(--font-mono)', fontSize: 14, fontWeight: 700, width: 48, border: '2px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', textAlign: 'center', padding: '2px 0' }}
+          title="BPM"
+        />
 
-      {/* Zoom */}
-      <button className="transport-btn" onClick={() => setZoom(Math.max(10, zoom - 30))} title="Zoom out [↓]">−</button>
-      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, minWidth: 36, textAlign: 'center' }}>{zoom}px/s</span>
-      <button className="transport-btn" onClick={() => setZoom(Math.min(500, zoom + 30))} title="Zoom in [↑]">+</button>
-
-      <span style={{ width: 8 }} />
-      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 14, fontWeight: 700 }}>{bpm}</span>
-      <span style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>BPM</span>
-
-      {!midiConnected && (
-        <button className="track-btn" onClick={onConnectMIDI} style={{ marginLeft: 4 }} title="Connect MIDI keyboard">🎹 MIDI</button>
-      )}
-      {midiConnected && (
-        <span style={{ fontSize: 10, color: 'var(--color-text-muted)', fontWeight: 700 }}>🎹</span>
-      )}
-
-      <div style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontSize: 16 }}>{fmtTime(playheadTime)}</div>
-      <span style={{ fontSize: 10, color: 'var(--color-text-muted)', marginLeft: 12, whiteSpace: 'nowrap' }}>
-        [Space] play · [R] rec · [H] start · [↑↓] zoom
-      </span>
+        <div style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontSize: 16 }}>{fmtTime(playheadTime)}</div>
+      </div>
     </div>
   );
 }
@@ -517,12 +509,15 @@ export function App() {
 
   const [playheadTime, setPlayheadTime] = useState(0);
   const [activeNotes, setActiveNotes] = useState<Set<number>>(new Set());
-  // MIDI keyboard — requires user gesture, init on first click
+  // MIDI keyboard — try auto-init (works if permission granted), fallback to button
   const [midiConnected, setMIDIConnected] = useState(false);
   const connectMIDI = useCallback(async () => {
     const connected = await initMIDI();
     setMIDIConnected(connected);
   }, []);
+
+  // Auto-detect MIDI on mount (works if permission already granted)
+  useEffect(() => { connectMIDI(); }, [connectMIDI]);
 
   const playingSourcesRef = useRef<AudioBufferSourceNode[]>([]);
   const recordingRef = useRef<{ stop: () => Promise<AudioBuffer> } | null>(null);

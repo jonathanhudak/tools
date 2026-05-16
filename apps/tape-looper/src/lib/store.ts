@@ -33,6 +33,7 @@ interface DAWStore {
   setTransport: (s: TransportState) => void;
   setInputGain: (gain: number) => void;
   setZoom: (zoom: number) => void;
+  setBpm: (bpm: number) => void;
 }
 
 let trackNum = 1;
@@ -120,4 +121,5 @@ export const useStore = create<DAWStore>((set) => ({
   setTransport: (transport) => set({ transport }),
   setInputGain: (inputGain) => set({ inputGain }),
   setZoom: (zoom) => set({ zoom }),
+  setBpm: (bpm) => set({ bpm }),
 }));
