@@ -1,3 +1,10 @@
+## [1.45.2](https://github.com/jonathanhudak/tools/compare/v1.45.1...v1.45.2) (2026-05-16)
+
+
+### Bug Fixes
+
+* **tape-looper:** retry MIDI device scan after permission grant ([b830e75](https://github.com/jonathanhudak/tools/commit/b830e75a8332807f454cc991d9e8d72cd913cf4d))
+
 ## [1.45.1](https://github.com/jonathanhudak/tools/compare/v1.45.0...v1.45.1) (2026-05-16)
 
 
