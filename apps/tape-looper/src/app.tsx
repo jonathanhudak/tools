@@ -31,17 +31,11 @@ function PatternDefs() {
           <path d="M0,0 L12,0 M0,6 L12,6 M0,12 L12,12" stroke="#000" strokeWidth="0.8" />
           <path d="M6,0 L6,6 M0,6 L0,12 M12,6 L12,12" stroke="#000" strokeWidth="0.8" />
         </pattern>
-        <pattern id="pat-solid" patternUnits="userSpaceOnUse" width="4" height="4">
-          <rect width="4" height="4" fill="#000" />
-        </pattern>
       </defs>
     </svg>
   );
 }
 
-const TRACK_PATTERNS = ['pat-dots', 'pat-diag', 'pat-cross', 'pat-lines', 'pat-brick'];
-
-/* ── Shared: pixels per second for the timeline ── */
 const PX_PER_SEC = 80;
 
 /* ── Transport Bar ── */
@@ -49,10 +43,12 @@ function TransportBar({
   playheadTime,
   onPlay,
   onRecord,
+  onSeekToStart,
 }: {
   playheadTime: number;
   onPlay: () => void;
   onRecord: () => void;
+  onSeekToStart: () => void;
 }) {
   const transport = useStore((s) => s.transport);
   const bpm = useStore((s) => s.bpm);
@@ -69,6 +65,14 @@ function TransportBar({
 
   return (
     <div className="transport-bar">
+      <button
+        className="transport-btn"
+        onClick={onSeekToStart}
+        title="Jump to start"
+        disabled={isPlaying}
+      >
+        ⏮
+      </button>
       <button
         className={`transport-btn ${isPlaying ? 'active' : ''}`}
         onClick={onPlay}
@@ -97,14 +101,21 @@ function TrackLane({
   clips,
   patternIdx,
   playheadTime,
+  transport,
+  onSeek,
 }: {
   clips: Clip[];
   patternIdx: number;
   playheadTime: number;
+  transport: string;
+  onSeek: (time: number) => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const dragRef = useRef(false);
+  const isSeeking = transport === 'stopped';
 
-  useEffect(() => {
+  // Draw the lane contents
+  const drawLane = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const parent = canvas.parentElement!;
@@ -123,11 +134,11 @@ function TrackLane({
     const w = rect.width;
     const h = rect.height;
 
-    // Background: white (inverted in dark mode via CSS filter)
+    // Background
     ctx.fillStyle = '#fff';
     ctx.fillRect(0, 0, w, h);
 
-    // Subtle horizontal texture lines (always black on white)
+    // Texture lines
     ctx.strokeStyle = patternIdx === 0 ? '#e0e0e0' : '#d5d5d5';
     ctx.lineWidth = 0.5;
     for (let y = 4; y < h; y += 8) {
@@ -137,7 +148,7 @@ function TrackLane({
       ctx.stroke();
     }
 
-    // If no clips, show empty state
+    // Empty state
     if (clips.length === 0) {
       ctx.fillStyle = '#999';
       ctx.font = '14px "JetBrains Mono", monospace';
@@ -146,16 +157,14 @@ function TrackLane({
       ctx.textAlign = 'start';
     }
 
-    // Draw each clip
+    // Draw clips
     for (const clip of clips) {
       const x = clip.startTime * PX_PER_SEC;
       const clipW = Math.max(30, clip.duration * PX_PER_SEC);
 
-      // Clip block (black)
       ctx.fillStyle = '#000';
       ctx.fillRect(x, 2, clipW, h - 4);
 
-      // Waveform (white line inside black block)
       const data = clip.buffer.getChannelData(0);
       if (data.length > 0) {
         ctx.strokeStyle = '#fff';
@@ -171,7 +180,6 @@ function TrackLane({
         ctx.stroke();
       }
 
-      // Clip label
       ctx.fillStyle = '#fff';
       ctx.font = '9px "JetBrains Mono", monospace';
       ctx.fillText(clip.name, x + 4, 14);
@@ -179,7 +187,7 @@ function TrackLane({
 
     // Draw playhead
     const px = playheadTime * PX_PER_SEC;
-    if (px >= 0 && px < w + 50) {
+    if (px >= 0) {
       ctx.strokeStyle = '#ff0000';
       ctx.lineWidth = 2;
       ctx.setLineDash([]);
@@ -188,7 +196,6 @@ function TrackLane({
       ctx.lineTo(px, h);
       ctx.stroke();
 
-      // Small triangle at top
       ctx.fillStyle = '#ff0000';
       ctx.beginPath();
       ctx.moveTo(px - 5, 0);
@@ -199,9 +206,61 @@ function TrackLane({
     }
   }, [clips, playheadTime, patternIdx]);
 
+  // Redraw on state changes
+  useEffect(() => {
+    drawLane();
+  }, [drawLane]);
+
+  // Also redraw on resize
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const parent = canvas.parentElement!;
+    const ro = new ResizeObserver(() => drawLane());
+    ro.observe(parent);
+    return () => ro.disconnect();
+  }, [drawLane]);
+
+  // Click-to-seek and playhead drag
+  const getTimeFromEvent = useCallback((e: React.MouseEvent | MouseEvent) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return 0;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    return Math.max(0, x / PX_PER_SEC);
+  }, []);
+
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (!isSeeking) return;
+    const t = getTimeFromEvent(e);
+    onSeek(t);
+    dragRef.current = true;
+    e.preventDefault();
+  }, [isSeeking, getTimeFromEvent, onSeek]);
+
+  useEffect(() => {
+    if (!isSeeking) return;
+    const handleMove = (e: MouseEvent) => {
+      if (!dragRef.current) return;
+      const t = getTimeFromEvent(e);
+      onSeek(t);
+    };
+    const handleUp = () => { dragRef.current = false; };
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', handleUp);
+    return () => {
+      window.removeEventListener('mousemove', handleMove);
+      window.removeEventListener('mouseup', handleUp);
+    };
+  }, [isSeeking, getTimeFromEvent, onSeek]);
+
   return (
-    <div className="track-lane">
-      <canvas ref={canvasRef} style={{ width: '100%', height: '100%' }} />
+    <div
+      className="track-lane"
+      onMouseDown={handleMouseDown}
+      style={{ cursor: isSeeking ? 'col-resize' : 'default' }}
+    >
+      <canvas ref={canvasRef} style={{ width: '100%', height: '100%', pointerEvents: 'none' }} />
     </div>
   );
 }
@@ -211,20 +270,21 @@ function TrackRow({
   track,
   idx,
   playheadTime,
+  transport,
+  onSeek,
 }: {
   track: { id: string; name: string; armed: boolean; muted: boolean; solo: boolean; clips: Clip[] };
   idx: number;
   playheadTime: number;
+  transport: string;
+  onSeek: (time: number) => void;
 }) {
   const toggleMute = useStore((s) => s.toggleMute);
   const toggleSolo = useStore((s) => s.toggleSolo);
   const toggleArm = useStore((s) => s.toggleArm);
   const removeTrack = useStore((s) => s.removeTrack);
   const trackCount = useStore((s) => s.tracks.length);
-  const armedTrackId = useStore((s) => s.armedTrackId);
-  const transport = useStore((s) => s.transport);
 
-  // Only one track can be armed at a time, and only when stopped
   const canArm = transport === 'stopped' || (transport === 'recording' && track.armed);
 
   return (
@@ -255,17 +315,19 @@ function TrackRow({
             S
           </button>
           {trackCount > 1 && (
-            <button
-              className="track-btn"
-              onClick={() => removeTrack(track.id)}
-              title="Remove track"
-            >
+            <button className="track-btn" onClick={() => removeTrack(track.id)} title="Remove track">
               ✕
             </button>
           )}
         </div>
       </div>
-      <TrackLane clips={track.clips} patternIdx={idx} playheadTime={playheadTime} />
+      <TrackLane
+        clips={track.clips}
+        patternIdx={idx}
+        playheadTime={playheadTime}
+        transport={transport}
+        onSeek={onSeek}
+      />
     </div>
   );
 }
@@ -282,13 +344,21 @@ export function App() {
 
   const [playheadTime, setPlayheadTime] = useState(0);
 
-  // Refs for the transport engine
   const playingSourcesRef = useRef<AudioBufferSourceNode[]>([]);
   const recordingRef = useRef<{ stop: () => Promise<AudioBuffer> } | null>(null);
   const recordStartTimeRef = useRef(0);
   const playheadRef = useRef(0);
   const startCtxTimeRef = useRef(0);
   const rafRef = useRef(0);
+
+  // Seek: move playhead to a specific time (only when stopped)
+  const seekTo = useCallback((time: number) => {
+    if (transport !== 'stopped') return;
+    const t = Math.max(0, time);
+    playheadRef.current = t;
+    setPlayheadTime(t);
+    startCtxTimeRef.current = getCtx().currentTime - t;
+  }, [transport]);
 
   // Playhead animation
   useEffect(() => {
@@ -305,7 +375,6 @@ export function App() {
     }
   }, [transport]);
 
-  // Stop all playing sources
   const stopAllSources = useCallback(() => {
     playingSourcesRef.current.forEach((s) => {
       try { s.stop(); } catch {}
@@ -313,7 +382,6 @@ export function App() {
     playingSourcesRef.current = [];
   }, []);
 
-  // Start playing all clips from current playhead position
   const startPlayback = useCallback(() => {
     stopAllSources();
     const ctx = getCtx();
@@ -326,7 +394,6 @@ export function App() {
 
       for (const clip of track.clips) {
         const clipEnd = clip.startTime + clip.duration;
-        // Skip clips entirely before the playhead
         if (clipEnd <= playheadRef.current) continue;
 
         const offset = playheadRef.current - clip.startTime;
@@ -347,59 +414,46 @@ export function App() {
     }
   }, [tracks, stopAllSources]);
 
-  // ── Transport handlers ──
   const handlePlay = useCallback(() => {
     if (transport === 'playing') {
-      // Stop
       stopAllSources();
       setTransport('stopped');
       return;
     }
-    if (transport === 'recording') {
-      // Can't play while recording — stop recording first
-      return;
-    }
-    // Start playing
+    if (transport === 'recording') return;
     startPlayback();
     setTransport('playing');
   }, [transport, setTransport, stopAllSources, startPlayback]);
 
   const handleRecord = useCallback(async () => {
     if (transport === 'recording') {
-      // Stop recording
       stopAllSources();
-
       if (recordingRef.current) {
         const buffer = await recordingRef.current.stop();
         recordingRef.current = null;
-
         const armedId = armedTrackId;
         if (armedId && buffer.duration > 0.1) {
           const startTime = recordStartTimeRef.current - startCtxTimeRef.current;
           overwriteClip(armedId, buffer, Math.max(0, startTime));
         }
       }
-
-      // Don't reset playhead — it stays where recording stopped
       clearArmed();
       setTransport('stopped');
       return;
     }
+    if (transport === 'playing') return;
+    if (!armedTrackId) return;
 
-    if (transport === 'playing') {
-      // Can't start recording while playing — stop first
-      return;
-    }
-
-    if (!armedTrackId) return; // nothing armed
-
-    // Start recording: begin playback for monitoring + start mic capture
     startPlayback();
     const rec = startRecording();
     recordingRef.current = rec;
     recordStartTimeRef.current = getCtx().currentTime;
     setTransport('recording');
   }, [transport, armedTrackId, setTransport, clearArmed, overwriteClip, stopAllSources, startPlayback]);
+
+  const handleSeekToStart = useCallback(() => {
+    seekTo(0);
+  }, [seekTo]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -414,26 +468,43 @@ export function App() {
           e.preventDefault();
           handleRecord();
           break;
+        case 'KeyH':
+        case 'Home':
+          e.preventDefault();
+          handleSeekToStart();
+          break;
       }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [handlePlay, handleRecord]);
+  }, [handlePlay, handleRecord, handleSeekToStart]);
 
   return (
     <div className="daw-app">
       <PatternDefs />
-      <TransportBar playheadTime={playheadTime} onPlay={handlePlay} onRecord={handleRecord} />
+      <TransportBar
+        playheadTime={playheadTime}
+        onPlay={handlePlay}
+        onRecord={handleRecord}
+        onSeekToStart={handleSeekToStart}
+      />
       <div className="tracks-container">
         {tracks.map((track, i) => (
-          <TrackRow key={track.id} track={track} idx={i} playheadTime={playheadTime} />
+          <TrackRow
+            key={track.id}
+            track={track}
+            idx={i}
+            playheadTime={playheadTime}
+            transport={transport}
+            onSeek={seekTo}
+          />
         ))}
         <button className="add-track-btn" onClick={addTrack}>
           + Add Track
         </button>
       </div>
       <div className="help-bar">
-        [SPACE] play/stop &nbsp; [R] record/stop &nbsp; arm a track (REC) before recording
+        [SPACE] play/stop &nbsp; [R] record/stop &nbsp; [H] jump to start &nbsp; click/drag playhead to seek
         {armedTrackId && transport === 'stopped' && (
           <span style={{ marginLeft: 12, fontWeight: 700 }}>
             ⬤ {tracks.find((t) => t.id === armedTrackId)?.name} armed — press ● or R to record

@@ -93,6 +93,11 @@ body {
   touch-action: manipulation;
 }
 
+.transport-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
 .transport-btn:active {
   background: var(--color-border);
   color: var(--color-bg);
