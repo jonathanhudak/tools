@@ -1,3 +1,10 @@
+## [1.45.1](https://github.com/jonathanhudak/tools/compare/v1.45.0...v1.45.1) (2026-05-16)
+
+
+### Bug Fixes
+
+* midi ([ef36707](https://github.com/jonathanhudak/tools/commit/ef36707946d6b4c802e6e1fe4d0bbfc1aaa00c2c))
+
 # [1.45.0](https://github.com/jonathanhudak/tools/compare/v1.44.2...v1.45.0) (2026-05-16)
 
 
