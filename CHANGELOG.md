@@ -1,3 +1,10 @@
+# [1.40.0](https://github.com/jonathanhudak/tools/compare/v1.39.0...v1.40.0) (2026-05-16)
+
+
+### Features
+
+* Tape Looper — browser multitrack tape-machine DAW ([915e463](https://github.com/jonathanhudak/tools/commit/915e463ab25f81024c30041bef9d37d8d1521cd7))
+
 # [1.39.0](https://github.com/jonathanhudak/tools/compare/v1.38.0...v1.39.0) (2026-04-05)
 
 
