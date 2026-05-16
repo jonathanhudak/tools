@@ -1,3 +1,10 @@
+## [1.44.2](https://github.com/jonathanhudak/tools/compare/v1.44.1...v1.44.2) (2026-05-16)
+
+
+### Bug Fixes
+
+* **tape-looper:** MIDI recording now captures from touch piano + keyboard ([b93f0fb](https://github.com/jonathanhudak/tools/commit/b93f0fb69164a4846523d59ff6f8620f2243a329))
+
 ## [1.44.1](https://github.com/jonathanhudak/tools/compare/v1.44.0...v1.44.1) (2026-05-16)
 
 
