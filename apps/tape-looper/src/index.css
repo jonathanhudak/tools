@@ -306,6 +306,61 @@ body {
   font-family: var(--font-mono);
 }
 
+/* ── Piano Keyboard (slide-up, touch-optimized) ── */
+.piano-keyboard-slide {
+  border-top: 2px solid var(--color-border);
+  background: var(--color-surface);
+  padding: 4px 0;
+  overflow: hidden;
+  max-height: 140px;
+}
+
+.pk-scroll {
+  display: flex;
+  gap: 3px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 4px 8px;
+  height: 116px;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+}
+
+.pk-scroll::-webkit-scrollbar { height: 4px; }
+.pk-scroll::-webkit-scrollbar-thumb { background: var(--color-border); }
+
+.pk-white {
+  flex: 0 0 auto;
+  min-width: 48px;
+  height: 108px;
+  border: 2px solid var(--color-border);
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 6px;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: background 0.04s;
+  border-radius: 0 0 4px 4px;
+}
+
+.pk-white:active,
+.pk-white.active {
+  background: #000;
+  color: #fff;
+}
+
+.pk-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  pointer-events: none;
+}
+
 /* ── Tooltip / Help ── */
 .help-bar {
   padding: 6px 16px;

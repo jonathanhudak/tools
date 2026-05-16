@@ -2,6 +2,8 @@ import { useRef, useEffect, useCallback, useState } from 'react';
 import { useStore } from './lib/store';
 import { getCtx, getMasterGain, startRecording, boostGain } from './lib/audio-engine';
 import { synthTrack } from './lib/midi-engine';
+import { initMIDI, setMIDICallbacks, hasMIDI, disposeMIDI } from './lib/midi-input';
+import { PianoKeyboard } from './components/piano-keyboard';
 import type { Clip, NoteEvent } from './lib/types';
 
 /* ── SVG Pattern Defs ── */
@@ -425,6 +427,7 @@ export function App() {
 
   const [playheadTime, setPlayheadTime] = useState(0);
   const [activeNotes, setActiveNotes] = useState<Set<number>>(new Set());
+  const [midiConnected, setMIDIConnected] = useState(false);
 
   const playingSourcesRef = useRef<AudioBufferSourceNode[]>([]);
   const recordingRef = useRef<{ stop: () => Promise<AudioBuffer> } | null>(null);
@@ -676,13 +679,30 @@ export function App() {
     return () => tracksEl.removeEventListener('wheel', onWheel);
   }, []);
 
+  // MIDI keyboard init
+  useEffect(() => {
+    initMIDI().then((connected) => setMIDIConnected(connected));
+    return () => disposeMIDI();
+  }, []);
+
+  // Wire MIDI callbacks — re-wired when playNote/stopNote change
+  useEffect(() => {
+    setMIDICallbacks(playNote, stopNote, setMIDIConnected);
+  }, [playNote, stopNote]);
+
   const isMIDIArmed = tracks.find((t) => t.id === armedTrackId)?.trackType === 'midi';
 
   return (
     <div className="daw-app">
       <PatternDefs />
       <TransportBar playheadTime={playheadTime} onPlay={handlePlay} onRecord={handleRecord} onSeekToStart={handleSeekToStart} />
-      {isMIDIArmed && transport === 'stopped' && <PianoHUD activeNotes={activeNotes} />}
+      <PianoKeyboard
+        onNoteOn={playNote}
+        onNoteOff={stopNote}
+        activeNotes={activeNotes}
+        visible={isMIDIArmed && transport === 'stopped'}
+        midiConnected={midiConnected}
+      />
       <div className="tracks-container">
         {tracks.map((track, i) => (
           <TrackRow key={track.id} track={track} idx={i} playheadTime={playheadTime} transport={transport} onSeek={seekTo} zoom={zoom} />
@@ -694,7 +714,11 @@ export function App() {
         {armedTrackId && transport === 'stopped' && (
           <span style={{ marginLeft: 12, fontWeight: 700 }}>
             ⬤ {tracks.find((t) => t.id === armedTrackId)?.name} armed
-            {isMIDIArmed ? ' — play A-K keys on keyboard, press ● to record' : ' — press ● to record'}
+            {isMIDIArmed
+              ? midiConnected
+                ? ' — play external MIDI keyboard, press ● to record'
+                : ' — use keyboard keys or tap piano below, press ● to record'
+              : ' — press ● to record'}
           </span>
         )}
       </div>
