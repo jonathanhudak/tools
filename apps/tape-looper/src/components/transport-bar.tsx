@@ -80,6 +80,8 @@ export function TransportBar({
   const setInputGain = useStore((s) => s.setInputGain);
   const zoom = useStore((s) => s.zoom);
   const setZoom = useStore((s) => s.setZoom);
+  const followPlayhead = useStore((s) => s.followPlayhead);
+  const setFollowPlayhead = useStore((s) => s.setFollowPlayhead);
 
   const fmtTime = (t: number) => {
     const m = Math.floor(Math.max(0, t) / 60);
@@ -121,6 +123,13 @@ export function TransportBar({
         <button className="transport-btn" onClick={() => setZoom(Math.max(10, zoom - 30))}>−</button>
         <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, minWidth: 32, textAlign: 'center' }}>{zoom}</span>
         <button className="transport-btn" onClick={() => setZoom(Math.min(500, zoom + 30))}>+</button>
+
+        <button
+          className={`transport-btn ${followPlayhead ? 'active' : ''}`}
+          onClick={() => setFollowPlayhead(!followPlayhead)}
+          title="Follow playhead during playback"
+          aria-pressed={followPlayhead}
+        >🔒</button>
 
         <input
           type="number" min={20} max={300} value={bpm}

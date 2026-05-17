@@ -107,21 +107,27 @@ export function drawPianoRoll(ctx: CanvasRenderingContext2D, notes: NoteEvent[],
   }
 }
 
-/* ── Track Lane ── */
+/* ── Track Lane ──
+ * Canvas-rendered lane of clips/notes. Playhead is NOT drawn here anymore —
+ * a single DOM overlay (PlayheadOverlay) draws it across all lanes at once,
+ * so this canvas only redraws when track data / zoom / pattern changes.
+ *
+ * `totalWidth` is the lifted shared timeline width (max content + viewport).
+ */
 export function TrackLane({
   track,
   patternIdx,
-  playheadTime,
   transport,
   onSeek,
   zoom,
+  totalWidth,
 }: {
   track: { id: string; trackType: string; clips: Clip[]; notes: NoteEvent[] };
   patternIdx: number;
-  playheadTime: number;
   transport: string;
   onSeek: (time: number) => void;
   zoom: number;
+  totalWidth: number;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const dragRef = useRef(false);
@@ -131,14 +137,12 @@ export function TrackLane({
   const drawLane = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const parent = canvas.parentElement!;
+    const parent = canvas.parentElement;
+    if (!parent) return;
     const rect = parent.getBoundingClientRect();
-    if (rect.width === 0 || rect.height === 0) return;
+    if (rect.height === 0) return;
 
-    // Compute total width based on content + zoom
-    const totalDuration = computeTotalDuration(track);
-    const contentWidth = Math.max(rect.width, totalDuration * zoom + 200);
-
+    const contentWidth = totalWidth;
     const dpr = window.devicePixelRatio || 1;
     if (canvas.width !== contentWidth * dpr || canvas.height !== rect.height * dpr) {
       canvas.width = contentWidth * dpr;
@@ -147,16 +151,17 @@ export function TrackLane({
       canvas.style.height = rect.height + 'px';
     }
 
-    const ctx = canvas.getContext('2d')!;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     const w = contentWidth;
     const h = rect.height;
 
     // Background
-    ctx.fillStyle = isMIDI ? '#fff' : '#fff';
+    ctx.fillStyle = '#fff';
     ctx.fillRect(0, 0, w, h);
 
-    // Texture lines
+    // Texture lines (audio only)
     if (!isMIDI) {
       ctx.strokeStyle = patternIdx === 0 ? '#e0e0e0' : '#d5d5d5';
       ctx.lineWidth = 0.5;
@@ -170,16 +175,7 @@ export function TrackLane({
     } else {
       drawAudioClips(ctx, track.clips, w, h, zoom);
     }
-
-    // Playhead
-    const px = playheadTime * zoom;
-    ctx.strokeStyle = '#ff0000';
-    ctx.lineWidth = 2;
-    ctx.setLineDash([]);
-    ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, h); ctx.stroke();
-    ctx.fillStyle = '#ff0000';
-    ctx.beginPath(); ctx.moveTo(px - 5, 0); ctx.lineTo(px + 5, 0); ctx.lineTo(px, 8); ctx.closePath(); ctx.fill();
-  }, [track, playheadTime, patternIdx, zoom, isMIDI]);
+  }, [track, patternIdx, zoom, isMIDI, totalWidth]);
 
   useEffect(() => { drawLane(); }, [drawLane]);
   useEffect(() => {
@@ -190,15 +186,15 @@ export function TrackLane({
     return () => ro.disconnect();
   }, [drawLane]);
 
-  const getTimeFromEvent = useCallback((e: React.MouseEvent | MouseEvent) => {
+  const getTimeFromEvent = useCallback((e: React.PointerEvent | PointerEvent) => {
     const canvas = canvasRef.current;
     if (!canvas) return 0;
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left + (canvas.parentElement?.scrollLeft ?? 0);
+    const x = e.clientX - rect.left;
     return Math.max(0, x / zoom);
   }, [zoom]);
 
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+  const handlePointerDown = useCallback((e: React.PointerEvent) => {
     if (!isSeeking) return;
     onSeek(getTimeFromEvent(e));
     dragRef.current = true;
@@ -207,15 +203,22 @@ export function TrackLane({
 
   useEffect(() => {
     if (!isSeeking) return;
-    const hm = (e: MouseEvent) => { if (dragRef.current) onSeek(getTimeFromEvent(e)); };
+    const hm = (e: PointerEvent) => { if (dragRef.current) onSeek(getTimeFromEvent(e)); };
     const hu = () => { dragRef.current = false; };
-    window.addEventListener('mousemove', hm);
-    window.addEventListener('mouseup', hu);
-    return () => { window.removeEventListener('mousemove', hm); window.removeEventListener('mouseup', hu); };
+    window.addEventListener('pointermove', hm);
+    window.addEventListener('pointerup', hu);
+    return () => {
+      window.removeEventListener('pointermove', hm);
+      window.removeEventListener('pointerup', hu);
+    };
   }, [isSeeking, getTimeFromEvent, onSeek]);
 
   return (
-    <div className="track-lane" onMouseDown={handleMouseDown} style={{ cursor: isSeeking ? 'col-resize' : 'default' }}>
+    <div
+      className="track-lane"
+      onPointerDown={handlePointerDown}
+      style={{ cursor: isSeeking ? 'col-resize' : 'default', width: totalWidth }}
+    >
       <canvas ref={canvasRef} style={{ height: '100%', pointerEvents: 'none' }} />
     </div>
   );

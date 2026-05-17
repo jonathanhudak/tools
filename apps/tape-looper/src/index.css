@@ -145,15 +145,81 @@ body {
   height: 40px;
 }
 
-/* ── Tracks ── */
+/* ── Timeline split layout ──
+ *  ┌──────────────┬───────────────────────────────────────────────┐
+ *  │  rail-column │  timeline-scroll  (horizontal scroll)         │
+ *  │              │   ├─ timeline-ruler                           │
+ *  │  TrackRail   │   ├─ track-lane-row                           │
+ *  │  TrackRail   │   ├─ track-lane-row                           │
+ *  │              │   └─ playhead-overlay (absolute, full height) │
+ *  └──────────────┴───────────────────────────────────────────────┘
+ *  Vertical scroll lives on `.timeline-stack` so both columns scroll together.
+ */
+.timeline-stack {
+  flex: 1 1 0%;
+  min-height: 0;
+  height: 0;
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.rail-column {
+  display: flex;
+  flex-direction: column;
+  border-right: 2px solid var(--color-border);
+  background: var(--color-surface);
+  position: sticky;
+  left: 0;
+  z-index: 2;
+}
+
+.ruler-rail-spacer {
+  height: 28px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.timeline-scroll {
+  position: relative;
+  overflow-x: auto;
+  overflow-y: hidden;
+  touch-action: pan-x pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+.timeline-scroll::-webkit-scrollbar { height: 8px; }
+.timeline-scroll::-webkit-scrollbar-thumb { background: var(--color-border); }
+
+.timeline-ruler {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--color-surface);
+}
+
+.playhead-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2px;
+  background: #ff0000;
+  pointer-events: none;
+  z-index: 4;
+  will-change: transform;
+}
+
+/* Legacy combined .tracks-container kept for any other consumers */
 .tracks-container {
   flex: 1 1 0%;
-  height: 0; /* force scrollable */
+  height: 0;
   overflow-y: auto;
   overflow-x: auto;
   min-height: 0;
 }
 
+/* ── Track rows (rail + lane) ── */
 .track-row {
   display: flex;
   border-bottom: 1px solid var(--color-border);
@@ -161,10 +227,22 @@ body {
   /* Don't clip — tracks stretch to content width */
 }
 
+.track-rail {
+  min-height: 100px;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+}
+
+.track-lane-row {
+  min-height: 100px;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+}
+
 .track-controls {
   width: 160px;
   min-width: 160px;
-  border-right: 2px solid var(--color-border);
+  flex: 1;
   padding: 8px;
   display: flex;
   flex-direction: column;
@@ -325,6 +403,18 @@ body {
     transparent 7px,
     rgba(0,0,0,0.04) 7px,
     rgba(0,0,0,0.04) 8px
+  );
+}
+
+/* Track lane row backgrounds — match the rail's type texture lightly */
+.audio-track.track-lane-row { background: var(--color-bg); }
+.midi-track.track-lane-row {
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 7px,
+    rgba(0,0,0,0.025) 7px,
+    rgba(0,0,0,0.025) 8px
   );
 }
 

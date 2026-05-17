@@ -3,22 +3,23 @@ import { useStore } from '../lib/store';
 import type { Clip, NoteEvent, Waveform } from '../lib/types';
 import { TrackLane } from './track-lane';
 
-/* ── Track Row ── */
-export function TrackRow({
-  track,
-  idx,
-  playheadTime,
-  transport,
-  onSeek,
-  zoom,
-}: {
-  track: { id: string; name: string; armed: boolean; muted: boolean; solo: boolean; trackType: string; waveform: string; clips: Clip[]; notes: NoteEvent[] };
-  idx: number;
-  playheadTime: number;
-  transport: string;
-  onSeek: (time: number) => void;
-  zoom: number;
-}) {
+type TrackForRow = {
+  id: string;
+  name: string;
+  armed: boolean;
+  muted: boolean;
+  solo: boolean;
+  trackType: string;
+  waveform: string;
+  clips: Clip[];
+  notes: NoteEvent[];
+};
+
+/* ── Track Rail ──
+ * The fixed-width left column for a track: name, type, controls.
+ * Lives in the sticky `.rail-column` so it stays visible on narrow screens.
+ */
+export function TrackRail({ track, transport }: { track: TrackForRow; transport: string }) {
   const toggleMute = useStore((s) => s.toggleMute);
   const toggleSolo = useStore((s) => s.toggleSolo);
   const toggleArm = useStore((s) => s.toggleArm);
@@ -38,7 +39,7 @@ export function TrackRow({
   };
 
   return (
-    <div className={`track-row ${isMIDI ? 'midi-track' : 'audio-track'}`}>
+    <div className={`track-rail ${isMIDI ? 'midi-track' : 'audio-track'}`}>
       <div className="track-controls">
         {editing ? (
           <input
@@ -85,7 +86,67 @@ export function TrackRow({
           <button className="track-btn" onClick={() => removeTrack(track.id)}>✕</button>
         </div>
       </div>
-      <TrackLane track={track} patternIdx={idx} playheadTime={playheadTime} transport={transport} onSeek={onSeek} zoom={zoom} />
+    </div>
+  );
+}
+
+/* ── Track Lane Row ──
+ * The horizontally-scrollable lane half of a track. Renders inside
+ * `.timeline-scroll` so it scrolls with the ruler and playhead overlay.
+ */
+export function TrackLaneRow({
+  track,
+  idx,
+  transport,
+  onSeek,
+  zoom,
+  totalWidth,
+}: {
+  track: TrackForRow;
+  idx: number;
+  transport: string;
+  onSeek: (time: number) => void;
+  zoom: number;
+  totalWidth: number;
+}) {
+  const isMIDI = track.trackType === 'midi';
+  return (
+    <div className={`track-lane-row ${isMIDI ? 'midi-track' : 'audio-track'}`}>
+      <TrackLane
+        track={track}
+        patternIdx={idx}
+        transport={transport}
+        onSeek={onSeek}
+        zoom={zoom}
+        totalWidth={totalWidth}
+      />
+    </div>
+  );
+}
+
+/* ── Track Row (legacy combined export — kept for back-compat) ──
+ * New app layout uses TrackRail + TrackLaneRow in parallel columns, so this
+ * export is no longer rendered by App. Kept here in case any test imports it.
+ */
+export function TrackRow({
+  track,
+  idx,
+  transport,
+  onSeek,
+  zoom,
+  totalWidth,
+}: {
+  track: TrackForRow;
+  idx: number;
+  transport: string;
+  onSeek: (time: number) => void;
+  zoom: number;
+  totalWidth: number;
+}) {
+  return (
+    <div className={`track-row ${track.trackType === 'midi' ? 'midi-track' : 'audio-track'}`}>
+      <TrackRail track={track} transport={transport} />
+      <TrackLaneRow track={track} idx={idx} transport={transport} onSeek={onSeek} zoom={zoom} totalWidth={totalWidth} />
     </div>
   );
 }

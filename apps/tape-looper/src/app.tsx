@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback, useState } from 'react';
+import { useRef, useEffect, useCallback, useState, useMemo } from 'react';
 import { useStore } from './lib/store';
 import { getCtx, getMasterGain, startRecording, boostGain } from './lib/audio-engine';
 import { synthTrack } from './lib/midi-engine';
@@ -12,8 +12,12 @@ import type { NoteEvent } from './lib/types';
 import { seedPatchesIfEmpty } from './lib/patch-presets';
 import { PatternDefs } from './components/pattern-defs';
 import { TransportBar } from './components/transport-bar';
-import { TrackRow } from './components/track-row';
+import { TrackRail, TrackLaneRow } from './components/track-row';
+import { computeTotalDuration } from './components/track-lane';
+import { TimelineRuler } from './components/timeline-ruler';
+import { PlayheadOverlay } from './components/playhead-overlay';
 import { ProjectsPanel } from './components/projects-panel';
+import { useAutoScroll } from './hooks/use-auto-scroll';
 
 /* ── Piano key mapping: 2 rows of computer keyboard → 1 octave ── */
 const PIANO_KEYS: { key: string; midiNote: number; label: string }[] = [
@@ -441,9 +445,10 @@ export function App() {
     };
   }, [handlePlay, handleRecord, handleSeekToStart, playNote, stopNote]);
 
-  // Scroll wheel: horizontal scroll pans, no modifier zooms
+  // Scroll wheel: ctrl/meta + wheel zooms. Bound to the new timeline scroll
+  // container (was `.tracks-container` before the split-layout refactor).
   useEffect(() => {
-    const tracksEl = document.querySelector('.tracks-container');
+    const tracksEl = document.querySelector('.timeline-scroll');
     if (!tracksEl) return;
     const onWheel = (e: WheelEvent) => {
       if (e.ctrlKey || e.metaKey) {
@@ -461,16 +466,58 @@ export function App() {
     setMIDICallbacks(playNote, stopNote, handleMIDIConnected);
   }, [playNote, stopNote, handleMIDIConnected]);
 
+  // ── Layout: shared timeline width + scroll container + auto-scroll ──
+  const followPlayhead = useStore((s) => s.followPlayhead);
+  const bpm = useStore((s) => s.bpm);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [viewportW, setViewportW] = useState(0);
+
+  // Track the timeline scroll container's clientWidth so we can size the
+  // ruler/lanes/overlay to at least the viewport when there's no content yet.
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const update = () => setViewportW(el.clientWidth);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const totalWidth = useMemo(() => {
+    let longest = 0;
+    for (const t of tracks) {
+      const d = computeTotalDuration(t);
+      if (d > longest) longest = d;
+    }
+    return Math.max(viewportW, longest * zoom + 200);
+  }, [tracks, zoom, viewportW]);
+
+  // Total height for the playhead overlay — covers ruler + every lane row.
+  const totalHeight = TimelineRuler.HEIGHT + tracks.length * 100;
+
+  useAutoScroll(scrollRef, playheadTime, zoom, followPlayhead, transport);
+
   return (
     <div className="daw-app">
       <PatternDefs />
       <TransportBar playheadTime={playheadTime} onPlay={handlePlay} onRecord={handleRecord} onSeekToStart={handleSeekToStart} onOpenProjects={() => setProjectsOpen(true)} onNewProject={handleNewProject} onSave={handleSave} saveStatus={saveStatus} midiConnected={midiConnected} onConnectMIDI={connectMIDI} midiError={midiError} octaveOffset={octaveOffset} onOctaveDown={() => setOctaveOffset((o) => Math.max(-4, o - 1))} onOctaveUp={() => setOctaveOffset((o) => Math.min(4, o + 1))} />
-      <div className="tracks-container">
-        {tracks.map((track, i) => (
-          <TrackRow key={track.id} track={track} idx={i} playheadTime={playheadTime} transport={transport} onSeek={seekTo} zoom={zoom} />
-        ))}
-        <button className="add-track-btn" onClick={addAudioTrack}>+ Audio Track</button>
-        <button className="add-track-btn" onClick={addMidiTrack} style={{ borderStyle: 'dashed' }}>+ MIDI Track</button>
+      <div className="timeline-stack">
+        <div className="rail-column">
+          <div className="ruler-rail-spacer" />
+          {tracks.map((track) => (
+            <TrackRail key={track.id} track={track} transport={transport} />
+          ))}
+          <button className="add-track-btn" onClick={addAudioTrack}>+ Audio Track</button>
+          <button className="add-track-btn" onClick={addMidiTrack} style={{ borderStyle: 'dashed' }}>+ MIDI Track</button>
+        </div>
+        <div className="timeline-scroll" ref={scrollRef}>
+          <TimelineRuler bpm={bpm} zoom={zoom} totalWidth={totalWidth} transport={transport} onSeek={seekTo} />
+          {tracks.map((track, i) => (
+            <TrackLaneRow key={track.id} track={track} idx={i} transport={transport} onSeek={seekTo} zoom={zoom} totalWidth={totalWidth} />
+          ))}
+          <PlayheadOverlay playheadTime={playheadTime} zoom={zoom} totalHeight={totalHeight} />
+        </div>
       </div>
       <ProjectsPanel open={projectsOpen} onClose={() => setProjectsOpen(false)} onLoadProject={handleLoadProject} />
     </div>
