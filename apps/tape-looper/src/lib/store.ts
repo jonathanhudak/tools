@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Track, TransportState, NoteEvent, TrackType, Waveform } from './types';
+import type { Track, TransportState, NoteEvent, TrackType, Waveform, LoopRegion } from './types';
 import { applyOverwrite } from './tape-engine';
 import { applyNoteOverwrite } from './midi-engine';
 
@@ -12,6 +12,9 @@ interface DAWStore {
   zoom: number;
   projectId: string | null;
   projectName: string;
+  masterVolume: number;
+  loop: LoopRegion;
+  followPlayhead: boolean;
 
   addAudioTrack: () => void;
   addMidiTrack: () => void;
@@ -26,6 +29,8 @@ interface DAWStore {
   renameTrack: (id: string, name: string) => void;
   setWaveform: (id: string, wf: Waveform) => void;
   setPatchId: (id: string, patchId: string | null) => void;
+  setVolume: (trackId: string, volume: number) => void;
+  setPan: (trackId: string, pan: number) => void;
 
   overwriteClip: (trackId: string, buffer: AudioBuffer, startTime: number) => void;
   overwriteNotes: (trackId: string, notes: NoteEvent[], startTime: number) => void;
@@ -34,6 +39,9 @@ interface DAWStore {
   setInputGain: (gain: number) => void;
   setZoom: (zoom: number) => void;
   setBpm: (bpm: number) => void;
+  setMasterVolume: (volume: number) => void;
+  setLoop: (loop: Partial<LoopRegion>) => void;
+  setFollowPlayhead: (v: boolean) => void;
 }
 
 let trackNum = 1;
@@ -50,6 +58,8 @@ function freshTrack(type: TrackType): Track {
     patchId: null,
     clips: [],
     notes: [],
+    volume: 0.8,
+    pan: 0,
   };
 }
 
@@ -62,6 +72,9 @@ export const useStore = create<DAWStore>((set) => ({
   zoom: 80,
   projectId: null,
   projectName: 'Untitled',
+  masterVolume: 0.8,
+  loop: { enabled: false, start: 0, end: 4 },
+  followPlayhead: true,
 
   addAudioTrack: () => set((s) => ({ tracks: [...s.tracks, freshTrack('audio')] })),
   addMidiTrack: () => set((s) => ({ tracks: [...s.tracks, freshTrack('midi')] })),
@@ -103,6 +116,10 @@ export const useStore = create<DAWStore>((set) => ({
     set((s) => ({ tracks: s.tracks.map((t) => (t.id === id ? { ...t, waveform } : t)) })),
   setPatchId: (id, patchId) =>
     set((s) => ({ tracks: s.tracks.map((t) => (t.id === id ? { ...t, patchId } : t)) })),
+  setVolume: (trackId, volume) =>
+    set((s) => ({ tracks: s.tracks.map((t) => (t.id === trackId ? { ...t, volume } : t)) })),
+  setPan: (trackId, pan) =>
+    set((s) => ({ tracks: s.tracks.map((t) => (t.id === trackId ? { ...t, pan } : t)) })),
 
   overwriteClip: (trackId, buffer, startTime) =>
     set((s) => ({
@@ -122,4 +139,7 @@ export const useStore = create<DAWStore>((set) => ({
   setInputGain: (inputGain) => set({ inputGain }),
   setZoom: (zoom) => set({ zoom }),
   setBpm: (bpm) => set({ bpm }),
+  setMasterVolume: (masterVolume) => set({ masterVolume }),
+  setLoop: (loop) => set((s) => ({ loop: { ...s.loop, ...loop } })),
+  setFollowPlayhead: (followPlayhead) => set({ followPlayhead }),
 }));

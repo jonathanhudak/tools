@@ -56,9 +56,20 @@ export interface Track {
   patchId: string | null; // IndexedDB key of the SynthPatch
   clips: Clip[];
   notes: NoteEvent[];
+  /** Per-track volume, 0–1 linear (default 0.8) */
+  volume: number;
+  /** Per-track pan, -1 (left) to 1 (right) (default 0) */
+  pan: number;
 }
 
 export type TransportState = 'stopped' | 'playing' | 'recording';
+
+/** Loop region for transport loop playback */
+export interface LoopRegion {
+  enabled: boolean;
+  start: number; // seconds
+  end: number;
+}
 
 /** Default patch — a basic sine synth */
 export const DEFAULT_PATCH: SynthPatch = {

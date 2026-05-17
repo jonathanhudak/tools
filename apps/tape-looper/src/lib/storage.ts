@@ -21,6 +21,10 @@ interface SavedTrack {
   patchId: string | null;
   clips: SavedClip[];
   notes: NoteEvent[];
+  /** Per-track volume, 0–1 linear. Optional for backward-compat. */
+  volume?: number;
+  /** Per-track pan, -1..1. Optional for backward-compat. */
+  pan?: number;
 }
 
 interface SavedClip {
@@ -224,6 +228,8 @@ export async function serializeTracks(tracks: Track[]): Promise<SavedTrack[]> {
       patchId: t.patchId,
       clips: savedClips,
       notes: t.notes,
+      volume: t.volume,
+      pan: t.pan,
     });
   }
   db.close();
@@ -263,11 +269,13 @@ export async function deserializeTracks(saved: SavedTrack[]): Promise<Track[]> {
       armed: false,
       muted: false,
       solo: false,
-      trackType: st.trackType as 'audio' | 'midi',
-      waveform: (st.waveform as any) ?? 'sine',
+      trackType: st.trackType,
+      waveform: (st.waveform as Track['waveform']) ?? 'sine',
       patchId: st.patchId ?? null,
       clips: clips.sort((a, b) => a.startTime - b.startTime),
       notes: st.notes,
+      volume: typeof st.volume === 'number' ? st.volume : 0.8,
+      pan: typeof st.pan === 'number' ? st.pan : 0,
     });
   }
   db.close();
