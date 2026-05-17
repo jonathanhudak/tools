@@ -1,3 +1,19 @@
+# [1.46.0](https://github.com/jonathanhudak/tools/compare/v1.45.2...v1.46.0) (2026-05-17)
+
+
+### Bug Fixes
+
+* **tape-looper:** IndexedDB store collisions + rail/lane row alignment ([77ee97c](https://github.com/jonathanhudak/tools/commit/77ee97cfa61257080795625472787d024637a4bd))
+
+
+### Features
+
+* **tape-looper:** full-height playhead, roomier rails, 15 preset library ([87741d6](https://github.com/jonathanhudak/tools/commit/87741d62c1348f9a6c7e7faa1435e3467560ff9b))
+* **tape-looper:** loop region — Tone.Transport.loop + shift-drag ruler ([23f2609](https://github.com/jonathanhudak/tools/commit/23f2609691e180e7ff4291a7cf22acd28fa788a3))
+* **tape-looper:** per-track volume + pan faders + master mix ([c954f33](https://github.com/jonathanhudak/tools/commit/c954f33e9a076f6ff8011188aebf842017f140ec))
+* **tape-looper:** timeline ruler + auto-scroll + split touch layout ([6476ad9](https://github.com/jonathanhudak/tools/commit/6476ad904c9a2a78c92e8ef915705090e603fa4d))
+* **tape-looper:** wire Tone.Transport + per-track patch synth + patch editor ([d32ae83](https://github.com/jonathanhudak/tools/commit/d32ae83d5b1075057238507b5062663911436870))
+
 ## [1.45.2](https://github.com/jonathanhudak/tools/compare/v1.45.1...v1.45.2) (2026-05-16)
 
 
