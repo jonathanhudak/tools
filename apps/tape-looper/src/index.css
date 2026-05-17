@@ -210,6 +210,22 @@ body {
   will-change: transform;
 }
 
+/* ── Loop Region ──
+ * Shaded hatch overlay between loopStart and loopEnd. Inline SVG hatch
+ * keeps us decoupled from #pat-diag (which lives in a separate SVG defs).
+ * Dashed vertical borders mark the edges. Sits above lanes (z 1–2) and
+ * below the playhead (z 4).
+ */
+.loop-region {
+  position: absolute;
+  pointer-events: none;
+  z-index: 3;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='6' height='6'><path d='M0,6 L6,0' stroke='%23000' stroke-width='1' opacity='0.25'/></svg>");
+  background-repeat: repeat;
+  border-left: 2px dashed var(--color-border);
+  border-right: 2px dashed var(--color-border);
+}
+
 /* Legacy combined .tracks-container kept for any other consumers */
 .tracks-container {
   flex: 1 1 0%;

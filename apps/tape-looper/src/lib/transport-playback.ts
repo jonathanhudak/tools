@@ -20,6 +20,7 @@ import { getCtx } from './audio-engine';
 import { getToneMaster, initToneBridge } from './tone-bridge';
 import { getTrackSynth, peekTrackSynth } from './synth-manager';
 import { midiToFreq } from './midi-engine';
+import { useStore } from './store';
 
 /** Per-track audio routing nodes — stable across playNote calls so the
  *  mixer (Agent A) can grab them by trackId and tweak gain/pan. */
@@ -109,21 +110,32 @@ export async function startPlayback(opts: PlaybackOptions, tracks: Track[]): Pro
   await initToneBridge();
   stopAllSources();
 
-  const { from, skipArmedTrackId = null, loop } = opts;
+  const { from, skipArmedTrackId = null } = opts;
+  // Loop opt overrides the store; otherwise read live store state so the
+  // transport bar's LOOP toggle takes effect on the next play press.
+  const loop = opts.loop ?? useStore.getState().loop;
   const transport = Tone.getTransport();
   const anySolo = tracks.some((t) => t.solo);
 
-  // Position the transport before scheduling so 'when' values resolve correctly.
-  transport.seconds = from;
-
   // Loop region — if enabled, Transport handles wrap-around for us.
-  if (loop && loop.enabled && loop.end > loop.start) {
+  const loopActive = loop.enabled && loop.end > loop.start;
+  if (loopActive) {
     transport.loop = true;
     transport.loopStart = loop.start;
     transport.loopEnd = loop.end;
   } else {
     transport.loop = false;
   }
+
+  // Position the transport before scheduling so 'when' values resolve
+  // correctly. Clamp to the loop window when looping is on so we never
+  // start outside the loop (which would either skip the loop entirely
+  // or land Transport in a wrapped state).
+  let startFrom = from;
+  if (loopActive && (startFrom < loop.start || startFrom >= loop.end)) {
+    startFrom = loop.start;
+  }
+  transport.seconds = startFrom;
 
   // Schedule each track.
   for (const track of tracks) {

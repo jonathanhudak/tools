@@ -24,6 +24,7 @@ import { TrackRail, TrackLaneRow } from './components/track-row';
 import { computeTotalDuration } from './components/track-lane';
 import { TimelineRuler } from './components/timeline-ruler';
 import { PlayheadOverlay } from './components/playhead-overlay';
+import { LoopRegion } from './components/loop-region';
 import { ProjectsPanel } from './components/projects-panel';
 import { SynthEditor } from './components/synth-editor';
 import { useAutoScroll } from './hooks/use-auto-scroll';
@@ -482,6 +483,7 @@ export function App() {
           {tracks.map((track, i) => (
             <TrackLaneRow key={track.id} track={track} idx={i} transport={transport} onSeek={seekTo} zoom={zoom} totalWidth={totalWidth} />
           ))}
+          <LoopRegion zoom={zoom} totalHeight={totalHeight} />
           <PlayheadOverlay playheadTime={playheadTime} zoom={zoom} totalHeight={totalHeight} />
         </div>
       </div>

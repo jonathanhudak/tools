@@ -1,10 +1,15 @@
 import { useRef, useEffect, useCallback } from 'react';
+import { useStore } from '../lib/store';
 
 const RULER_HEIGHT = 28;
 
 /* ── Timeline Ruler ──
  * Canvas of bar/beat ticks. Width matches `totalWidth` so it scrolls in sync
  * with the timeline column. Click/drag seeks playhead. Pure B&W.
+ *
+ * Shift+drag (desktop) sets the loop region: pointerdown captures `start`,
+ * pointermove updates `end`, pointerup commits via setLoop({enabled,start,end}).
+ * Plain click/drag retains the existing seek behavior.
  */
 export function TimelineRuler({
   bpm,
@@ -20,7 +25,11 @@ export function TimelineRuler({
   onSeek: (time: number) => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const dragRef = useRef(false);
+  /** Mode of the current drag: null (none), 'seek' (plain), 'loop' (shift). */
+  const dragModeRef = useRef<null | 'seek' | 'loop'>(null);
+  /** Loop drag anchor — the time at which the drag began. */
+  const loopAnchorRef = useRef(0);
+  const setLoop = useStore((s) => s.setLoop);
   const isSeeking = transport === 'stopped';
 
   const draw = useCallback(() => {
@@ -105,29 +114,64 @@ export function TimelineRuler({
   }, [zoom]);
 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
+    const t = getTimeFromEvent(e);
+    if (e.shiftKey) {
+      // Begin a loop-set drag. Seed start=end=anchor; the final commit
+      // happens on pointerup so a zero-length drag (a plain shift-click)
+      // is treated as "no change".
+      dragModeRef.current = 'loop';
+      loopAnchorRef.current = t;
+      setLoop({ enabled: true, start: t, end: t });
+      e.preventDefault();
+      return;
+    }
     if (!isSeeking) return;
-    onSeek(getTimeFromEvent(e));
-    dragRef.current = true;
+    onSeek(t);
+    dragModeRef.current = 'seek';
     e.preventDefault();
-  }, [isSeeking, getTimeFromEvent, onSeek]);
+  }, [getTimeFromEvent, isSeeking, onSeek, setLoop]);
 
   useEffect(() => {
-    if (!isSeeking) return;
-    const hm = (e: PointerEvent) => { if (dragRef.current) onSeek(getTimeFromEvent(e)); };
-    const hu = () => { dragRef.current = false; };
+    const hm = (e: PointerEvent) => {
+      const mode = dragModeRef.current;
+      if (!mode) return;
+      const t = getTimeFromEvent(e);
+      if (mode === 'seek') {
+        if (!isSeeking) return;
+        onSeek(t);
+      } else {
+        const anchor = loopAnchorRef.current;
+        const start = Math.min(anchor, t);
+        const end = Math.max(anchor, t);
+        setLoop({ enabled: true, start, end });
+      }
+    };
+    const hu = () => {
+      if (dragModeRef.current === 'loop') {
+        // If the user shift-clicked without dragging, the region has
+        // zero length — disable the loop so we don't trip on a stuck
+        // empty range later. Otherwise leave it enabled.
+        const { loop } = useStore.getState();
+        if (loop.end <= loop.start) {
+          setLoop({ enabled: false });
+        }
+      }
+      dragModeRef.current = null;
+    };
     window.addEventListener('pointermove', hm);
     window.addEventListener('pointerup', hu);
     return () => {
       window.removeEventListener('pointermove', hm);
       window.removeEventListener('pointerup', hu);
     };
-  }, [isSeeking, getTimeFromEvent, onSeek]);
+  }, [getTimeFromEvent, isSeeking, onSeek, setLoop]);
 
   return (
     <div
       className="timeline-ruler"
       onPointerDown={handlePointerDown}
       style={{ cursor: isSeeking ? 'col-resize' : 'default', height: RULER_HEIGHT, width: totalWidth }}
+      title="Click to seek · Shift+drag to set loop region"
     >
       <canvas ref={canvasRef} style={{ display: 'block', pointerEvents: 'none' }} />
     </div>

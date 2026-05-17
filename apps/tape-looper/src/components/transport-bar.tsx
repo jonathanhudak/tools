@@ -84,6 +84,8 @@ export function TransportBar({
   const setFollowPlayhead = useStore((s) => s.setFollowPlayhead);
   const masterVolume = useStore((s) => s.masterVolume);
   const setMasterVolume = useStore((s) => s.setMasterVolume);
+  const loop = useStore((s) => s.loop);
+  const setLoop = useStore((s) => s.setLoop);
 
   const masterDb = masterVolume === 0 ? '-∞' : `${(20 * Math.log10(masterVolume)).toFixed(0)} dB`;
 
@@ -134,6 +136,13 @@ export function TransportBar({
           title="Follow playhead during playback"
           aria-pressed={followPlayhead}
         >🔒</button>
+
+        <button
+          className={`transport-btn ${loop.enabled ? 'active' : ''}`}
+          onClick={() => setLoop({ enabled: !loop.enabled })}
+          title="Loop region — shift-drag the ruler to set range"
+          aria-pressed={loop.enabled}
+        >↻</button>
 
         <input
           type="number" min={20} max={300} value={bpm}
