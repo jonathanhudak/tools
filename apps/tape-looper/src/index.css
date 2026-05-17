@@ -243,14 +243,21 @@ body {
   /* Don't clip — tracks stretch to content width */
 }
 
+/* Shared row height keeps rails + lanes aligned across the two columns
+ * of `.timeline-stack`. Both audio and MIDI rails must fit inside this. */
+:root {
+  --row-height: 156px;
+}
+
 .track-rail {
-  min-height: 100px;
+  height: var(--row-height);
   border-bottom: 1px solid var(--color-border);
   display: flex;
+  overflow: hidden;
 }
 
 .track-lane-row {
-  min-height: 100px;
+  height: var(--row-height);
   border-bottom: 1px solid var(--color-border);
   display: flex;
 }
@@ -259,28 +266,48 @@ body {
   width: 160px;
   min-width: 160px;
   flex: 1;
-  padding: 8px;
+  padding: 6px 8px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
   background: var(--color-surface);
+  overflow: hidden;
 }
 
 .track-name {
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
-  margin-bottom: 4px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.midi-synth-row {
+  display: flex;
+  gap: 4px;
+  align-items: stretch;
+}
+
+.midi-synth-row .waveform-select {
+  flex: 1;
+  min-width: 0;
+}
+
+.synth-edit-btn {
+  flex-shrink: 0;
+  padding: 2px 6px;
 }
 
 .track-btns {
   display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
+  gap: 3px;
+  flex-wrap: nowrap;
 }
 
 .track-btn {
-  padding: 2px 8px;
+  padding: 2px 6px;
   font-family: var(--font-mono);
   font-size: 11px;
   border: 2px solid var(--color-border);
@@ -290,7 +317,7 @@ body {
   letter-spacing: 0.5px;
   touch-action: manipulation;
   min-height: 28px;
-  min-width: 32px;
+  min-width: 28px;
 }
 
 .track-btn:disabled {
@@ -710,80 +737,43 @@ body {
 }
 
 /* ── Mix controls (per-track fader + pan, master fader) ──
- * B&W only. Rotated vertical fader gets a fat thumb for touch.
- * Slider tracks use solid 2px borders; thumbs are filled black blocks.
- */
+ * B&W only. Compact horizontal layout so rail + lane stay row-aligned. */
 .track-mix {
   display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 4px;
-  margin-bottom: 4px;
-}
-
-.fader-wrap {
-  display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
   gap: 2px;
-  height: 90px;
-  width: 40px;
-  flex-shrink: 0;
+  margin-top: 2px;
 }
 
-.fader-slider {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 80px;
-  height: 6px;
-  transform: rotate(-90deg);
-  transform-origin: center;
-  margin: 40px -20px;
-  background: var(--color-bg);
-  border: 2px solid var(--color-border);
-  touch-action: none;
-  cursor: grab;
+.fader-row,
+.pan-row {
+  display: grid;
+  grid-template-columns: 24px 1fr 28px;
+  align-items: center;
+  gap: 4px;
+  height: 18px;
 }
 
-.fader-slider:active { cursor: grabbing; }
-
-.fader-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 20px;
-  height: 28px;
-  background: var(--color-text);
-  border: 2px solid var(--color-text);
-  cursor: grab;
-  border-radius: 0;
-}
-
-.fader-slider::-moz-range-thumb {
-  width: 20px;
-  height: 28px;
-  background: var(--color-text);
-  border: 2px solid var(--color-text);
-  cursor: grab;
-  border-radius: 0;
-}
-
-.fader-readout {
+.fader-label,
+.pan-label {
   font-family: var(--font-mono);
   font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.fader-readout,
+.pan-readout {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  text-align: right;
   color: var(--color-text-muted);
   white-space: nowrap;
 }
 
-.pan-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  flex: 1;
-  min-width: 80px;
-}
-
+.fader-slider,
 .pan-slider {
   -webkit-appearance: none;
   appearance: none;
@@ -793,35 +783,35 @@ body {
   border: 2px solid var(--color-border);
   touch-action: none;
   cursor: grab;
+  margin: 0;
+  padding: 0;
 }
 
-.pan-slider:active { cursor: grabbing; }
+.fader-slider:active,
+.pan-slider:active {
+  cursor: grabbing;
+}
 
+.fader-slider::-webkit-slider-thumb,
 .pan-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 14px;
-  height: 22px;
+  width: 12px;
+  height: 16px;
   background: var(--color-text);
   border: 2px solid var(--color-text);
   cursor: grab;
   border-radius: 0;
 }
 
+.fader-slider::-moz-range-thumb,
 .pan-slider::-moz-range-thumb {
-  width: 14px;
-  height: 22px;
+  width: 12px;
+  height: 16px;
   background: var(--color-text);
   border: 2px solid var(--color-text);
   cursor: grab;
   border-radius: 0;
-}
-
-.pan-readout {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  color: var(--color-text-muted);
-  letter-spacing: 0.5px;
 }
 
 /* Master mix slider in the transport bar — compact horizontal. */

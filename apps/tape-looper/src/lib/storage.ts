@@ -78,13 +78,17 @@ export async function getCurrentProjectId(): Promise<string | null> {
   const db = await openDB();
   const result = await promisify(tx(db, ['settings']).objectStore('settings').get(CURRENT_KEY));
   db.close();
-  return (result as { value: string } | undefined)?.value ?? null;
+  if (result == null) return null;
+  // Tolerate legacy shape ({ value }) and new shape (raw string).
+  if (typeof result === 'string') return result;
+  return (result as { value?: string }).value ?? null;
 }
 
 export async function setCurrentProjectId(id: string | null) {
   const db = await openDB();
   if (id) {
-    await promisify(tx(db, ['settings'], 'readwrite').objectStore('settings').put({ key: CURRENT_KEY, value: id }));
+    // settings store has no keyPath — supply key out-of-line as the 2nd arg.
+    await promisify(tx(db, ['settings'], 'readwrite').objectStore('settings').put(id, CURRENT_KEY));
   } else {
     await promisify(tx(db, ['settings'], 'readwrite').objectStore('settings').delete(CURRENT_KEY));
   }

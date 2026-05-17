@@ -1,7 +1,6 @@
 /**
- * PanControl — horizontal pan slider, range -1..+1.
- * Snaps to 0 (center) within a ±0.05 dead-zone for predictable centering.
- * Label format: L## / C / R##.
+ * PanControl — compact horizontal pan slider, range -1..+1.
+ * Snaps to 0 (center) within a ±0.05 dead-zone. Label: L##/C/R##.
  */
 export function PanControl({
   value,
@@ -17,7 +16,8 @@ export function PanControl({
         ? `L${Math.abs(Math.round(value * 100))}`
         : `R${Math.round(value * 100)}`;
   return (
-    <div className="pan-wrap" title="Pan">
+    <div className="pan-row" title="Pan">
+      <span className="pan-label">Pan</span>
       <input
         type="range"
         min={-1}
@@ -31,7 +31,7 @@ export function PanControl({
         className="pan-slider"
         aria-label="Pan"
       />
-      <div className="pan-readout">{label}</div>
+      <span className="pan-readout">{label}</span>
     </div>
   );
 }

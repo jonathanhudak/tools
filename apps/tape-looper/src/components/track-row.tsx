@@ -72,7 +72,7 @@ export function TrackRail({ track, transport }: { track: TrackForRow; transport:
           {isMIDI ? '🎹 MIDI' : '🎤 AUDIO'}
         </div>
         {isMIDI && (
-          <>
+          <div className="midi-synth-row">
             <select
               className="waveform-select"
               value={track.waveform}
@@ -85,14 +85,13 @@ export function TrackRail({ track, transport }: { track: TrackForRow; transport:
               <option value="triangle">△ tri</option>
             </select>
             <button
-              className="track-btn"
+              className="track-btn synth-edit-btn"
               onClick={() => setEditingSynthTrackId(track.id)}
               title="Edit synth patch"
-              style={{ marginTop: 4 }}
             >
-              🎛 EDIT SYNTH
+              🎛
             </button>
-          </>
+          </div>
         )}
         <div className="track-mix">
           <Fader value={track.volume} onChange={(v) => setVolume(track.id, v)} label="Track volume" />

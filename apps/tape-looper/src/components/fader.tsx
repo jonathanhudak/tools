@@ -1,10 +1,6 @@
 /**
- * Fader — vertical volume slider (range input rotated -90deg).
- * Renders a B&W slider plus a dB readout. Linear 0–1 input value.
- *
- * Touch-first: 40×90px footprint, 28px-tall thumb meets the ≥40px
- * tap-area-after-rotation requirement (the rotated slider's effective
- * touch surface spans ~80px tall).
+ * Fader — compact horizontal volume slider with inline dB readout.
+ * Linear 0–1 input. B&W styling lives in index.css (`.fader-row`).
  */
 export function Fader({
   value,
@@ -17,7 +13,8 @@ export function Fader({
 }): JSX.Element {
   const db = value === 0 ? '-∞' : `${(20 * Math.log10(value)).toFixed(1)}`;
   return (
-    <div className="fader-wrap" title={label ?? 'Volume'}>
+    <div className="fader-row" title={label ?? 'Volume'}>
+      <span className="fader-label">Vol</span>
       <input
         type="range"
         min={0}
@@ -28,7 +25,7 @@ export function Fader({
         className="fader-slider"
         aria-label={label ?? 'Volume'}
       />
-      <div className="fader-readout">{db} dB</div>
+      <span className="fader-readout">{db}</span>
     </div>
   );
 }

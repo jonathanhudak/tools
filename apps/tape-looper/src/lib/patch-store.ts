@@ -6,7 +6,10 @@ import type { SynthPatch } from './types';
 import { DEFAULT_PATCH } from './types';
 import { PATCH_PRESETS, getPresetById } from './patch-presets';
 
-const DB_NAME = 'tape-looper';
+// Separate DB from the main `tape-looper` projects DB. Sharing one DB across
+// two modules with independent version histories causes the second opener to
+// race the first and find its object stores missing.
+const DB_NAME = 'tape-looper-patches';
 const STORE_NAME = 'patches';
 const SEED_FLAG_KEY = '__seeded_v1__';
 let seedPromise: Promise<void> | null = null;
