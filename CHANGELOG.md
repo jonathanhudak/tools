@@ -1,3 +1,10 @@
+# [1.47.0](https://github.com/jonathanhudak/tools/compare/v1.46.0...v1.47.0) (2026-05-17)
+
+
+### Features
+
+* **tape-looper:** MIDI rescan + diagnostics popover, fix synth-editor focus trap ([ed0ae51](https://github.com/jonathanhudak/tools/commit/ed0ae511b67936aabd988d3cbd76c32019018584))
+
 # [1.46.0](https://github.com/jonathanhudak/tools/compare/v1.45.2...v1.46.0) (2026-05-17)
 
 
