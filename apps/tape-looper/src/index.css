@@ -244,9 +244,10 @@ body {
 }
 
 /* Shared row height keeps rails + lanes aligned across the two columns
- * of `.timeline-stack`. Both audio and MIDI rails must fit inside this. */
+ * of `.timeline-stack`. Both audio and MIDI rails must fit inside this.
+ * Keep in sync with TRACK_ROW_HEIGHT in app.tsx (playhead overlay height). */
 :root {
-  --row-height: 156px;
+  --row-height: 184px;
 }
 
 .track-rail {
@@ -266,10 +267,10 @@ body {
   width: 160px;
   min-width: 160px;
   flex: 1;
-  padding: 6px 8px;
+  padding: 10px 10px;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 6px;
   background: var(--color-surface);
   overflow: hidden;
 }
@@ -741,17 +742,17 @@ body {
 .track-mix {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   margin-top: 2px;
 }
 
 .fader-row,
 .pan-row {
   display: grid;
-  grid-template-columns: 24px 1fr 28px;
+  grid-template-columns: 26px 1fr 30px;
   align-items: center;
-  gap: 4px;
-  height: 18px;
+  gap: 6px;
+  height: 20px;
 }
 
 .fader-label,

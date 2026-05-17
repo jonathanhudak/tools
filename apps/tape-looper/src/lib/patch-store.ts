@@ -11,7 +11,6 @@ import { PATCH_PRESETS, getPresetById } from './patch-presets';
 // race the first and find its object stores missing.
 const DB_NAME = 'tape-looper-patches';
 const STORE_NAME = 'patches';
-const SEED_FLAG_KEY = '__seeded_v1__';
 let seedPromise: Promise<void> | null = null;
 
 function openDB(): Promise<IDBDatabase> {
@@ -39,21 +38,31 @@ function promisify<T>(request: IDBRequest<T>): Promise<T> {
   });
 }
 
-/** Seed built-in presets the first time we open the DB. Idempotent. */
+/**
+ * Seed built-in presets, idempotent per preset. Only inserts presets whose IDs
+ * are not already in the store, so:
+ *   - first-time users get all presets
+ *   - existing users get newly-added presets on next open
+ *   - user edits to existing presets (same IDs) are preserved
+ * Runs at most once per session via the cached promise.
+ */
 async function seedPresetsIfNeeded(): Promise<void> {
   if (seedPromise) return seedPromise;
   seedPromise = (async () => {
     const db = await openDB();
     try {
-      // Use the flag key as a sentinel row to avoid re-seeding on every call.
-      const flag = await promisify(tx(db).objectStore(STORE_NAME).get(SEED_FLAG_KEY));
-      if (flag) return;
+      const existing = (await promisify(
+        tx(db).objectStore(STORE_NAME).getAll(),
+      )) as SynthPatch[];
+      const existingIds = new Set(existing.map((p) => p.id));
+      const missing = PATCH_PRESETS.filter((p) => !existingIds.has(p.id));
+      if (missing.length === 0) return;
+
       const writeTx = tx(db, 'readwrite');
       const store = writeTx.objectStore(STORE_NAME);
-      for (const preset of PATCH_PRESETS) {
+      for (const preset of missing) {
         store.put(preset);
       }
-      store.put({ id: SEED_FLAG_KEY, seededAt: Date.now() } as unknown as SynthPatch);
       await new Promise<void>((resolve, reject) => {
         writeTx.oncomplete = () => resolve();
         writeTx.onerror = () => reject(writeTx.error);
@@ -71,9 +80,7 @@ export async function listPatches(): Promise<SynthPatch[]> {
   const db = await openDB();
   const all = await promisify(tx(db).objectStore(STORE_NAME).getAll());
   db.close();
-  return (all as SynthPatch[])
-    .filter((p) => p.id !== SEED_FLAG_KEY)
-    .sort((a, b) => a.name.localeCompare(b.name));
+  return (all as SynthPatch[]).sort((a, b) => a.name.localeCompare(b.name));
 }
 
 export async function getPatch(id: string): Promise<SynthPatch | null> {

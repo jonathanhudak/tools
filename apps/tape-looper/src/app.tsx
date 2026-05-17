@@ -445,7 +445,9 @@ export function App() {
     return Math.max(viewportW, longest * zoom + 200);
   }, [tracks, zoom, viewportW]);
 
-  const totalHeight = TimelineRuler.HEIGHT + tracks.length * 100;
+  // Keep in sync with --row-height in index.css.
+  const TRACK_ROW_HEIGHT = 184;
+  const totalHeight = TimelineRuler.HEIGHT + tracks.length * TRACK_ROW_HEIGHT + 80;
 
   useAutoScroll(scrollRef, playheadTime, zoom, followPlayhead, transport);
 
