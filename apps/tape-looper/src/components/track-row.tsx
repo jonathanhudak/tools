@@ -26,6 +26,7 @@ export function TrackRail({ track, transport }: { track: TrackForRow; transport:
   const removeTrack = useStore((s) => s.removeTrack);
   const renameTrack = useStore((s) => s.renameTrack);
   const setWaveform = useStore((s) => s.setWaveform);
+  const setEditingSynthTrackId = useStore((s) => s.setEditingSynthTrackId);
   const canArm = transport === 'stopped' || (transport === 'recording' && track.armed);
   const isMIDI = track.trackType === 'midi';
   const [editing, setEditing] = useState(false);
@@ -65,17 +66,27 @@ export function TrackRail({ track, transport }: { track: TrackForRow; transport:
           {isMIDI ? '🎹 MIDI' : '🎤 AUDIO'}
         </div>
         {isMIDI && (
-          <select
-            className="waveform-select"
-            value={track.waveform}
-            onChange={(e) => setWaveform(track.id, e.target.value as Waveform)}
-            title="Waveform"
-          >
-            <option value="sine">~ sine</option>
-            <option value="sawtooth">/\\ saw</option>
-            <option value="square">⎍ square</option>
-            <option value="triangle">△ tri</option>
-          </select>
+          <>
+            <select
+              className="waveform-select"
+              value={track.waveform}
+              onChange={(e) => setWaveform(track.id, e.target.value as Waveform)}
+              title="Waveform"
+            >
+              <option value="sine">~ sine</option>
+              <option value="sawtooth">/\\ saw</option>
+              <option value="square">⎍ square</option>
+              <option value="triangle">△ tri</option>
+            </select>
+            <button
+              className="track-btn"
+              onClick={() => setEditingSynthTrackId(track.id)}
+              title="Edit synth patch"
+              style={{ marginTop: 4 }}
+            >
+              🎛 EDIT SYNTH
+            </button>
+          </>
         )}
         <div className="track-btns">
           <button className={`track-btn arm ${track.armed ? 'on' : ''}`} onClick={() => canArm && toggleArm(track.id)} disabled={!canArm}>

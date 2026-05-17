@@ -15,6 +15,7 @@ interface DAWStore {
   masterVolume: number;
   loop: LoopRegion;
   followPlayhead: boolean;
+  editingSynthTrackId: string | null;
 
   addAudioTrack: () => void;
   addMidiTrack: () => void;
@@ -42,6 +43,7 @@ interface DAWStore {
   setMasterVolume: (volume: number) => void;
   setLoop: (loop: Partial<LoopRegion>) => void;
   setFollowPlayhead: (v: boolean) => void;
+  setEditingSynthTrackId: (id: string | null) => void;
 }
 
 let trackNum = 1;
@@ -75,6 +77,7 @@ export const useStore = create<DAWStore>((set) => ({
   masterVolume: 0.8,
   loop: { enabled: false, start: 0, end: 4 },
   followPlayhead: true,
+  editingSynthTrackId: null,
 
   addAudioTrack: () => set((s) => ({ tracks: [...s.tracks, freshTrack('audio')] })),
   addMidiTrack: () => set((s) => ({ tracks: [...s.tracks, freshTrack('midi')] })),
@@ -142,4 +145,5 @@ export const useStore = create<DAWStore>((set) => ({
   setMasterVolume: (masterVolume) => set({ masterVolume }),
   setLoop: (loop) => set((s) => ({ loop: { ...s.loop, ...loop } })),
   setFollowPlayhead: (followPlayhead) => set({ followPlayhead }),
+  setEditingSynthTrackId: (editingSynthTrackId) => set({ editingSynthTrackId }),
 }));

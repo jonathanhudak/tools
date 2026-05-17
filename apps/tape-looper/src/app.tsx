@@ -1,15 +1,22 @@
 import { useRef, useEffect, useCallback, useState, useMemo } from 'react';
 import { useStore } from './lib/store';
-import { getCtx, getMasterGain, startRecording, boostGain } from './lib/audio-engine';
-import { synthTrack } from './lib/midi-engine';
+import { getCtx, startRecording, boostGain } from './lib/audio-engine';
 import { initMIDI, setMIDICallbacks } from './lib/midi-input';
 import {
   serializeTracks, deserializeTracks, saveProject,
   getProject, newProjectId,
   getCurrentProjectId,
 } from './lib/storage';
+import { initToneBridge } from './lib/tone-bridge';
+import {
+  startPlayback as engineStartPlayback,
+  stopAllSources as engineStopAllSources,
+  playLiveNote as enginePlayLiveNote,
+  stopLiveNote as engineStopLiveNote,
+  releaseAllLiveNotes as engineReleaseAllLiveNotes,
+  getTransportSeconds,
+} from './lib/transport-playback';
 import type { NoteEvent } from './lib/types';
-import { seedPatchesIfEmpty } from './lib/patch-presets';
 import { PatternDefs } from './components/pattern-defs';
 import { TransportBar } from './components/transport-bar';
 import { TrackRail, TrackLaneRow } from './components/track-row';
@@ -17,6 +24,7 @@ import { computeTotalDuration } from './components/track-lane';
 import { TimelineRuler } from './components/timeline-ruler';
 import { PlayheadOverlay } from './components/playhead-overlay';
 import { ProjectsPanel } from './components/projects-panel';
+import { SynthEditor } from './components/synth-editor';
 import { useAutoScroll } from './hooks/use-auto-scroll';
 
 /* ── Piano key mapping: 2 rows of computer keyboard → 1 octave ── */
@@ -54,10 +62,8 @@ export function App() {
   const [playheadTime, setPlayheadTime] = useState(0);
   const [octaveOffset, setOctaveOffset] = useState(0);
   const octaveOffsetRef = useRef(0);
-  // MIDI — try auto-init (works if permission granted), fallback to button
   const [midiConnected, setMIDIConnected] = useState(false);
   const [midiError, setMidiError] = useState<string | null>(null);
-  // Wrap setMIDIConnected so connecting via onstatechange also clears error
   const handleMIDIConnected = useCallback((connected: boolean) => {
     setMIDIConnected(connected);
     if (connected) setMidiError(null);
@@ -74,27 +80,23 @@ export function App() {
     }
   }, [handleMIDIConnected]);
 
-  // Auto-detect MIDI on mount (works if permission already granted)
   useEffect(() => { connectMIDI(); }, [connectMIDI]);
 
-  const playingSourcesRef = useRef<AudioBufferSourceNode[]>([]);
   const recordingRef = useRef<{ stop: () => Promise<AudioBuffer> } | null>(null);
-  const recordStartTimeRef = useRef(0);
+  /** Transport.seconds when recording started — clip startTime. */
+  const recordStartTransportRef = useRef(0);
   const playheadRef = useRef(0);
-  const startCtxTimeRef = useRef(0);
   const rafRef = useRef(0);
 
-  // Transport ref for keyboard handler (avoids stale closure)
   const transportRef = useRef(transport);
   transportRef.current = transport;
 
-  // MIDI recording state
   const midiRecordingRef = useRef(false);
   const midiNotesRef = useRef<NoteEvent[]>([]);
   const midiNoteStartRef = useRef<Map<number, number>>(new Map());
-  const activeOscillatorsRef = useRef<Map<number, OscillatorNode>>(new Map());
+  /** trackId currently receiving live notes (armed MIDI track or first MIDI track). */
+  const liveTrackRef = useRef<string | null>(null);
 
-  // Project state
   const [projectsOpen, setProjectsOpen] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
@@ -105,16 +107,18 @@ export function App() {
   const projectName = useStore((s) => s.projectName);
   const hasHydrated = useRef(false);
 
-  // Hydrate: load the last project on mount
+  // Hydrate: bind Tone to our AudioContext, then load the last project on mount.
   useEffect(() => {
     if (hasHydrated.current) return;
     hasHydrated.current = true;
-    // Seed default patches once (no-op if already populated)
-    seedPatchesIfEmpty();
-    // Set a project ID synchronously so Save works immediately (before DB resolves)
     const tempId = newProjectId();
     setProjectId(tempId);
     (async () => {
+      try {
+        await initToneBridge();
+      } catch (err) {
+        console.warn('Tone bridge init failed:', err);
+      }
       try {
         const savedId = await getCurrentProjectId();
         if (savedId) {
@@ -130,7 +134,6 @@ export function App() {
       } catch (err) {
         console.warn('Failed to load saved project:', err);
       }
-      // No saved project or load failed — use tempId already set above
       setProjectName('Untitled');
     })();
   }, [setTracks, setProjectId, setProjectName]);
@@ -153,7 +156,6 @@ export function App() {
     return () => clearTimeout(timer);
   }, [tracks, projectId, projectName]);
 
-  // Save handlers
   const handleSave = useCallback(async () => {
     const id = projectId ?? newProjectId();
     if (!projectId) setProjectId(id);
@@ -199,15 +201,13 @@ export function App() {
     const t = Math.max(0, time);
     playheadRef.current = t;
     setPlayheadTime(t);
-    startCtxTimeRef.current = getCtx().currentTime - t;
   }, [transport]);
 
-  // Playhead animation
+  // Playhead animation — reads Tone.Transport.seconds.
   useEffect(() => {
     if (transport === 'playing' || transport === 'recording') {
-      startCtxTimeRef.current = getCtx().currentTime - playheadRef.current;
       const tick = () => {
-        const t = getCtx().currentTime - startCtxTimeRef.current;
+        const t = getTransportSeconds();
         playheadRef.current = t;
         setPlayheadTime(t);
         rafRef.current = requestAnimationFrame(tick);
@@ -218,110 +218,88 @@ export function App() {
     return undefined;
   }, [transport]);
 
-  const stopAllSources = useCallback(() => {
-    playingSourcesRef.current.forEach((s) => { try { s.stop(); } catch { /* noop */ } });
-    playingSourcesRef.current = [];
+  /**
+   * Pick the trackId for live notes.
+   *   1. Armed MIDI track (REC + tap = capture).
+   *   2. First MIDI track (non-armed tinkering).
+   *   3. null — no MIDI track.
+   */
+  const resolveLiveTrackId = useCallback((): string | null => {
+    const state = useStore.getState();
+    const armed = state.tracks.find((t) => t.id === state.armedTrackId);
+    if (armed?.trackType === 'midi') return armed.id;
+    const firstMidi = state.tracks.find((t) => t.trackType === 'midi');
+    return firstMidi?.id ?? null;
   }, []);
 
-  const startPlayback = useCallback((skipArmed = false) => {
-    stopAllSources();
-    const ctx = getCtx();
-    const master = getMasterGain();
+  const stopAllSources = useCallback(() => {
+    engineStopAllSources();
+  }, []);
+
+  const startPlayback = useCallback(async (skipArmed = false) => {
     const state = useStore.getState();
-    const currentTracks = state.tracks;
-    const currentArmedId = state.armedTrackId;
-    const anySolo = currentTracks.some((t) => t.solo);
+    const armedId = skipArmed ? state.armedTrackId : null;
+    await engineStartPlayback({
+      from: playheadRef.current,
+      skipArmedTrackId: armedId,
+    }, state.tracks);
+  }, []);
 
-    for (const track of currentTracks) {
-      // When recording, skip the armed track (don't play back what we're overwriting)
-      if (skipArmed && track.armed && track.id === currentArmedId) continue;
-      const effectiveMute = anySolo ? !track.solo : track.muted;
-      if (effectiveMute) continue;
-
-      if (track.trackType === 'midi') {
-        // Synthesize MIDI notes into audio buffer and play
-        const buf = synthTrack(track.notes, ctx, track.waveform);
-        if (buf) {
-          const offset = playheadRef.current;
-          const src = ctx.createBufferSource();
-          src.buffer = buf;
-          const gain = ctx.createGain();
-          gain.gain.value = 1.0;
-          gain.connect(master);
-          src.connect(gain);
-          src.start(ctx.currentTime, offset);
-          playingSourcesRef.current.push(src);
-        }
-      } else {
-        for (const clip of track.clips) {
-          const clipEnd = clip.startTime + clip.duration;
-          if (clipEnd <= playheadRef.current) continue;
-          const offset = playheadRef.current - clip.startTime;
-          const clipOffset = Math.max(0, offset);
-          const when = Math.max(0, -offset);
-          const remaining = clip.duration - clipOffset;
-          const gain = ctx.createGain();
-          gain.gain.value = 0.8;
-          gain.connect(master);
-          const src = ctx.createBufferSource();
-          src.buffer = clip.buffer;
-          src.connect(gain);
-          src.start(ctx.currentTime + when, clipOffset, remaining);
-          playingSourcesRef.current.push(src);
-        }
-      }
-    }
-  }, [stopAllSources]);
-
-  // Restart playback when mute/solo changes during playback
+  // Restart playback when mute/solo changes during playback.
   const prevMuteSoloRef = useRef('');
   useEffect(() => {
     const hash = tracks.map((t) => `${t.id}:${t.muted}:${t.solo}`).join('|');
     if (prevMuteSoloRef.current === hash) return;
     const prev = prevMuteSoloRef.current;
     prevMuteSoloRef.current = hash;
-    // Skip first render
     if (!prev) return;
     if (transportRef.current === 'playing') {
-      stopAllSources();
-      startPlayback(false);
+      void startPlayback(false);
     } else if (transportRef.current === 'recording') {
-      stopAllSources();
-      startPlayback(true);
+      void startPlayback(true);
     }
-  }, [tracks, stopAllSources, startPlayback]);
+  }, [tracks, startPlayback]);
 
   const stopRecording = useCallback(async () => {
+    const transportAtStop = getTransportSeconds();
     stopAllSources();
     const armedTrack = tracks.find((t) => t.id === armedTrackId);
 
     if (armedTrack?.trackType === 'midi') {
-      // End any held MIDI notes
-      endAllMIDINotes();
+      engineReleaseAllLiveNotes();
       midiRecordingRef.current = false;
       if (midiNotesRef.current.length > 0) {
         overwriteNotes(armedTrackId!, [...midiNotesRef.current], 0);
         midiNotesRef.current = [];
       }
-    } else {
-      if (recordingRef.current) {
-        const buffer = await recordingRef.current.stop();
-        recordingRef.current = null;
-        if (armedTrackId && buffer.duration > 0.1) {
-          const boosted = boostGain(buffer, inputGain);
-          const startTime = recordStartTimeRef.current - startCtxTimeRef.current;
+      midiNoteStartRef.current.clear();
+    } else if (recordingRef.current) {
+      const buffer = await recordingRef.current.stop();
+      recordingRef.current = null;
+      if (armedTrackId && buffer.duration > 0.1) {
+        const boosted = boostGain(buffer, inputGain);
+        const startTime = recordStartTransportRef.current;
+        const actualDuration = Math.min(buffer.duration, Math.max(0.1, transportAtStop - startTime));
+        if (actualDuration > 0 && actualDuration < buffer.duration) {
+          const ctx = getCtx();
+          const newLen = Math.floor(actualDuration * boosted.sampleRate);
+          const cropped = ctx.createBuffer(boosted.numberOfChannels, newLen, boosted.sampleRate);
+          for (let ch = 0; ch < boosted.numberOfChannels; ch++) {
+            cropped.getChannelData(ch).set(boosted.getChannelData(ch).subarray(0, newLen));
+          }
+          overwriteClip(armedTrackId, cropped, Math.max(0, startTime));
+        } else {
           overwriteClip(armedTrackId, boosted, Math.max(0, startTime));
         }
       }
     }
-    // Don't auto-disarm — let user manually disarm
     setTransport('stopped');
   }, [armedTrackId, tracks, overwriteClip, overwriteNotes, inputGain, stopAllSources, setTransport]);
 
-  const handlePlay = useCallback(() => {
+  const handlePlay = useCallback(async () => {
     if (transport === 'playing') { stopAllSources(); setTransport('stopped'); return; }
-    if (transport === 'recording') { stopRecording(); return; }
-    startPlayback();
+    if (transport === 'recording') { await stopRecording(); return; }
+    await startPlayback(false);
     setTransport('playing');
   }, [transport, setTransport, stopAllSources, startPlayback, stopRecording]);
 
@@ -331,72 +309,50 @@ export function App() {
     if (!armedTrackId) return;
 
     const armedTrack = tracks.find((t) => t.id === armedTrackId);
-    startPlayback(true); // skip armed track during recording
+    await startPlayback(true);
 
     if (armedTrack?.trackType === 'midi') {
       midiRecordingRef.current = true;
       midiNotesRef.current = [];
+      midiNoteStartRef.current.clear();
     } else {
       recordingRef.current = await startRecording();
-      recordStartTimeRef.current = getCtx().currentTime;
+      recordStartTransportRef.current = getTransportSeconds();
     }
     setTransport('recording');
   }, [transport, armedTrackId, tracks, setTransport, startPlayback, stopRecording]);
 
   const handleSeekToStart = useCallback(() => seekTo(0), [seekTo]);
 
-  // ── MIDI keyboard input ──
+  // Live MIDI through Tone.PolySynth per-track.
   const playNote = useCallback((midiNote: number) => {
-    const ctx = getCtx();
-    const master = getMasterGain();
+    const trackId = resolveLiveTrackId();
+    if (!trackId) return;
+    liveTrackRef.current = trackId;
     const state = useStore.getState();
-    const armedTrack = state.tracks.find((t) => t.id === state.armedTrackId);
-    const waveform = armedTrack?.waveform ?? 'sine';
-    const osc = ctx.createOscillator();
-    osc.type = waveform;
-    osc.frequency.value = 440 * Math.pow(2, (midiNote - 69) / 12);
-    const gain = ctx.createGain();
-    gain.gain.value = 0.3;
-    gain.connect(master);
-    osc.connect(gain);
-    osc.start();
-    activeOscillatorsRef.current.set(midiNote, osc);
+    const trk = state.tracks.find((t) => t.id === trackId);
+    void enginePlayLiveNote(trackId, trk?.patchId ?? null, midiNote);
 
-    // MIDI recording capture (works for touch + keyboard)
     if (midiRecordingRef.current) {
-      const t = getCtx().currentTime - startCtxTimeRef.current;
+      const t = getTransportSeconds();
       midiNoteStartRef.current.set(midiNote, t);
     }
-  }, []);
+  }, [resolveLiveTrackId]);
 
   const stopNote = useCallback((midiNote: number) => {
-    const osc = activeOscillatorsRef.current.get(midiNote);
-    if (osc) {
-      try { osc.stop(); } catch { /* noop */ }
-      osc.disconnect();
-      activeOscillatorsRef.current.delete(midiNote);
-    }
+    const trackId = liveTrackRef.current ?? resolveLiveTrackId();
+    if (trackId) engineStopLiveNote(trackId, midiNote);
 
-    // MIDI recording capture (works for touch + keyboard)
     if (midiRecordingRef.current) {
       const startTime = midiNoteStartRef.current.get(midiNote);
       if (startTime !== undefined) {
-        const endTime = getCtx().currentTime - startCtxTimeRef.current;
+        const endTime = getTransportSeconds();
         midiNotesRef.current.push({ midiNote, startTime, duration: Math.max(0.05, endTime - startTime) });
         midiNoteStartRef.current.delete(midiNote);
       }
     }
-  }, []);
+  }, [resolveLiveTrackId]);
 
-  const endAllMIDINotes = useCallback(() => {
-    activeOscillatorsRef.current.forEach((osc) => {
-      try { osc.stop(); } catch { /* noop */ }
-      osc.disconnect();
-    });
-    activeOscillatorsRef.current.clear();
-  }, []);
-
-  // Keep ref in sync so keydown handler reads latest octave without re-registering
   useEffect(() => { octaveOffsetRef.current = octaveOffset; }, [octaveOffset]);
 
   useEffect(() => {
@@ -405,7 +361,6 @@ export function App() {
 
       const key = e.key.toLowerCase();
 
-      // Octave shift (Ableton-style: Z = down, X = up)
       if (key === 'z') { e.preventDefault(); setOctaveOffset((o) => Math.max(-4, o - 1)); return; }
       if (key === 'x') { e.preventDefault(); setOctaveOffset((o) => Math.min(4, o + 1)); return; }
 
@@ -419,7 +374,6 @@ export function App() {
         return;
       }
 
-      // Transport shortcuts
       switch (e.code) {
         case 'Space': e.preventDefault(); handlePlay(); break;
         case 'KeyR': e.preventDefault(); handleRecord(); break;
@@ -445,8 +399,7 @@ export function App() {
     };
   }, [handlePlay, handleRecord, handleSeekToStart, playNote, stopNote]);
 
-  // Scroll wheel: ctrl/meta + wheel zooms. Bound to the new timeline scroll
-  // container (was `.tracks-container` before the split-layout refactor).
+  // Scroll wheel: ctrl/meta + wheel zooms.
   useEffect(() => {
     const tracksEl = document.querySelector('.timeline-scroll');
     if (!tracksEl) return;
@@ -461,7 +414,6 @@ export function App() {
     return () => tracksEl.removeEventListener('wheel', onWheel as EventListener);
   }, []);
 
-  // Wire MIDI callbacks — re-wired when playNote/stopNote change
   useEffect(() => {
     setMIDICallbacks(playNote, stopNote, handleMIDIConnected);
   }, [playNote, stopNote, handleMIDIConnected]);
@@ -472,8 +424,6 @@ export function App() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [viewportW, setViewportW] = useState(0);
 
-  // Track the timeline scroll container's clientWidth so we can size the
-  // ruler/lanes/overlay to at least the viewport when there's no content yet.
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
@@ -493,7 +443,6 @@ export function App() {
     return Math.max(viewportW, longest * zoom + 200);
   }, [tracks, zoom, viewportW]);
 
-  // Total height for the playhead overlay — covers ruler + every lane row.
   const totalHeight = TimelineRuler.HEIGHT + tracks.length * 100;
 
   useAutoScroll(scrollRef, playheadTime, zoom, followPlayhead, transport);
@@ -501,6 +450,7 @@ export function App() {
   return (
     <div className="daw-app">
       <PatternDefs />
+      <SynthEditor />
       <TransportBar playheadTime={playheadTime} onPlay={handlePlay} onRecord={handleRecord} onSeekToStart={handleSeekToStart} onOpenProjects={() => setProjectsOpen(true)} onNewProject={handleNewProject} onSave={handleSave} saveStatus={saveStatus} midiConnected={midiConnected} onConnectMIDI={connectMIDI} midiError={midiError} octaveOffset={octaveOffset} onOctaveDown={() => setOctaveOffset((o) => Math.max(-4, o - 1))} onOctaveUp={() => setOctaveOffset((o) => Math.min(4, o + 1))} />
       <div className="timeline-stack">
         <div className="rail-column">

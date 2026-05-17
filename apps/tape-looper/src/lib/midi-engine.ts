@@ -54,7 +54,11 @@ function oscSample(waveform: Waveform, freq: number, t: number): number {
   }
 }
 
-/** Synthesize all notes on a track into a single AudioBuffer for playback */
+/**
+ * @deprecated MIDI playback now goes through Tone.PolySynth + Tone.Part
+ * scheduled on Tone.Transport (see lib/transport-playback.ts). This offline
+ * AudioBuffer renderer remains only for tests / fallback.
+ */
 export function synthTrack(notes: NoteEvent[], ctx: AudioContext, waveform: Waveform = 'sine'): AudioBuffer | null {
   if (notes.length === 0) return null;
   const totalDuration = Math.max(...notes.map((n) => n.startTime + n.duration));
