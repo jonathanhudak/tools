@@ -82,6 +82,10 @@ export function TransportBar({
   const setZoom = useStore((s) => s.setZoom);
   const followPlayhead = useStore((s) => s.followPlayhead);
   const setFollowPlayhead = useStore((s) => s.setFollowPlayhead);
+  const masterVolume = useStore((s) => s.masterVolume);
+  const setMasterVolume = useStore((s) => s.setMasterVolume);
+
+  const masterDb = masterVolume === 0 ? '-∞' : `${(20 * Math.log10(masterVolume)).toFixed(0)} dB`;
 
   const fmtTime = (t: number) => {
     const m = Math.floor(Math.max(0, t) / 60);
@@ -142,6 +146,21 @@ export function TransportBar({
           <button className="transport-btn" onClick={onOctaveDown} disabled={octaveOffset <= -4}>Z</button>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, minWidth: 36, textAlign: 'center' }}>Oct {octaveOffset >= 0 ? '+' : ''}{octaveOffset}</span>
           <button className="transport-btn" onClick={onOctaveUp} disabled={octaveOffset >= 4}>X</button>
+        </div>
+
+        <div className="master-fader" title={`Master mix ${masterDb}`}>
+          <span className="master-fader-label">MIX</span>
+          <input
+            type="range"
+            min={0}
+            max={1}
+            step={0.01}
+            value={masterVolume}
+            onChange={(e) => setMasterVolume(Number(e.target.value))}
+            className="master-slider"
+            aria-label="Master volume"
+          />
+          <span className="master-fader-readout">{masterDb}</span>
         </div>
 
         <div style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontSize: 16 }}>{fmtTime(playheadTime)}</div>

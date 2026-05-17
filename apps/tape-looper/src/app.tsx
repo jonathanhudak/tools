@@ -1,6 +1,6 @@
 import { useRef, useEffect, useCallback, useState, useMemo } from 'react';
 import { useStore } from './lib/store';
-import { getCtx, startRecording, boostGain } from './lib/audio-engine';
+import { getCtx, startRecording, boostGain, setMasterGainValue } from './lib/audio-engine';
 import { initMIDI, setMIDICallbacks } from './lib/midi-input';
 import {
   serializeTracks, deserializeTracks, saveProject,
@@ -15,6 +15,7 @@ import {
   stopLiveNote as engineStopLiveNote,
   releaseAllLiveNotes as engineReleaseAllLiveNotes,
   getTransportSeconds,
+  getOrCreateTrackRouting,
 } from './lib/transport-playback';
 import type { NoteEvent } from './lib/types';
 import { PatternDefs } from './components/pattern-defs';
@@ -446,6 +447,21 @@ export function App() {
   const totalHeight = TimelineRuler.HEIGHT + tracks.length * 100;
 
   useAutoScroll(scrollRef, playheadTime, zoom, followPlayhead, transport);
+
+  // ── Mixer: push store volume/pan/masterVolume into the audio graph.
+  // The transport-playback module owns per-track GainNode + StereoPannerNode;
+  // here we just nudge their .value when the user moves a slider.
+  const masterVolume = useStore((s) => s.masterVolume);
+  useEffect(() => {
+    setMasterGainValue(masterVolume);
+  }, [masterVolume]);
+  useEffect(() => {
+    for (const t of tracks) {
+      const r = getOrCreateTrackRouting(t.id);
+      r.gain.gain.value = t.volume;
+      r.panner.pan.value = t.pan;
+    }
+  }, [tracks]);
 
   return (
     <div className="daw-app">

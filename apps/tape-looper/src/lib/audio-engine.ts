@@ -22,6 +22,17 @@ export function getMasterGain(): GainNode {
   return masterGain!;
 }
 
+/**
+ * Set the master gain node's value (0–1, clamped).
+ * Clamped to avoid blowing speakers. The default is 0.8; the mixer in
+ * the UI subscribes to store.masterVolume changes and pushes them here.
+ */
+export function setMasterGainValue(v: number): void {
+  if (masterGain) {
+    masterGain.gain.value = Math.max(0, Math.min(1, v));
+  }
+}
+
 async function getInputStream(): Promise<MediaStream> {
   return navigator.mediaDevices.getUserMedia({
     audio: {

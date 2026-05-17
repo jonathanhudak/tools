@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useStore } from '../lib/store';
 import type { Clip, NoteEvent, Waveform } from '../lib/types';
 import { TrackLane } from './track-lane';
+import { Fader } from './fader';
+import { PanControl } from './pan-control';
 
 type TrackForRow = {
   id: string;
@@ -11,6 +13,8 @@ type TrackForRow = {
   solo: boolean;
   trackType: string;
   waveform: string;
+  volume: number;
+  pan: number;
   clips: Clip[];
   notes: NoteEvent[];
 };
@@ -27,6 +31,8 @@ export function TrackRail({ track, transport }: { track: TrackForRow; transport:
   const renameTrack = useStore((s) => s.renameTrack);
   const setWaveform = useStore((s) => s.setWaveform);
   const setEditingSynthTrackId = useStore((s) => s.setEditingSynthTrackId);
+  const setVolume = useStore((s) => s.setVolume);
+  const setPan = useStore((s) => s.setPan);
   const canArm = transport === 'stopped' || (transport === 'recording' && track.armed);
   const isMIDI = track.trackType === 'midi';
   const [editing, setEditing] = useState(false);
@@ -88,6 +94,10 @@ export function TrackRail({ track, transport }: { track: TrackForRow; transport:
             </button>
           </>
         )}
+        <div className="track-mix">
+          <Fader value={track.volume} onChange={(v) => setVolume(track.id, v)} label="Track volume" />
+          <PanControl value={track.pan} onChange={(v) => setPan(track.id, v)} />
+        </div>
         <div className="track-btns">
           <button className={`track-btn arm ${track.armed ? 'on' : ''}`} onClick={() => canArm && toggleArm(track.id)} disabled={!canArm}>
             {track.armed ? '⬤ REC' : 'REC'}
