@@ -1,7 +1,7 @@
 import { useRef, useEffect, useCallback, useState, useMemo } from 'react';
 import { useStore } from './lib/store';
 import { getCtx, startRecording, boostGain, setMasterGainValue } from './lib/audio-engine';
-import { initMIDI, setMIDICallbacks } from './lib/midi-input';
+import { initMIDI, rescanMIDI, setMIDICallbacks, getMIDIDiagnostics, hasMIDI, type MIDIDiagnostics } from './lib/midi-input';
 import {
   serializeTracks, deserializeTracks, saveProject,
   getProject, newProjectId,
@@ -66,23 +66,51 @@ export function App() {
   const octaveOffsetRef = useRef(0);
   const [midiConnected, setMIDIConnected] = useState(false);
   const [midiError, setMidiError] = useState<string | null>(null);
+  const [midiDiag, setMidiDiag] = useState<MIDIDiagnostics | null>(null);
+  const refreshMidiDiag = useCallback(async () => {
+    try { setMidiDiag(await getMIDIDiagnostics()); } catch { /* noop */ }
+  }, []);
   const handleMIDIConnected = useCallback((connected: boolean) => {
     setMIDIConnected(connected);
     if (connected) setMidiError(null);
-  }, []);
+    void refreshMidiDiag();
+  }, [refreshMidiDiag]);
+  /**
+   * Smart MIDI connect:
+   *   - If we already have a granted MIDIAccess (user previously approved),
+   *     do a rescan — picks up newly plugged devices without re-prompting.
+   *   - Otherwise call initMIDI which triggers the permission prompt.
+   *
+   * Daylight Chrome: the auto-mount call usually fails the user-gesture
+   * gate and rejects; the user then taps the 🎹 button which runs this in
+   * gesture context and succeeds.
+   */
   const connectMIDI = useCallback(async () => {
     setMidiError(null);
-    const result = await initMIDI();
+    const diag = await getMIDIDiagnostics();
+    const result = diag.hasAccess ? await rescanMIDI() : await initMIDI();
     if (result.ok) {
       handleMIDIConnected(result.connected);
-      if (!result.connected) setMidiError('No MIDI device found — plug in keyboard and try again');
+      if (!result.connected) {
+        setMidiError('No MIDI device found — plug in keyboard, power it on, then tap MIDI again');
+      }
     } else {
       setMIDIConnected(false);
       setMidiError(result.reason);
     }
-  }, [handleMIDIConnected]);
+    await refreshMidiDiag();
+  }, [handleMIDIConnected, refreshMidiDiag]);
 
-  useEffect(() => { connectMIDI(); }, [connectMIDI]);
+  // Sync state if onstatechange fired since last render.
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const live = hasMIDI();
+      setMIDIConnected((prev) => (prev === live ? prev : live));
+    }, 1500);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => { connectMIDI(); void refreshMidiDiag(); }, [connectMIDI, refreshMidiDiag]);
 
   const recordingRef = useRef<{ stop: () => Promise<AudioBuffer> } | null>(null);
   /** Transport.seconds when recording started — clip startTime. */
@@ -359,7 +387,16 @@ export function App() {
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
+      // Only suppress piano keys when focus is on a TEXT-typing input. Selects
+      // and range sliders shouldn't trap piano keys — that breaks the workflow
+      // of "tweak a slider, immediately play a note" (esp. in the synth editor).
+      const tgt = e.target;
+      if (tgt instanceof HTMLTextAreaElement) return;
+      if (tgt instanceof HTMLElement && tgt.isContentEditable) return;
+      if (tgt instanceof HTMLInputElement) {
+        const t = tgt.type;
+        if (t === 'text' || t === 'number' || t === 'email' || t === 'password' || t === 'search' || t === 'tel' || t === 'url') return;
+      }
 
       const key = e.key.toLowerCase();
 
@@ -470,7 +507,7 @@ export function App() {
     <div className="daw-app">
       <PatternDefs />
       <SynthEditor />
-      <TransportBar playheadTime={playheadTime} onPlay={handlePlay} onRecord={handleRecord} onSeekToStart={handleSeekToStart} onOpenProjects={() => setProjectsOpen(true)} onNewProject={handleNewProject} onSave={handleSave} saveStatus={saveStatus} midiConnected={midiConnected} onConnectMIDI={connectMIDI} midiError={midiError} octaveOffset={octaveOffset} onOctaveDown={() => setOctaveOffset((o) => Math.max(-4, o - 1))} onOctaveUp={() => setOctaveOffset((o) => Math.min(4, o + 1))} />
+      <TransportBar playheadTime={playheadTime} onPlay={handlePlay} onRecord={handleRecord} onSeekToStart={handleSeekToStart} onOpenProjects={() => setProjectsOpen(true)} onNewProject={handleNewProject} onSave={handleSave} saveStatus={saveStatus} midiConnected={midiConnected} onConnectMIDI={connectMIDI} midiError={midiError} midiDiag={midiDiag} octaveOffset={octaveOffset} onOctaveDown={() => setOctaveOffset((o) => Math.max(-4, o - 1))} onOctaveUp={() => setOctaveOffset((o) => Math.min(4, o + 1))} />
       <div className="timeline-stack">
         <div className="rail-column">
           <div className="ruler-rail-spacer" />

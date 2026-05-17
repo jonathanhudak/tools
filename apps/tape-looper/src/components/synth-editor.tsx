@@ -158,7 +158,13 @@ export function SynthEditor() {
           <select
             className="synth-select"
             value={patchList.some((p) => p.id === draft.id) ? draft.id : ''}
-            onChange={(e) => { if (e.target.value) onSelectPatch(e.target.value); }}
+            onChange={(e) => {
+              const v = e.target.value;
+              // Drop focus so subsequent letter keys play piano instead of
+              // cycling select options.
+              e.currentTarget.blur();
+              if (v) onSelectPatch(v);
+            }}
           >
             <option value="">— current draft —</option>
             <option value="__default__">{DEFAULT_PATCH.name}</option>
@@ -289,6 +295,9 @@ function SliderRow({ label, min, max, step, value, onChange, fmt }: SliderRowPro
         step={step}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
+        // Release focus once the drag ends so piano keys work again.
+        onPointerUp={(e) => (e.currentTarget as HTMLInputElement).blur()}
+        onMouseUp={(e) => (e.currentTarget as HTMLInputElement).blur()}
       />
       <span className="synth-slider-value">{fmt(value)}</span>
     </div>

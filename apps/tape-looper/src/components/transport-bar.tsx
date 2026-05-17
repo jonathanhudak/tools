@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useStore } from '../lib/store';
+import type { MIDIDiagnostics } from '../lib/midi-input';
+import { MidiStatus } from './midi-status';
 
 /* ── Editable Project Name ── */
 export function EditableProjectName() {
@@ -53,6 +55,7 @@ export function TransportBar({
   midiConnected,
   onConnectMIDI,
   midiError,
+  midiDiag,
   octaveOffset,
   onOctaveDown,
   onOctaveUp,
@@ -68,6 +71,7 @@ export function TransportBar({
   midiConnected: boolean;
   onConnectMIDI: () => void;
   midiError: string | null;
+  midiDiag: MIDIDiagnostics | null;
   octaveOffset: number;
   onOctaveDown: () => void;
   onOctaveUp: () => void;
@@ -106,15 +110,7 @@ export function TransportBar({
         <button className="track-btn" onClick={onOpenProjects}>📂 Load</button>
         <button className="track-btn" onClick={onNewProject}>+ New</button>
         <button className="track-btn" onClick={onSave}>{saveStatus === 'saved' ? '✓ Saved' : '💾 Save'}</button>
-        {!midiConnected && (
-          <button className="track-btn" onClick={onConnectMIDI} title={midiError ?? 'Connect MIDI keyboard'}
-            style={midiError ? { borderColor: '#e53e3e', color: '#e53e3e' } : undefined}>
-            🎹 {midiError ? 'MIDI ⚠' : 'MIDI'}
-          </button>
-        )}
-        {midiConnected && (
-          <span style={{ fontSize: 14 }} title="MIDI connected">🎹 ✓</span>
-        )}
+        <MidiStatus connected={midiConnected} error={midiError} diag={midiDiag} onConnect={onConnectMIDI} />
       </div>
       {/* Row 2: Playback controls — aligned left */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
