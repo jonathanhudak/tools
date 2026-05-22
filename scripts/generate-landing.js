@@ -92,6 +92,7 @@ const toolMetadata = {
     techStack: ['React', 'TypeScript', 'Vite', '@tanstack/react-virtual', 'Shiki', 'Tailwind v4'],
     type: 'web-app',
     hasDeployment: true,
+    installUrl: './difference/install.html',
   },
   'gap-scanner': {
     name: 'Gap Scanner CLI',
@@ -158,7 +159,7 @@ function generateToolCard(tool) {
         </div>
         <div class="actions">
           <a href="${appUrl}" class="btn btn-primary">${appButtonText}</a>
-          <a href="https://github.com/jonathanhudak/tools/tree/main/apps/${dirName}" class="btn btn-secondary">View Code</a>
+          ${tool.installUrl ? `<a href="${tool.installUrl}" class="btn btn-secondary">Setup Guide</a>\n          ` : ''}<a href="https://github.com/jonathanhudak/tools/tree/main/apps/${dirName}" class="btn btn-secondary">View Code</a>
         </div>
       </div>`;
 }
