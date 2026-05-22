@@ -86,6 +86,14 @@ const toolMetadata = {
     type: 'web-app',
     hasDeployment: true,
   },
+  'difference': {
+    name: 'Difference',
+    description: 'Fast, virtualized diff viewer. Paste a GitHub pull request, commit, or compare URL (or a raw diff) and browse it with a file tree, unified/split views, and syntax highlighting. Large diffs stay smooth thanks to row virtualization.',
+    techStack: ['React', 'TypeScript', 'Vite', '@tanstack/react-virtual', 'Shiki', 'Tailwind v4'],
+    type: 'web-app',
+    hasDeployment: true,
+    installUrl: './difference/install.html',
+  },
   'gap-scanner': {
     name: 'Gap Scanner CLI',
     description: 'Pre-market gap scanner for Gap & Go trading strategy using Finnhub API. Scan stocks for significant gaps with customizable filters (gap %, volume, float, price range). Features watch mode and JSON export.',
@@ -151,7 +159,7 @@ function generateToolCard(tool) {
         </div>
         <div class="actions">
           <a href="${appUrl}" class="btn btn-primary">${appButtonText}</a>
-          <a href="https://github.com/jonathanhudak/tools/tree/main/apps/${dirName}" class="btn btn-secondary">View Code</a>
+          ${tool.installUrl ? `<a href="${tool.installUrl}" class="btn btn-secondary">Setup Guide</a>\n          ` : ''}<a href="https://github.com/jonathanhudak/tools/tree/main/apps/${dirName}" class="btn btn-secondary">View Code</a>
         </div>
       </div>`;
 }

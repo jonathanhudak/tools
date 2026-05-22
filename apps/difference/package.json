@@ -1,0 +1,44 @@
+{
+  "name": "@hudak/difference",
+  "version": "0.0.1",
+  "type": "module",
+  "description": "Fast, virtualized diff viewer. Paste a GitHub PR/commit/compare URL or a raw diff and browse it with a file tree, unified/split views, and syntax highlighting.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+  },
+  "keywords": [
+    "diff",
+    "github",
+    "pull-request",
+    "code-review",
+    "viewer",
+    "virtualized"
+  ],
+  "author": "Jonathan Hudak",
+  "license": "ISC",
+  "dependencies": {
+    "@hudak/ui": "workspace:*",
+    "@tanstack/react-virtual": "^3.13.0",
+    "lucide-react": "^0.469.0",
+    "parse-diff": "^0.11.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "shiki": "^1.29.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.16",
+    "@tools/eslint-config": "workspace:*",
+    "@tools/typescript-config": "workspace:*",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.0",
+    "eslint": "^8.57.1",
+    "tailwindcss": "^4.1.16",
+    "typescript": "^5.9.3",
+    "vite": "^6.0.7"
+  }
+}
