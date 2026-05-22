@@ -86,6 +86,13 @@ const toolMetadata = {
     type: 'web-app',
     hasDeployment: true,
   },
+  'diffshub': {
+    name: 'DiffsHub',
+    description: 'Fast, virtualized GitHub diff viewer. Paste a pull request, commit, or compare URL (or a raw diff) and browse it with a file tree, unified/split views, and syntax highlighting. Large diffs stay smooth thanks to row virtualization.',
+    techStack: ['React', 'TypeScript', 'Vite', '@tanstack/react-virtual', 'Shiki', 'Tailwind v4'],
+    type: 'web-app',
+    hasDeployment: true,
+  },
   'gap-scanner': {
     name: 'Gap Scanner CLI',
     description: 'Pre-market gap scanner for Gap & Go trading strategy using Finnhub API. Scan stocks for significant gaps with customizable filters (gap %, volume, float, price range). Features watch mode and JSON export.',

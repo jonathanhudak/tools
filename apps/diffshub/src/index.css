@@ -1,0 +1,52 @@
+@import "@hudak/ui/styles/globals.css";
+
+@theme {
+  --radius-lg: 0.5rem;
+  --radius-md: 0.375rem;
+  --radius-sm: 0.25rem;
+}
+
+:root {
+  --color-primary: 212 92% 45%;
+  --color-primary-foreground: 0 0% 100%;
+  --diff-add-bg: 136 73% 95%;
+  --diff-add-gutter: 135 50% 88%;
+  --diff-del-bg: 6 100% 96%;
+  --diff-del-gutter: 6 65% 90%;
+  --diff-hunk-bg: 215 100% 97%;
+}
+
+.dark {
+  --color-primary: 212 92% 60%;
+  --color-primary-foreground: 0 0% 100%;
+  --diff-add-bg: 144 60% 12%;
+  --diff-add-gutter: 144 55% 18%;
+  --diff-del-bg: 353 70% 14%;
+  --diff-del-gutter: 353 60% 20%;
+  --diff-hunk-bg: 215 50% 16%;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+.diff-mono {
+  font-family: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace;
+  font-size: 12.5px;
+  line-height: 20px;
+  tab-size: 4;
+}
+
+/* Shiki dual-theme: drive colors from CSS variables so dark mode works. */
+.diff-mono span {
+  color: var(--shiki-light);
+}
+.dark .diff-mono span {
+  color: var(--shiki-dark);
+}
