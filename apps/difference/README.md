@@ -1,9 +1,8 @@
-# DiffsHub
+# Difference
 
-A fast, virtualized GitHub diff viewer — a self-hostable clone of [diffshub.com](https://diffshub.com).
-Paste a pull request, commit, or compare URL (or a raw diff) and browse the changes with a file
-tree, unified/split views, and on-demand syntax highlighting. Large diffs stay smooth because rows
-are virtualized, so only the visible lines are ever in the DOM.
+A fast, virtualized diff viewer. Paste a GitHub pull request, commit, or compare URL (or a raw diff)
+and browse the changes with a file tree, unified/split views, and on-demand syntax highlighting.
+Large diffs stay smooth because rows are virtualized, so only the visible lines are ever in the DOM.
 
 ## Features
 
@@ -20,7 +19,7 @@ are virtualized, so only the visible lines are ever in the DOM.
 ## How GitHub URLs are fetched
 
 GitHub serves a unified diff at the `.diff` suffix of any PR / commit / compare URL, but it does not
-send CORS headers, so the browser can't fetch it directly. DiffsHub routes the request through the
+send CORS headers, so the browser can't fetch it directly. Difference routes the request through the
 public `api.allorigins.win` proxy (the same pattern used by the RSVP Reader tool in this repo). Only
 public repositories work; nothing is authenticated.
 
@@ -29,25 +28,25 @@ drop the file in.
 
 ## Query parameters
 
-The app reads these on load (used by the `diffshub` skill launcher):
+The app reads these on load (used by the `difference` skill launcher):
 
 - `?diff=<github url>` (alias `?url=`) — auto-load and render the diff.
 - `?view=split` — start in split view.
 
-Example: `http://localhost:3010/tools/diffshub/?diff=https://github.com/owner/repo/pull/123&view=split`
+Example: `http://localhost:3010/tools/difference/?diff=https://github.com/owner/repo/pull/123&view=split`
 
 ## Development
 
 ```bash
 # from the repo root
 pnpm install
-pnpm diff dev        # or: pnpm --filter @hudak/diffshub dev
+pnpm diff dev        # or: pnpm --filter @hudak/difference dev
 ```
 
-The dev server runs at <http://localhost:3010/tools/diffshub/>.
+The dev server runs at <http://localhost:3010/tools/difference/>.
 
 ```bash
-pnpm diff build      # production build into ../../docs/diffshub
+pnpm diff build      # production build into ../../docs/difference
 pnpm diff typecheck
 pnpm diff lint
 ```
@@ -68,6 +67,5 @@ src/
 └── types.ts             # Shared diff/row types
 ```
 
-DiffsHub itself is closed-source, so this is a capability clone built on an open stack
-(React + Vite + TypeScript, `parse-diff`, `@tanstack/react-virtual`, and Shiki) that matches the
-conventions of the rest of this monorepo.
+Built on an open stack (React + Vite + TypeScript, `parse-diff`, `@tanstack/react-virtual`, and
+Shiki) that matches the conventions of the rest of this monorepo.

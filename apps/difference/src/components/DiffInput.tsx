@@ -20,7 +20,7 @@ export function DiffInput({ loading, dark, onToggleTheme, onLoadUrl, onLoadText 
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2 font-semibold text-[hsl(var(--color-foreground))]">
           <FileDiff className="h-5 w-5 text-[hsl(var(--color-primary))]" />
-          <span>DiffsHub</span>
+          <span>Difference</span>
         </div>
 
         <div className="flex rounded-md border border-[hsl(var(--color-border))] p-0.5 text-sm">

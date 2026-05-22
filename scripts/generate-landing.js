@@ -86,9 +86,9 @@ const toolMetadata = {
     type: 'web-app',
     hasDeployment: true,
   },
-  'diffshub': {
-    name: 'DiffsHub',
-    description: 'Fast, virtualized GitHub diff viewer. Paste a pull request, commit, or compare URL (or a raw diff) and browse it with a file tree, unified/split views, and syntax highlighting. Large diffs stay smooth thanks to row virtualization.',
+  'difference': {
+    name: 'Difference',
+    description: 'Fast, virtualized diff viewer. Paste a GitHub pull request, commit, or compare URL (or a raw diff) and browse it with a file tree, unified/split views, and syntax highlighting. Large diffs stay smooth thanks to row virtualization.',
     techStack: ['React', 'TypeScript', 'Vite', '@tanstack/react-virtual', 'Shiki', 'Tailwind v4'],
     type: 'web-app',
     hasDeployment: true,

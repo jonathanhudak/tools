@@ -1,8 +1,8 @@
 {
-  "name": "@hudak/diffshub",
+  "name": "@hudak/difference",
   "version": "0.0.1",
   "type": "module",
-  "description": "Fast, virtualized GitHub diff viewer. Paste a PR/commit/compare URL or a raw diff and browse it with a file tree, unified/split views, and syntax highlighting.",
+  "description": "Fast, virtualized diff viewer. Paste a GitHub PR/commit/compare URL or a raw diff and browse it with a file tree, unified/split views, and syntax highlighting.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

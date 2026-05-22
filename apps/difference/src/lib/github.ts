@@ -28,7 +28,7 @@ export function resolveGitHubUrl(input: string): ResolvedSource {
   }
 
   const host = url.hostname.replace(/^www\./, '');
-  if (host !== 'github.com' && host !== 'diffshub.com') {
+  if (host !== 'github.com') {
     throw new Error('Only github.com URLs (PR, commit, or compare) are supported.');
   }
 

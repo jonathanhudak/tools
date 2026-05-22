@@ -18,7 +18,7 @@
     "music": "pnpm --filter @hudak/music-practice",
     "tuner": "pnpm --filter @hudak/instrument-tuner",
     "tape": "pnpm --filter @hudak/tape-looper",
-    "diff": "pnpm --filter @hudak/diffshub",
+    "diff": "pnpm --filter @hudak/difference",
     "fin:ui": "pnpm --filter @hudak/local-finance-ui",
     "ui": "pnpm --filter @hudak/ui"
   },

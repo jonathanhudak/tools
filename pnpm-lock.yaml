@@ -109,7 +109,7 @@ importers:
         specifier: ^5.1.4
         version: 5.1.4(typescript@5.9.3)(vite@6.4.1(@types/node@25.3.0)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0))
 
-  apps/diffshub:
+  apps/difference:
     dependencies:
       '@hudak/ui':
         specifier: workspace:*

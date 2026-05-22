@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Launch the local DiffsHub viewer, optionally auto-loading a GitHub diff URL.
+# Launch the local Difference viewer, optionally auto-loading a GitHub diff URL.
 #
 # Usage:
 #   launch.sh                                  # just start/ensure the dev server
@@ -10,7 +10,7 @@
 set -euo pipefail
 
 PORT=3010
-BASE_PATH="/tools/diffshub/"
+BASE_PATH="/tools/difference/"
 
 VIEW=""
 URL=""
@@ -22,7 +22,7 @@ for arg in "$@"; do
   esac
 done
 
-# Repo root = three levels up from this script (.claude/skills/diffshub/scripts).
+# Repo root = three levels up from this script (.claude/skills/difference/scripts).
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
 cd "$REPO_ROOT"
@@ -35,16 +35,16 @@ fi
 server_up() { curl -sS -o /dev/null --max-time 2 "http://localhost:${PORT}${BASE_PATH}" 2>/dev/null; }
 
 if server_up; then
-  echo "DiffsHub dev server already running on port ${PORT}." >&2
+  echo "Difference dev server already running on port ${PORT}." >&2
 else
-  echo "Starting DiffsHub dev server on port ${PORT}…" >&2
-  pnpm --filter @hudak/diffshub dev >/tmp/diffshub-dev.log 2>&1 &
+  echo "Starting Difference dev server on port ${PORT}…" >&2
+  pnpm --filter @hudak/difference dev >/tmp/difference-dev.log 2>&1 &
   for _ in $(seq 1 30); do
     if server_up; then break; fi
     sleep 0.5
   done
   if ! server_up; then
-    echo "Dev server failed to start. See /tmp/diffshub-dev.log" >&2
+    echo "Dev server failed to start. See /tmp/difference-dev.log" >&2
     exit 1
   fi
 fi

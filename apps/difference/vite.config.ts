@@ -4,9 +4,9 @@ import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  base: '/tools/diffshub/',
+  base: '/tools/difference/',
   build: {
-    outDir: '../../docs/diffshub',
+    outDir: '../../docs/difference',
     emptyOutDir: true,
     sourcemap: true,
   },
