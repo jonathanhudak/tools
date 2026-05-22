@@ -140,7 +140,15 @@ pnpm diff dev        # or: pnpm --filter @hudak/difference dev</code></pre>
         <p class="muted">The launcher is idempotent: it installs dependencies on first run, reuses the dev server if it's already up on port 3010, then prints (and tries to open) the target URL.</p>
 
         <h3>Use it in another project</h3>
-        <p>Copy the <code>.claude/skills/difference/</code> directory into your own repo's <code>.claude/skills/</code>. The skill expects the Difference app at <code>apps/difference</code> and uses <code>pnpm</code>, so it's most useful alongside this monorepo. For arbitrary projects, prefer the hosted app or the local dev server above, and use the <strong>Paste diff</strong> tab with <code>git diff &gt; changes.diff</code>.</p>
+        <p>Run the one-liner below from your project directory. It clones the tools repo to <code>~/.local/share/tools-monorepo</code>, installs its dependencies, and symlinks the <code>difference</code> skill into your project's <code>.claude/skills/</code>:</p>
+        <pre><code>curl -fsSL https://raw.githubusercontent.com/jonathanhudak/tools/main/scripts/install-skills.sh | bash</code></pre>
+        <p>Or, if you already have the repo cloned locally:</p>
+        <pre><code># Install into the current project:
+./scripts/install-skills.sh difference
+
+# Install globally (available in every Claude Code project):
+./scripts/install-skills.sh --global difference</code></pre>
+        <p class="muted">Skills are symlinked, not copied, so a future <code>git pull</code> in <code>~/.local/share/tools-monorepo</code> automatically updates them. Requires Node.js and <code>pnpm</code>.</p>
 
         <h2>Requirements</h2>
         <ul>
