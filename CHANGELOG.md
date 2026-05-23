@@ -1,3 +1,10 @@
+# [1.48.0](https://github.com/jonathanhudak/tools/compare/v1.47.0...v1.48.0) (2026-05-23)
+
+
+### Features
+
+* add install-skills.sh and simplify skill setup docs ([#84](https://github.com/jonathanhudak/tools/issues/84)) ([73aeb15](https://github.com/jonathanhudak/tools/commit/73aeb15f9136b4bd86920153aade8b9365576a7e)), closes [#83](https://github.com/jonathanhudak/tools/issues/83)
+
 # [1.47.0](https://github.com/jonathanhudak/tools/compare/v1.46.0...v1.47.0) (2026-05-17)
 
 
