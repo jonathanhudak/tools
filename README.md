@@ -24,6 +24,32 @@ This is a **monorepo** managed with [Turborepo](https://turbo.build/repo) and [p
 | [@tools/typescript-config](./packages/typescript-config/) | Shared TypeScript configurations |
 | [@tools/eslint-config](./packages/eslint-config/) | Shared ESLint configurations |
 
+## Claude Code Skills
+
+This repo ships Claude Code skills you can install into any project.
+
+| Skill | Description |
+|-------|-------------|
+| `difference` | Open any GitHub PR, commit, or compare URL in a local virtualized diff viewer |
+
+**One-liner install** (works from any project):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jonathanhudak/tools/main/scripts/install-skills.sh | bash
+```
+
+Or, if you already have the repo cloned:
+
+```bash
+# Install into the current project
+./scripts/install-skills.sh
+
+# Install globally (all Claude Code projects)
+./scripts/install-skills.sh --global
+```
+
+Skills are symlinked from `~/.local/share/tools-monorepo` so they stay up-to-date with a simple `git pull` there.
+
 ## Quick Start
 
 ### Prerequisites
