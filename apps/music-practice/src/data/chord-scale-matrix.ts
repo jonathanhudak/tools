@@ -72,7 +72,7 @@ export const CHORD_SCALE_MATRIX: ChordScaleEntry[] = [
     chordQuality: "Maj7",
     modeName: "Lydian",
     romanNumeral: "IVMaj7",
-    chordId: "f-major-7",
+    chordId: "f-major-7th",
     voicingIndex: 0
   },
   {
@@ -99,7 +99,7 @@ export const CHORD_SCALE_MATRIX: ChordScaleEntry[] = [
     chordQuality: "m7b5",
     modeName: "Locrian",
     romanNumeral: "viim7b5",
-    chordId: "b-minor-7b5",
+    chordId: "b-half-diminished-7th",
     voicingIndex: 0
   },
 
@@ -119,7 +119,7 @@ export const CHORD_SCALE_MATRIX: ChordScaleEntry[] = [
     chordQuality: "m7b5",
     modeName: "Locrian",
     romanNumeral: "iim7b5",
-    chordId: "b-minor-7b5",
+    chordId: "b-half-diminished-7th",
     voicingIndex: 0
   },
   {
@@ -155,7 +155,7 @@ export const CHORD_SCALE_MATRIX: ChordScaleEntry[] = [
     chordQuality: "Maj7",
     modeName: "Lydian",
     romanNumeral: "bVIMaj7",
-    chordId: "f-major-7",
+    chordId: "f-major-7th",
     voicingIndex: 0
   },
   {
@@ -175,7 +175,7 @@ export const CHORD_SCALE_MATRIX: ChordScaleEntry[] = [
     chordQuality: "mMaj7",
     modeName: "Melodic Minor",
     romanNumeral: "imMaj7",
-    chordId: "a-minor-major-7",
+    chordId: "a-minmaj7",
     voicingIndex: 0
   },
   {
@@ -184,7 +184,7 @@ export const CHORD_SCALE_MATRIX: ChordScaleEntry[] = [
     chordQuality: "m7",
     modeName: "Dorian b2",
     romanNumeral: "iim7",
-    chordId: "b-minor-7",
+    chordId: "b-minor-7th",
     voicingIndex: 0
   },
   {
@@ -193,7 +193,7 @@ export const CHORD_SCALE_MATRIX: ChordScaleEntry[] = [
     chordQuality: "Maj7#5",
     modeName: "Lydian Augmented",
     romanNumeral: "bIIIMaj7#5",
-    chordId: "c-augmented-major-7",
+    chordId: "c-augmaj7",
     voicingIndex: 0
   },
   {
@@ -220,7 +220,7 @@ export const CHORD_SCALE_MATRIX: ChordScaleEntry[] = [
     chordQuality: "m7b5",
     modeName: "Locrian #2",
     romanNumeral: "vim7b5",
-    chordId: "f-sharp-minor-7b5",
+    chordId: "f-sharp-half-diminished-7th",
     voicingIndex: 0
   },
   {
@@ -229,7 +229,7 @@ export const CHORD_SCALE_MATRIX: ChordScaleEntry[] = [
     chordQuality: "m7b5",
     modeName: "Super Locrian (Altered)",
     romanNumeral: "viim7b5",
-    chordId: "g-sharp-minor-7b5",
+    chordId: "g-sharp-half-diminished-7th",
     voicingIndex: 0
   },
 
@@ -240,7 +240,7 @@ export const CHORD_SCALE_MATRIX: ChordScaleEntry[] = [
     chordQuality: "mMaj7",
     modeName: "Harmonic Minor",
     romanNumeral: "imMaj7",
-    chordId: "a-minor-major-7",
+    chordId: "a-minmaj7",
     voicingIndex: 0
   },
   {
@@ -249,7 +249,7 @@ export const CHORD_SCALE_MATRIX: ChordScaleEntry[] = [
     chordQuality: "m7b5",
     modeName: "Locrian #6",
     romanNumeral: "iim7b5",
-    chordId: "b-minor-7b5",
+    chordId: "b-half-diminished-7th",
     voicingIndex: 0
   },
   {
@@ -258,7 +258,7 @@ export const CHORD_SCALE_MATRIX: ChordScaleEntry[] = [
     chordQuality: "Maj7#5",
     modeName: "Ionian #5",
     romanNumeral: "bIIIMaj7#5",
-    chordId: "c-augmented-major-7",
+    chordId: "c-augmaj7",
     voicingIndex: 0
   },
   {
@@ -285,7 +285,7 @@ export const CHORD_SCALE_MATRIX: ChordScaleEntry[] = [
     chordQuality: "Maj7",
     modeName: "Lydian #2",
     romanNumeral: "bVIMaj7",
-    chordId: "f-major-7",
+    chordId: "f-major-7th",
     voicingIndex: 0
   },
   {
@@ -294,7 +294,7 @@ export const CHORD_SCALE_MATRIX: ChordScaleEntry[] = [
     chordQuality: "dim7",
     modeName: "Super Locrian bb7",
     romanNumeral: "viidim7",
-    chordId: "g-sharp-diminished-7",
+    chordId: "g-sharp-dim7",
     voicingIndex: 0
   },
 ];
