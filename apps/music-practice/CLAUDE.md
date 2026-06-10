@@ -97,8 +97,3 @@ pnpm clean              # Remove dist + node_modules
 - **Storage**: LocalStorage-based persistence via `src/lib/utils/storage.ts`. No backend/API.
 - **Testing**: Vitest for unit tests. Test files use `.test.ts` / `.test.tsx` suffix, colocated near source or in `__tests__/` dirs.
 
-## Legacy Directories (ignore)
-
-- `js/` — Old pre-Vite source (excluded from tsconfig)
-- `css/` — Old stylesheets
-- `Music Learning Game App/` — Earlier prototype/reference (separate package.json)

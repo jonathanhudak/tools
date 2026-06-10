@@ -44,7 +44,7 @@ Typecheck failures:
 | `src/components/PianoKeyboard.tsx`, `InstrumentSelector.tsx` | Empty stubs | Delete |
 | `src/components/Piano/PianoKeyboard.tsx` | Never imported (canonical impl is `virtual-keyboard.tsx`) | Delete |
 | `src/data/hello.ts` | Scaffold test artifact | Delete |
-| `@hudak/audio-components` dependency | Declared, never imported | Remove from package.json |
+| ~~`@hudak/audio-components` dependency~~ | **Correction:** it IS used — `PitchGauge` in `src/components/play/notation-card.tsx` | Keep |
 | `test-sight-reading.js` | Ad-hoc Puppeteer script wired as `pnpm test` | Move under `scripts/`, integrate or document |
 
 ### 2.3 What's good
@@ -182,7 +182,7 @@ Ordered by leverage (most reuse of existing dark data first).
 - [ ] Fix chord-ID slugs (`#` → `-sharp-`), add ID-uniqueness + cross-reference tests
 - [ ] Fix 3 app typecheck errors; fix `@hudak/ui` internal alias resolution; gate CI on typecheck
 - [ ] Delete: `js/`, `tsup.config.ts`, `Music Learning Game App/`, `src/utils/`, `src/input/`, `src/midi/`, empty stubs, `src/data/hello.ts`
-- [ ] Remove unused `@hudak/audio-components` dep; remove or wire up `app-sidebar.tsx`
+- [ ] Remove legacy `App.tsx`/`App.css`/`app-sidebar.tsx` (orphaned; router layout replaced them). Note: `@hudak/audio-components` is actually used (`PitchGauge`) — keep it.
 - [ ] Replace `noteNames` usages with `enharmonics.ts`
 - [ ] Annotate melodic-minor degree 7 with jazz pairing (7alt)
 - [ ] 44px touch-target sweep on reference selectors; global `:focus-visible` styles
