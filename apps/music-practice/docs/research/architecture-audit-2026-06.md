@@ -177,12 +177,12 @@ Ordered by leverage (most reuse of existing dark data first).
 
 ---
 
-## 6. Cleanup Checklist (Phase 0, concrete)
+## 6. Cleanup Checklist (Phase 0, concrete) — ✅ COMPLETED June 10, 2026
 
-- [ ] Fix chord-ID slugs (`#` → `-sharp-`), add ID-uniqueness + cross-reference tests
-- [ ] Fix 3 app typecheck errors; fix `@hudak/ui` internal alias resolution; gate CI on typecheck
-- [ ] Delete: `js/`, `tsup.config.ts`, `Music Learning Game App/`, `src/utils/`, `src/input/`, `src/midi/`, empty stubs, `src/data/hello.ts`
-- [ ] Remove legacy `App.tsx`/`App.css`/`app-sidebar.tsx` (orphaned; router layout replaced them). Note: `@hudak/audio-components` is actually used (`PitchGauge`) — keep it.
-- [ ] Replace `noteNames` usages with `enharmonics.ts`
-- [ ] Annotate melodic-minor degree 7 with jazz pairing (7alt)
-- [ ] 44px touch-target sweep on reference selectors; global `:focus-visible` styles
+- [x] Fix chord-ID slugs (`#` → `-sharp-`), add ID-uniqueness + cross-reference tests — also removed 13 exact/near-duplicate entries and added `g-sharp-dim7`; library is now 295 unique entries
+- [x] Fix app typecheck errors (16 surfaced once unmasked, incl. dead `KeyboardMapper.ts` with broken `ScaleType` lookups); fix `@hudak/ui` internal alias resolution (relative imports); scoped CI typecheck gate in release.yml
+- [x] Delete: `js/`, `css/`, `tsup.config.ts`, `Music Learning Game App/`, `src/utils/`, `src/input/`, `src/midi/`, empty stubs, `src/data/hello.ts` (~15.6K lines removed)
+- [x] Remove legacy `App.tsx`/`App.css`/`app-sidebar.tsx` (orphaned; router layout replaced them). Note: `@hudak/audio-components` is actually used (`PitchGauge`) — kept.
+- [x] `noteNames` now delegates to `enharmonics.noteNames12()` (single source of truth; key-aware spelling adoption in display paths remains for Phase 1)
+- [x] Annotate melodic-minor degree 7 with jazz pairing (`jazzChordQuality: '7alt'`), surfaced in the matrix card
+- [x] 44px touch-target sweep on reference selectors; global `:focus-visible` styles

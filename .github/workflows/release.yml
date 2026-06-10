@@ -36,6 +36,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Typecheck (music-practice + ui)
+        run: pnpm --filter @hudak/ui --filter @hudak/music-practice typecheck
+
       - name: Build all apps
         run: pnpm run build
 
