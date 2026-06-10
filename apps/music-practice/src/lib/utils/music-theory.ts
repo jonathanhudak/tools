@@ -4,6 +4,8 @@
  */
 
 import { Note, Scale, Chord } from 'tonal';
+
+import { noteNames12 } from '@/data/enharmonics';
 import { getTuning } from './instrument-config';
 
 // Type definitions
@@ -33,7 +35,10 @@ export interface KeySignature {
 export type ClefType = 'treble' | 'bass';
 
 // Note names and their MIDI numbers (C4 = Middle C = 60)
-export const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+// Chromatic note names, delegated to the enharmonic engine (sharps spelling).
+// For key-aware spelling (Db major shows Db, not C#) use resolveForKey/
+// noteNames12(true) from '@/data/enharmonics' instead of indexing this array.
+export const noteNames = noteNames12(false);
 
 // VexFlow note names (with octaves) - natural notes only for basic mode
 export const vexflowNoteNames: Record<ClefType, Record<string, number>> = {

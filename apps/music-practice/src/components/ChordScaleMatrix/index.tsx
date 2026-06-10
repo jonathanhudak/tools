@@ -111,6 +111,11 @@ function FullDegreeCard({ entry, rootKey, instrument, onInstrumentChange }: Full
               {chordName}
             </h3>
             <p className="text-[11px] text-[var(--ink-secondary)]">{entry.modeName}</p>
+            {entry.jazzChordQuality && (
+              <p className="text-[10px] text-[var(--ink-tertiary)] italic">
+                Jazz pairing: {entry.jazzChordQuality}
+              </p>
+            )}
           </div>
           {modal && (
             <Badge className={`text-[10px] shrink-0 ${modal.color}`}>{entry.chordQuality}</Badge>

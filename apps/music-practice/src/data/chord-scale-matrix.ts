@@ -22,6 +22,10 @@ export interface ChordScaleEntry {
   modeName: string;
   romanNumeral: string;
   
+  // Chord quality used in jazz practice when it differs from strict tertian
+  // stacking (e.g. the Altered scale pairs with 7alt, not the m7b5 you get
+  // by stacking thirds on melodic minor degree 7).
+  jazzChordQuality?: string;
   // Reference chord from library for voicing display
   // Format: "chord-id" (e.g., "c-major", "d-minor-7")
   chordId?: string;
@@ -227,6 +231,7 @@ export const CHORD_SCALE_MATRIX: ChordScaleEntry[] = [
     scaleType: "melodicMinor",
     degree: 7,
     chordQuality: "m7b5",
+    jazzChordQuality: "7alt",
     modeName: "Super Locrian (Altered)",
     romanNumeral: "viim7b5",
     chordId: "g-sharp-half-diminished-7th",
