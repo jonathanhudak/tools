@@ -9,7 +9,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Badge } from '@hudak/ui/components/badge';
 import { InstrumentToggle } from '../Piano/InstrumentToggle';
-import { ScaleDisplay } from '../ScaleReference/ScaleDisplay';
 import { ChordVoicingDisplay } from '../ChordScaleGame/ChordVoicingDisplay';
 import type { Chord } from '@/lib/chord-library';
 import {

@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@hudak/ui/components/select';
-import { Plus, Trash2, Play, Music } from 'lucide-react';
+import { Play, Music } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface ProgressionPattern {

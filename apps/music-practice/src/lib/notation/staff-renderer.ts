@@ -5,12 +5,11 @@
 
 import { MusicTheory } from '../utils/music-theory';
 
-// VexFlow types (declare global types for VexFlow library)
+// Window.Vex augmentation; the global `Vex` itself is declared in src/vexflow.d.ts
 declare global {
     interface Window {
         Vex: any;
     }
-    const Vex: any;
 }
 
 // Type definitions
@@ -21,7 +20,6 @@ interface RenderOptions {
 }
 
 export class StaffRenderer {
-    private containerId: string;
     private container: HTMLElement | null;
     private renderer: any = null;
     private context: any = null;
@@ -29,7 +27,6 @@ export class StaffRenderer {
     private clef: ClefType = 'treble';
 
     constructor(containerId: string) {
-        this.containerId = containerId;
         this.container = document.getElementById(containerId);
 
         if (!this.container) {

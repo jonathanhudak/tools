@@ -1,7 +1,7 @@
 import * as React from "react"
 
-import { SearchForm } from "@/components/search-form"
-import { VersionSwitcher } from "@/components/version-switcher"
+import { SearchForm } from "./search-form"
+import { VersionSwitcher } from "./version-switcher"
 import {
   Sidebar,
   SidebarContent,
@@ -13,7 +13,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-} from "@/components/sidebar"
+} from "./sidebar"
 
 // This is sample data.
 const data = {

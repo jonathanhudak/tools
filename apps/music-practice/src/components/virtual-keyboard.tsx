@@ -6,7 +6,6 @@
 
 import { useEffect, useCallback, useState, useRef } from 'react';
 import * as Tone from 'tone';
-import { Button } from '@hudak/ui/components/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@hudak/ui/components/card';
 import { Badge } from '@hudak/ui/components/badge';
 import { Piano } from 'lucide-react';
@@ -146,10 +145,6 @@ export function VirtualKeyboard({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [enabled, startOctave, octaveCount, playNote]);
-
-  const isBlackKey = (noteOffset: number): boolean => {
-    return [1, 3, 6, 8, 10].includes(noteOffset);
-  };
 
   const renderOctave = (octave: number) => {
     // Define white key notes and their positions

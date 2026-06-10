@@ -227,7 +227,6 @@ export class SightReadingModule {
         this.generateNewNote();
 
         // Update feedback
-        const instrument = getInstrument(this.currentInstrument);
         const inputHint = requiresMicrophone(this.currentInstrument)
             ? 'Play the note on your instrument'
             : 'Play the note shown above';

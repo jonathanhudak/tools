@@ -25,7 +25,7 @@ export function ChordDiagram({ chord, voicing, size = 'medium', hideChordInfo = 
     { string: 4, fret: guitarData.frets[3] },
     { string: 5, fret: guitarData.frets[4] },
     { string: 6, fret: guitarData.frets[5] },
-  ] : chord.fingerings.guitar;
+  ] : chord.fingerings?.guitar ?? [];
 
   const frettedNotes = guitarFingerings.filter(f => f.fret > 0);
   const minFret = frettedNotes.length > 0 ? Math.min(...frettedNotes.map(f => f.fret)) : 1;

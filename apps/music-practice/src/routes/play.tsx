@@ -36,7 +36,7 @@ import { NotationCard } from '../components/play/notation-card';
 import { ScoreSummaryModal } from '../components/play/score-summary-modal';
 
 // Search params for game settings (backward compatibility)
-interface PlaySearchParams {
+export interface PlaySearchParams {
   instrument?: string;
   clef?: string;
   difficulty?: string;

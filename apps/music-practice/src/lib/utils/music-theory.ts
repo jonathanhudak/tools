@@ -67,7 +67,9 @@ export function noteNameToMidi(noteName: string): number {
 /**
  * Convert MIDI note to VexFlow notation format
  */
-export function midiToVexflow(midiNote: number, clef: ClefType = 'treble'): string | null {
+// The clef parameter is accepted for API symmetry but unused: VexFlow key
+// strings are clef-independent (the clef only affects staff placement).
+export function midiToVexflow(midiNote: number, _clef: ClefType = 'treble'): string | null {
     const octave = Math.floor(midiNote / 12) - 1;
     const noteIndex = midiNote % 12;
     const noteName = noteNames[noteIndex].toLowerCase().replace('#', '#');
@@ -86,7 +88,9 @@ export function midiToVexflow(midiNote: number, clef: ClefType = 'treble'): stri
 export function generateRandomNote(
     range: string = 'c4-c5',
     clef: ClefType = 'treble',
-    naturalsOnly: boolean = true
+    // Only natural notes are ever generated today; accidental support requires
+    // midiToVexflow to render sharps/flats first.
+    _naturalsOnly: boolean = true
 ): NoteInfo | null {
     const [start, end] = range.split('-');
     const startMidi = noteNameToMidi(start.toUpperCase());
@@ -144,10 +148,11 @@ export function validateNote(
     targetMidi: number,
     options: ValidationOptions = {}
 ): ValidationResult {
+    // pitchToleranceCents from ValidationOptions is applied upstream by the
+    // pitch detector; MIDI validation only deals in whole semitones.
     const {
         allowOctaveError = true,
-        tolerance = 0,
-        pitchToleranceCents = 0
+        tolerance = 0
     } = options;
 
     if (playedMidi === targetMidi) {

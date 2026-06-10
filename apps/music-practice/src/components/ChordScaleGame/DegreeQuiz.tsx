@@ -11,12 +11,11 @@ import { Skeleton } from '@hudak/ui/components/skeleton';
 import { Button } from '@hudak/ui/components/button';
 import { Badge } from '@hudak/ui/components/badge';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, XCircle, ArrowRight } from 'lucide-react';
+import { CheckCircle2, XCircle } from 'lucide-react';
 import { ChordVoicingDisplay } from './ChordVoicingDisplay';
 import { getChordById } from '@/lib/chord-library';
 import type { Chord } from '@/lib/chord-library';
 import {
-  CHORD_SCALE_MATRIX,
   getDegreeInfo,
   getAllChordQualities,
   SCALE_TYPE_NAMES,
@@ -79,7 +78,6 @@ function generateQuestion(difficulty: 'major' | 'majorMinor' | 'allScales'): Qui
   };
 }
 
-type Instrument = 'guitar' | 'piano';
 
 export function DegreeQuiz({ difficulty }: DegreeQuizProps): JSX.Element {
   const [question, setQuestion] = useState<QuizQuestion | null>(null);
@@ -88,7 +86,6 @@ export function DegreeQuiz({ difficulty }: DegreeQuizProps): JSX.Element {
   const [score, setScore] = useState({ correct: 0, total: 0 });
   const [streak, setStreak] = useState(0);
   const [currentChord, setCurrentChord] = useState<Chord | null>(null);
-  const [selectedInstrument, setSelectedInstrument] = useState<Instrument>('guitar');
 
   // Generate initial question
   useEffect(() => {
@@ -128,7 +125,6 @@ export function DegreeQuiz({ difficulty }: DegreeQuizProps): JSX.Element {
     setSelectedAnswer(null);
     setIsCorrect(null);
     setCurrentChord(null);
-    setSelectedInstrument('guitar');
   };
 
   if (!question) {
@@ -286,7 +282,6 @@ export function DegreeQuiz({ difficulty }: DegreeQuizProps): JSX.Element {
                     <ChordVoicingDisplay
                       chord={currentChord}
                       voicingIndex={0}
-                      onInstrumentChange={setSelectedInstrument}
                     />
                   </div>
                 )}

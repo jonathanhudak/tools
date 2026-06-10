@@ -5,7 +5,7 @@
 
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Button } from '@hudak/ui/components/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@hudak/ui/components/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@hudak/ui/components/card';
 import { Music, Zap, BookOpen, Grid3x3, ArrowRight, Target } from 'lucide-react';
 import { motion } from 'framer-motion';
 

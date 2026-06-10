@@ -32,7 +32,7 @@ export interface Chord {
   name: string;
   shortName: string;
   root: string;
-  type: 'major' | 'minor' | 'diminished' | 'augmented' | 'sus' | 'dominant' | 'extended' | 'add';
+  type: 'major' | 'minor' | 'diminished' | 'augmented' | 'sus' | 'dominant' | 'extended' | 'add' | 'slash';
   difficulty: 'beginner' | 'intermediate' | 'advanced' | 'jazz';
   voicings: ChordVoicing[];
   theory: ChordInfo;

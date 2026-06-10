@@ -38,7 +38,8 @@ const SCALE_DESCRIPTIONS: Record<ScaleType, string> = {
 
 const ROOT_KEYS = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
 
-export function ScaleReference({ onBack }: ScaleReferenceProps): JSX.Element {
+// onBack is accepted for API compatibility; navigation lives in the app header.
+export function ScaleReference({ onBack: _onBack }: ScaleReferenceProps): JSX.Element {
   const [activeScale, setActiveScale] = useState<ScaleType>('major');
   const [selectedDegree, setSelectedDegree] = useState<Degree>(1);
   const [rootKey, setRootKey] = useState('C');

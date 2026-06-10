@@ -4,7 +4,6 @@ import {
   ORDER_OF_SHARPS,
   ORDER_OF_FLATS,
   getKeyInfo,
-  getKeyInfoByMinor,
   getChordsInKey,
   getRelativeMinor,
   getRelativeMajor,
