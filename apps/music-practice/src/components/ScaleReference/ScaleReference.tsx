@@ -99,7 +99,7 @@ export function ScaleReference({ onBack: _onBack }: ScaleReferenceProps): JSX.El
           <select
             value={rootKey}
             onChange={e => setRootKey(e.target.value)}
-            className="text-sm px-2 py-1 bg-[hsl(var(--color-card))] border border-[var(--border-subtle)] text-[var(--ink-primary)] font-mono-app"
+            className="text-sm min-h-11 px-3 py-1 bg-[hsl(var(--color-card))] border border-[var(--border-subtle)] text-[var(--ink-primary)] font-mono-app"
           >
             {ROOT_KEYS.map(k => (
               <option key={k} value={k}>{k}</option>

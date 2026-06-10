@@ -128,6 +128,13 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+
+  /* Visible focus ring for keyboard navigation, suppressed for pointer input */
+  :focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
 }
 
 /* ─── UTILITIES ──────────────────────────────────────────── */

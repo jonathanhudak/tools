@@ -200,7 +200,7 @@ export function ChordScaleMatrix({
                 key={key}
                 onClick={() => setSelectedKey(key)}
                 className={[
-                  'font-mono text-sm px-2.5 py-1 rounded-lg border transition-all flex-shrink-0',
+                  'font-mono text-sm min-h-11 min-w-11 px-2.5 py-1 rounded-lg border transition-all flex-shrink-0',
                   selectedKey === key
                     ? 'border-[var(--accent)] bg-[var(--accent)] text-white font-semibold'
                     : 'border-[var(--border-medium)] bg-[var(--surface-card)] text-[var(--ink-secondary)] hover:border-[var(--accent)] hover:text-[var(--ink-primary)]',
@@ -220,7 +220,7 @@ export function ChordScaleMatrix({
                 key={scale}
                 onClick={() => setSelectedScale(scale)}
                 className={[
-                  'text-xs px-3 py-1.5 rounded-full border-2 font-medium transition-all flex-shrink-0',
+                  'text-xs min-h-11 px-4 py-1.5 rounded-full border-2 font-medium transition-all flex-shrink-0',
                   selectedScale === scale
                     ? 'border-[var(--accent)] bg-[var(--accent)] text-white'
                     : 'border-[var(--border-medium)] text-[var(--ink-secondary)] hover:border-[var(--accent)]',
