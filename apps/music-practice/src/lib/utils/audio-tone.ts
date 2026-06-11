@@ -17,7 +17,7 @@ export class AudioToneGenerator {
      */
     private initAudioContext(): void {
         if (!this.audioContext || this.audioContext.state === 'closed') {
-            this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+            this.audioContext = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
         }
 
         // Resume if suspended
@@ -114,7 +114,7 @@ export class AudioToneGenerator {
      * Check if audio context is supported
      */
     static isSupported(): boolean {
-        return !!(window.AudioContext || (window as any).webkitAudioContext);
+        return !!(window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext);
     }
 
     /**

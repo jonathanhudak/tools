@@ -10,12 +10,20 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as StyleguideRouteImport } from './routes/styleguide'
+import { Route as StatsRouteImport } from './routes/stats'
 import { Route as ScalesQuizRouteImport } from './routes/scales-quiz'
+import { Route as ScaleExplorerRouteImport } from './routes/scale-explorer'
+import { Route as ReviewRouteImport } from './routes/review'
+import { Route as ProgressionsRouteImport } from './routes/progressions'
+import { Route as PracticeRouteImport } from './routes/practice'
 import { Route as PlayRouteImport } from './routes/play'
+import { Route as IntervalsRouteImport } from './routes/intervals'
+import { Route as EarTrainingRouteImport } from './routes/ear-training'
 import { Route as DevRouteImport } from './routes/dev'
 import { Route as CircleOfFifthsRouteImport } from './routes/circle-of-fifths'
 import { Route as ChordScaleRouteImport } from './routes/chord-scale'
 import { Route as ChordQuizRouteImport } from './routes/chord-quiz'
+import { Route as ArpeggiosRouteImport } from './routes/arpeggios'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -24,14 +32,49 @@ const StyleguideRoute = StyleguideRouteImport.update({
   path: '/styleguide',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StatsRoute = StatsRouteImport.update({
+  id: '/stats',
+  path: '/stats',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ScalesQuizRoute = ScalesQuizRouteImport.update({
   id: '/scales-quiz',
   path: '/scales-quiz',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ScaleExplorerRoute = ScaleExplorerRouteImport.update({
+  id: '/scale-explorer',
+  path: '/scale-explorer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReviewRoute = ReviewRouteImport.update({
+  id: '/review',
+  path: '/review',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProgressionsRoute = ProgressionsRouteImport.update({
+  id: '/progressions',
+  path: '/progressions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PracticeRoute = PracticeRouteImport.update({
+  id: '/practice',
+  path: '/practice',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PlayRoute = PlayRouteImport.update({
   id: '/play',
   path: '/play',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IntervalsRoute = IntervalsRouteImport.update({
+  id: '/intervals',
+  path: '/intervals',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EarTrainingRoute = EarTrainingRouteImport.update({
+  id: '/ear-training',
+  path: '/ear-training',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DevRoute = DevRouteImport.update({
@@ -54,6 +97,11 @@ const ChordQuizRoute = ChordQuizRouteImport.update({
   path: '/chord-quiz',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ArpeggiosRoute = ArpeggiosRouteImport.update({
+  id: '/arpeggios',
+  path: '/arpeggios',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
@@ -68,35 +116,59 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/arpeggios': typeof ArpeggiosRoute
   '/chord-quiz': typeof ChordQuizRoute
   '/chord-scale': typeof ChordScaleRoute
   '/circle-of-fifths': typeof CircleOfFifthsRoute
   '/dev': typeof DevRoute
+  '/ear-training': typeof EarTrainingRoute
+  '/intervals': typeof IntervalsRoute
   '/play': typeof PlayRoute
+  '/practice': typeof PracticeRoute
+  '/progressions': typeof ProgressionsRoute
+  '/review': typeof ReviewRoute
+  '/scale-explorer': typeof ScaleExplorerRoute
   '/scales-quiz': typeof ScalesQuizRoute
+  '/stats': typeof StatsRoute
   '/styleguide': typeof StyleguideRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/arpeggios': typeof ArpeggiosRoute
   '/chord-quiz': typeof ChordQuizRoute
   '/chord-scale': typeof ChordScaleRoute
   '/circle-of-fifths': typeof CircleOfFifthsRoute
   '/dev': typeof DevRoute
+  '/ear-training': typeof EarTrainingRoute
+  '/intervals': typeof IntervalsRoute
   '/play': typeof PlayRoute
+  '/practice': typeof PracticeRoute
+  '/progressions': typeof ProgressionsRoute
+  '/review': typeof ReviewRoute
+  '/scale-explorer': typeof ScaleExplorerRoute
   '/scales-quiz': typeof ScalesQuizRoute
+  '/stats': typeof StatsRoute
   '/styleguide': typeof StyleguideRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/arpeggios': typeof ArpeggiosRoute
   '/chord-quiz': typeof ChordQuizRoute
   '/chord-scale': typeof ChordScaleRoute
   '/circle-of-fifths': typeof CircleOfFifthsRoute
   '/dev': typeof DevRoute
+  '/ear-training': typeof EarTrainingRoute
+  '/intervals': typeof IntervalsRoute
   '/play': typeof PlayRoute
+  '/practice': typeof PracticeRoute
+  '/progressions': typeof ProgressionsRoute
+  '/review': typeof ReviewRoute
+  '/scale-explorer': typeof ScaleExplorerRoute
   '/scales-quiz': typeof ScalesQuizRoute
+  '/stats': typeof StatsRoute
   '/styleguide': typeof StyleguideRoute
 }
 export interface FileRouteTypes {
@@ -104,46 +176,78 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/arpeggios'
     | '/chord-quiz'
     | '/chord-scale'
     | '/circle-of-fifths'
     | '/dev'
+    | '/ear-training'
+    | '/intervals'
     | '/play'
+    | '/practice'
+    | '/progressions'
+    | '/review'
+    | '/scale-explorer'
     | '/scales-quiz'
+    | '/stats'
     | '/styleguide'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
+    | '/arpeggios'
     | '/chord-quiz'
     | '/chord-scale'
     | '/circle-of-fifths'
     | '/dev'
+    | '/ear-training'
+    | '/intervals'
     | '/play'
+    | '/practice'
+    | '/progressions'
+    | '/review'
+    | '/scale-explorer'
     | '/scales-quiz'
+    | '/stats'
     | '/styleguide'
   id:
     | '__root__'
     | '/'
     | '/about'
+    | '/arpeggios'
     | '/chord-quiz'
     | '/chord-scale'
     | '/circle-of-fifths'
     | '/dev'
+    | '/ear-training'
+    | '/intervals'
     | '/play'
+    | '/practice'
+    | '/progressions'
+    | '/review'
+    | '/scale-explorer'
     | '/scales-quiz'
+    | '/stats'
     | '/styleguide'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  ArpeggiosRoute: typeof ArpeggiosRoute
   ChordQuizRoute: typeof ChordQuizRoute
   ChordScaleRoute: typeof ChordScaleRoute
   CircleOfFifthsRoute: typeof CircleOfFifthsRoute
   DevRoute: typeof DevRoute
+  EarTrainingRoute: typeof EarTrainingRoute
+  IntervalsRoute: typeof IntervalsRoute
   PlayRoute: typeof PlayRoute
+  PracticeRoute: typeof PracticeRoute
+  ProgressionsRoute: typeof ProgressionsRoute
+  ReviewRoute: typeof ReviewRoute
+  ScaleExplorerRoute: typeof ScaleExplorerRoute
   ScalesQuizRoute: typeof ScalesQuizRoute
+  StatsRoute: typeof StatsRoute
   StyleguideRoute: typeof StyleguideRoute
 }
 
@@ -156,6 +260,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StyleguideRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/stats': {
+      id: '/stats'
+      path: '/stats'
+      fullPath: '/stats'
+      preLoaderRoute: typeof StatsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/scales-quiz': {
       id: '/scales-quiz'
       path: '/scales-quiz'
@@ -163,11 +274,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ScalesQuizRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/scale-explorer': {
+      id: '/scale-explorer'
+      path: '/scale-explorer'
+      fullPath: '/scale-explorer'
+      preLoaderRoute: typeof ScaleExplorerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/review': {
+      id: '/review'
+      path: '/review'
+      fullPath: '/review'
+      preLoaderRoute: typeof ReviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/progressions': {
+      id: '/progressions'
+      path: '/progressions'
+      fullPath: '/progressions'
+      preLoaderRoute: typeof ProgressionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/practice': {
+      id: '/practice'
+      path: '/practice'
+      fullPath: '/practice'
+      preLoaderRoute: typeof PracticeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/play': {
       id: '/play'
       path: '/play'
       fullPath: '/play'
       preLoaderRoute: typeof PlayRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/intervals': {
+      id: '/intervals'
+      path: '/intervals'
+      fullPath: '/intervals'
+      preLoaderRoute: typeof IntervalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ear-training': {
+      id: '/ear-training'
+      path: '/ear-training'
+      fullPath: '/ear-training'
+      preLoaderRoute: typeof EarTrainingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dev': {
@@ -198,6 +351,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChordQuizRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/arpeggios': {
+      id: '/arpeggios'
+      path: '/arpeggios'
+      fullPath: '/arpeggios'
+      preLoaderRoute: typeof ArpeggiosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/about': {
       id: '/about'
       path: '/about'
@@ -218,12 +378,20 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  ArpeggiosRoute: ArpeggiosRoute,
   ChordQuizRoute: ChordQuizRoute,
   ChordScaleRoute: ChordScaleRoute,
   CircleOfFifthsRoute: CircleOfFifthsRoute,
   DevRoute: DevRoute,
+  EarTrainingRoute: EarTrainingRoute,
+  IntervalsRoute: IntervalsRoute,
   PlayRoute: PlayRoute,
+  PracticeRoute: PracticeRoute,
+  ProgressionsRoute: ProgressionsRoute,
+  ReviewRoute: ReviewRoute,
+  ScaleExplorerRoute: ScaleExplorerRoute,
   ScalesQuizRoute: ScalesQuizRoute,
+  StatsRoute: StatsRoute,
   StyleguideRoute: StyleguideRoute,
 }
 export const routeTree = rootRouteImport

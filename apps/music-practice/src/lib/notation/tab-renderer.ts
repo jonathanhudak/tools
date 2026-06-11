@@ -6,7 +6,6 @@
 import { midiToTabPosition } from '../utils/music-theory';
 
 // Use the Vex global from window
-declare const Vex: any;
 
 // Type definitions
 export interface TabPosition {
@@ -21,8 +20,8 @@ interface RenderOptions {
 
 export class TabRenderer {
     private container: HTMLElement | null;
-    private renderer: any = null;
-    private context: any = null;
+    private renderer: VexFlowAPI = null;
+    private context: VexFlowAPI = null;
     private currentNote: number | null = null;
     private instrumentId: string = 'guitar';
     private tabOrientation: 'standard' | 'leftHanded' = 'standard';
@@ -179,7 +178,6 @@ export class TabRenderer {
             // Get drawing context
             this.context = this.renderer.getContext();
 
-            console.log('TabRenderer initialized successfully');
         } catch (error) {
             console.error('Failed to initialize TabRenderer:', error);
             this.showError('Unable to initialize tablature renderer');
@@ -661,7 +659,3 @@ export class TabRenderer {
     }
 }
 
-// Make available globally
-if (typeof window !== 'undefined') {
-    (window as any).TabRenderer = TabRenderer;
-}

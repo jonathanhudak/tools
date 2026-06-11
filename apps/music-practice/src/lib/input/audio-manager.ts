@@ -3,7 +3,8 @@
  * Manages microphone access and real-time pitch detection for stringed/bowed instruments
  */
 
-import { PitchDetector, PitchResult } from '../utils/pitch-detector';
+import type { PitchResult } from '../utils/pitch-detector';
+import { PitchDetector } from '../utils/pitch-detector';
 import { midiToNoteName } from '../utils/music-theory';
 
 // Type definitions
@@ -98,7 +99,7 @@ export class AudioManager {
             }
 
             // Create audio context
-            this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+            this.audioContext = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
 
             if (!this.audioContext) {
                 console.error('Failed to create audio context');
@@ -157,10 +158,6 @@ export class AudioManager {
                 maxFrequency: this.config.maxFrequency
             });
 
-            console.log('Audio Manager initialized successfully');
-            console.log('Sample rate:', this.audioContext.sampleRate);
-            console.log('Buffer size:', this.config.bufferSize);
-            console.log('Audio context state:', this.audioContext.state);
 
             this.emitStatusChange({ listening: false, microphoneActive: true });
             return true;
@@ -182,7 +179,6 @@ export class AudioManager {
     private stateChangeHandler = () => {
         if (!this.audioContext) return;
 
-        console.log('AudioContext state changed to:', this.audioContext.state);
 
         if (this.audioContext.state === 'suspended') {
             console.warn('AudioContext suspended, attempting to resume...');
@@ -219,7 +215,6 @@ export class AudioManager {
         this.isListening = true;
         this.emitStatusChange({ listening: true, microphoneActive: true });
         this.detectPitchLoop();
-        console.log('Started listening for pitch');
     }
 
     /**
@@ -235,7 +230,6 @@ export class AudioManager {
         }
 
         this.emitStatusChange({ listening: false, microphoneActive: this.stream !== null });
-        console.log('Stopped listening for pitch');
     }
 
     /**
@@ -250,7 +244,6 @@ export class AudioManager {
         if (this.audioContext.state === 'suspended') {
             console.warn('AudioContext suspended during pitch detection, attempting resume...');
             this.audioContext.resume().then(() => {
-                console.log('AudioContext resumed successfully');
             }).catch(err => {
                 console.error('Failed to resume AudioContext:', err);
                 this.stopListening();
@@ -348,7 +341,6 @@ export class AudioManager {
         this.buffer = null;
 
         this.emitStatusChange({ listening: false, microphoneActive: false });
-        console.log('Audio Manager disconnected');
     }
 
     /**
@@ -382,7 +374,8 @@ export class AudioManager {
      */
     on<T extends EventType>(event: T, callback: Listeners[T][number]): void {
         if (this.listeners[event]) {
-            this.listeners[event].push(callback as any);
+            // Union-of-arrays → array-of-union so the generic callback is assignable
+            (this.listeners[event] as Array<Listeners[T][number]>).push(callback);
         } else {
             console.warn('Unknown event type:', event);
         }
@@ -393,7 +386,7 @@ export class AudioManager {
      */
     off<T extends EventType>(event: T, callback: Listeners[T][number]): void {
         if (this.listeners[event]) {
-            const index = this.listeners[event].indexOf(callback as any);
+            const index = (this.listeners[event] as Array<Listeners[T][number]>).indexOf(callback);
             if (index > -1) {
                 this.listeners[event].splice(index, 1);
             }
@@ -540,7 +533,3 @@ export class AudioManager {
     }
 }
 
-// Make available globally for legacy code
-if (typeof window !== 'undefined') {
-    (window as any).AudioManager = AudioManager;
-}

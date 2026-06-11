@@ -10,7 +10,7 @@ import { Button } from '@hudak/ui/components/button';
 import { Badge } from '@hudak/ui/components/badge';
 import Confetti from 'react-confetti';
 import { useState } from 'react';
-import { CheckCircle2, XCircle, RotateCcw, Target } from 'lucide-react';
+import { CheckCircle2, XCircle, RotateCcw } from 'lucide-react';
 import { SCALE_TYPE_NAMES } from '../../data/chord-scale-matrix';
 import type { QuizResults, AnswerRecord } from './QuizGame';
 

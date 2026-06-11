@@ -9,9 +9,9 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Badge } from '@hudak/ui/components/badge';
 import { InstrumentToggle } from '../Piano/InstrumentToggle';
-import { ScaleDisplay } from '../ScaleReference/ScaleDisplay';
 import { ChordVoicingDisplay } from '../ChordScaleGame/ChordVoicingDisplay';
 import type { Chord } from '@/lib/chord-library';
+import { getAvoidNotes } from '@/data/avoid-notes';
 import {
   buildScaleChords,
   getModeNoteNames,
@@ -27,7 +27,7 @@ import {
 const CHROMATIC_KEYS = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'] as const;
 type RootKey = typeof CHROMATIC_KEYS[number];
 
-const SCALE_TYPES: ScaleType[] = ['major', 'naturalMinor', 'melodicMinor', 'harmonicMinor'];
+const SCALE_TYPES: ScaleType[] = ['major', 'naturalMinor', 'melodicMinor', 'harmonicMinor', 'harmonicMajor'];
 
 /** Modal character descriptions keyed by mode name */
 const MODAL_CHARACTER: Record<string, { character: string; function: string; color: string }> = {
@@ -52,6 +52,13 @@ const MODAL_CHARACTER: Record<string, { character: string; function: string; col
   'Phrygian Dominant': { character: 'Flamenco, Middle Eastern sound', function: 'Major dominant in minor key', color: 'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300' },
   'Lydian #2':         { character: 'Lydian with raised 2nd — exotic brightness', function: 'Major submediant', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' },
   'Super Locrian bb7': { character: 'Fully diminished — maximum tension', function: 'Diminished leading tone', color: 'bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-300' },
+  'Harmonic Major':    { character: 'Major with a darkened 6th — bittersweet', function: 'Tonic major with b6 color', color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300' },
+  'Dorian b5':         { character: 'Minor with a diminished core', function: 'Half-diminished supertonic', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' },
+  'Phrygian b4':       { character: 'Dark and disoriented — altered colors', function: 'Mediant minor', color: 'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300' },
+  'Lydian b3':         { character: 'Minor with Lydian lift', function: 'Minor-major subdominant', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' },
+  'Mixolydian b2':     { character: 'Dominant with Phrygian bite', function: 'Dominant with b9 built in', color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300' },
+  'Lydian Augmented #2': { character: 'Maximally bright and exotic', function: 'Augmented major submediant', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' },
+  'Locrian bb7':       { character: 'Fully diminished leading tone', function: 'Diminished 7th source', color: 'bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-300' },
 };
 
 // ─── Chord library hook ───────────────────────────────────────────────────────
@@ -92,6 +99,11 @@ function FullDegreeCard({ entry, rootKey, instrument, onInstrumentChange }: Full
   );
   const modal = MODAL_CHARACTER[entry.modeName];
   const chord = useChordForDegree(entry.scaleType, entry.degree as Degree, rootKey);
+  const avoidEntry = getAvoidNotes(
+    entry.modeName.toLowerCase().replace(/\s+/g, '-'),
+    entry.chordQuality,
+  );
+  const avoidDegrees = new Set(avoidEntry?.avoidNotes.map(a => a.scaleDegree) ?? []);
 
   return (
     <div
@@ -112,6 +124,11 @@ function FullDegreeCard({ entry, rootKey, instrument, onInstrumentChange }: Full
               {chordName}
             </h3>
             <p className="text-[11px] text-[var(--ink-secondary)]">{entry.modeName}</p>
+            {entry.jazzChordQuality && (
+              <p className="text-[10px] text-[var(--ink-tertiary)] italic">
+                Jazz pairing: {entry.jazzChordQuality}
+              </p>
+            )}
           </div>
           {modal && (
             <Badge className={`text-[10px] shrink-0 ${modal.color}`}>{entry.chordQuality}</Badge>
@@ -127,13 +144,23 @@ function FullDegreeCard({ entry, rootKey, instrument, onInstrumentChange }: Full
                 'font-mono text-[10px] px-1.5 py-0.5 rounded',
                 i === 0
                   ? 'bg-[var(--accent)] text-white font-semibold'
-                  : 'bg-[var(--surface-subtle)] text-[var(--ink-secondary)]',
+                  : avoidDegrees.has(i + 1)
+                    ? 'bg-[var(--error-color,#ef4444)]/15 text-[var(--error-color,#b91c1c)] line-through decoration-1'
+                    : 'bg-[var(--surface-subtle)] text-[var(--ink-secondary)]',
               ].join(' ')}
+              title={avoidDegrees.has(i + 1)
+                ? avoidEntry?.avoidNotes.find(a => a.scaleDegree === i + 1)?.reason
+                : undefined}
             >
               {n}
             </span>
           ))}
         </div>
+        {avoidEntry && avoidEntry.avoidNotes.length > 0 && (
+          <p className="text-[9px] text-[var(--ink-tertiary)] mt-1">
+            Avoid: {avoidEntry.avoidNotes.map(a => `degree ${a.scaleDegree} (${a.reason})`).join(', ')}
+          </p>
+        )}
       </div>
 
       {/* Chord voicing — renders immediately, no click needed */}
@@ -196,7 +223,7 @@ export function ChordScaleMatrix({
                 key={key}
                 onClick={() => setSelectedKey(key)}
                 className={[
-                  'font-mono text-sm px-2.5 py-1 rounded-lg border transition-all flex-shrink-0',
+                  'font-mono text-sm min-h-11 min-w-11 px-2.5 py-1 rounded-lg border transition-all flex-shrink-0',
                   selectedKey === key
                     ? 'border-[var(--accent)] bg-[var(--accent)] text-white font-semibold'
                     : 'border-[var(--border-medium)] bg-[var(--surface-card)] text-[var(--ink-secondary)] hover:border-[var(--accent)] hover:text-[var(--ink-primary)]',
@@ -216,7 +243,7 @@ export function ChordScaleMatrix({
                 key={scale}
                 onClick={() => setSelectedScale(scale)}
                 className={[
-                  'text-xs px-3 py-1.5 rounded-full border-2 font-medium transition-all flex-shrink-0',
+                  'text-xs min-h-11 px-4 py-1.5 rounded-full border-2 font-medium transition-all flex-shrink-0',
                   selectedScale === scale
                     ? 'border-[var(--accent)] bg-[var(--accent)] text-white'
                     : 'border-[var(--border-medium)] text-[var(--ink-secondary)] hover:border-[var(--accent)]',

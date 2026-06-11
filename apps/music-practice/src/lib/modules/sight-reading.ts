@@ -3,13 +3,16 @@
  * Manages the sight reading practice session
  */
 
-import { MidiManager, NoteOnEvent } from '../input/midi-manager';
-import { AudioManager, PitchDetectedEvent } from '../input/audio-manager';
-import { StaffRenderer } from '../notation/staff-renderer';
-import { FallingNotesRenderer } from '../notation/falling-notes';
-import { MusicTheory, NoteInfo, ClefType, validatePitchWithCents } from '../utils/music-theory';
-import { Storage, SessionData } from '../utils/storage';
-import { InstrumentTypeValue, getInstrument, requiresMicrophone, requiresMIDI, getPitchTolerance, getNoteRange } from '../utils/instrument-config';
+import type { MidiManager, NoteOnEvent } from '../input/midi-manager';
+import type { AudioManager, PitchDetectedEvent } from '../input/audio-manager';
+import type { StaffRenderer } from '../notation/staff-renderer';
+import type { FallingNotesRenderer } from '../notation/falling-notes';
+import type { NoteInfo, ClefType} from '../utils/music-theory';
+import { MusicTheory, validatePitchWithCents } from '../utils/music-theory';
+import type { SessionData } from '../utils/storage';
+import { Storage } from '../utils/storage';
+import type { InstrumentTypeValue} from '../utils/instrument-config';
+import { getInstrument, requiresMicrophone, requiresMIDI, getPitchTolerance, getNoteRange } from '../utils/instrument-config';
 import { AudioToneGenerator } from '../utils/audio-tone';
 
 // Type definitions
@@ -227,7 +230,6 @@ export class SightReadingModule {
         this.generateNewNote();
 
         // Update feedback
-        const instrument = getInstrument(this.currentInstrument);
         const inputHint = requiresMicrophone(this.currentInstrument)
             ? 'Play the note on your instrument'
             : 'Play the note shown above';
@@ -629,8 +631,10 @@ export class SightReadingModule {
     private playFeedbackSound(isCorrect: boolean): void {
         // Simple beep using Web Audio API
         try {
-            const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-            const audioContext = new AudioContext();
+            const AudioContextCtor =
+                window.AudioContext ||
+                (window as unknown as { webkitAudioContext: typeof window.AudioContext }).webkitAudioContext;
+            const audioContext = new AudioContextCtor();
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
 
@@ -658,7 +662,3 @@ export class SightReadingModule {
     }
 }
 
-// Make available globally
-if (typeof window !== 'undefined') {
-    (window as any).SightReadingModule = SightReadingModule;
-}

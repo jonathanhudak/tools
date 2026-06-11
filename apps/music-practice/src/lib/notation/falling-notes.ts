@@ -33,7 +33,6 @@ interface FallingNote {
 }
 
 export class FallingNotesRenderer {
-    private containerId: string;
     private container: HTMLElement | null;
     private canvas: HTMLCanvasElement | null = null;
     private ctx: CanvasRenderingContext2D | null = null;
@@ -59,7 +58,6 @@ export class FallingNotesRenderer {
     };
 
     constructor(containerId: string) {
-        this.containerId = containerId;
         this.container = document.getElementById(containerId);
 
         if (!this.container) {
@@ -89,7 +87,6 @@ export class FallingNotesRenderer {
 
             this.ctx = this.canvas.getContext('2d');
 
-            console.log('FallingNotesRenderer initialized');
         } catch (error) {
             console.error('Failed to initialize FallingNotesRenderer:', error);
         }
@@ -314,7 +311,3 @@ export class FallingNotesRenderer {
     }
 }
 
-// Make available globally
-if (typeof window !== 'undefined') {
-    (window as any).FallingNotesRenderer = FallingNotesRenderer;
-}

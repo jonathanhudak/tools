@@ -431,7 +431,13 @@ for (const shortName of unique) {
   const fullName = getFullName(shortName);
   const tags = getTags(shortName);
   
-  const id = fullName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+  // Spell '#' as '-sharp-' so C# Major -> 'c-sharp-major' (never colliding with C Major).
+  const id = fullName
+    .replace(/#/g, ' sharp ')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
   
   const voicing = {
     voicingName: 'Standard Position',

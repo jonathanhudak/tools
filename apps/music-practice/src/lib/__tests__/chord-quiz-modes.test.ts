@@ -154,7 +154,7 @@ describe('Chord Quiz Modes', () => {
   describe('calculateStats', () => {
     it('should calculate correct count', () => {
       const state = initializeQuizState('accuracy', 'beginner', 3);
-      let newState = state;
+      const newState = state;
 
       // Answer first question correctly
       newState.userAnswers[0] = newState.questions[0].correctIndex;
@@ -171,7 +171,7 @@ describe('Chord Quiz Modes', () => {
 
     it('should calculate accuracy percentage', () => {
       const state = initializeQuizState('speed', 'intermediate', 4);
-      let newState = state;
+      const newState = state;
 
       // Answer 3 out of 4 correctly
       newState.userAnswers[0] = newState.questions[0].correctIndex;

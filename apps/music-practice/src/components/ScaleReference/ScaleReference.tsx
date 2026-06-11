@@ -27,18 +27,20 @@ interface ScaleReferenceProps {
   onBack: () => void;
 }
 
-const SCALE_TYPES: ScaleType[] = ['major', 'naturalMinor', 'melodicMinor', 'harmonicMinor'];
+const SCALE_TYPES: ScaleType[] = ['major', 'naturalMinor', 'melodicMinor', 'harmonicMinor', 'harmonicMajor'];
 
 const SCALE_DESCRIPTIONS: Record<ScaleType, string> = {
   major: 'The foundation of Western harmony. All 7 modes derive from this scale.',
   naturalMinor: 'The relative minor — same notes as major, starting from degree 6 (Aeolian mode).',
   melodicMinor: 'Minor scale with raised 6th and 7th. Source of Lydian Dominant and Altered scales.',
   harmonicMinor: 'Minor scale with raised 7th only. Creates the dominant V7 chord in minor keys.',
+  harmonicMajor: 'Major scale with lowered 6th — the 4th parent scale. Source of Mixolydian b2 and Lydian b3.',
 };
 
 const ROOT_KEYS = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
 
-export function ScaleReference({ onBack }: ScaleReferenceProps): JSX.Element {
+// onBack is accepted for API compatibility; navigation lives in the app header.
+export function ScaleReference({ onBack: _onBack }: ScaleReferenceProps): JSX.Element {
   const [activeScale, setActiveScale] = useState<ScaleType>('major');
   const [selectedDegree, setSelectedDegree] = useState<Degree>(1);
   const [rootKey, setRootKey] = useState('C');
@@ -98,7 +100,7 @@ export function ScaleReference({ onBack }: ScaleReferenceProps): JSX.Element {
           <select
             value={rootKey}
             onChange={e => setRootKey(e.target.value)}
-            className="text-sm px-2 py-1 bg-[hsl(var(--color-card))] border border-[var(--border-subtle)] text-[var(--ink-primary)] font-mono-app"
+            className="text-sm min-h-11 px-3 py-1 bg-[hsl(var(--color-card))] border border-[var(--border-subtle)] text-[var(--ink-primary)] font-mono-app"
           >
             {ROOT_KEYS.map(k => (
               <option key={k} value={k}>{k}</option>

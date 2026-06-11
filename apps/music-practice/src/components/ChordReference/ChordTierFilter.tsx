@@ -193,7 +193,7 @@ export function ChordTierFilter({
         <div className="flex gap-2 pt-2 border-t">
           <Button
             variant="ghost"
-            size="xs"
+            size="sm"
             onClick={() => {
               allTiers.forEach(tier => {
                 if (!selectedTiers.has(tier)) {
@@ -207,7 +207,7 @@ export function ChordTierFilter({
           </Button>
           <Button
             variant="ghost"
-            size="xs"
+            size="sm"
             onClick={() => {
               selectedTiers.forEach(tier => {
                 onTierToggle(tier);

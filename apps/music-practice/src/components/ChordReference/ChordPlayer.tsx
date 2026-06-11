@@ -42,7 +42,7 @@ const NOTE_FREQUENCIES: Record<string, number> = {
   'B♭4': 466.16,
 };
 
-export function ChordPlayer({ chord, variant = 'primary', size = 'md' }: ChordPlayerProps): JSX.Element {
+export function ChordPlayer({ chord, size = 'md' }: ChordPlayerProps): JSX.Element {
   const [isPlaying, setIsPlaying] = useState(false);
   const audioContextRef = useRef<AudioContext | null>(null);
   const oscillatorsRef = useRef<OscillatorNode[]>([]);
@@ -76,7 +76,7 @@ export function ChordPlayer({ chord, variant = 'primary', size = 'md' }: ChordPl
     oscillatorsRef.current = [];
     gainsRef.current = [];
 
-    const pianoNotes = chord.fingerings.piano || [];
+    const pianoNotes = chord.fingerings?.piano ?? [];
     const duration = 3; // seconds
 
     pianoNotes.forEach((note, index) => {
@@ -138,7 +138,7 @@ export function ChordPlayer({ chord, variant = 'primary', size = 'md' }: ChordPl
         onClick={playChord}
         variant="ghost"
         className={`${sizeClasses[size]} gap-2 transition-colors bg-[var(--accent-color)] hover:bg-[var(--accent-hover)] text-white`}
-        disabled={!chord.fingerings.piano}
+        disabled={!chord.fingerings?.piano}
       >
         {isPlaying ? (
           <>

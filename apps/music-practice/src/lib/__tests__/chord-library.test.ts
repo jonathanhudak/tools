@@ -34,19 +34,19 @@ describe('Chord Library', () => {
 
     it('should have guitar fingerings for all chords', () => {
       CHORD_LIBRARY.forEach(chord => {
-        expect(chord.fingerings.guitar).toBeDefined();
-        expect(chord.fingerings.guitar.length).toBe(6); // 6 strings
+        expect(chord.fingerings).toBeDefined();
+        expect(chord.fingerings!.guitar.length).toBe(6); // 6 strings
       });
     });
 
     it('should have piano notes for most chords', () => {
-      const chordsWithPiano = CHORD_LIBRARY.filter(c => c.fingerings.piano);
+      const chordsWithPiano = CHORD_LIBRARY.filter(c => c.fingerings?.piano);
       expect(chordsWithPiano.length).toBeGreaterThan(0);
     });
 
     it('should have valid fret positions', () => {
       CHORD_LIBRARY.forEach(chord => {
-        chord.fingerings.guitar.forEach(fingering => {
+        chord.fingerings!.guitar.forEach(fingering => {
           expect(fingering.fret).toBeGreaterThanOrEqual(-1);
           expect(fingering.fret).toBeLessThanOrEqual(12);
           expect([1, 2, 3, 4, 5, 6]).toContain(fingering.string);

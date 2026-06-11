@@ -46,7 +46,7 @@ function ChordScaleRoute() {
             Chord-Scale System
           </h1>
           <p className="text-[var(--ink-secondary)] text-sm">
-            Jeff Schneider's chord-scale matrix — all 4 scale families, all 12 keys
+            Jeff Schneider&apos;s chord-scale matrix — all 5 scale families, all 12 keys
           </p>
         </div>
 

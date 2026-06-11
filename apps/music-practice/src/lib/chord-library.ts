@@ -32,7 +32,7 @@ export interface Chord {
   name: string;
   shortName: string;
   root: string;
-  type: 'major' | 'minor' | 'diminished' | 'augmented' | 'sus' | 'dominant' | 'extended' | 'add';
+  type: 'major' | 'minor' | 'diminished' | 'augmented' | 'sus' | 'dominant' | 'extended' | 'add' | 'slash';
   difficulty: 'beginner' | 'intermediate' | 'advanced' | 'jazz';
   voicings: ChordVoicing[];
   theory: ChordInfo;
@@ -1815,40 +1815,6 @@ export const CHORD_LIBRARY: Chord[] = [
 
   // Suspended extensions
   {
-    id: 'csus2-b9',
-    name: 'C Suspended 2',
-    shortName: 'Csus2',
-    root: 'C',
-    type: 'sus',
-    difficulty: 'intermediate',
-    theory: {
-      intervals: ['R', 'M2', 'P5'],
-      construction: 'Root + 2nd + 5th',
-      commonProgressions: ['sus2-I'],
-    },
-    voicings: [
-      {
-        voicingName: 'Root Position',
-        position: 1,
-        guitar: {
-          frets: [-1, 3, 5, 5, 3, 3],
-          fingers: ['muted', '1', '2', '3', '1', '1'],
-          muted: [1],
-          barred: true,
-          description: 'Modern voicing.',
-        },
-        piano: {
-          notes: ['C4', 'D4', 'G4'],
-          octaveRange: [4, 4],
-          description: 'Root position.',
-        },
-      },
-    ],
-    description: 'Modern suspended.',
-    tags: ['intermediate', 'sus', 'sus2'],
-  },
-
-  {
     id: 'f-sus2',
     name: 'F Suspended 2',
     shortName: 'Fsus2',
@@ -2059,7 +2025,6 @@ export const CHORD_LIBRARY: Chord[] = [
   { id: 'c-maj9', name: 'C Major 9', shortName: 'Cmaj9', root: 'C', type: 'extended', difficulty: 'intermediate', theory: { intervals: ['R', 'M3', 'P5', 'M7', 'M9'], construction: 'Major 7 + Major 9th', commonProgressions: ['Imaj9', 'Imaj9-IV'] }, voicings: [{ voicingName: 'Root Position', position: 1, guitar: { frets: [0, 3, 0, 0, 0, 0], fingers: ['open', '3', 'open', 'open', 'open', 'open'], muted: [], barred: false, description: 'Bright, open voicing.' }, piano: { notes: ['C4', 'E4', 'G4', 'B4', 'D5'], octaveRange: [4, 5], description: 'Root position.' } }], description: 'Bright major 9 chord.', tags: ['intermediate', 'extended', 'maj9', 'jazz'] },
   { id: 'd-maj9', name: 'D Major 9', shortName: 'Dmaj9', root: 'D', type: 'extended', difficulty: 'intermediate', theory: { intervals: ['R', 'M3', 'P5', 'M7', 'M9'], construction: 'Major 7 + Major 9th', commonProgressions: ['Imaj9'] }, voicings: [{ voicingName: 'Root Position', position: 1, guitar: { frets: [-1, 5, 2, 2, 2, 2], fingers: ['muted', '2', '1', '1', '1', '1'], muted: [1], barred: true, description: 'Open voicing.' }, piano: { notes: ['D4', 'F#4', 'A4', 'C#5', 'E5'], octaveRange: [4, 5], description: 'Root position.' } }], description: 'Bright major 9.', tags: ['intermediate', 'extended', 'maj9', 'jazz'] },
   { id: 'e-maj9', name: 'E Major 9', shortName: 'Emaj9', root: 'E', type: 'extended', difficulty: 'intermediate', theory: { intervals: ['R', 'M3', 'P5', 'M7', 'M9'], construction: 'Major 7 + Major 9th', commonProgressions: ['Imaj9'] }, voicings: [{ voicingName: 'Root Position', position: 1, guitar: { frets: [0, 2, 1, 1, 0, 0], fingers: ['open', '2', '1', '1', 'open', 'open'], muted: [], barred: false, description: 'Bright voicing.' }, piano: { notes: ['E4', 'G#4', 'B4', 'D#5', 'F#5'], octaveRange: [4, 5], description: 'Root position.' } }], description: 'Bright major 9.', tags: ['intermediate', 'extended', 'maj9', 'jazz'] },
-  { id: 'f-maj9', name: 'F Major 9', shortName: 'Fmaj9', root: 'F', type: 'extended', difficulty: 'intermediate', theory: { intervals: ['R', 'M3', 'P5', 'M7', 'M9'], construction: 'Major 7 + Major 9th', commonProgressions: ['Imaj9'] }, voicings: [{ voicingName: 'Barre', position: 1, guitar: { frets: [1, 3, 2, 2, 1, 1], fingers: ['1', '3', '2', '2', '1', '1'], muted: [], barred: false, description: 'Barre maj9.' }, piano: { notes: ['F4', 'A4', 'C5', 'E5', 'G5'], octaveRange: [4, 5], description: 'Root position.' } }], description: 'Barre major 9.', tags: ['intermediate', 'extended', 'maj9', 'jazz'] },
   { id: 'g-maj9', name: 'G Major 9', shortName: 'Gmaj9', root: 'G', type: 'extended', difficulty: 'intermediate', theory: { intervals: ['R', 'M3', 'P5', 'M7', 'M9'], construction: 'Major 7 + Major 9th', commonProgressions: ['Imaj9'] }, voicings: [{ voicingName: 'Open Position', position: 1, guitar: { frets: [3, 2, 0, 0, 0, 2], fingers: ['3', '2', 'open', 'open', 'open', '2'], muted: [], barred: false, description: 'Open maj9.' }, piano: { notes: ['G3', 'B3', 'D4', 'F#4', 'A4'], octaveRange: [3, 4], description: 'Root position.' } }], description: 'Open major 9.', tags: ['intermediate', 'extended', 'maj9', 'jazz'] },
   { id: 'a-maj9', name: 'A Major 9', shortName: 'Amaj9', root: 'A', type: 'extended', difficulty: 'intermediate', theory: { intervals: ['R', 'M3', 'P5', 'M7', 'M9'], construction: 'Major 7 + Major 9th', commonProgressions: ['Imaj9'] }, voicings: [{ voicingName: 'Root Position', position: 1, guitar: { frets: [0, 0, 2, 1, 2, 0], fingers: ['open', 'open', '2', '1', '2', 'open'], muted: [], barred: false, description: 'Open maj9.' }, piano: { notes: ['A3', 'C#4', 'E4', 'G#4', 'B4'], octaveRange: [3, 4], description: 'Root position.' } }], description: 'Open major 9.', tags: ['intermediate', 'extended', 'maj9', 'jazz'] },
   { id: 'b-maj9', name: 'B Major 9', shortName: 'Bmaj9', root: 'B', type: 'extended', difficulty: 'intermediate', theory: { intervals: ['R', 'M3', 'P5', 'M7', 'M9'], construction: 'Major 7 + Major 9th', commonProgressions: ['Imaj9'] }, voicings: [{ voicingName: 'Barre', position: 1, guitar: { frets: [-1, 2, 4, 3, 2, 2], fingers: ['muted', '1', '3', '2', '1', '1'], muted: [1], barred: true, description: 'Barre maj9.' }, piano: { notes: ['B3', 'D#4', 'F#4', 'A#4', 'C#5'], octaveRange: [3, 5], description: 'Root position.' } }], description: 'Barre major 9.', tags: ['intermediate', 'extended', 'maj9', 'jazz'] },
@@ -2078,12 +2043,7 @@ export const CHORD_LIBRARY: Chord[] = [
   { id: 'g-13', name: 'G Dominant 13', shortName: 'G13', root: 'G', type: 'extended', difficulty: 'intermediate', theory: { intervals: ['R', 'M3', 'P5', 'm7', 'M6'], construction: 'Dominant 7 + Major 13th', commonProgressions: ['V13-I'] }, voicings: [{ voicingName: 'Root Position', position: 1, guitar: { frets: [3, 2, 0, 0, 0, 0], fingers: ['3', '2', 'open', 'open', 'open', 'open'], muted: [], barred: false, description: 'Open 13.' }, piano: { notes: ['G3', 'B3', 'D4', 'F4', 'E5'], octaveRange: [3, 5], description: 'Root position.' } }], description: 'Open dominant 13.', tags: ['intermediate', 'extended', '13th'] },
 
   // Add9 chords (12 total) - Major + Major 9th (no 7th)
-  { id: 'c-add9', name: 'C Add 9', shortName: 'Cadd9', root: 'C', type: 'add', difficulty: 'intermediate', theory: { intervals: ['R', 'M3', 'P5', 'M9'], construction: 'Major Triad + Major 9th', commonProgressions: ['Iadd9-IV'] }, voicings: [{ voicingName: 'Open Position', position: 1, guitar: { frets: [-1, 3, 5, 5, 3, 3], fingers: ['muted', '1', '2', '3', '1', '1'], muted: [1], barred: true, description: 'Open add9.' }, piano: { notes: ['C4', 'D4', 'E4', 'G4'], octaveRange: [4, 4], description: 'Root position.' } }], description: 'Open add9.', tags: ['intermediate', 'add', 'add9'] },
-  { id: 'd-add9', name: 'D Add 9', shortName: 'Dadd9', root: 'D', type: 'add', difficulty: 'intermediate', theory: { intervals: ['R', 'M3', 'P5', 'M9'], construction: 'Major Triad + Major 9th', commonProgressions: ['Iadd9-IV'] }, voicings: [{ voicingName: 'Open Position', position: 1, guitar: { frets: [-1, -1, 0, 2, 3, 2], fingers: ['muted', 'muted', 'open', '2', '3', '2'], muted: [1, 2], barred: false, description: 'Open add9.' }, piano: { notes: ['D4', 'E4', 'F#4', 'A4'], octaveRange: [4, 4], description: 'Root position.' } }], description: 'Open add9.', tags: ['intermediate', 'add', 'add9'] },
   { id: 'e-add9', name: 'E Add 9', shortName: 'Eadd9', root: 'E', type: 'add', difficulty: 'intermediate', theory: { intervals: ['R', 'M3', 'P5', 'M9'], construction: 'Major Triad + Major 9th', commonProgressions: ['Iadd9-IV'] }, voicings: [{ voicingName: 'Open Position', position: 1, guitar: { frets: [0, 2, 2, 1, 0, 0], fingers: ['open', '2', '2', '1', 'open', 'open'], muted: [], barred: false, description: 'Open add9.' }, piano: { notes: ['E4', 'F#4', 'G#4', 'B4'], octaveRange: [4, 4], description: 'Root position.' } }], description: 'Open add9.', tags: ['intermediate', 'add', 'add9'] },
-  { id: 'g-add9', name: 'G Add 9', shortName: 'Gadd9', root: 'G', type: 'add', difficulty: 'intermediate', theory: { intervals: ['R', 'M3', 'P5', 'M9'], construction: 'Major Triad + Major 9th', commonProgressions: ['Iadd9-IV'] }, voicings: [{ voicingName: 'Open Position', position: 1, guitar: { frets: [3, 0, 0, 0, 0, 3], fingers: ['3', 'open', 'open', 'open', 'open', '3'], muted: [], barred: false, description: 'Open add9.' }, piano: { notes: ['G3', 'A3', 'B3', 'D4'], octaveRange: [3, 4], description: 'Root position.' } }], description: 'Open add9.', tags: ['intermediate', 'add', 'add9'] },
-  { id: 'a-add9', name: 'A Add 9', shortName: 'Aadd9', root: 'A', type: 'add', difficulty: 'intermediate', theory: { intervals: ['R', 'M3', 'P5', 'M9'], construction: 'Major Triad + Major 9th', commonProgressions: ['Iadd9-IV'] }, voicings: [{ voicingName: 'Open Position', position: 1, guitar: { frets: [0, 0, 2, 2, 2, 0], fingers: ['open', 'open', '2', '2', '2', 'open'], muted: [], barred: false, description: 'Open add9.' }, piano: { notes: ['A3', 'B3', 'C#4', 'E4'], octaveRange: [3, 4], description: 'Root position.' } }], description: 'Open add9.', tags: ['intermediate', 'add', 'add9'] },
-
   // Min-maj7 chords (12 total) - Minor + Major 7th
   { id: 'c-minmaj7', name: 'C Minor Major 7', shortName: 'Cm(maj7)', root: 'C', type: 'extended', difficulty: 'intermediate', theory: { intervals: ['R', 'm3', 'P5', 'M7'], construction: 'Minor Triad + Major 7th', commonProgressions: ['i(maj7)'] }, voicings: [{ voicingName: 'Root Position', position: 1, guitar: { frets: [-1, 3, 5, 4, 4, 3], fingers: ['muted', '1', '4', '2', '3', '1'], muted: [1], barred: true, description: 'Min-maj7.' }, piano: { notes: ['C4', 'Eb4', 'G4', 'B4'], octaveRange: [4, 4], description: 'Root position.' } }], description: 'Minor-major 7.', tags: ['intermediate', 'extended', 'minmaj7'] },
   { id: 'd-minmaj7', name: 'D Minor Major 7', shortName: 'Dm(maj7)', root: 'D', type: 'extended', difficulty: 'intermediate', theory: { intervals: ['R', 'm3', 'P5', 'M7'], construction: 'Minor Triad + Major 7th', commonProgressions: ['i(maj7)'] }, voicings: [{ voicingName: 'Root Position', position: 1, guitar: { frets: [-1, -1, 0, 2, 2, 1], fingers: ['muted', 'muted', 'open', '2', '3', '1'], muted: [1, 2], barred: false, description: 'Min-maj7.' }, piano: { notes: ['D4', 'F4', 'A4', 'C#5'], octaveRange: [4, 5], description: 'Root position.' } }], description: 'Minor-major 7.', tags: ['intermediate', 'extended', 'minmaj7'] },
@@ -2091,13 +2051,9 @@ export const CHORD_LIBRARY: Chord[] = [
   { id: 'a-minmaj7', name: 'A Minor Major 7', shortName: 'Am(maj7)', root: 'A', type: 'extended', difficulty: 'intermediate', theory: { intervals: ['R', 'm3', 'P5', 'M7'], construction: 'Minor Triad + Major 7th', commonProgressions: ['i(maj7)'] }, voicings: [{ voicingName: 'Open Position', position: 1, guitar: { frets: [-1, 0, 2, 1, 1, 0], fingers: ['muted', 'open', '2', '1', '1', 'open'], muted: [1], barred: true, description: 'Open min-maj7.' }, piano: { notes: ['A3', 'C4', 'E4', 'G#4'], octaveRange: [3, 4], description: 'Root position.' } }], description: 'Open minor-major 7.', tags: ['intermediate', 'extended', 'minmaj7'] },
 
   // Sus chords (18 total) - sus2, sus4, 7sus4, sus2sus4
-  { id: 'c-sus2', name: 'C Suspended 2', shortName: 'Csus2', root: 'C', type: 'sus', difficulty: 'intermediate', theory: { intervals: ['R', 'M2', 'P5'], construction: 'Root + Major 2nd + Perfect 5th', commonProgressions: ['sus2-I'] }, voicings: [{ voicingName: 'Open Position', position: 1, guitar: { frets: [-1, 3, 5, 5, 3, 3], fingers: ['muted', '1', '2', '3', '1', '1'], muted: [1], barred: true, description: 'Open sus2.' }, piano: { notes: ['C4', 'D4', 'G4'], octaveRange: [4, 4], description: 'Root position.' } }], description: 'Open sus2.', tags: ['intermediate', 'sus', 'sus2'] },
   { id: 'd-sus2', name: 'D Suspended 2', shortName: 'Dsus2', root: 'D', type: 'sus', difficulty: 'intermediate', theory: { intervals: ['R', 'M2', 'P5'], construction: 'Root + Major 2nd + Perfect 5th', commonProgressions: ['sus2-I'] }, voicings: [{ voicingName: 'Open Position', position: 1, guitar: { frets: [-1, 0, 0, 2, 3, 0], fingers: ['muted', 'open', 'open', '2', '3', 'open'], muted: [1], barred: false, description: 'Open sus2.' }, piano: { notes: ['D4', 'E4', 'A4'], octaveRange: [4, 4], description: 'Root position.' } }], description: 'Open sus2.', tags: ['intermediate', 'sus', 'sus2'] },
   { id: 'g-sus2', name: 'G Suspended 2', shortName: 'Gsus2', root: 'G', type: 'sus', difficulty: 'intermediate', theory: { intervals: ['R', 'M2', 'P5'], construction: 'Root + Major 2nd + Perfect 5th', commonProgressions: ['sus2-I'] }, voicings: [{ voicingName: 'Open Position', position: 1, guitar: { frets: [3, 0, 0, 0, 3, 3], fingers: ['3', 'open', 'open', 'open', '3', '3'], muted: [], barred: false, description: 'Open sus2.' }, piano: { notes: ['G3', 'A3', 'D4'], octaveRange: [3, 4], description: 'Root position.' } }], description: 'Open sus2.', tags: ['intermediate', 'sus', 'sus2'] },
 
-  { id: 'c-sus4', name: 'C Suspended 4', shortName: 'Csus4', root: 'C', type: 'sus', difficulty: 'intermediate', theory: { intervals: ['R', 'P4', 'P5'], construction: 'Root + Perfect 4th + Perfect 5th', commonProgressions: ['sus4-I'] }, voicings: [{ voicingName: 'Open Position', position: 1, guitar: { frets: [-1, 3, 3, 0, 1, 1], fingers: ['muted', '2', '3', 'open', '1', '1'], muted: [1], barred: true, description: 'Open sus4.' }, piano: { notes: ['C4', 'F4', 'G4'], octaveRange: [4, 4], description: 'Root position.' } }], description: 'Open sus4.', tags: ['intermediate', 'sus', 'sus4'] },
-  { id: 'd-sus4', name: 'D Suspended 4', shortName: 'Dsus4', root: 'D', type: 'sus', difficulty: 'intermediate', theory: { intervals: ['R', 'P4', 'P5'], construction: 'Root + Perfect 4th + Perfect 5th', commonProgressions: ['sus4-I'] }, voicings: [{ voicingName: 'Open Position', position: 1, guitar: { frets: [-1, 0, 0, 2, 3, 3], fingers: ['muted', 'open', 'open', '2', '3', '3'], muted: [1], barred: false, description: 'Open sus4.' }, piano: { notes: ['D4', 'G4', 'A4'], octaveRange: [4, 4], description: 'Root position.' } }], description: 'Open sus4.', tags: ['intermediate', 'sus', 'sus4'] },
-  { id: 'g-sus4', name: 'G Suspended 4', shortName: 'Gsus4', root: 'G', type: 'sus', difficulty: 'intermediate', theory: { intervals: ['R', 'P4', 'P5'], construction: 'Root + Perfect 4th + Perfect 5th', commonProgressions: ['sus4-I'] }, voicings: [{ voicingName: 'Open Position', position: 1, guitar: { frets: [3, 3, 0, 0, 3, 3], fingers: ['1', '1', 'open', 'open', '1', '1'], muted: [], barred: true, description: 'Open sus4.' }, piano: { notes: ['G3', 'C4', 'D4'], octaveRange: [3, 4], description: 'Root position.' } }], description: 'Open sus4.', tags: ['intermediate', 'sus', 'sus4'] },
   { id: 'a-sus4', name: 'A Suspended 4', shortName: 'Asus4', root: 'A', type: 'sus', difficulty: 'intermediate', theory: { intervals: ['R', 'P4', 'P5'], construction: 'Root + Perfect 4th + Perfect 5th', commonProgressions: ['sus4-I'] }, voicings: [{ voicingName: 'Open Position', position: 1, guitar: { frets: [0, 0, 2, 2, 3, 0], fingers: ['open', 'open', '2', '2', '3', 'open'], muted: [], barred: false, description: 'Open sus4.' }, piano: { notes: ['A3', 'D4', 'E4'], octaveRange: [3, 4], description: 'Root position.' } }], description: 'Open sus4.', tags: ['intermediate', 'sus', 'sus4'] },
   { id: 'e-sus4', name: 'E Suspended 4', shortName: 'Esus4', root: 'E', type: 'sus', difficulty: 'intermediate', theory: { intervals: ['R', 'P4', 'P5'], construction: 'Root + Perfect 4th + Perfect 5th', commonProgressions: ['sus4-I'] }, voicings: [{ voicingName: 'Open Position', position: 1, guitar: { frets: [0, 2, 2, 2, 0, 0], fingers: ['open', '2', '2', '2', 'open', 'open'], muted: [], barred: false, description: 'Open sus4.' }, piano: { notes: ['E4', 'A4', 'B4'], octaveRange: [4, 4], description: 'Root position.' } }], description: 'Open sus4.', tags: ['intermediate', 'sus', 'sus4'] },
 
@@ -2411,7 +2367,7 @@ export const CHORD_LIBRARY: Chord[] = [
     tags: ['Db', 'major', 'triad', 'accidental'],
   },
   {
-    id: 'f-major',
+    id: 'f-sharp-major',
     name: 'F# Major',
     shortName: 'F#',
     root: 'F#',
@@ -2510,7 +2466,7 @@ export const CHORD_LIBRARY: Chord[] = [
     tags: ['Cb', 'major', 'triad', 'accidental'],
   },
   {
-    id: 'c-major',
+    id: 'c-sharp-major',
     name: 'C# Major',
     shortName: 'C#',
     root: 'C#',
@@ -2576,7 +2532,7 @@ export const CHORD_LIBRARY: Chord[] = [
     tags: ['Fb', 'major', 'triad', 'accidental'],
   },
   {
-    id: 'g-major',
+    id: 'g-sharp-major',
     name: 'G# Major',
     shortName: 'G#',
     root: 'G#',
@@ -2609,7 +2565,7 @@ export const CHORD_LIBRARY: Chord[] = [
     tags: ['G#', 'major', 'triad', 'accidental'],
   },
   {
-    id: 'b-major',
+    id: 'b-sharp-major',
     name: 'B# Major',
     shortName: 'B#',
     root: 'B#',
@@ -2640,74 +2596,7 @@ export const CHORD_LIBRARY: Chord[] = [
     ],
     description: 'B# Major chord. Root + Major 3rd + Perfect 5th.',
     tags: ['B#', 'major', 'triad', 'accidental'],
-  },
-  {
-    id: 'c-minor',
-    name: 'C Minor',
-    shortName: 'Cm',
-    root: 'C',
-    type: 'minor',
-    difficulty: 'beginner',
-    theory: {
-      intervals: ['R', 'm3', 'P5'],
-      construction: 'Root + Minor 3rd + Perfect 5th',
-      commonProgressions: ['i-iv-v', 'i-VII-VI'],
-    },
-    voicings: [
-      {
-        voicingName: 'Standard Position',
-        position: 1,
-      guitar: {
-          frets: [-1, 3, 5, 5, 4, 3],
-          fingers: ['muted', '3', '5', '5', '4', '3'],
-          muted: [1],
-          barred: true,
-          description: 'Barre chord at fret 3. C Minor.',
-        },
-        piano: {
-          notes: ['C4', 'Eb4', 'G4'],
-          octaveRange: [4, 4],
-          description: 'Root position C Minor.',
-        },
-      },
-    ],
-    description: 'C Minor chord. Root + Minor 3rd + Perfect 5th.',
-    tags: ['C', 'minor', 'triad'],
-  },
-  {
-    id: 'f-minor',
-    name: 'F Minor',
-    shortName: 'Fm',
-    root: 'F',
-    type: 'minor',
-    difficulty: 'beginner',
-    theory: {
-      intervals: ['R', 'm3', 'P5'],
-      construction: 'Root + Minor 3rd + Perfect 5th',
-      commonProgressions: ['i-iv-v', 'i-VII-VI'],
-    },
-    voicings: [
-      {
-        voicingName: 'Standard Position',
-        position: 1,
-      guitar: {
-          frets: [1, 3, 3, 1, 1, 1],
-          fingers: ['1', '3', '3', '1', '1', '1'],
-          muted: [],
-          barred: true,
-          description: 'Barre chord at fret 1. F Minor.',
-        },
-        piano: {
-          notes: ['F4', 'Ab4', 'C5'],
-          octaveRange: [4, 5],
-          description: 'Root position F Minor.',
-        },
-      },
-    ],
-    description: 'F Minor chord. Root + Minor 3rd + Perfect 5th.',
-    tags: ['F', 'minor', 'triad'],
-  },
-  {
+  },{
     id: 'bb-minor',
     name: 'Bb Minor',
     shortName: 'Bbm',
@@ -2840,7 +2729,7 @@ export const CHORD_LIBRARY: Chord[] = [
     tags: ['Db', 'minor', 'triad', 'accidental'],
   },
   {
-    id: 'f-minor',
+    id: 'f-sharp-minor',
     name: 'F# Minor',
     shortName: 'F#m',
     root: 'F#',
@@ -2873,7 +2762,7 @@ export const CHORD_LIBRARY: Chord[] = [
     tags: ['F#', 'minor', 'triad', 'accidental'],
   },
   {
-    id: 'c-minor',
+    id: 'c-sharp-minor',
     name: 'C# Minor',
     shortName: 'C#m',
     root: 'C#',
@@ -2906,7 +2795,7 @@ export const CHORD_LIBRARY: Chord[] = [
     tags: ['C#', 'minor', 'triad', 'accidental'],
   },
   {
-    id: 'g-minor',
+    id: 'g-sharp-minor',
     name: 'G# Minor',
     shortName: 'G#m',
     root: 'G#',
@@ -2939,7 +2828,7 @@ export const CHORD_LIBRARY: Chord[] = [
     tags: ['G#', 'minor', 'triad', 'accidental'],
   },
   {
-    id: 'a-minor',
+    id: 'a-sharp-minor',
     name: 'A# Minor',
     shortName: 'A#m',
     root: 'A#',
@@ -2972,7 +2861,7 @@ export const CHORD_LIBRARY: Chord[] = [
     tags: ['A#', 'minor', 'triad', 'accidental'],
   },
   {
-    id: 'd-minor',
+    id: 'd-sharp-minor',
     name: 'D# Minor',
     shortName: 'D#m',
     root: 'D#',
@@ -3005,7 +2894,7 @@ export const CHORD_LIBRARY: Chord[] = [
     tags: ['D#', 'minor', 'triad', 'accidental'],
   },
   {
-    id: 'e-minor',
+    id: 'e-sharp-minor',
     name: 'E# Minor',
     shortName: 'E#m',
     root: 'E#',
@@ -3036,41 +2925,7 @@ export const CHORD_LIBRARY: Chord[] = [
     ],
     description: 'E# Minor chord. Root + Minor 3rd + Perfect 5th.',
     tags: ['E#', 'minor', 'triad', 'accidental'],
-  },
-  {
-    id: 'b-diminished',
-    name: 'B Diminished',
-    shortName: 'Bdim',
-    root: 'B',
-    type: 'diminished',
-    difficulty: 'jazz',
-    theory: {
-      intervals: ['R', 'm3', 'dim5'],
-      construction: 'Root + Minor 3rd + Diminished 5th',
-      commonProgressions: ['vii°-I', 'ii°-V'],
-    },
-    voicings: [
-      {
-        voicingName: 'Standard Position',
-        position: 1,
-      guitar: {
-          frets: [-1, 2, 3, 4, 3, -1],
-          fingers: ['muted', '2', '3', '4', '3', 'muted'],
-          muted: [1, 6],
-          barred: false,
-          description: 'B Diminished voicing at position 2.',
-        },
-        piano: {
-          notes: ['B4', 'D5', 'F5'],
-          octaveRange: [4, 5],
-          description: 'Root position B Diminished.',
-        },
-      },
-    ],
-    description: 'B Diminished chord. Root + Minor 3rd + Diminished 5th.',
-    tags: ['B', 'diminished', 'triad'],
-  },
-  {
+  },  {
     id: 'e-diminished',
     name: 'E Diminished',
     shortName: 'Edim',
@@ -3269,7 +3124,7 @@ export const CHORD_LIBRARY: Chord[] = [
     tags: ['F', 'diminished', 'triad'],
   },
   {
-    id: 'f-diminished',
+    id: 'f-sharp-diminished',
     name: 'F# Diminished',
     shortName: 'F#dim',
     root: 'F#',
@@ -3302,7 +3157,7 @@ export const CHORD_LIBRARY: Chord[] = [
     tags: ['F#', 'diminished', 'triad', 'accidental'],
   },
   {
-    id: 'c-diminished',
+    id: 'c-sharp-diminished',
     name: 'C# Diminished',
     shortName: 'C#dim',
     root: 'C#',
@@ -3368,7 +3223,7 @@ export const CHORD_LIBRARY: Chord[] = [
     tags: ['G#', 'diminished', 'triad', 'accidental'],
   },
   {
-    id: 'd-diminished',
+    id: 'd-sharp-diminished',
     name: 'D# Diminished',
     shortName: 'D#dim',
     root: 'D#',
@@ -3401,7 +3256,7 @@ export const CHORD_LIBRARY: Chord[] = [
     tags: ['D#', 'diminished', 'triad', 'accidental'],
   },
   {
-    id: 'a-diminished',
+    id: 'a-sharp-diminished',
     name: 'A# Diminished',
     shortName: 'A#dim',
     root: 'A#',
@@ -3434,7 +3289,7 @@ export const CHORD_LIBRARY: Chord[] = [
     tags: ['A#', 'diminished', 'triad', 'accidental'],
   },
   {
-    id: 'e-diminished',
+    id: 'e-sharp-diminished',
     name: 'E# Diminished',
     shortName: 'E#dim',
     root: 'E#',
@@ -3467,7 +3322,7 @@ export const CHORD_LIBRARY: Chord[] = [
     tags: ['E#', 'diminished', 'triad', 'accidental'],
   },
   {
-    id: 'b-diminished',
+    id: 'b-sharp-diminished',
     name: 'B# Diminished',
     shortName: 'B#dim',
     root: 'B#',
@@ -3896,7 +3751,7 @@ export const CHORD_LIBRARY: Chord[] = [
     tags: ['Db', 'dominant', 'seventh', 'accidental'],
   },
   {
-    id: 'f-dominant-7th',
+    id: 'f-sharp-dominant-7th',
     name: 'F# Dominant 7th',
     shortName: 'F#7',
     root: 'F#',
@@ -3962,7 +3817,7 @@ export const CHORD_LIBRARY: Chord[] = [
     tags: ['Gb', 'dominant', 'seventh', 'accidental'],
   },
   {
-    id: 'c-dominant-7th',
+    id: 'c-sharp-dominant-7th',
     name: 'C# Dominant 7th',
     shortName: 'C#7',
     root: 'C#',
@@ -3995,7 +3850,7 @@ export const CHORD_LIBRARY: Chord[] = [
     tags: ['C#', 'dominant', 'seventh', 'accidental'],
   },
   {
-    id: 'g-dominant-7th',
+    id: 'g-sharp-dominant-7th',
     name: 'G# Dominant 7th',
     shortName: 'G#7',
     root: 'G#',
@@ -4391,7 +4246,7 @@ export const CHORD_LIBRARY: Chord[] = [
     tags: ['Db', 'major', 'seventh', 'accidental'],
   },
   {
-    id: 'f-major-7th',
+    id: 'f-sharp-major-7th',
     name: 'F# Major 7th',
     shortName: 'F#maj7',
     root: 'F#',
@@ -4886,7 +4741,7 @@ export const CHORD_LIBRARY: Chord[] = [
     tags: ['Db', 'minor', 'seventh', 'accidental'],
   },
   {
-    id: 'f-minor-7th',
+    id: 'f-sharp-minor-7th',
     name: 'F# Minor 7th',
     shortName: 'F#m7',
     root: 'F#',
@@ -4919,7 +4774,7 @@ export const CHORD_LIBRARY: Chord[] = [
     tags: ['F#', 'minor', 'seventh', 'accidental'],
   },
   {
-    id: 'c-minor-7th',
+    id: 'c-sharp-minor-7th',
     name: 'C# Minor 7th',
     shortName: 'C#m7',
     root: 'C#',
@@ -4952,7 +4807,7 @@ export const CHORD_LIBRARY: Chord[] = [
     tags: ['C#', 'minor', 'seventh', 'accidental'],
   },
   {
-    id: 'g-minor-7th',
+    id: 'g-sharp-minor-7th',
     name: 'G# Minor 7th',
     shortName: 'G#m7',
     root: 'G#',
@@ -4985,7 +4840,7 @@ export const CHORD_LIBRARY: Chord[] = [
     tags: ['G#', 'minor', 'seventh', 'accidental'],
   },
   {
-    id: 'a-minor-7th',
+    id: 'a-sharp-minor-7th',
     name: 'A# Minor 7th',
     shortName: 'A#m7',
     root: 'A#',
@@ -5018,7 +4873,7 @@ export const CHORD_LIBRARY: Chord[] = [
     tags: ['A#', 'minor', 'seventh', 'accidental'],
   },
   {
-    id: 'd-minor-7th',
+    id: 'd-sharp-minor-7th',
     name: 'D# Minor 7th',
     shortName: 'D#m7',
     root: 'D#',
@@ -5051,7 +4906,7 @@ export const CHORD_LIBRARY: Chord[] = [
     tags: ['D#', 'minor', 'seventh', 'accidental'],
   },
   {
-    id: 'e-minor-7th',
+    id: 'e-sharp-minor-7th',
     name: 'E# Minor 7th',
     shortName: 'E#m7',
     root: 'E#',
@@ -5381,7 +5236,7 @@ export const CHORD_LIBRARY: Chord[] = [
     tags: ['Eb', 'half-diminished', 'seventh', 'accidental'],
   },
   {
-    id: 'f-half-diminished-7th',
+    id: 'f-sharp-half-diminished-7th',
     name: 'F# Half-Diminished 7th',
     shortName: 'F#m7b5',
     root: 'F#',
@@ -5414,7 +5269,7 @@ export const CHORD_LIBRARY: Chord[] = [
     tags: ['F#', 'half-diminished', 'seventh', 'accidental'],
   },
   {
-    id: 'c-half-diminished-7th',
+    id: 'c-sharp-half-diminished-7th',
     name: 'C# Half-Diminished 7th',
     shortName: 'C#m7b5',
     root: 'C#',
@@ -5447,7 +5302,7 @@ export const CHORD_LIBRARY: Chord[] = [
     tags: ['C#', 'half-diminished', 'seventh', 'accidental'],
   },
   {
-    id: 'g-half-diminished-7th',
+    id: 'g-sharp-half-diminished-7th',
     name: 'G# Half-Diminished 7th',
     shortName: 'G#m7b5',
     root: 'G#',
@@ -5480,7 +5335,7 @@ export const CHORD_LIBRARY: Chord[] = [
     tags: ['G#', 'half-diminished', 'seventh', 'accidental'],
   },
   {
-    id: 'a-half-diminished-7th',
+    id: 'a-sharp-half-diminished-7th',
     name: 'A# Half-Diminished 7th',
     shortName: 'A#m7b5',
     root: 'A#',
@@ -5513,7 +5368,7 @@ export const CHORD_LIBRARY: Chord[] = [
     tags: ['A#', 'half-diminished', 'seventh', 'accidental'],
   },
   {
-    id: 'd-half-diminished-7th',
+    id: 'd-sharp-half-diminished-7th',
     name: 'D# Half-Diminished 7th',
     shortName: 'D#m7b5',
     root: 'D#',
@@ -5546,7 +5401,7 @@ export const CHORD_LIBRARY: Chord[] = [
     tags: ['D#', 'half-diminished', 'seventh', 'accidental'],
   },
   {
-    id: 'e-half-diminished-7th',
+    id: 'e-sharp-half-diminished-7th',
     name: 'E# Half-Diminished 7th',
     shortName: 'E#m7b5',
     root: 'E#',
@@ -5579,7 +5434,7 @@ export const CHORD_LIBRARY: Chord[] = [
     tags: ['E#', 'half-diminished', 'seventh', 'accidental'],
   },
   {
-    id: 'b-half-diminished-7th',
+    id: 'b-sharp-half-diminished-7th',
     name: 'B# Half-Diminished 7th',
     shortName: 'B#m7b5',
     root: 'B#',
@@ -5637,6 +5492,7 @@ export const CHORD_LIBRARY: Chord[] = [
   { id: 'e-dim7', name: 'E Diminished 7', shortName: 'Edim7', root: 'E', type: 'diminished', difficulty: 'advanced', theory: { intervals: ['R', 'm3', 'd5', 'dd7'], construction: 'Diminished Triad + Diminished 7th', commonProgressions: ['viio7'] }, voicings: [{ voicingName: 'Root Position', position: 1, guitar: { frets: [0, 1, 2, 0, 2, 0], fingers: ['open', '1', '2', 'open', '3', 'open'], muted: [], barred: false, description: 'Open position dim7.' }, piano: { notes: ['E4', 'G4', 'Bb4', 'Db5'], octaveRange: [4, 5], description: 'Root position.' } }], description: 'Diminished 7.', tags: ['advanced', 'diminished', 'dim7'] },
   { id: 'f-dim7', name: 'F Diminished 7', shortName: 'Fdim7', root: 'F', type: 'diminished', difficulty: 'advanced', theory: { intervals: ['R', 'm3', 'd5', 'dd7'], construction: 'Diminished Triad + Diminished 7th', commonProgressions: ['viio7'] }, voicings: [{ voicingName: 'Root Position', position: 1, guitar: { frets: [1, 2, 3, 1, 3, 1], fingers: ['1', '2', '3', '1', '4', '1'], muted: [], barred: true, description: 'Barre dim7 shape.' }, piano: { notes: ['F4', 'Ab4', 'Cb5', 'Ebb5'], octaveRange: [4, 5], description: 'Root position.' } }], description: 'Diminished 7.', tags: ['advanced', 'diminished', 'dim7'] },
   { id: 'f-sharp-dim7', name: 'F# Diminished 7', shortName: 'F#dim7', root: 'F#', type: 'diminished', difficulty: 'advanced', theory: { intervals: ['R', 'm3', 'd5', 'dd7'], construction: 'Diminished Triad + Diminished 7th', commonProgressions: ['viio7'] }, voicings: [{ voicingName: 'Root Position', position: 1, guitar: { frets: [2, 3, 4, 2, 4, 2], fingers: ['1', '2', '3', '1', '4', '1'], muted: [], barred: true, description: 'Barre dim7 shape.' }, piano: { notes: ['F#4', 'A4', 'C5', 'Eb5'], octaveRange: [4, 5], description: 'Root position.' } }], description: 'Diminished 7.', tags: ['advanced', 'diminished', 'dim7'] },
+  { id: 'g-sharp-dim7', name: 'G# Diminished 7', shortName: 'G#dim7', root: 'G#', type: 'diminished', difficulty: 'advanced', theory: { intervals: ['R', 'm3', 'd5', 'dd7'], construction: 'Diminished Triad + Diminished 7th', commonProgressions: ['viio7-i'] }, voicings: [{ voicingName: 'Root Position', position: 1, guitar: { frets: [4, 5, 6, 4, 6, 4], fingers: ['1', '2', '3', '1', '4', '1'], muted: [], barred: true, description: 'Barre dim7 shape at 4th fret.' }, piano: { notes: ['G#4', 'B4', 'D5', 'F5'], octaveRange: [4, 5], description: 'Root position. vii°7 in A harmonic minor.' } }], description: 'Diminished 7. Leading-tone seventh chord of A minor.', tags: ['advanced', 'diminished', 'dim7'] },
   { id: 'g-dim7', name: 'G Diminished 7', shortName: 'Gdim7', root: 'G', type: 'diminished', difficulty: 'advanced', theory: { intervals: ['R', 'm3', 'd5', 'dd7'], construction: 'Diminished Triad + Diminished 7th', commonProgressions: ['viio7'] }, voicings: [{ voicingName: 'Root Position', position: 1, guitar: { frets: [3, 4, 5, 3, 5, 3], fingers: ['1', '2', '3', '1', '4', '1'], muted: [], barred: true, description: 'Barre dim7 shape.' }, piano: { notes: ['G4', 'Bb4', 'Db5', 'Fb5'], octaveRange: [4, 5], description: 'Root position.' } }], description: 'Diminished 7.', tags: ['advanced', 'diminished', 'dim7'] },
   { id: 'ab-dim7', name: 'Ab Diminished 7', shortName: 'Abdim7', root: 'Ab', type: 'diminished', difficulty: 'advanced', theory: { intervals: ['R', 'm3', 'd5', 'dd7'], construction: 'Diminished Triad + Diminished 7th', commonProgressions: ['viio7'] }, voicings: [{ voicingName: 'Root Position', position: 1, guitar: { frets: [-1, -1, 0, 1, 0, 1], fingers: ['muted', 'muted', 'open', '1', 'open', '2'], muted: [1, 2], barred: false, description: 'Open position dim7.' }, piano: { notes: ['Ab3', 'Cb4', 'Ebb4', 'Gbb4'], octaveRange: [3, 4], description: 'Root position.' } }], description: 'Diminished 7.', tags: ['advanced', 'diminished', 'dim7'] },
   { id: 'a-dim7', name: 'A Diminished 7', shortName: 'Adim7', root: 'A', type: 'diminished', difficulty: 'advanced', theory: { intervals: ['R', 'm3', 'd5', 'dd7'], construction: 'Diminished Triad + Diminished 7th', commonProgressions: ['viio7'] }, voicings: [{ voicingName: 'Root Position', position: 1, guitar: { frets: [-1, 0, 1, 2, 1, 2], fingers: ['muted', 'open', '1', '3', '1', '4'], muted: [1], barred: true, description: 'Open A string dim7.' }, piano: { notes: ['A3', 'C4', 'Eb4', 'Gb4'], octaveRange: [3, 4], description: 'Root position.' } }], description: 'Diminished 7.', tags: ['advanced', 'diminished', 'dim7'] },

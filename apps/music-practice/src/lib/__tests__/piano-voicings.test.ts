@@ -8,7 +8,6 @@ import {
   getVoicingsForChord,
   getRandomVoicing,
   searchVoicings,
-  PianoVoicing,
 } from '../piano-voicings';
 
 describe('Piano Voicing Library', () => {
@@ -98,7 +97,7 @@ describe('Piano Voicing Library', () => {
     });
 
     it('should have at least 1-3 voicings per chord', () => {
-      Object.entries(PIANO_VOICING_LIBRARY).forEach(([key, voicings]) => {
+      Object.values(PIANO_VOICING_LIBRARY).forEach((voicings) => {
         // Most chords have 2-3 voicings, some special cases (tritone subs) have 1
         expect(voicings.length).toBeGreaterThanOrEqual(1);
         expect(voicings.length).toBeLessThanOrEqual(5);

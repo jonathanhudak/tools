@@ -132,23 +132,25 @@ export function recordAnswer(state: QuizState, answerIndex: number): QuizState {
   // Update score based on mode
   if (isCorrect) {
     switch (state.mode) {
-      case 'speed':
+      case 'speed': {
         // Speed mode: more points for fast answers
         const questionStartTime = state.startTime + state.totalTime;
         const timeTaken = Date.now() - questionStartTime;
         const speedBonus = Math.max(0, 100 - Math.floor(timeTaken / 100));
         newState.score += speedBonus + 10;
         break;
+      }
       case 'accuracy':
         // Accuracy mode: fixed points
         newState.score += 10;
         break;
-      case 'progression':
+      case 'progression': {
         // Progression mode: points increase with difficulty
         const difficultyMultiplier =
           state.difficulty === 'beginner' ? 1 : state.difficulty === 'intermediate' ? 2 : 3;
         newState.score += 10 * difficultyMultiplier;
         break;
+      }
     }
   }
 

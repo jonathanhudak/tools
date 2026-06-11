@@ -138,6 +138,59 @@ export const AVOID_NOTES: AvoidNoteEntry[] = [
       },
     ],
   },
+  {
+    scaleId: 'harmonic-minor',
+    chordQuality: 'mMaj7',
+    degree: 1,
+    avoidNotes: [
+      {
+        scaleDegree: 6,
+        intervalFromRoot: 'm6',
+        reason: 'b9 from P5',
+      },
+    ],
+  },
+  {
+    scaleId: 'phrygian-dominant',
+    chordQuality: '7',
+    degree: 5,
+    avoidNotes: [
+      {
+        scaleDegree: 4,
+        intervalFromRoot: 'P4',
+        reason: 'b9 from major 3rd',
+      },
+    ],
+  },
+  {
+    scaleId: 'mixolydian-b6',
+    chordQuality: '7',
+    degree: 5,
+    avoidNotes: [
+      {
+        scaleDegree: 4,
+        intervalFromRoot: 'P4',
+        reason: 'b9 from major 3rd',
+      },
+    ],
+  },
+  {
+    scaleId: 'harmonic-major',
+    chordQuality: 'Maj7',
+    degree: 1,
+    avoidNotes: [
+      {
+        scaleDegree: 4,
+        intervalFromRoot: 'P4',
+        reason: 'b9 from major 3rd',
+      },
+      {
+        scaleDegree: 6,
+        intervalFromRoot: 'm6',
+        reason: 'b9 from P5',
+      },
+    ],
+  },
 ];
 
 // ─── Lookup Helpers ──────────────────────────────────────────────────────────

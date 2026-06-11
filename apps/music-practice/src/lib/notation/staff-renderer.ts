@@ -5,12 +5,11 @@
 
 import { MusicTheory } from '../utils/music-theory';
 
-// VexFlow types (declare global types for VexFlow library)
+// Window.Vex augmentation; the global `Vex` itself is declared in src/vexflow.d.ts
 declare global {
     interface Window {
-        Vex: any;
+        Vex: VexFlowAPI;
     }
-    const Vex: any;
 }
 
 // Type definitions
@@ -21,15 +20,13 @@ interface RenderOptions {
 }
 
 export class StaffRenderer {
-    private containerId: string;
     private container: HTMLElement | null;
-    private renderer: any = null;
-    private context: any = null;
+    private renderer: VexFlowAPI = null;
+    private context: VexFlowAPI = null;
     private currentNote: string | null = null;
     private clef: ClefType = 'treble';
 
     constructor(containerId: string) {
-        this.containerId = containerId;
         this.container = document.getElementById(containerId);
 
         if (!this.container) {
@@ -115,7 +112,6 @@ export class StaffRenderer {
             // Get drawing context
             this.context = this.renderer.getContext();
 
-            console.log('StaffRenderer initialized successfully');
         } catch (error) {
             console.error('Failed to initialize StaffRenderer:', error);
             this.showError('Unable to initialize music notation renderer');
@@ -178,6 +174,8 @@ export class StaffRenderer {
                 duration: 'w', // Whole note
                 clef: this.clef
             });
+            if (vexflowNote.includes('#')) note.addModifier(new VF.Accidental('#'), 0);
+            else if (/[a-g]b\//.test(vexflowNote)) note.addModifier(new VF.Accidental('b'), 0);
 
             // Create a voice and add the note
             const voice = new VF.Voice({
@@ -484,7 +482,3 @@ export class StaffRenderer {
     }
 }
 
-// Make available globally
-if (typeof window !== 'undefined') {
-    (window as any).StaffRenderer = StaffRenderer;
-}

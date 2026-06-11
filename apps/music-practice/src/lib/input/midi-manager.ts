@@ -88,7 +88,6 @@ export class MidiManager {
             // Initialize available devices
             this.updateDeviceList();
 
-            console.log('MIDI initialized successfully');
             return true;
         } catch (error) {
             console.error('Failed to initialize MIDI:', error);
@@ -143,7 +142,6 @@ export class MidiManager {
         this.selectedInput = input;
         this.emitDeviceChange({ connected: true, device: input });
 
-        console.log('Connected to MIDI device:', input.name);
         return true;
     }
 
@@ -156,7 +154,6 @@ export class MidiManager {
             this.selectedInput = null;
             this.activeNotes.clear();
             this.emitDeviceChange({ connected: false, device: null });
-            console.log('Disconnected MIDI device');
         }
     }
 
@@ -241,7 +238,6 @@ export class MidiManager {
     private handleStateChange(event: MIDIConnectionEvent): void {
         if (!event.port) return;
 
-        console.log('MIDI device state changed:', event.port.name, event.port.state);
         this.updateDeviceList();
 
         // If the currently selected device was disconnected
@@ -260,7 +256,6 @@ export class MidiManager {
      */
     private updateDeviceList(): void {
         const devices = this.getInputDevices();
-        console.log('Available MIDI devices:', devices);
 
         // Auto-connect to first device if none selected
         if (!this.selectedInput && devices.length > 0) {
@@ -273,7 +268,8 @@ export class MidiManager {
      */
     on<T extends EventType>(event: T, callback: Listeners[T][number]): void {
         if (this.listeners[event]) {
-            this.listeners[event].push(callback as any);
+            // Union-of-arrays → array-of-union so the generic callback is assignable
+            (this.listeners[event] as Array<Listeners[T][number]>).push(callback);
         } else {
             console.warn('Unknown event type:', event);
         }
@@ -284,7 +280,7 @@ export class MidiManager {
      */
     off<T extends EventType>(event: T, callback: Listeners[T][number]): void {
         if (this.listeners[event]) {
-            const index = this.listeners[event].indexOf(callback as any);
+            const index = (this.listeners[event] as Array<Listeners[T][number]>).indexOf(callback);
             if (index > -1) {
                 this.listeners[event].splice(index, 1);
             }
@@ -365,7 +361,3 @@ export class MidiManager {
     }
 }
 
-// Make available globally for legacy code
-if (typeof window !== 'undefined') {
-    (window as any).MidiManager = MidiManager;
-}

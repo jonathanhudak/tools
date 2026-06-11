@@ -4,7 +4,7 @@
  */
 
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { Button } from '@hudak/ui/components/button';
 import { Badge } from '@hudak/ui/components/badge';
 import { Label } from '@hudak/ui/components/label';
@@ -19,15 +19,17 @@ import { MidiManager, type NoteOnEvent, type DeviceChangeEvent } from '../lib/in
 import { AudioManager, type PitchDetectedEvent } from '../lib/input/audio-manager';
 import { StaffRenderer } from '../lib/notation/staff-renderer';
 import { TabRenderer } from '../lib/notation/tab-renderer';
-import { getInstrument, requiresMIDI } from '../lib/utils/instrument-config';
-import { generateRandomNote, validateNote } from '../lib/utils/music-theory';
+import { getInstrument, requiresMIDI, type InstrumentTypeValue } from '../lib/utils/instrument-config';
+import { generateRandomNote, generateRandomNoteFromScale, validateNote } from '../lib/utils/music-theory';
+import { getScale } from '../data/scales/scale-registry';
+import { Note as TonalNote } from 'tonal';
 import { Storage } from '../lib/utils/storage';
 import { AudioPlayback } from '../lib/utils/audio-playback';
 import { getNoteRange } from '../lib/game/note-range';
 import { renderPracticeNote } from '../lib/game/render-note';
 
 // Game components
-import { useGameRound, type GameMode } from '../hooks/use-game-round';
+import { useGameRound, type GameMode, type GameRoundState, type GameRoundActions } from '../hooks/use-game-round';
 import { getStreakMilestoneMessage } from '../lib/utils/scoring';
 import { VirtualKeyboard } from '../components/virtual-keyboard';
 import { RadialTimer } from '../components/play/radial-timer';
@@ -36,7 +38,7 @@ import { NotationCard } from '../components/play/notation-card';
 import { ScoreSummaryModal } from '../components/play/score-summary-modal';
 
 // Search params for game settings (backward compatibility)
-interface PlaySearchParams {
+export interface PlaySearchParams {
   instrument?: string;
   clef?: string;
   difficulty?: string;
@@ -45,6 +47,9 @@ interface PlaySearchParams {
   pitchSensitivity?: number;
   pitchSmoothing?: number;
   selectedAudioDevice?: string;
+  /** Constrain generated notes to a scale (set by the Scale Explorer) */
+  scaleRoot?: string;
+  scaleId?: string;
 }
 
 export const Route = createFileRoute('/play')({
@@ -58,6 +63,8 @@ export const Route = createFileRoute('/play')({
     pitchSensitivity: search.pitchSensitivity ? Number(search.pitchSensitivity) : undefined,
     pitchSmoothing: search.pitchSmoothing ? Number(search.pitchSmoothing) : undefined,
     selectedAudioDevice: (search.selectedAudioDevice as string) || undefined,
+    scaleRoot: (search.scaleRoot as string) || undefined,
+    scaleId: (search.scaleId as string) || undefined,
   }),
 });
 
@@ -89,6 +96,10 @@ function SetupScreen({ onStart }: {
   }) => void;
 }) {
   const navigate = useNavigate();
+  const search = Route.useSearch();
+  const seededScaleName = search.scaleId && search.scaleRoot
+    ? `${search.scaleRoot} ${getScale(search.scaleId)?.name ?? search.scaleId}`
+    : null;
   const saved = Storage.getSettings();
 
   const [instrument, setInstrument] = useState(saved.instrument || 'piano');
@@ -156,6 +167,11 @@ function SetupScreen({ onStart }: {
           <div className="text-center space-y-2">
             <h1 className="text-3xl font-display font-bold text-foreground">Sight Reading</h1>
             <p className="text-muted-foreground">Configure your practice session</p>
+            {seededScaleName && (
+              <p className="inline-block text-xs font-mono px-3 py-1 rounded-full bg-[var(--accent-light)] text-[var(--accent-color)]">
+                Notes drawn from {seededScaleName}
+              </p>
+            )}
           </div>
 
           {/* Instrument Selection */}
@@ -376,8 +392,8 @@ function PlayRoute() {
   const instrumentRef = useRef(instrument);
   const clefRef = useRef(clef);
   const gameModeRef = useRef(gameMode);
-  const roundActionsRef = useRef<any>(null);
-  const roundStateRef = useRef<any>(null);
+  const roundActionsRef = useRef<GameRoundActions | null>(null);
+  const roundStateRef = useRef<GameRoundState | null>(null);
   const midiManager = useRef<MidiManager | null>(null);
   const audioManager = useRef<AudioManager | null>(null);
   const audioPlayback = useRef<AudioPlayback | null>(null);
@@ -394,8 +410,29 @@ function PlayRoute() {
   // Get note range based on difficulty and instrument
   const noteRange = useCallback(() => getNoteRange(instrument, difficulty), [difficulty, instrument]);
 
+  // Scale-seeded mode (launched from the Scale Explorer): constrain notes
+  // to the requested scale's pitch classes instead of naturals-only.
+  const seededScale = useMemo(() => {
+    if (!search.scaleId || !search.scaleRoot) return null;
+    const def = getScale(search.scaleId);
+    const rootMidi = TonalNote.midi(`${search.scaleRoot}4`);
+    if (!def || rootMidi === null) return null;
+    return { def, rootPitchClass: rootMidi % 12, rootName: search.scaleRoot };
+  }, [search.scaleId, search.scaleRoot]);
+
+  const makeNote = useCallback(() => {
+    if (seededScale) {
+      return generateRandomNoteFromScale(
+        noteRange(),
+        seededScale.rootPitchClass,
+        seededScale.def.semitones,
+      );
+    }
+    return generateRandomNote(noteRange(), clef as 'treble' | 'bass');
+  }, [seededScale, noteRange, clef]);
+
   // Stable callbacks for game round hook
-  const handleRoundComplete = useCallback((state: any) => {
+  const handleRoundComplete = useCallback((state: GameRoundState) => {
     setShowScoreSummary(true);
     const range = getNoteRange(instrument, difficulty);
     Storage.saveSession({
@@ -416,7 +453,7 @@ function PlayRoute() {
     });
   }, [gameMode, instrument, clef, difficulty]);
 
-  const handleRoundFail = useCallback((state: any) => {
+  const handleRoundFail = useCallback((state: GameRoundState) => {
     setShowScoreSummary(true);
     toast.error('Round Failed', {
       description: `You scored ${state.currentScore?.finalScore || 0} points. Try again!`,
@@ -450,7 +487,7 @@ function PlayRoute() {
     correctDetectionsRef.current = 0;
     lastDetectionTimeRef.current = 0;
 
-    const note = generateRandomNote(noteRange(), clef as 'treble' | 'bass');
+    const note = makeNote();
     if (note) {
       setCurrentNote(note.midiNote);
       currentNoteRef.current = note.midiNote;
@@ -464,7 +501,7 @@ function PlayRoute() {
         tabRenderer: tabRenderer.current,
       });
     }
-  }, [clef, instrument, noteRange, tabDisplayMode]);
+  }, [clef, instrument, makeNote, tabDisplayMode]);
 
   // Handle MIDI device changes
   const handleMidiDeviceChange = useCallback((_event: DeviceChangeEvent) => {
@@ -586,7 +623,7 @@ function PlayRoute() {
     const initManagers = async () => {
       audioPlayback.current = new AudioPlayback();
 
-      if (requiresMIDI(instrument as any)) {
+      if (requiresMIDI(instrument as InstrumentTypeValue)) {
         midiManager.current = new MidiManager();
         const success = await midiManager.current.init();
         setMidiConnected(success);
@@ -692,7 +729,7 @@ function PlayRoute() {
 
     const startSession = () => {
       if (gameMode === 'timed') roundActions.startRound();
-      const note = generateRandomNote(noteRange(), clef as 'treble' | 'bass');
+      const note = makeNote();
       if (note) {
         setCurrentNote(note.midiNote);
         currentNoteRef.current = note.midiNote;
@@ -865,7 +902,7 @@ function PlayRoute() {
         onContinue={() => {
           setShowScoreSummary(false);
           roundActions.startRound();
-          const note = generateRandomNote(noteRange(), clef as 'treble' | 'bass');
+          const note = makeNote();
           if (note) {
             setCurrentNote(note.midiNote);
             currentNoteRef.current = note.midiNote;
@@ -886,7 +923,7 @@ function PlayRoute() {
         onRetry={!roundState.isSuccessful ? () => {
           setShowScoreSummary(false);
           roundActions.resetRound();
-          const note = generateRandomNote(noteRange(), clef as 'treble' | 'bass');
+          const note = makeNote();
           if (note) {
             setCurrentNote(note.midiNote);
             currentNoteRef.current = note.midiNote;

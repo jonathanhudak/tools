@@ -122,7 +122,7 @@ export function ChordReference({ onStartQuiz }: ChordReferenceProps): JSX.Elemen
     const available = new Set(rootMap.keys());
     // Also include slash chords and other qualities not in the ordered list
     const ordered = QUALITY_ORDER.filter(q => available.has(q));
-    const extras = [...available].filter(q => !QUALITY_ORDER.includes(q as any)).sort();
+    const extras = [...available].filter(q => !(QUALITY_ORDER as readonly string[]).includes(q)).sort();
     return [...ordered, ...extras];
   }, [selectedRoot]);
 
@@ -187,7 +187,7 @@ export function ChordReference({ onStartQuiz }: ChordReferenceProps): JSX.Elemen
                 key={root}
                 onClick={() => handleRootChange(root)}
                 className={`
-                  px-4 py-2 text-sm font-semibold font-mono-app border-2 transition-colors
+                  min-h-11 px-4 py-2 text-sm font-semibold font-mono-app border-2 transition-colors
                   ${isSelected
                     ? 'bg-[var(--accent-color)] text-white border-[var(--accent-color)]'
                     : 'bg-card text-foreground border-border hover:border-[var(--accent-color)] hover:bg-muted'
@@ -216,7 +216,7 @@ export function ChordReference({ onStartQuiz }: ChordReferenceProps): JSX.Elemen
                 key={quality}
                 onClick={() => handleQualityChange(quality)}
                 className={`
-                  px-3 py-1.5 text-xs font-medium font-mono-app border transition-colors
+                  min-h-11 px-3 py-1.5 text-xs font-medium font-mono-app border transition-colors
                   ${isActive
                     ? 'bg-foreground text-background border-foreground'
                     : 'bg-card text-foreground border-border hover:border-foreground/50'

@@ -4,6 +4,8 @@
  */
 
 import { Note, Scale, Chord } from 'tonal';
+
+import { noteNames12 } from '@/data/enharmonics';
 import { getTuning } from './instrument-config';
 
 // Type definitions
@@ -33,7 +35,10 @@ export interface KeySignature {
 export type ClefType = 'treble' | 'bass';
 
 // Note names and their MIDI numbers (C4 = Middle C = 60)
-export const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+// Chromatic note names, delegated to the enharmonic engine (sharps spelling).
+// For key-aware spelling (Db major shows Db, not C#) use resolveForKey/
+// noteNames12(true) from '@/data/enharmonics' instead of indexing this array.
+export const noteNames = noteNames12(false);
 
 // VexFlow note names (with octaves) - natural notes only for basic mode
 export const vexflowNoteNames: Record<ClefType, Record<string, number>> = {
@@ -67,17 +72,38 @@ export function noteNameToMidi(noteName: string): number {
 /**
  * Convert MIDI note to VexFlow notation format
  */
-export function midiToVexflow(midiNote: number, clef: ClefType = 'treble'): string | null {
+// The clef parameter is accepted for API symmetry but unused: VexFlow key
+// strings are clef-independent (the clef only affects staff placement).
+export function midiToVexflow(midiNote: number, _clef: ClefType = 'treble'): string | null {
     const octave = Math.floor(midiNote / 12) - 1;
-    const noteIndex = midiNote % 12;
-    const noteName = noteNames[noteIndex].toLowerCase().replace('#', '#');
-
-    // For natural notes only (no sharps/flats in basic implementation)
-    if (noteName.includes('#')) {
-        return null; // Skip sharps for now in basic mode
-    }
-
+    const noteName = noteNames[midiNote % 12].toLowerCase();
     return `${noteName}/${octave}`;
+}
+
+/**
+ * Generate a random note whose pitch class belongs to the given scale.
+ * Used by scale-seeded sight reading (e.g. launched from the Scale Explorer).
+ */
+export function generateRandomNoteFromScale(
+    range: string,
+    rootPitchClass: number,
+    scaleSemitones: number[],
+): NoteInfo | null {
+    const [start, end] = range.split('-');
+    const startMidi = noteNameToMidi(start.toUpperCase());
+    const endMidi = noteNameToMidi(end.toUpperCase());
+    if (startMidi === -1 || endMidi === -1) return null;
+
+    const pitchClasses = new Set(scaleSemitones.map(s => (rootPitchClass + s) % 12));
+    const candidates: number[] = [];
+    for (let midi = startMidi; midi <= endMidi; midi++) {
+        if (pitchClasses.has(midi % 12)) candidates.push(midi);
+    }
+    if (candidates.length === 0) return null;
+
+    const midiNote = candidates[Math.floor(Math.random() * candidates.length)];
+    const vexflowNote = midiToVexflow(midiNote);
+    return vexflowNote ? { vexflowNote, midiNote } : null;
 }
 
 /**
@@ -86,7 +112,9 @@ export function midiToVexflow(midiNote: number, clef: ClefType = 'treble'): stri
 export function generateRandomNote(
     range: string = 'c4-c5',
     clef: ClefType = 'treble',
-    naturalsOnly: boolean = true
+    // This generator only emits naturals (it draws from the diatonic
+    // vexflowNoteNames map); use generateRandomNoteFromScale for accidentals.
+    _naturalsOnly: boolean = true
 ): NoteInfo | null {
     const [start, end] = range.split('-');
     const startMidi = noteNameToMidi(start.toUpperCase());
@@ -144,10 +172,11 @@ export function validateNote(
     targetMidi: number,
     options: ValidationOptions = {}
 ): ValidationResult {
+    // pitchToleranceCents from ValidationOptions is applied upstream by the
+    // pitch detector; MIDI validation only deals in whole semitones.
     const {
         allowOctaveError = true,
-        tolerance = 0,
-        pitchToleranceCents = 0
+        tolerance = 0
     } = options;
 
     if (playedMidi === targetMidi) {
@@ -427,7 +456,3 @@ export const MusicTheory = {
     getAllTabPositions
 };
 
-// Make available globally for legacy code
-if (typeof window !== 'undefined') {
-    (window as any).MusicTheory = MusicTheory;
-}
