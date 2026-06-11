@@ -192,3 +192,62 @@ body,
 body * {
   transition: background-color 220ms ease, border-color 220ms ease, color 220ms ease, box-shadow 220ms ease;
 }
+
+/* ─── PRINT ──────────────────────────────────────────────── */
+/* Reference pages double as printable cheat sheets: chrome is hidden,
+   colors are forced to the light palette, and scroll areas expand. */
+@media print {
+  /* Force the light palette even if dark mode is active */
+  .dark {
+    --accent-color: #2d7a6e;
+    --accent-light: #ebf4f2;
+    --success-color: #3a7d5c;
+    --error-color: #9b3a2f;
+    --warning-color: #b58a2b;
+    --ink-primary: #1a1714;
+    --ink-secondary: #5c5650;
+    --ink-tertiary: #9c9590;
+    --border-subtle: rgba(26, 23, 20, 0.16);
+    --border-strong: rgba(26, 23, 20, 0.32);
+    --piano-white: #ffffff;
+    --piano-black: #1c1917;
+    --color-background: 40 28% 95%;
+    --color-foreground: 30 11% 9%;
+    --color-card: 40 100% 99%;
+    --color-card-foreground: 30 11% 9%;
+    --color-muted: 36 22% 92%;
+    --color-muted-foreground: 22 6% 34%;
+    --color-border: 30 11% 9% / 0.14;
+  }
+
+  header,
+  nav,
+  button,
+  input,
+  select,
+  .TanStackRouterDevtools,
+  [class*='sonner'] {
+    display: none !important;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #1a1714 !important;
+  }
+
+  main {
+    padding-bottom: 0 !important;
+  }
+
+  /* Expand scroll containers so nothing is clipped on paper */
+  .overflow-x-auto,
+  .overflow-y-auto {
+    overflow: visible !important;
+    max-height: none !important;
+  }
+
+  /* Flatten card shadows; keep borders for structure */
+  * {
+    box-shadow: none !important;
+  }
+}
