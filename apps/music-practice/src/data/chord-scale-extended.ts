@@ -11,6 +11,7 @@
  */
 
 import type { Degree } from './chord-scale-matrix';
+import { CHORD_SCALE_MATRIX } from './chord-scale-matrix';
 
 // ─── Extended Scale Type ─────────────────────────────────────────────────────
 
@@ -50,57 +51,13 @@ export interface ExtendedChordScaleEntry {
  * | 6      | Maj7#5    | Lydian Augmented #2    | bVIMaj7#5     |
  * | 7      | dim7      | Locrian bb7            | viidim7       |
  */
-export const HARMONIC_MAJOR_MATRIX: readonly ExtendedChordScaleEntry[] = [
-  {
-    scaleType: 'harmonicMajor',
-    degree: 1 as Degree,
-    chordQuality: 'Maj7',
-    modeName: 'Harmonic Major',
-    romanNumeral: 'IMaj7',
-  },
-  {
-    scaleType: 'harmonicMajor',
-    degree: 2 as Degree,
-    chordQuality: 'm7b5',
-    modeName: 'Dorian b5',
-    romanNumeral: 'iim7b5',
-  },
-  {
-    scaleType: 'harmonicMajor',
-    degree: 3 as Degree,
-    chordQuality: 'm7',
-    modeName: 'Phrygian b4',
-    romanNumeral: 'iiim7',
-  },
-  {
-    scaleType: 'harmonicMajor',
-    degree: 4 as Degree,
-    chordQuality: 'mMaj7',
-    modeName: 'Lydian b3',
-    romanNumeral: 'ivmMaj7',
-  },
-  {
-    scaleType: 'harmonicMajor',
-    degree: 5 as Degree,
-    chordQuality: '7',
-    modeName: 'Mixolydian b2',
-    romanNumeral: 'V7',
-  },
-  {
-    scaleType: 'harmonicMajor',
-    degree: 6 as Degree,
-    chordQuality: 'Maj7#5',
-    modeName: 'Lydian Augmented #2',
-    romanNumeral: 'bVIMaj7#5',
-  },
-  {
-    scaleType: 'harmonicMajor',
-    degree: 7 as Degree,
-    chordQuality: 'dim7',
-    modeName: 'Locrian bb7',
-    romanNumeral: 'viidim7',
-  },
-];
+/**
+ * Harmonic Major entries, derived from the canonical CHORD_SCALE_MATRIX
+ * (kept as a named view for backward compatibility).
+ */
+export const HARMONIC_MAJOR_MATRIX: readonly ExtendedChordScaleEntry[] =
+  CHORD_SCALE_MATRIX.filter(e => e.scaleType === 'harmonicMajor');
+
 
 // ─── Extended Chord-Scale Mappings ───────────────────────────────────────────
 

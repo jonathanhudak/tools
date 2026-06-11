@@ -9,7 +9,7 @@
 
 import { Scale, Note } from 'tonal';
 
-export type ScaleType = "major" | "naturalMinor" | "melodicMinor" | "harmonicMinor";
+export type ScaleType = "major" | "naturalMinor" | "melodicMinor" | "harmonicMinor" | "harmonicMajor";
 export type Degree = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
 /**
@@ -302,6 +302,56 @@ export const CHORD_SCALE_MATRIX: ChordScaleEntry[] = [
     chordId: "g-sharp-dim7",
     voicingIndex: 0
   },
+  // ─── Harmonic Major (Ionian b6) ───
+  {
+    scaleType: "harmonicMajor",
+    degree: 1,
+    chordQuality: "Maj7",
+    modeName: "Harmonic Major",
+    romanNumeral: "IMaj7",
+  },
+  {
+    scaleType: "harmonicMajor",
+    degree: 2,
+    chordQuality: "m7b5",
+    modeName: "Dorian b5",
+    romanNumeral: "iim7b5",
+  },
+  {
+    scaleType: "harmonicMajor",
+    degree: 3,
+    chordQuality: "m7",
+    modeName: "Phrygian b4",
+    romanNumeral: "iiim7",
+  },
+  {
+    scaleType: "harmonicMajor",
+    degree: 4,
+    chordQuality: "mMaj7",
+    modeName: "Lydian b3",
+    romanNumeral: "ivmMaj7",
+  },
+  {
+    scaleType: "harmonicMajor",
+    degree: 5,
+    chordQuality: "7",
+    modeName: "Mixolydian b2",
+    romanNumeral: "V7",
+  },
+  {
+    scaleType: "harmonicMajor",
+    degree: 6,
+    chordQuality: "Maj7#5",
+    modeName: "Lydian Augmented #2",
+    romanNumeral: "bVIMaj7#5",
+  },
+  {
+    scaleType: "harmonicMajor",
+    degree: 7,
+    chordQuality: "dim7",
+    modeName: "Locrian bb7",
+    romanNumeral: "viidim7",
+  },
 ];
 
 /**
@@ -378,6 +428,7 @@ export const SCALE_TYPE_NAMES: Record<ScaleType, string> = {
   naturalMinor: "Natural Minor",
   melodicMinor: "Melodic Minor",
   harmonicMinor: "Harmonic Minor",
+  harmonicMajor: "Harmonic Major",
 };
 
 /**
@@ -443,6 +494,7 @@ const SCALE_TYPE_TO_TONAL: Record<ScaleType, string> = {
   naturalMinor: 'minor',
   melodicMinor: 'melodic minor',
   harmonicMinor: 'harmonic minor',
+  harmonicMajor: 'harmonic major',
 };
 
 /**
