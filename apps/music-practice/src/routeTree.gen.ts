@@ -11,6 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as StyleguideRouteImport } from './routes/styleguide'
 import { Route as ScalesQuizRouteImport } from './routes/scales-quiz'
+import { Route as ScaleExplorerRouteImport } from './routes/scale-explorer'
+import { Route as ProgressionsRouteImport } from './routes/progressions'
 import { Route as PlayRouteImport } from './routes/play'
 import { Route as DevRouteImport } from './routes/dev'
 import { Route as CircleOfFifthsRouteImport } from './routes/circle-of-fifths'
@@ -27,6 +29,16 @@ const StyleguideRoute = StyleguideRouteImport.update({
 const ScalesQuizRoute = ScalesQuizRouteImport.update({
   id: '/scales-quiz',
   path: '/scales-quiz',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ScaleExplorerRoute = ScaleExplorerRouteImport.update({
+  id: '/scale-explorer',
+  path: '/scale-explorer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProgressionsRoute = ProgressionsRouteImport.update({
+  id: '/progressions',
+  path: '/progressions',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlayRoute = PlayRouteImport.update({
@@ -73,6 +85,8 @@ export interface FileRoutesByFullPath {
   '/circle-of-fifths': typeof CircleOfFifthsRoute
   '/dev': typeof DevRoute
   '/play': typeof PlayRoute
+  '/progressions': typeof ProgressionsRoute
+  '/scale-explorer': typeof ScaleExplorerRoute
   '/scales-quiz': typeof ScalesQuizRoute
   '/styleguide': typeof StyleguideRoute
 }
@@ -84,6 +98,8 @@ export interface FileRoutesByTo {
   '/circle-of-fifths': typeof CircleOfFifthsRoute
   '/dev': typeof DevRoute
   '/play': typeof PlayRoute
+  '/progressions': typeof ProgressionsRoute
+  '/scale-explorer': typeof ScaleExplorerRoute
   '/scales-quiz': typeof ScalesQuizRoute
   '/styleguide': typeof StyleguideRoute
 }
@@ -96,6 +112,8 @@ export interface FileRoutesById {
   '/circle-of-fifths': typeof CircleOfFifthsRoute
   '/dev': typeof DevRoute
   '/play': typeof PlayRoute
+  '/progressions': typeof ProgressionsRoute
+  '/scale-explorer': typeof ScaleExplorerRoute
   '/scales-quiz': typeof ScalesQuizRoute
   '/styleguide': typeof StyleguideRoute
 }
@@ -109,6 +127,8 @@ export interface FileRouteTypes {
     | '/circle-of-fifths'
     | '/dev'
     | '/play'
+    | '/progressions'
+    | '/scale-explorer'
     | '/scales-quiz'
     | '/styleguide'
   fileRoutesByTo: FileRoutesByTo
@@ -120,6 +140,8 @@ export interface FileRouteTypes {
     | '/circle-of-fifths'
     | '/dev'
     | '/play'
+    | '/progressions'
+    | '/scale-explorer'
     | '/scales-quiz'
     | '/styleguide'
   id:
@@ -131,6 +153,8 @@ export interface FileRouteTypes {
     | '/circle-of-fifths'
     | '/dev'
     | '/play'
+    | '/progressions'
+    | '/scale-explorer'
     | '/scales-quiz'
     | '/styleguide'
   fileRoutesById: FileRoutesById
@@ -143,6 +167,8 @@ export interface RootRouteChildren {
   CircleOfFifthsRoute: typeof CircleOfFifthsRoute
   DevRoute: typeof DevRoute
   PlayRoute: typeof PlayRoute
+  ProgressionsRoute: typeof ProgressionsRoute
+  ScaleExplorerRoute: typeof ScaleExplorerRoute
   ScalesQuizRoute: typeof ScalesQuizRoute
   StyleguideRoute: typeof StyleguideRoute
 }
@@ -161,6 +187,20 @@ declare module '@tanstack/react-router' {
       path: '/scales-quiz'
       fullPath: '/scales-quiz'
       preLoaderRoute: typeof ScalesQuizRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/scale-explorer': {
+      id: '/scale-explorer'
+      path: '/scale-explorer'
+      fullPath: '/scale-explorer'
+      preLoaderRoute: typeof ScaleExplorerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/progressions': {
+      id: '/progressions'
+      path: '/progressions'
+      fullPath: '/progressions'
+      preLoaderRoute: typeof ProgressionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/play': {
@@ -223,6 +263,8 @@ const rootRouteChildren: RootRouteChildren = {
   CircleOfFifthsRoute: CircleOfFifthsRoute,
   DevRoute: DevRoute,
   PlayRoute: PlayRoute,
+  ProgressionsRoute: ProgressionsRoute,
+  ScaleExplorerRoute: ScaleExplorerRoute,
   ScalesQuizRoute: ScalesQuizRoute,
   StyleguideRoute: StyleguideRoute,
 }
