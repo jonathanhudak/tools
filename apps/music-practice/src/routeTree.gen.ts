@@ -10,8 +10,10 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as StyleguideRouteImport } from './routes/styleguide'
+import { Route as StatsRouteImport } from './routes/stats'
 import { Route as ScalesQuizRouteImport } from './routes/scales-quiz'
 import { Route as ScaleExplorerRouteImport } from './routes/scale-explorer'
+import { Route as ReviewRouteImport } from './routes/review'
 import { Route as ProgressionsRouteImport } from './routes/progressions'
 import { Route as PracticeRouteImport } from './routes/practice'
 import { Route as PlayRouteImport } from './routes/play'
@@ -30,6 +32,11 @@ const StyleguideRoute = StyleguideRouteImport.update({
   path: '/styleguide',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StatsRoute = StatsRouteImport.update({
+  id: '/stats',
+  path: '/stats',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ScalesQuizRoute = ScalesQuizRouteImport.update({
   id: '/scales-quiz',
   path: '/scales-quiz',
@@ -38,6 +45,11 @@ const ScalesQuizRoute = ScalesQuizRouteImport.update({
 const ScaleExplorerRoute = ScaleExplorerRouteImport.update({
   id: '/scale-explorer',
   path: '/scale-explorer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReviewRoute = ReviewRouteImport.update({
+  id: '/review',
+  path: '/review',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProgressionsRoute = ProgressionsRouteImport.update({
@@ -114,8 +126,10 @@ export interface FileRoutesByFullPath {
   '/play': typeof PlayRoute
   '/practice': typeof PracticeRoute
   '/progressions': typeof ProgressionsRoute
+  '/review': typeof ReviewRoute
   '/scale-explorer': typeof ScaleExplorerRoute
   '/scales-quiz': typeof ScalesQuizRoute
+  '/stats': typeof StatsRoute
   '/styleguide': typeof StyleguideRoute
 }
 export interface FileRoutesByTo {
@@ -131,8 +145,10 @@ export interface FileRoutesByTo {
   '/play': typeof PlayRoute
   '/practice': typeof PracticeRoute
   '/progressions': typeof ProgressionsRoute
+  '/review': typeof ReviewRoute
   '/scale-explorer': typeof ScaleExplorerRoute
   '/scales-quiz': typeof ScalesQuizRoute
+  '/stats': typeof StatsRoute
   '/styleguide': typeof StyleguideRoute
 }
 export interface FileRoutesById {
@@ -149,8 +165,10 @@ export interface FileRoutesById {
   '/play': typeof PlayRoute
   '/practice': typeof PracticeRoute
   '/progressions': typeof ProgressionsRoute
+  '/review': typeof ReviewRoute
   '/scale-explorer': typeof ScaleExplorerRoute
   '/scales-quiz': typeof ScalesQuizRoute
+  '/stats': typeof StatsRoute
   '/styleguide': typeof StyleguideRoute
 }
 export interface FileRouteTypes {
@@ -168,8 +186,10 @@ export interface FileRouteTypes {
     | '/play'
     | '/practice'
     | '/progressions'
+    | '/review'
     | '/scale-explorer'
     | '/scales-quiz'
+    | '/stats'
     | '/styleguide'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -185,8 +205,10 @@ export interface FileRouteTypes {
     | '/play'
     | '/practice'
     | '/progressions'
+    | '/review'
     | '/scale-explorer'
     | '/scales-quiz'
+    | '/stats'
     | '/styleguide'
   id:
     | '__root__'
@@ -202,8 +224,10 @@ export interface FileRouteTypes {
     | '/play'
     | '/practice'
     | '/progressions'
+    | '/review'
     | '/scale-explorer'
     | '/scales-quiz'
+    | '/stats'
     | '/styleguide'
   fileRoutesById: FileRoutesById
 }
@@ -220,8 +244,10 @@ export interface RootRouteChildren {
   PlayRoute: typeof PlayRoute
   PracticeRoute: typeof PracticeRoute
   ProgressionsRoute: typeof ProgressionsRoute
+  ReviewRoute: typeof ReviewRoute
   ScaleExplorerRoute: typeof ScaleExplorerRoute
   ScalesQuizRoute: typeof ScalesQuizRoute
+  StatsRoute: typeof StatsRoute
   StyleguideRoute: typeof StyleguideRoute
 }
 
@@ -232,6 +258,13 @@ declare module '@tanstack/react-router' {
       path: '/styleguide'
       fullPath: '/styleguide'
       preLoaderRoute: typeof StyleguideRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/stats': {
+      id: '/stats'
+      path: '/stats'
+      fullPath: '/stats'
+      preLoaderRoute: typeof StatsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/scales-quiz': {
@@ -246,6 +279,13 @@ declare module '@tanstack/react-router' {
       path: '/scale-explorer'
       fullPath: '/scale-explorer'
       preLoaderRoute: typeof ScaleExplorerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/review': {
+      id: '/review'
+      path: '/review'
+      fullPath: '/review'
+      preLoaderRoute: typeof ReviewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/progressions': {
@@ -348,8 +388,10 @@ const rootRouteChildren: RootRouteChildren = {
   PlayRoute: PlayRoute,
   PracticeRoute: PracticeRoute,
   ProgressionsRoute: ProgressionsRoute,
+  ReviewRoute: ReviewRoute,
   ScaleExplorerRoute: ScaleExplorerRoute,
   ScalesQuizRoute: ScalesQuizRoute,
+  StatsRoute: StatsRoute,
   StyleguideRoute: StyleguideRoute,
 }
 export const routeTree = rootRouteImport
