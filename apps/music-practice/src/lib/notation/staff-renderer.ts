@@ -175,6 +175,8 @@ export class StaffRenderer {
                 duration: 'w', // Whole note
                 clef: this.clef
             });
+            if (vexflowNote.includes('#')) note.addModifier(new VF.Accidental('#'), 0);
+            else if (/[a-g]b\//.test(vexflowNote)) note.addModifier(new VF.Accidental('b'), 0);
 
             // Create a voice and add the note
             const voice = new VF.Voice({

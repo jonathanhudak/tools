@@ -4,7 +4,7 @@
  */
 
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { Button } from '@hudak/ui/components/button';
 import { Badge } from '@hudak/ui/components/badge';
 import { Label } from '@hudak/ui/components/label';
@@ -20,7 +20,9 @@ import { AudioManager, type PitchDetectedEvent } from '../lib/input/audio-manage
 import { StaffRenderer } from '../lib/notation/staff-renderer';
 import { TabRenderer } from '../lib/notation/tab-renderer';
 import { getInstrument, requiresMIDI } from '../lib/utils/instrument-config';
-import { generateRandomNote, validateNote } from '../lib/utils/music-theory';
+import { generateRandomNote, generateRandomNoteFromScale, validateNote } from '../lib/utils/music-theory';
+import { getScale } from '../data/scales/scale-registry';
+import { Note as TonalNote } from 'tonal';
 import { Storage } from '../lib/utils/storage';
 import { AudioPlayback } from '../lib/utils/audio-playback';
 import { getNoteRange } from '../lib/game/note-range';
@@ -45,6 +47,9 @@ export interface PlaySearchParams {
   pitchSensitivity?: number;
   pitchSmoothing?: number;
   selectedAudioDevice?: string;
+  /** Constrain generated notes to a scale (set by the Scale Explorer) */
+  scaleRoot?: string;
+  scaleId?: string;
 }
 
 export const Route = createFileRoute('/play')({
@@ -58,6 +63,8 @@ export const Route = createFileRoute('/play')({
     pitchSensitivity: search.pitchSensitivity ? Number(search.pitchSensitivity) : undefined,
     pitchSmoothing: search.pitchSmoothing ? Number(search.pitchSmoothing) : undefined,
     selectedAudioDevice: (search.selectedAudioDevice as string) || undefined,
+    scaleRoot: (search.scaleRoot as string) || undefined,
+    scaleId: (search.scaleId as string) || undefined,
   }),
 });
 
@@ -89,6 +96,10 @@ function SetupScreen({ onStart }: {
   }) => void;
 }) {
   const navigate = useNavigate();
+  const search = Route.useSearch();
+  const seededScaleName = search.scaleId && search.scaleRoot
+    ? `${search.scaleRoot} ${getScale(search.scaleId)?.name ?? search.scaleId}`
+    : null;
   const saved = Storage.getSettings();
 
   const [instrument, setInstrument] = useState(saved.instrument || 'piano');
@@ -156,6 +167,11 @@ function SetupScreen({ onStart }: {
           <div className="text-center space-y-2">
             <h1 className="text-3xl font-display font-bold text-foreground">Sight Reading</h1>
             <p className="text-muted-foreground">Configure your practice session</p>
+            {seededScaleName && (
+              <p className="inline-block text-xs font-mono px-3 py-1 rounded-full bg-[var(--accent-light)] text-[var(--accent-color)]">
+                Notes drawn from {seededScaleName}
+              </p>
+            )}
           </div>
 
           {/* Instrument Selection */}
@@ -394,6 +410,27 @@ function PlayRoute() {
   // Get note range based on difficulty and instrument
   const noteRange = useCallback(() => getNoteRange(instrument, difficulty), [difficulty, instrument]);
 
+  // Scale-seeded mode (launched from the Scale Explorer): constrain notes
+  // to the requested scale's pitch classes instead of naturals-only.
+  const seededScale = useMemo(() => {
+    if (!search.scaleId || !search.scaleRoot) return null;
+    const def = getScale(search.scaleId);
+    const rootMidi = TonalNote.midi(`${search.scaleRoot}4`);
+    if (!def || rootMidi === null) return null;
+    return { def, rootPitchClass: rootMidi % 12, rootName: search.scaleRoot };
+  }, [search.scaleId, search.scaleRoot]);
+
+  const makeNote = useCallback(() => {
+    if (seededScale) {
+      return generateRandomNoteFromScale(
+        noteRange(),
+        seededScale.rootPitchClass,
+        seededScale.def.semitones,
+      );
+    }
+    return generateRandomNote(noteRange(), clef as 'treble' | 'bass');
+  }, [seededScale, noteRange, clef]);
+
   // Stable callbacks for game round hook
   const handleRoundComplete = useCallback((state: any) => {
     setShowScoreSummary(true);
@@ -450,7 +487,7 @@ function PlayRoute() {
     correctDetectionsRef.current = 0;
     lastDetectionTimeRef.current = 0;
 
-    const note = generateRandomNote(noteRange(), clef as 'treble' | 'bass');
+    const note = makeNote();
     if (note) {
       setCurrentNote(note.midiNote);
       currentNoteRef.current = note.midiNote;
@@ -692,7 +729,7 @@ function PlayRoute() {
 
     const startSession = () => {
       if (gameMode === 'timed') roundActions.startRound();
-      const note = generateRandomNote(noteRange(), clef as 'treble' | 'bass');
+      const note = makeNote();
       if (note) {
         setCurrentNote(note.midiNote);
         currentNoteRef.current = note.midiNote;
@@ -865,7 +902,7 @@ function PlayRoute() {
         onContinue={() => {
           setShowScoreSummary(false);
           roundActions.startRound();
-          const note = generateRandomNote(noteRange(), clef as 'treble' | 'bass');
+          const note = makeNote();
           if (note) {
             setCurrentNote(note.midiNote);
             currentNoteRef.current = note.midiNote;
@@ -886,7 +923,7 @@ function PlayRoute() {
         onRetry={!roundState.isSuccessful ? () => {
           setShowScoreSummary(false);
           roundActions.resetRound();
-          const note = generateRandomNote(noteRange(), clef as 'treble' | 'bass');
+          const note = makeNote();
           if (note) {
             setCurrentNote(note.midiNote);
             currentNoteRef.current = note.midiNote;

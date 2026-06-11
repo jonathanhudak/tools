@@ -76,15 +76,34 @@ export function noteNameToMidi(noteName: string): number {
 // strings are clef-independent (the clef only affects staff placement).
 export function midiToVexflow(midiNote: number, _clef: ClefType = 'treble'): string | null {
     const octave = Math.floor(midiNote / 12) - 1;
-    const noteIndex = midiNote % 12;
-    const noteName = noteNames[noteIndex].toLowerCase().replace('#', '#');
-
-    // For natural notes only (no sharps/flats in basic implementation)
-    if (noteName.includes('#')) {
-        return null; // Skip sharps for now in basic mode
-    }
-
+    const noteName = noteNames[midiNote % 12].toLowerCase();
     return `${noteName}/${octave}`;
+}
+
+/**
+ * Generate a random note whose pitch class belongs to the given scale.
+ * Used by scale-seeded sight reading (e.g. launched from the Scale Explorer).
+ */
+export function generateRandomNoteFromScale(
+    range: string,
+    rootPitchClass: number,
+    scaleSemitones: number[],
+): NoteInfo | null {
+    const [start, end] = range.split('-');
+    const startMidi = noteNameToMidi(start.toUpperCase());
+    const endMidi = noteNameToMidi(end.toUpperCase());
+    if (startMidi === -1 || endMidi === -1) return null;
+
+    const pitchClasses = new Set(scaleSemitones.map(s => (rootPitchClass + s) % 12));
+    const candidates: number[] = [];
+    for (let midi = startMidi; midi <= endMidi; midi++) {
+        if (pitchClasses.has(midi % 12)) candidates.push(midi);
+    }
+    if (candidates.length === 0) return null;
+
+    const midiNote = candidates[Math.floor(Math.random() * candidates.length)];
+    const vexflowNote = midiToVexflow(midiNote);
+    return vexflowNote ? { vexflowNote, midiNote } : null;
 }
 
 /**
@@ -93,8 +112,8 @@ export function midiToVexflow(midiNote: number, _clef: ClefType = 'treble'): str
 export function generateRandomNote(
     range: string = 'c4-c5',
     clef: ClefType = 'treble',
-    // Only natural notes are ever generated today; accidental support requires
-    // midiToVexflow to render sharps/flats first.
+    // This generator only emits naturals (it draws from the diatonic
+    // vexflowNoteNames map); use generateRandomNoteFromScale for accidentals.
     _naturalsOnly: boolean = true
 ): NoteInfo | null {
     const [start, end] = range.split('-');
