@@ -22,7 +22,7 @@ function ReviewRoute() {
           </h1>
           <p className="text-[var(--ink-secondary)] text-sm">
             Spaced repetition for chord spellings, key signatures, and intervals — cards come back
-            right before you'd forget them.
+            right before you&apos;d forget them.
           </p>
         </div>
         <ReviewQueue />

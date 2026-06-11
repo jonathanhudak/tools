@@ -190,7 +190,7 @@ export function ReviewQueue(): JSX.Element {
         ))}
         <p className="text-xs text-muted-foreground">
           Grade yourself honestly — intervals between reviews grow when you remember and shrink
-          when you don't. A few minutes a day beats an hour once a week.
+          when you don&apos;t. A few minutes a day beats an hour once a week.
         </p>
       </div>
     );

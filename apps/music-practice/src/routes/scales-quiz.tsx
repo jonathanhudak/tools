@@ -46,7 +46,7 @@ function ScalesQuizRoute() {
             Scales &amp; Modes
           </h1>
           <p className="text-[var(--ink-secondary)] text-sm">
-            Explore scale families, modes, and their chord relationships — all 4 families, all 12 keys
+            Explore scale families, modes, and their chord relationships — all 5 families, all 12 keys
           </p>
         </div>
 

@@ -1,13 +1,16 @@
 # Task Tracking
 
 ## Current Tasks
-### Next: Phase 1 — Surface the dark data (per apps/music-practice/docs/research/architecture-audit-2026-06.md §5.4)
-- [ ] Scale Explorer v2 backed by scale-registry.ts (62 scales, 9 families)
-- [ ] Progression Library page with Tone.js playback (progression-registry.ts)
-- [ ] Harmonic Major in chord-scale matrix (chord-scale-extended.ts)
-- [ ] Arpeggio practice module; avoid-note overlays; interval reference/quiz
+(roadmap complete — next candidates: derive chord-library from chord-types, pre-existing lint debt (~47 no-explicit-any in legacy lib), bottom tab bar on mobile, print stylesheet)
 
 ## Completed Tasks
+### Phases 1–4 — Full audit roadmap (completed 2026-06-11)
+- [x] Phase 1: /scale-explorer (62 scales, 9 families, drone, audio), /progressions (35 with playback), Harmonic Major as 5th matrix family, /arpeggios (33 × 10 patterns), avoid-note overlays (11 entries), /intervals (reference + visual/ear quizzes)
+- [x] Phase 2: improv prompt generator with lockable axes, tonic drone, all-12-keys circle-of-fifths cycling in the progression player
+- [x] Phase 3: /stats practice journal (streak, 30-day chart, per-module accuracy), session builder seeded by weakest modules, /review SRS (SM-2 lite, 3 decks, 7 unit tests)
+- [x] Phase 4: guide-tone (3rd/7th) voice-leading display, /ear-training (chord qualities + scale flavors), scale-seeded sight reading with accidental rendering (Scale Explorer → /play)
+- Infra: lib/theory/roman.ts numeral resolver (19 tests, resolves every registry numeral incl. secondary dominants), lib/audio/player.ts (melody/sequence/drone)
+
 ### Phase 0 — Music Practice Hygiene (completed 2026-06-10)
 - [x] Dead-code removal (~15.6K lines): js/, css/, tsup.config.ts, Music Learning Game App/, src/{utils,input,midi}/ shadow copies, legacy App.tsx/app-sidebar, stubs, hello.ts
 - [x] Chord library integrity: 33 sharp-root ID collisions re-slugged, 13 duplicate entries removed, g-sharp-dim7 added, 8 dangling matrix chordIds retargeted, generator slug fixed, integrity test suite added

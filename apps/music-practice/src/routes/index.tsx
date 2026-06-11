@@ -6,7 +6,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Button } from '@hudak/ui/components/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@hudak/ui/components/card';
-import { Music, Zap, BookOpen, Grid3x3, ArrowRight, Target } from 'lucide-react';
+import { Music, Zap, BookOpen, Grid3x3, ArrowRight, Target, Compass, ListMusic, Ruler, AudioWaveform, Shuffle, Ear, Layers, BarChart3 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const Route = createFileRoute('/')(  {
@@ -20,7 +20,7 @@ function LandingRoute() {
     {
       id: 'scales-quiz',
       title: 'Scales & Modes',
-      description: 'Explore 4 scale families, 28 modes, and their chord relationships',
+      description: 'Explore 5 scale families, 35 modes, and their chord relationships',
       icon: Music,
       buttonText: 'Explore',
     },
@@ -38,6 +38,34 @@ function LandingRoute() {
       icon: Target,
       buttonText: 'Open',
     },
+    {
+      id: 'scale-explorer',
+      title: 'Scale Explorer',
+      description: '62 scales in 9 families — pentatonic, blues, bebop, symmetric, world — with audio and drone',
+      icon: Compass,
+      buttonText: 'Explore',
+    },
+    {
+      id: 'progressions',
+      title: 'Progressions',
+      description: '35 progressions with playback, guide tones, and all-12-keys cycling',
+      icon: ListMusic,
+      buttonText: 'Play',
+    },
+    {
+      id: 'intervals',
+      title: 'Intervals',
+      description: 'Every interval with audio, inversions, and visual or by-ear quizzes',
+      icon: Ruler,
+      buttonText: 'Learn',
+    },
+    {
+      id: 'arpeggios',
+      title: 'Arpeggios',
+      description: '33 arpeggios through 10 practice patterns in any key',
+      icon: AudioWaveform,
+      buttonText: 'Practice',
+    },
   ];
 
   const toolModules = [
@@ -54,6 +82,34 @@ function LandingRoute() {
       description: 'Practice reading notation with MIDI, microphone, or virtual keyboard',
       icon: Zap,
       buttonText: 'Open',
+    },
+    {
+      id: 'practice',
+      title: 'Practice Hub',
+      description: 'Improv prompt generator with lockable constraints, plus a timed session builder',
+      icon: Shuffle,
+      buttonText: 'Open',
+    },
+    {
+      id: 'ear-training',
+      title: 'Ear Training',
+      description: 'Identify chord qualities and scale flavors by ear',
+      icon: Ear,
+      buttonText: 'Train',
+    },
+    {
+      id: 'review',
+      title: 'Review (SRS)',
+      description: 'Spaced-repetition flashcards: chord spellings, key signatures, intervals',
+      icon: Layers,
+      buttonText: 'Review',
+    },
+    {
+      id: 'stats',
+      title: 'Practice Journal',
+      description: 'Streaks, accuracy trends, and session history — all on this device',
+      icon: BarChart3,
+      buttonText: 'View',
     },
   ];
 

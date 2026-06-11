@@ -92,7 +92,7 @@ export function ScaleLearningHub(): JSX.Element {
                 <ul className="space-y-2 text-sm">
                   <li className="flex items-center gap-2">
                     <Music className="w-4 h-4 text-muted-foreground shrink-0" />
-                    <span>4 scale families with all 28 modes</span>
+                    <span>5 scale families with all 35 modes</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <Piano className="w-4 h-4 text-muted-foreground shrink-0" />

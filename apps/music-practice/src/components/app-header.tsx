@@ -4,12 +4,31 @@ import { Music, Menu, X } from 'lucide-react';
 import { ThemeToggle } from './theme-toggle';
 import { Button } from '@hudak/ui/components/button';
 
-const navLinks = [
+// Compact set shown in the desktop bar; the mobile drawer shows everything.
+const primaryLinks = [
   { to: '/' as const, label: 'Home' },
   { to: '/scales-quiz' as const, label: 'Scales' },
   { to: '/chord-quiz' as const, label: 'Chords' },
+  { to: '/chord-scale' as const, label: 'Matrix' },
+  { to: '/progressions' as const, label: 'Progressions' },
+  { to: '/practice' as const, label: 'Practice' },
+  { to: '/play' as const, label: 'Sight Reading' },
+] as const;
+
+const navLinks = [
+  { to: '/' as const, label: 'Home' },
+  { to: '/scales-quiz' as const, label: 'Scales & Modes' },
+  { to: '/scale-explorer' as const, label: 'Scale Explorer' },
+  { to: '/chord-quiz' as const, label: 'Chords' },
   { to: '/chord-scale' as const, label: 'Chord-Scale Matrix' },
   { to: '/circle-of-fifths' as const, label: 'Circle of Fifths' },
+  { to: '/progressions' as const, label: 'Progressions' },
+  { to: '/arpeggios' as const, label: 'Arpeggios' },
+  { to: '/intervals' as const, label: 'Intervals' },
+  { to: '/ear-training' as const, label: 'Ear Training' },
+  { to: '/practice' as const, label: 'Practice' },
+  { to: '/review' as const, label: 'Review' },
+  { to: '/stats' as const, label: 'Journal' },
   { to: '/play' as const, label: 'Sight Reading' },
 ] as const;
 
@@ -26,7 +45,7 @@ export function AppHeader() {
 
         {/* Desktop nav */}
         <nav className="hidden sm:flex items-center gap-4">
-          {navLinks.map(({ to, label }) => (
+          {primaryLinks.map(({ to, label }) => (
             <Link
               key={to}
               to={to}

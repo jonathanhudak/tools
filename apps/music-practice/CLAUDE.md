@@ -27,7 +27,9 @@
 
 ```
 src/
-├── routes/           # TanStack Router pages (index, play, chord-quiz, scales-quiz, chord-scale, dev, about)
+├── routes/           # TanStack Router pages (index, play, chord-quiz, scales-quiz, chord-scale,
+│                     #   scale-explorer, progressions, arpeggios, intervals, ear-training,
+│                     #   practice, review, stats, circle-of-fifths, dev, about)
 ├── components/       # React components
 │   ├── play/         # Sight-reading game UI (notation-card, score-hud, radial-timer)
 │   ├── notation/     # StaffDisplay, FallingNotesDisplay, TabDisplay
@@ -36,9 +38,19 @@ src/
 │   ├── ChordScaleGame/  # Scale/chord-scale quiz (QuizGenerator, DegreeQuiz, etc.)
 │   ├── ScaleReference/  # Scale diagrams and displays
 │   ├── ScaleLearningHub/
-│   └── ChordScaleMatrix/
+│   ├── ChordScaleMatrix/
+│   ├── ScaleExplorer/   # 62-scale registry browser with drone
+│   ├── Progressions/    # Progression library with playback + guide tones
+│   ├── Arpeggios/       # Arpeggio patterns practice
+│   ├── Intervals/       # Interval reference + quizzes
+│   ├── EarTraining/     # Chord/scale recognition by ear
+│   ├── Practice/        # Improv prompts + session builder
+│   ├── Review/          # SRS flashcards (lib/srs.ts)
+│   └── Stats/           # Practice journal
 ├── hooks/            # use-theme, use-game-round
 ├── lib/
+│   ├── audio/        # Shared playback: melodies, chord sequences, drone
+│   ├── theory/       # Roman numeral resolver, guide tones
 │   ├── input/        # MidiManager, AudioManager (device I/O)
 │   ├── notation/     # VexFlow staff-renderer, falling-notes, tab-renderer
 │   ├── utils/        # music-theory, scoring, storage, pitch-detector, audio-playback, instrument-config
@@ -46,7 +58,8 @@ src/
 │   ├── modules/      # sight-reading module
 │   ├── services/     # audio-devices
 │   └── __tests__/    # Unit tests for lib (chord-library, piano-voicings, etc.)
-├── data/             # chord-scale-matrix, hello
+├── data/             # Theory data: chord-scale-matrix (5 families), scale-registry (62),
+│                     #   chords, arpeggios, progressions, intervals, enharmonics, avoid-notes
 └── test/             # Vitest setup (jsdom)
 docs/                 # UX research, plans (ux-overhaul)
 test-screenshots/     # Puppeteer screenshot baselines

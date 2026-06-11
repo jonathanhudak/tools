@@ -167,13 +167,13 @@ Ordered by leverage (most reuse of existing dark data first).
 
 ### 5.4 Suggested sequencing
 
-| Phase | Items | Rationale |
+| Phase | Items | Status |
 |---|---|---|
-| 0. Hygiene | Fix dup IDs + typecheck, delete dead code, touch-target sweep | Days; unblocks trust in data & CI |
-| 1. Surface dark data | 1, 2, 6, then 3–5 | Weeks; content exists, UI patterns exist |
-| 2. Creative layer | 7, 8, 9 | Differentiating; small audio work on top of phase 1 |
-| 3. Practice system | 11, 13, 12 | Makes it a daily-use app |
-| 4. Depth | 10, 14, 15 | Power features |
+| 0. Hygiene | Fix dup IDs + typecheck, delete dead code, touch-target sweep | ✅ Done (June 10, 2026) |
+| 1. Surface dark data | Scale Explorer, Progressions, Harmonic Major, Arpeggios, Avoid notes, Intervals | ✅ Done (June 11, 2026) |
+| 2. Creative layer | Improv prompts, drone mode, all-12-keys cycling | ✅ Done (June 11, 2026) |
+| 3. Practice system | Practice journal (/stats), session builder, SRS (/review) | ✅ Done (June 11, 2026) |
+| 4. Depth | Guide tones, ear training, scale-seeded sight reading | ✅ Done (June 11, 2026) |
 
 ---
 
