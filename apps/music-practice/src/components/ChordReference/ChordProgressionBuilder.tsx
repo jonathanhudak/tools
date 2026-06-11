@@ -3,7 +3,7 @@
  * Supports preset patterns and custom progression creation
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import type { Chord } from '@/lib/chord-library';
 import { CHORD_LIBRARY } from '@/lib/chord-library';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@hudak/ui/components/card';
@@ -89,6 +89,18 @@ interface ChordProgressionBuilderProps {
   disabled?: boolean;
 }
 
+// Scale-degree semitone offsets and chromatic roots for transposition
+const degreeMap: Record<string, number> = {
+  I: 0,
+  ii: 2,
+  iii: 4,
+  IV: 5,
+  V: 7,
+  vi: 9,
+  vii: 11,
+};
+const noteMap = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
 export function ChordProgressionBuilder({
   onProgressionSelect,
   rootChord,
@@ -99,20 +111,7 @@ export function ChordProgressionBuilder({
   );
   const [currentRoot, setCurrentRoot] = useState(rootChord?.root || 'C');
 
-  // Calculate degree values from root
-  const degreeMap: Record<string, number> = {
-    I: 0,
-    ii: 2,
-    iii: 4,
-    IV: 5,
-    V: 7,
-    vi: 9,
-    vii: 11,
-  };
-
-  const noteMap = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-
-  const getChordForDegree = (romanNumeral: string): Chord | null => {
+  const getChordForDegree = useCallback((romanNumeral: string): Chord | null => {
     const degree = degreeMap[romanNumeral];
     if (degree === undefined) return null;
 
@@ -123,14 +122,14 @@ export function ChordProgressionBuilder({
     // Find a chord with this root note
     const chord = CHORD_LIBRARY.find(c => c.root === targetNote);
     return chord || null;
-  };
+  }, [currentRoot]);
 
   const progressionChords = useMemo(() => {
     if (!selectedProgression) return [];
     return selectedProgression.romanNumerals
       .map(rn => getChordForDegree(rn))
       .filter((chord): chord is Chord => chord !== null);
-  }, [selectedProgression, currentRoot]);
+  }, [selectedProgression, getChordForDegree]);
 
   const handleApplyProgression = () => {
     if (onProgressionSelect && progressionChords.length > 0) {

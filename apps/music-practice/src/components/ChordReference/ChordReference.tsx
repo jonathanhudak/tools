@@ -122,7 +122,7 @@ export function ChordReference({ onStartQuiz }: ChordReferenceProps): JSX.Elemen
     const available = new Set(rootMap.keys());
     // Also include slash chords and other qualities not in the ordered list
     const ordered = QUALITY_ORDER.filter(q => available.has(q));
-    const extras = [...available].filter(q => !QUALITY_ORDER.includes(q as any)).sort();
+    const extras = [...available].filter(q => !(QUALITY_ORDER as readonly string[]).includes(q)).sort();
     return [...ordered, ...extras];
   }, [selectedRoot]);
 

@@ -21,7 +21,9 @@ const RootLayout = () => {
     if (redirectRoute && redirectRoute !== '/') {
       redirectProcessedRef.current = true;
       // Navigate to the redirect route (e.g., /chord-quiz)
-      navigate({ to: redirectRoute as any });
+      // Redirect paths come from our own 404.html fallback; the router
+      // validates unknown paths at runtime.
+      navigate({ to: redirectRoute as never });
     }
   }, [navigate]);
 

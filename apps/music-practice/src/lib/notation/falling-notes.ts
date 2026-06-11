@@ -87,7 +87,6 @@ export class FallingNotesRenderer {
 
             this.ctx = this.canvas.getContext('2d');
 
-            console.log('FallingNotesRenderer initialized');
         } catch (error) {
             console.error('Failed to initialize FallingNotesRenderer:', error);
         }
@@ -312,7 +311,3 @@ export class FallingNotesRenderer {
     }
 }
 
-// Make available globally
-if (typeof window !== 'undefined') {
-    (window as any).FallingNotesRenderer = FallingNotesRenderer;
-}

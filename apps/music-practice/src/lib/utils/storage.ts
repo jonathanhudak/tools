@@ -41,7 +41,7 @@ export interface SessionData {
     roundScore?: number;
     timeLeft?: number;
     livesRemaining?: number;
-    [key: string]: any; // Allow additional properties
+    [key: string]: unknown; // Allow additional properties
 }
 
 export interface Session extends SessionData {
@@ -59,6 +59,7 @@ export interface Settings {
     audioDeviceId: string | null;
     virtualKeyboard: boolean;
     instrument?: string;
+    difficulty?: string;
     pitchTolerance?: number;
     // Game mode settings
     gameMode?: 'practice' | 'timed';
@@ -68,7 +69,7 @@ export interface Settings {
     confettiEnabled?: boolean;
     // Tab notation settings
     tabOrientation?: 'standard' | 'leftHanded'; // standard: high E left, low E right; leftHanded: low E left, high E right
-    [key: string]: any; // Allow additional settings
+    [key: string]: unknown; // Allow additional settings
 }
 
 export interface ExportData {
@@ -397,7 +398,3 @@ export const Storage = {
     generateId
 };
 
-// Make available globally for legacy code
-if (typeof window !== 'undefined') {
-    (window as any).Storage = Storage;
-}

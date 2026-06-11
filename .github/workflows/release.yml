@@ -39,6 +39,9 @@ jobs:
       - name: Typecheck (music-practice + ui)
         run: pnpm --filter @hudak/ui --filter @hudak/music-practice typecheck
 
+      - name: Lint (music-practice)
+        run: pnpm --filter @hudak/music-practice lint
+
       - name: Build all apps
         run: pnpm run build
 

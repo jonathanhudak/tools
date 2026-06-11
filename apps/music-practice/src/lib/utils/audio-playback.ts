@@ -13,7 +13,7 @@ export class AudioPlayback {
 
   private init(): void {
     try {
-      this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      this.audioContext = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
       this.masterGain = this.audioContext.createGain();
       this.masterGain.gain.value = 0.12; // Master volume (softer)
       this.masterGain.connect(this.audioContext.destination);

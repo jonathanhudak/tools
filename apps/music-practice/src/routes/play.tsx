@@ -19,7 +19,7 @@ import { MidiManager, type NoteOnEvent, type DeviceChangeEvent } from '../lib/in
 import { AudioManager, type PitchDetectedEvent } from '../lib/input/audio-manager';
 import { StaffRenderer } from '../lib/notation/staff-renderer';
 import { TabRenderer } from '../lib/notation/tab-renderer';
-import { getInstrument, requiresMIDI } from '../lib/utils/instrument-config';
+import { getInstrument, requiresMIDI, type InstrumentTypeValue } from '../lib/utils/instrument-config';
 import { generateRandomNote, generateRandomNoteFromScale, validateNote } from '../lib/utils/music-theory';
 import { getScale } from '../data/scales/scale-registry';
 import { Note as TonalNote } from 'tonal';
@@ -29,7 +29,7 @@ import { getNoteRange } from '../lib/game/note-range';
 import { renderPracticeNote } from '../lib/game/render-note';
 
 // Game components
-import { useGameRound, type GameMode } from '../hooks/use-game-round';
+import { useGameRound, type GameMode, type GameRoundState, type GameRoundActions } from '../hooks/use-game-round';
 import { getStreakMilestoneMessage } from '../lib/utils/scoring';
 import { VirtualKeyboard } from '../components/virtual-keyboard';
 import { RadialTimer } from '../components/play/radial-timer';
@@ -392,8 +392,8 @@ function PlayRoute() {
   const instrumentRef = useRef(instrument);
   const clefRef = useRef(clef);
   const gameModeRef = useRef(gameMode);
-  const roundActionsRef = useRef<any>(null);
-  const roundStateRef = useRef<any>(null);
+  const roundActionsRef = useRef<GameRoundActions | null>(null);
+  const roundStateRef = useRef<GameRoundState | null>(null);
   const midiManager = useRef<MidiManager | null>(null);
   const audioManager = useRef<AudioManager | null>(null);
   const audioPlayback = useRef<AudioPlayback | null>(null);
@@ -432,7 +432,7 @@ function PlayRoute() {
   }, [seededScale, noteRange, clef]);
 
   // Stable callbacks for game round hook
-  const handleRoundComplete = useCallback((state: any) => {
+  const handleRoundComplete = useCallback((state: GameRoundState) => {
     setShowScoreSummary(true);
     const range = getNoteRange(instrument, difficulty);
     Storage.saveSession({
@@ -453,7 +453,7 @@ function PlayRoute() {
     });
   }, [gameMode, instrument, clef, difficulty]);
 
-  const handleRoundFail = useCallback((state: any) => {
+  const handleRoundFail = useCallback((state: GameRoundState) => {
     setShowScoreSummary(true);
     toast.error('Round Failed', {
       description: `You scored ${state.currentScore?.finalScore || 0} points. Try again!`,
@@ -501,7 +501,7 @@ function PlayRoute() {
         tabRenderer: tabRenderer.current,
       });
     }
-  }, [clef, instrument, noteRange, tabDisplayMode]);
+  }, [clef, instrument, makeNote, tabDisplayMode]);
 
   // Handle MIDI device changes
   const handleMidiDeviceChange = useCallback((_event: DeviceChangeEvent) => {
@@ -623,7 +623,7 @@ function PlayRoute() {
     const initManagers = async () => {
       audioPlayback.current = new AudioPlayback();
 
-      if (requiresMIDI(instrument as any)) {
+      if (requiresMIDI(instrument as InstrumentTypeValue)) {
         midiManager.current = new MidiManager();
         const success = await midiManager.current.init();
         setMidiConnected(success);
