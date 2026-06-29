@@ -10,6 +10,7 @@ const primaryLinks = [
   { to: '/scales-quiz' as const, label: 'Scales' },
   { to: '/chord-quiz' as const, label: 'Chords' },
   { to: '/chord-scale' as const, label: 'Matrix' },
+  { to: '/circle-of-fifths' as const, label: 'Circle of Fifths' },
   { to: '/progressions' as const, label: 'Progressions' },
   { to: '/practice' as const, label: 'Practice' },
   { to: '/play' as const, label: 'Sight Reading' },

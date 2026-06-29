@@ -6,8 +6,9 @@
  * UX mirrors the chord-scale matrix and circle-of-fifths pages.
  */
 
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { Badge } from '@hudak/ui/components/badge';
+import { useUrlState } from '@/hooks/use-url-state';
 import { Note } from 'tonal';
 import { GuitarFretboard } from '../GuitarFretboard/GuitarFretboard';
 import { PianoScaleDiagram } from './PianoScaleDiagram';
@@ -41,10 +42,19 @@ const ROOT_KEYS = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', '
 
 // onBack is accepted for API compatibility; navigation lives in the app header.
 export function ScaleReference({ onBack: _onBack }: ScaleReferenceProps): JSX.Element {
-  const [activeScale, setActiveScale] = useState<ScaleType>('major');
-  const [selectedDegree, setSelectedDegree] = useState<Degree>(1);
-  const [rootKey, setRootKey] = useState('C');
-  const [showDegreeNumbers, setShowDegreeNumbers] = useState(false);
+  const [
+    { scale: activeScale, degree: selectedDegree, key: rootKey, degreeNumbers: showDegreeNumbers },
+    update,
+  ] = useUrlState({
+    scale: 'major' as ScaleType,
+    degree: 1 as Degree,
+    key: 'C',
+    degreeNumbers: false as boolean,
+  });
+  const setActiveScale = (scale: ScaleType) => update({ scale });
+  const setSelectedDegree = (degree: Degree) => update({ degree });
+  const setRootKey = (key: string) => update({ key });
+  const setShowDegreeNumbers = (degreeNumbers: boolean) => update({ degreeNumbers });
 
   const degrees = buildScaleChords(activeScale);
   const selectedEntry = degrees.find(d => d.degree === selectedDegree)!;

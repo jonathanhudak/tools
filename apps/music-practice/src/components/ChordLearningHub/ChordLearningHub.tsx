@@ -3,9 +3,9 @@
  * Manages navigation between reference library and quiz games
  */
 
-import { useState } from 'react';
 import { ChordReference } from '../ChordReference/ChordReference';
 import { ChordQuiz } from '../ChordQuiz/ChordQuiz';
+import { useUrlState } from '@/hooks/use-url-state';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@hudak/ui/components/card';
 import { Button } from '@hudak/ui/components/button';
 import { BookOpen, Zap, Target, Brain, ArrowRight, BarChart3, Volume2, Search, TrendingUp, Trophy } from 'lucide-react';
@@ -15,31 +15,27 @@ type View = 'menu' | 'reference' | 'quiz';
 type QuizMode = 'speed' | 'accuracy' | 'progression';
 type Difficulty = 'beginner' | 'intermediate' | 'advanced';
 
-interface QuizConfig {
-  mode: QuizMode;
-  difficulty: Difficulty;
-}
-
 export function ChordLearningHub(): JSX.Element {
-  const [view, setView] = useState<View>('reference');
-  const [quizConfig, setQuizConfig] = useState<QuizConfig | null>(null);
+  const [{ view, quizMode, difficulty }, update] = useUrlState({
+    view: 'reference' as View,
+    quizMode: 'speed' as QuizMode,
+    difficulty: 'beginner' as Difficulty,
+  });
 
-  const handleStartQuiz = (mode: QuizMode, difficulty: Difficulty) => {
-    setQuizConfig({ mode, difficulty });
-    setView('quiz');
+  const handleStartQuiz = (mode: QuizMode, diff: Difficulty) => {
+    update({ view: 'quiz', quizMode: mode, difficulty: diff });
   };
 
   const handleBackToMenu = () => {
-    setView('menu');
-    setQuizConfig(null);
+    update({ view: 'menu' });
   };
 
   const handleToReference = () => {
-    setView('reference');
+    update({ view: 'reference' });
   };
 
   const handleToQuiz = () => {
-    setView('menu');
+    update({ view: 'menu' });
   };
 
   // Reference View
@@ -47,18 +43,18 @@ export function ChordLearningHub(): JSX.Element {
     return (
       <ChordReference
         onStartQuiz={() => {
-          setView('menu');
+          update({ view: 'menu' });
         }}
       />
     );
   }
 
   // Quiz View
-  if (view === 'quiz' && quizConfig) {
+  if (view === 'quiz') {
     return (
       <ChordQuiz
-        mode={quizConfig.mode}
-        difficulty={quizConfig.difficulty}
+        mode={quizMode}
+        difficulty={difficulty}
         questionCount={10}
         onBack={handleBackToMenu}
       />

@@ -10,8 +10,9 @@
  * font-display headings, font-mono-app for music data.
  */
 
-import { useState, useMemo, useCallback } from 'react';
+import { useMemo, useCallback } from 'react';
 import type { Chord } from '@/lib/chord-library';
+import { useUrlState } from '@/hooks/use-url-state';
 import { CHORD_LIBRARY } from '@/lib/chord-library';
 import { ChordDiagram } from './ChordDiagram';
 import { PianoChordDiagram } from './PianoChordDiagram';
@@ -110,10 +111,16 @@ interface ChordReferenceProps {
 type Instrument = 'guitar' | 'piano';
 
 export function ChordReference({ onStartQuiz }: ChordReferenceProps): JSX.Element {
-  const [selectedRoot, setSelectedRoot] = useState<string>('C');
-  const [selectedQuality, setSelectedQuality] = useState<string>('maj');
-  const [selectedInstrument, setSelectedInstrument] = useState<Instrument>('guitar');
-  const [selectedVoicing, setSelectedVoicing] = useState(0);
+  const [
+    { root: selectedRoot, quality: selectedQuality, instrument: selectedInstrument, voicing: selectedVoicing },
+    update,
+  ] = useUrlState({
+    root: 'C',
+    quality: 'maj',
+    instrument: 'guitar' as Instrument,
+    voicing: 0,
+  });
+  const setSelectedVoicing = (voicing: number) => update({ voicing });
 
   // Qualities available for the selected root, in canonical order
   const availableQualities = useMemo(() => {
@@ -141,19 +148,16 @@ export function ChordReference({ onStartQuiz }: ChordReferenceProps): JSX.Elemen
   const currentVoicing = selectedChord?.voicings[selectedVoicing];
 
   const handleRootChange = useCallback((root: string) => {
-    setSelectedRoot(root);
-    setSelectedVoicing(0);
-  }, []);
+    update({ root, voicing: 0 });
+  }, [update]);
 
   const handleQualityChange = useCallback((quality: string) => {
-    setSelectedQuality(quality);
-    setSelectedVoicing(0);
-  }, []);
+    update({ quality, voicing: 0 });
+  }, [update]);
 
   const handleInstrumentChange = useCallback((instrument: Instrument) => {
-    setSelectedInstrument(instrument);
-    setSelectedVoicing(0);
-  }, []);
+    update({ instrument, voicing: 0 });
+  }, [update]);
 
   // Count chords per root for the indicator
   const rootCounts = useMemo(() => {
