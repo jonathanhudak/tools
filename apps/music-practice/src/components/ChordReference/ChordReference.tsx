@@ -10,8 +10,9 @@
  * font-display headings, font-mono-app for music data.
  */
 
-import { useState, useMemo, useCallback } from 'react';
+import { useMemo, useCallback } from 'react';
 import type { Chord } from '@/lib/chord-library';
+import { useUrlState } from '@/hooks/use-url-state';
 import { CHORD_LIBRARY } from '@/lib/chord-library';
 import { ChordDiagram } from './ChordDiagram';
 import { PianoChordDiagram } from './PianoChordDiagram';
@@ -110,10 +111,19 @@ interface ChordReferenceProps {
 type Instrument = 'guitar' | 'piano';
 
 export function ChordReference({ onStartQuiz }: ChordReferenceProps): JSX.Element {
-  const [selectedRoot, setSelectedRoot] = useState<string>('C');
-  const [selectedQuality, setSelectedQuality] = useState<string>('maj');
-  const [selectedInstrument, setSelectedInstrument] = useState<Instrument>('guitar');
-  const [selectedVoicing, setSelectedVoicing] = useState(0);
+  const [
+    { root: selectedRoot, quality: selectedQuality, instrument: selectedInstrument, voicing: selectedVoicing },
+    update,
+  ] = useUrlState({
+    root: 'C',
+    quality: 'maj',
+    instrument: 'guitar' as Instrument,
+    voicing: 0,
+  });
+  const setSelectedRoot = (root: string) => update({ root });
+  const setSelectedQuality = (quality: string) => update({ quality });
+  const setSelectedInstrument = (instrument: Instrument) => update({ instrument });
+  const setSelectedVoicing = (voicing: number) => update({ voicing });
 
   // Qualities available for the selected root, in canonical order
   const availableQualities = useMemo(() => {

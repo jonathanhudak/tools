@@ -26,7 +26,7 @@ export default defineConfig({
       },
     },
   ],
-  base: '/tools/music-practice/',
+  base: process.env.VITE_BASE || '/tools/music-practice/',
   build: {
     outDir: '../../docs/music-practice',
     emptyOutDir: true,

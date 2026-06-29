@@ -7,20 +7,18 @@
  * All SVG fills use --color-* CSS vars (Tailwind v4 convention).
  */
 
-import { useState, useMemo, useCallback } from 'react';
+import { useMemo, useCallback } from 'react';
 import {
   getKeyInfo,
   getFifthAbove,
   getFifthBelow,
 } from '../../data/circle-of-fifths';
+import { useUrlState } from '@/hooks/use-url-state';
 import type { CircleOfFifthsEntry } from '../../data/circle-of-fifths';
 import { Badge } from '@hudak/ui/components/badge';
 import { Button } from '@hudak/ui/components/button';
 import { InstrumentToggle } from '../Piano/InstrumentToggle';
-import { ChordDiagram } from '../ChordReference/ChordDiagram';
-import { PianoChordDiagram } from '../ChordReference/PianoChordDiagram';
-import { StaffDisplay } from '../notation/StaffDisplay';
-import { getChordByShortName } from '../../lib/chord-library';
+import { ChordDiagramView } from '../notation/ChordDiagramView';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -83,9 +81,6 @@ interface ChordCardProps {
 }
 
 function ChordCard({ chordName, label, instrument }: ChordCardProps) {
-  const chord = useMemo(() => getChordByShortName(chordName), [chordName]);
-  const voicing = chord?.voicings[0];
-
   return (
     <div className="border border-border bg-card overflow-hidden">
       {/* Header */}
@@ -100,24 +95,7 @@ function ChordCard({ chordName, label, instrument }: ChordCardProps) {
 
       {/* Chord diagram */}
       <div className="p-3 flex flex-col items-center">
-        {chord && voicing ? (
-          instrument === 'guitar' && voicing.guitar ? (
-            <ChordDiagram chord={chord} voicing={voicing} />
-          ) : instrument === 'piano' && voicing.piano ? (
-            <>
-              <PianoChordDiagram voicing={voicing} chordName={chordName} size="small" />
-              {voicing.piano.notes.length > 0 && (
-                <div className="w-full overflow-hidden" style={{ transform: 'scale(0.75)', transformOrigin: 'top center', marginBottom: '-1rem' }}>
-                  <StaffDisplay notes={voicing.piano.notes} clef="treble" asChord />
-                </div>
-              )}
-            </>
-          ) : (
-            <p className="text-[10px] text-muted-foreground italic py-4">No {instrument} voicing</p>
-          )
-        ) : (
-          <p className="text-[10px] text-muted-foreground italic py-4">Not in library</p>
-        )}
+        <ChordDiagramView chordName={chordName} instrument={instrument} />
       </div>
     </div>
   );
@@ -126,8 +104,12 @@ function ChordCard({ chordName, label, instrument }: ChordCardProps) {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function CircleOfFifths() {
-  const [selectedKey, setSelectedKey] = useState<string>('C');
-  const [instrument, setInstrument] = useState<'guitar' | 'piano'>('guitar');
+  const [{ key: selectedKey, instrument }, update] = useUrlState({
+    key: 'C',
+    instrument: 'guitar' as 'guitar' | 'piano',
+  });
+  const setSelectedKey = (key: string) => update({ key });
+  const setInstrument = (i: 'guitar' | 'piano') => update({ instrument: i });
 
   const selectedEntry = useMemo(() => getKeyInfo(selectedKey), [selectedKey]);
   const fifthAbove = useMemo(() => getFifthAbove(selectedKey), [selectedKey]);

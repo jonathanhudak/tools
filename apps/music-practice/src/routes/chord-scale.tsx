@@ -6,22 +6,24 @@
  *  - Practice: quiz game (ChordScaleGame)
  */
 
-import { useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import { Button } from '@hudak/ui/components/button';
 import { ArrowLeft, Grid3X3, Gamepad2 } from 'lucide-react';
 import { ChordScaleGame } from '../components/ChordScaleGame';
 import { ChordScaleMatrix } from '../components/ChordScaleMatrix';
+import { useUrlState } from '../hooks/use-url-state';
 
 export const Route = createFileRoute('/chord-scale')({
   component: ChordScaleRoute,
+  validateSearch: (search: Record<string, unknown>) => search,
 });
 
 type Tab = 'matrix' | 'practice';
 
 function ChordScaleRoute() {
   const navigate = Route.useNavigate();
-  const [activeTab, setActiveTab] = useState<Tab>('matrix');
+  const [{ tab: activeTab }, update] = useUrlState({ tab: 'matrix' as Tab });
+  const setActiveTab = (tab: Tab) => update({ tab });
 
   return (
     <div className="min-h-screen bg-background">

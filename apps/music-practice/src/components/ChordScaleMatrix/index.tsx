@@ -8,6 +8,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { Badge } from '@hudak/ui/components/badge';
+import { useUrlState } from '@/hooks/use-url-state';
 import { InstrumentToggle } from '../Piano/InstrumentToggle';
 import { ChordVoicingDisplay } from '../ChordScaleGame/ChordVoicingDisplay';
 import type { Chord } from '@/lib/chord-library';
@@ -202,9 +203,14 @@ export function ChordScaleMatrix({
   initialKey = 'C',
   initialScaleType = 'major',
 }: ChordScaleMatrixProps) {
-  const [selectedKey, setSelectedKey] = useState<RootKey>(initialKey);
-  const [selectedScale, setSelectedScale] = useState<ScaleType>(initialScaleType);
-  const [instrument, setInstrument] = useState<'guitar' | 'piano'>('guitar');
+  const [{ key: selectedKey, scale: selectedScale, instrument }, update] = useUrlState({
+    key: initialKey as RootKey,
+    scale: initialScaleType as ScaleType,
+    instrument: 'guitar' as 'guitar' | 'piano',
+  });
+  const setSelectedKey = (key: RootKey) => update({ key });
+  const setSelectedScale = (scale: ScaleType) => update({ scale });
+  const setInstrument = (i: 'guitar' | 'piano') => update({ instrument: i });
 
   const degrees = useMemo(() => buildScaleChords(selectedScale), [selectedScale]);
 

@@ -4,15 +4,15 @@
  */
 
 import { useState } from 'react';
-import { Link } from '@tanstack/react-router';
 import { Button } from '@hudak/ui/components/button';
 import { Badge } from '@hudak/ui/components/badge';
-import { Shuffle, Lock, LockOpen, Waves } from 'lucide-react';
+import { Shuffle, Lock, LockOpen, Waves, Music, ChevronUp } from 'lucide-react';
 import { Note } from 'tonal';
 import { SCALE_REGISTRY } from '@/data/scales/scale-registry';
 import { PROGRESSION_REGISTRY } from '@/data/progressions/progression-registry';
 import { resolveForScale } from '@/data/enharmonics';
 import { Drone } from '@/lib/audio/player';
+import { ProgressionLibrary } from '../Progressions/ProgressionLibrary';
 
 const KEYS = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
 
@@ -74,6 +74,7 @@ export function ImprovPrompt(): JSX.Element {
   const [prompt, setPrompt] = useState<Prompt>(() => dealPrompt(null, new Set()));
   const [droneOn, setDroneOn] = useState(false);
   const [drone] = useState(() => new Drone());
+  const [showPlayer, setShowPlayer] = useState(false);
 
   const scale = SCALE_REGISTRY.find(s => s.id === prompt.scaleId);
   const progression = PROGRESSION_REGISTRY.find(p => p.id === prompt.progressionId);
@@ -166,14 +167,35 @@ export function ImprovPrompt(): JSX.Element {
         <Button variant={droneOn ? 'default' : 'outline'} size="lg" className="gap-2" onClick={toggleDrone}>
           <Waves className="w-4 h-4" /> {droneOn ? 'Stop drone' : `Drone on ${prompt.key}`}
         </Button>
-        <Button asChild variant="outline" size="lg">
-          <Link to="/progressions">Open progression player</Link>
+        <Button
+          variant={showPlayer ? 'default' : 'outline'}
+          size="lg"
+          className="gap-2"
+          onClick={() => setShowPlayer(v => !v)}
+        >
+          {showPlayer ? <ChevronUp className="w-4 h-4" /> : <Music className="w-4 h-4" />}
+          {showPlayer ? 'Hide progression player' : 'Open progression player'}
         </Button>
       </div>
       <p className="text-xs text-muted-foreground">
         Lock the axes you want to keep <Badge variant="outline" className="text-[9px] align-middle">🔒</Badge>,
         then deal a new prompt for the rest. Improvise for at least 5 minutes before re-dealing.
       </p>
+
+      {/* Embedded progression player, seeded with this prompt's key + progression.
+          Keyed so dealing a new prompt reseeds it. urlSync off — it's a panel,
+          not the standalone /progressions page. */}
+      {showPlayer && (
+        <div className="rounded-xl border border-[var(--border-subtle)] bg-card p-4 mt-2">
+          <ProgressionLibrary
+            key={`${prompt.key}-${prompt.progressionId}`}
+            initialFamily={progression?.family}
+            initialId={prompt.progressionId}
+            initialKey={prompt.key}
+            urlSync={false}
+          />
+        </div>
+      )}
     </div>
   );
 }

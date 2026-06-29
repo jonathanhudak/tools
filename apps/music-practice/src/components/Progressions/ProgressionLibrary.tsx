@@ -4,6 +4,7 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { Note } from 'tonal';
 import { Badge } from '@hudak/ui/components/badge';
 import { Button } from '@hudak/ui/components/button';
 import { Play, Square, Repeat, ArrowRight } from 'lucide-react';
@@ -14,6 +15,9 @@ import {
 } from '@/data/progressions/progression-registry';
 import { resolveProgression, guideTones, type ResolvedChord } from '@/lib/theory/roman';
 import { playChordSequence, type PlaybackHandle } from '@/lib/audio/player';
+import { useUrlState } from '@/hooks/use-url-state';
+import { InstrumentToggle } from '../Piano/InstrumentToggle';
+import { ChordDiagramView } from '../notation/ChordDiagramView';
 
 const FAMILIES: ProgressionFamily[] = ['jazz', 'blues', 'pop', 'classical', 'modal'];
 const KEYS = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
@@ -26,14 +30,52 @@ const DIFFICULTY_COLOR: Record<string, string> = {
   advanced: 'bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-300',
 };
 
-export function ProgressionLibrary(): JSX.Element {
-  const [family, setFamily] = useState<ProgressionFamily>('jazz');
-  const [selectedId, setSelectedId] = useState<string>('ii-V-I-major');
-  const [musicKey, setMusicKey] = useState('C');
-  const [bpm, setBpm] = useState(90);
+export interface ProgressionLibraryProps {
+  /** Seed the selected progression's family. */
+  initialFamily?: ProgressionFamily;
+  /** Seed the selected progression id. */
+  initialId?: string;
+  /** Seed the playback key. */
+  initialKey?: string;
+  /** Seed the tempo. */
+  initialBpm?: number;
+  /**
+   * When true (default), selections are mirrored to the URL for deep linking.
+   * Set false when embedding (e.g. inside the Practice screen) so the player
+   * keeps purely local state.
+   */
+  urlSync?: boolean;
+}
+
+export function ProgressionLibrary({
+  initialFamily = 'jazz',
+  initialId = 'ii-V-I-major',
+  initialKey = 'C',
+  initialBpm = 90,
+  urlSync = true,
+}: ProgressionLibraryProps = {}): JSX.Element {
+  const [
+    { family, progression: selectedId, key: musicKey, bpm, guides: showGuides, instrument },
+    update,
+  ] = useUrlState(
+    {
+      family: initialFamily as ProgressionFamily,
+      progression: initialId,
+      key: initialKey,
+      bpm: initialBpm,
+      guides: false as boolean,
+      instrument: 'guitar' as 'guitar' | 'piano',
+    },
+    urlSync,
+  );
+  const setFamily = (f: ProgressionFamily) => update({ family: f });
+  const setSelectedId = (id: string) => update({ progression: id });
+  const setMusicKey = (k: string) => update({ key: k });
+  const setBpm = (b: number) => update({ bpm: b });
+  const setShowGuides = (g: boolean) => update({ guides: g });
+  const setInstrument = (i: 'guitar' | 'piano') => update({ instrument: i });
   const [loop, setLoop] = useState(false);
   const [cycleKeys, setCycleKeys] = useState(false);
-  const [showGuides, setShowGuides] = useState(false);
   const [playingStep, setPlayingStep] = useState<number | null>(null);
   const handleRef = useRef<PlaybackHandle | null>(null);
   const keyRef = useRef(musicKey);
@@ -111,7 +153,7 @@ export function ProgressionLibrary(): JSX.Element {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-[320px_minmax(0,1fr)] gap-6">
         {/* Progression list */}
         <div className="space-y-1.5 lg:max-h-[70vh] lg:overflow-y-auto lg:pr-2">
           {progressions.map(p => (
@@ -139,7 +181,7 @@ export function ProgressionLibrary(): JSX.Element {
 
         {/* Detail + player */}
         {selected && (
-          <div className="space-y-4">
+          <div className="space-y-4 min-w-0">
             <div>
               <h2 className="text-2xl font-semibold" style={{ fontFamily: 'var(--font-display)' }}>
                 {selected.name}
@@ -173,6 +215,9 @@ export function ProgressionLibrary(): JSX.Element {
                 />
                 <span className="text-xs font-mono w-14">{bpm} bpm</span>
               </div>
+              <div className="-mb-4">
+                <InstrumentToggle instrument={instrument} onChange={setInstrument} />
+              </div>
             </div>
 
             {/* Chord cards */}
@@ -181,10 +226,14 @@ export function ProgressionLibrary(): JSX.Element {
                 const guides = showGuides ? guideTones(c.symbol) : null;
                 const next = showGuides ? resolved[i + 1] : undefined;
                 const nextGuides = next ? guideTones(next.symbol) : null;
+                // Simplify theoretical enharmonics for display (Bbbmaj7 → Amaj7)
+                const simpleRoot = Note.simplify(c.root) || c.root;
+                const simpleSymbol = simpleRoot + c.symbol.slice(c.root.length);
+                const simpleNotes = c.notes.map(n => Note.simplify(n) || n);
                 return (
                   <div
                     key={`${c.symbol}-${i}`}
-                    className={`min-w-[120px] snap-start rounded-xl border-2 p-3 text-center transition-colors ${
+                    className={`min-w-[150px] snap-start rounded-xl border-2 p-3 text-center transition-colors ${
                       playingStep === i
                         ? 'border-[var(--accent-color)] bg-[var(--accent-light)]'
                         : 'border-[var(--border-subtle)] bg-card'
@@ -192,11 +241,22 @@ export function ProgressionLibrary(): JSX.Element {
                   >
                     <p className="font-mono text-[10px] text-muted-foreground uppercase">{c.numeral}</p>
                     <p className="text-xl font-semibold" style={{ fontFamily: 'var(--font-display)' }}>
-                      {c.symbol}
+                      {simpleSymbol}
                     </p>
                     <p className="text-[10px] font-mono text-muted-foreground mt-1">
-                      {c.notes.join(' ')}
+                      {simpleNotes.join(' ')}
                     </p>
+                    {/* Guitar/piano diagram — same source as Matrix & Circle of Fifths,
+                        generated from pitch classes / MIDI when not in the library. */}
+                    <div className="my-2 flex flex-col items-center">
+                      <ChordDiagramView
+                        chordName={simpleSymbol}
+                        instrument={instrument}
+                        notes={simpleNotes}
+                        root={simpleRoot}
+                        midis={c.midis}
+                      />
+                    </div>
                     <p className="text-[9px] text-muted-foreground">
                       {selected.steps[i]?.bars ?? 1} bar{(selected.steps[i]?.bars ?? 1) > 1 ? 's' : ''}
                     </p>

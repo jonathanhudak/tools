@@ -5,6 +5,7 @@ import { ArrowLeft } from 'lucide-react'
 
 export const Route = createFileRoute('/chord-quiz')({
   component: ChordQuizPage,
+  validateSearch: (search: Record<string, unknown>) => search,
 })
 
 function ChordQuizPage() {

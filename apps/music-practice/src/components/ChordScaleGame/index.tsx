@@ -16,14 +16,19 @@ import { motion } from 'framer-motion';
 import { DegreeQuiz } from './DegreeQuiz';
 import { ChordSourcesQuiz } from './ChordSourcesQuiz';
 import { ScaleReference } from '../ScaleReference/ScaleReference';
+import { useUrlState } from '@/hooks/use-url-state';
 
 type GameMode = 'degreeQuiz' | 'chordSources' | 'reference';
 type Difficulty = 'major' | 'majorMinor' | 'allScales';
 
 export function ChordScaleGame(): JSX.Element {
   const [gameStarted, setGameStarted] = useState(false);
-  const [gameMode, setGameMode] = useState<GameMode>('degreeQuiz');
-  const [difficulty, setDifficulty] = useState<Difficulty>('major');
+  const [{ mode: gameMode, difficulty }, update] = useUrlState({
+    mode: 'degreeQuiz' as GameMode,
+    difficulty: 'major' as Difficulty,
+  });
+  const setGameMode = (mode: GameMode) => update({ mode });
+  const setDifficulty = (d: Difficulty) => update({ difficulty: d });
 
   if (!gameStarted) {
     return (

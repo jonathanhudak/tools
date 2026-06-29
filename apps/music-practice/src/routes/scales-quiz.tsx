@@ -6,22 +6,24 @@
  *  - Practice: quiz game
  */
 
-import { useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import { Button } from '@hudak/ui/components/button';
 import { ArrowLeft, BookOpen, Zap } from 'lucide-react';
 import { ScaleReference } from '../components/ScaleReference/ScaleReference';
 import { ScalesModesQuiz } from '../components/ChordScaleGame/ScalesModesQuiz';
+import { useUrlState } from '../hooks/use-url-state';
 
 export const Route = createFileRoute('/scales-quiz')({
   component: ScalesQuizRoute,
+  validateSearch: (search: Record<string, unknown>) => search,
 });
 
 type Tab = 'reference' | 'practice';
 
 function ScalesQuizRoute() {
   const navigate = Route.useNavigate();
-  const [activeTab, setActiveTab] = useState<Tab>('reference');
+  const [{ tab: activeTab }, update] = useUrlState({ tab: 'reference' as Tab });
+  const setActiveTab = (tab: Tab) => update({ tab });
 
   return (
     <div className="min-h-screen bg-background">

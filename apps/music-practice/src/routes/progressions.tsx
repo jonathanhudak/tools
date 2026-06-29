@@ -8,6 +8,7 @@ import { ProgressionLibrary } from '../components/Progressions/ProgressionLibrar
 
 export const Route = createFileRoute('/progressions')({
   component: ProgressionsRoute,
+  validateSearch: (search: Record<string, unknown>) => search,
 });
 
 function ProgressionsRoute() {
