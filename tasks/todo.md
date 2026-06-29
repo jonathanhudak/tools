@@ -1,9 +1,14 @@
 # Task Tracking
 
 ## Current Tasks
-(roadmap complete — next candidates: derive chord-library from chord-types, pre-existing lint debt (~47 no-explicit-any in legacy lib), bottom tab bar on mobile, print stylesheet)
+(roadmap + follow-ups complete — remaining candidate: derive chord-library piano voicings from chord-types + enharmonics, a larger data migration best done as its own effort)
 
 ## Completed Tasks
+### Follow-ups (completed 2026-06-11)
+- [x] Mobile bottom tab bar (Home/Scales/Chords/Practice/Play) with safe-area padding
+- [x] Print stylesheet — reference pages print as cheat sheets, light palette forced from dark mode
+- [x] ESLint zeroed (45 errors + 27 warnings → 0): legacy window globals removed, typed casts, VexFlow boundary down to one documented alias, console noise removed; fixed a real stale-closure bug in scale-seeded sight reading; lint added to the release CI gate
+
 ### Phases 1–4 — Full audit roadmap (completed 2026-06-11)
 - [x] Phase 1: /scale-explorer (62 scales, 9 families, drone, audio), /progressions (35 with playback), Harmonic Major as 5th matrix family, /arpeggios (33 × 10 patterns), avoid-note overlays (11 entries), /intervals (reference + visual/ear quizzes)
 - [x] Phase 2: improv prompt generator with lockable axes, tonic drone, all-12-keys circle-of-fifths cycling in the progression player

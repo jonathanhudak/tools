@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src --ext ts,tsx"
+    "lint": "eslint src --ext ts,tsx",
+    "deploy": "vite build --base / --outDir dist --emptyOutDir && aws s3 sync dist/ s3://tuner-music-hudak-land/ --delete && aws cloudfront create-invalidation --distribution-id EUPW7X8R2DMQ3 --paths '/*'"
   },
   "keywords": [],
   "author": "Jonathan Hudak",

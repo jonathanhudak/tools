@@ -120,8 +120,8 @@ export function CircleOfFifths() {
   }, []);
 
   const handleKeyClick = useCallback((key: string) => {
-    setSelectedKey(key);
-  }, []);
+    update({ key });
+  }, [update]);
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">

@@ -84,7 +84,7 @@ export function ChordScaleGame(): JSX.Element {
                       <div className="text-left">
                         <div className="text-sm font-medium">Degree Quiz</div>
                         <div className="text-xs text-muted-foreground">
-                          Quick-fire questions: "What chord is on degree 4 of Melodic Minor?"
+                          Quick-fire questions: &ldquo;What chord is on degree 4 of Melodic Minor?&rdquo;
                         </div>
                       </div>
                       {gameMode === 'degreeQuiz' && (
@@ -178,7 +178,7 @@ export function ChordScaleGame(): JSX.Element {
 
               {/* Info */}
               <div className="text-center text-sm text-muted-foreground">
-                <p>Based on Jeff Schneider's "Last Chord Scale Charts" system</p>
+                <p>Based on Jeff Schneider&apos;s &ldquo;Last Chord Scale Charts&rdquo; system</p>
               </div>
             </CardContent>
           </Card>

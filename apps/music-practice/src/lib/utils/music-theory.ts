@@ -456,7 +456,3 @@ export const MusicTheory = {
     getAllTabPositions
 };
 
-// Make available globally for legacy code
-if (typeof window !== 'undefined') {
-    (window as any).MusicTheory = MusicTheory;
-}

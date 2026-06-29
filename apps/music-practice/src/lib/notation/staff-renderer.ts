@@ -8,7 +8,7 @@ import { MusicTheory } from '../utils/music-theory';
 // Window.Vex augmentation; the global `Vex` itself is declared in src/vexflow.d.ts
 declare global {
     interface Window {
-        Vex: any;
+        Vex: VexFlowAPI;
     }
 }
 
@@ -21,8 +21,8 @@ interface RenderOptions {
 
 export class StaffRenderer {
     private container: HTMLElement | null;
-    private renderer: any = null;
-    private context: any = null;
+    private renderer: VexFlowAPI = null;
+    private context: VexFlowAPI = null;
     private currentNote: string | null = null;
     private clef: ClefType = 'treble';
     /**
@@ -497,7 +497,3 @@ export class StaffRenderer {
     }
 }
 
-// Make available globally
-if (typeof window !== 'undefined') {
-    (window as any).StaffRenderer = StaffRenderer;
-}

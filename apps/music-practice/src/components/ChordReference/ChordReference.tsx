@@ -120,9 +120,6 @@ export function ChordReference({ onStartQuiz }: ChordReferenceProps): JSX.Elemen
     instrument: 'guitar' as Instrument,
     voicing: 0,
   });
-  const setSelectedRoot = (root: string) => update({ root });
-  const setSelectedQuality = (quality: string) => update({ quality });
-  const setSelectedInstrument = (instrument: Instrument) => update({ instrument });
   const setSelectedVoicing = (voicing: number) => update({ voicing });
 
   // Qualities available for the selected root, in canonical order
@@ -132,7 +129,7 @@ export function ChordReference({ onStartQuiz }: ChordReferenceProps): JSX.Elemen
     const available = new Set(rootMap.keys());
     // Also include slash chords and other qualities not in the ordered list
     const ordered = QUALITY_ORDER.filter(q => available.has(q));
-    const extras = [...available].filter(q => !QUALITY_ORDER.includes(q as any)).sort();
+    const extras = [...available].filter(q => !(QUALITY_ORDER as readonly string[]).includes(q)).sort();
     return [...ordered, ...extras];
   }, [selectedRoot]);
 
@@ -151,19 +148,16 @@ export function ChordReference({ onStartQuiz }: ChordReferenceProps): JSX.Elemen
   const currentVoicing = selectedChord?.voicings[selectedVoicing];
 
   const handleRootChange = useCallback((root: string) => {
-    setSelectedRoot(root);
-    setSelectedVoicing(0);
-  }, []);
+    update({ root, voicing: 0 });
+  }, [update]);
 
   const handleQualityChange = useCallback((quality: string) => {
-    setSelectedQuality(quality);
-    setSelectedVoicing(0);
-  }, []);
+    update({ quality, voicing: 0 });
+  }, [update]);
 
   const handleInstrumentChange = useCallback((instrument: Instrument) => {
-    setSelectedInstrument(instrument);
-    setSelectedVoicing(0);
-  }, []);
+    update({ instrument, voicing: 0 });
+  }, [update]);
 
   // Count chords per root for the indicator
   const rootCounts = useMemo(() => {

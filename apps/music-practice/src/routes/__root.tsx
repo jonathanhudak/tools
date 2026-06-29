@@ -2,6 +2,7 @@ import { createRootRoute, Outlet, useNavigate } from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/router-devtools';
 import { Toaster } from 'sonner';
 import { AppHeader } from '../components/app-header';
+import { BottomTabBar } from '../components/bottom-tab-bar';
 import { ThemeProvider } from '../hooks/use-theme';
 import { useEffect, useRef } from 'react';
 
@@ -20,7 +21,9 @@ const RootLayout = () => {
     if (redirectRoute && redirectRoute !== '/') {
       redirectProcessedRef.current = true;
       // Navigate to the redirect route (e.g., /chord-quiz)
-      navigate({ to: redirectRoute as any });
+      // Redirect paths come from our own 404.html fallback; the router
+      // validates unknown paths at runtime.
+      navigate({ to: redirectRoute as never });
     }
   }, [navigate]);
 
@@ -28,9 +31,11 @@ const RootLayout = () => {
     <ThemeProvider>
       <div className="flex flex-col h-screen">
         <AppHeader />
-        <main className="flex-1">
+        {/* pb keeps content clear of the mobile bottom tab bar */}
+        <main className="flex-1 pb-16 sm:pb-0">
           <Outlet />
         </main>
+        <BottomTabBar />
         <Toaster position="top-right" richColors />
         <TanStackRouterDevtools />
       </div>
