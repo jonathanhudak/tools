@@ -6,6 +6,7 @@
 
 import { Note } from 'tonal';
 import { motion } from 'framer-motion';
+import { assignAscendingOctaves } from '@/lib/utils/music-theory';
 
 interface PianoScaleDiagramProps {
   notes: string[];
@@ -20,7 +21,15 @@ function isBlackKey(noteIndex: number): boolean {
   return BLACK_KEYS_PATTERN.includes(noteIndex % 12);
 }
 
-export function PianoScaleDiagram({ notes, rootNote, size = 'medium' }: PianoScaleDiagramProps) {
+export function PianoScaleDiagram({ notes: rawNotes, rootNote: rawRoot, size = 'medium' }: PianoScaleDiagramProps) {
+  // Pitch classes carry no octave, so Note.midi() would return null for
+  // every key — assign ascending octaves before placing keys.
+  const notes = assignAscendingOctaves(rawNotes);
+  const rootPc = rawRoot ? Note.get(rawRoot).pc : null;
+  const rootNote = rawRoot && /\d/.test(rawRoot)
+    ? rawRoot
+    : notes.find(n => Note.get(n).pc === rootPc) ?? rawRoot;
+
   const midiNumbers = notes.map(n => Note.midi(n)).filter((m): m is number => m !== null);
   const rootMidi = rootNote ? Note.midi(rootNote) : null;
 

@@ -34,6 +34,27 @@ export interface KeySignature {
 
 export type ClefType = 'treble' | 'bass';
 
+const OCTAVE_LETTERS = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+
+/**
+ * Assign ascending octaves (from startOctave) to a run of pitch classes.
+ * Octaves increment on letter wrap (B→C), not chroma, so enharmonics like
+ * Cb land in the right written octave. Notes that already carry an octave
+ * pass through unchanged.
+ */
+export function assignAscendingOctaves(notes: string[], startOctave = 4): string[] {
+    if (notes.every(n => /\d/.test(n))) return notes;
+    let octave = startOctave;
+    let prevIdx = -1;
+    return notes.map(n => {
+        if (/\d/.test(n)) return n;
+        const idx = OCTAVE_LETTERS.indexOf(n.charAt(0).toUpperCase());
+        if (prevIdx !== -1 && idx < prevIdx) octave++;
+        prevIdx = idx;
+        return `${n}${octave}`;
+    });
+}
+
 // Note names and their MIDI numbers (C4 = Middle C = 60)
 // Chromatic note names, delegated to the enharmonic engine (sharps spelling).
 // For key-aware spelling (Db major shows Db, not C#) use resolveForKey/

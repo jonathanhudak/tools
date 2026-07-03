@@ -5,8 +5,8 @@
  */
 
 import { useMemo } from 'react';
-import { Note } from 'tonal';
 import type { ScaleDefinition } from '@/data/scales/scale-registry';
+import { assignAscendingOctaves } from '@/lib/utils/music-theory';
 import { resolveForScale } from '@/data/enharmonics';
 import { StaffDisplay } from '../notation/StaffDisplay';
 import { PianoScaleDiagram } from '../ScaleReference/PianoScaleDiagram';
@@ -18,23 +18,10 @@ interface ScaleDetailPanelProps {
   showStaff?: boolean;
 }
 
-const LETTERS = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
-
-/**
- * Assign ascending octaves (from 4) to pitch classes, closing with the top
- * root. Octaves increment on letter wrap (B→C), not chroma, so enharmonics
- * like Cb land in the right written octave.
- */
+/** Ascending octave-assigned scale notes, closing with the top root. */
 function toStaffNotes(notes: string[]): string[] {
-  let octave = 4;
-  let prevIdx = -1;
-  const staffNotes = notes.map(n => {
-    const idx = LETTERS.indexOf(Note.get(n).letter);
-    if (prevIdx !== -1 && idx < prevIdx) octave++;
-    prevIdx = idx;
-    return `${n}${octave}`;
-  });
-  if (notes.length > 0) {
+  const staffNotes = assignAscendingOctaves(notes);
+  if (staffNotes.length > 0) {
     const firstOctave = Number(staffNotes[0].match(/\d+$/)?.[0] ?? 4);
     staffNotes.push(`${notes[0]}${firstOctave + 1}`);
   }

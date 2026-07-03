@@ -197,6 +197,7 @@ export class StaffRenderer {
             const svg = this.container?.querySelector('svg');
             if (svg) {
                 this.applyThemeToSVG(svg);
+                this.makeResponsive(svg);
             }
 
             // Apply highlight if specified
@@ -213,6 +214,18 @@ export class StaffRenderer {
     /**
      * Convert standard note name (e.g. "C4", "Eb5", "F#4") to VexFlow format ("c/4", "eb/5", "f#/4")
      */
+    /** Scale the fixed-size VexFlow SVG down responsively inside narrow containers. */
+    private makeResponsive(svg: SVGElement): void {
+        const width = Number(svg.getAttribute('width')) || 700;
+        const height = Number(svg.getAttribute('height')) || 200;
+        if (!svg.getAttribute('viewBox')) svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+        svg.setAttribute('width', '100%');
+        svg.removeAttribute('height');
+        svg.style.maxWidth = `${width}px`;
+        svg.style.height = 'auto';
+        svg.style.display = 'block';
+    }
+
     /** Accidental glyph for a VexFlow key ("bb/4" → "b", "b/4" → null, "f##/5" → "##"). */
     private accidentalOf(vexflowNote: string): string | null {
         const match = vexflowNote.match(/^[a-g](#{1,2}|b{1,2})\//);
@@ -281,7 +294,10 @@ export class StaffRenderer {
 
             // Apply theme styling
             const svg = this.container?.querySelector('svg');
-            if (svg) this.applyThemeToSVG(svg);
+            if (svg) {
+                this.applyThemeToSVG(svg);
+                this.makeResponsive(svg);
+            }
 
         } catch (error) {
             console.error('Failed to render chord on staff:', error);
@@ -352,6 +368,7 @@ export class StaffRenderer {
             const svg = this.container?.querySelector('svg');
             if (svg) {
                 this.applyThemeToSVG(svg);
+                this.makeResponsive(svg);
             }
 
         } catch (error) {

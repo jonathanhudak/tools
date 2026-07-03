@@ -188,8 +188,8 @@ export function ScaleReference(): JSX.Element {
           </div>
         </div>
 
-        {/* ── Piano + Staff side by side ─────────────── */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* ── Piano + Staff stacked (side-by-side clips the staff) ── */}
+        <div className="grid grid-cols-1 gap-6">
           <div>
             <h4 className="text-xs font-semibold text-[var(--ink-secondary)] uppercase tracking-wider mb-2">
               Piano
