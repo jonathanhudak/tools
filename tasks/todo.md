@@ -1,7 +1,15 @@
 # Task Tracking
 
-## Current Tasks
-(roadmap + follow-ups complete — remaining candidate: derive chord-library piano voicings from chord-types + enharmonics, a larger data migration best done as its own effort)
+## Current Tasks — 2026-07-02 goal: assess features, grow libraries, refine UX
+- [x] Assess latest features for completeness/accuracy (app map + UX audit complete; data audit agent pending — findings folded into spec backlog)
+- [x] Grow progressions library: 33 → 50 (modal family was EMPTY in UI — added 8; jazz +3, blues +1, pop +3, classical +2); wired 16 harmonic sequences into /progressions; wired altered-dominant chord→scale mappings into /chord-scale
+- [x] Fix accuracy errors: resolveForScale double-accidental bug (F# Hirajoshi = G# A B## C##), staff renderer flatting every B natural, piano scale diagram never rendering (pitch classes have no MIDI), module-id mismatch hollowing the journal
+- [x] User request: practice tab renders dealt scale + progression with full reference UX (ScaleDetailPanel + ProgressionPlayer shared components, staff/piano/fretboard/voicing diagrams)
+- [x] UX quick wins: sessions recorded from all quizzes (journal/streaks/weakness-weighting live), keyboard answering/grading, scale-explorer deep links, ear-training score no longer wiped on mode switch, ⠿ glyph → Layers icon, landing stagger capped, dead code removed (/about, ScaleLearningHub, onBack plumbing)
+- [x] Spec bigger work → apps/music-practice/docs/plans/2026-07-02-library-growth-and-ux-spec.md
+- [x] Verify: typecheck 0 errors, 1606 unit tests green, lint clean, browser-verified (practice, progressions, scale-explorer, chord-scale)
+- [x] Data-audit round: 12 semantic duplicate chords removed (-7/-7th twins; matrix retargeted; invariant test added), getChordByShortName difficulty-ranked, algerian scale de-duplicated (traditional 8-note form), add11 formula fixed to compound 11th, extended chord-scale map 14→18, stale comments fixed. Audit verified all chord/scale/matrix formulas theory-correct. Removed my dominant-turnaround addition (duplicated existing montgomery-ward) → registry at 49.
+- [x] Verify round 2: typecheck 0, 1574 tests green, lint clean, build green, browser: Dm7 chord tap now resolves to basic "D Minor 7th" not jazz shell
 
 ## Completed Tasks
 ### Follow-ups (completed 2026-06-11)

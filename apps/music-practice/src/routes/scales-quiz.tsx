@@ -68,7 +68,7 @@ function ScalesQuizRoute() {
 
         {/* Tab content */}
         {activeTab === 'reference' && (
-          <ScaleReference onBack={() => navigate({ to: '/' })} />
+          <ScaleReference />
         )}
         {activeTab === 'practice' && <ScalesModesQuiz />}
       </div>

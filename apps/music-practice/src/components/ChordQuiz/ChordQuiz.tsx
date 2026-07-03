@@ -23,6 +23,7 @@ import { ResultsSummary } from './ResultsSummary';
 import { Progress } from '@hudak/ui/components/progress';
 import { motion } from 'framer-motion';
 import { Volume2 } from 'lucide-react';
+import { Storage } from '@/lib/utils/storage';
 
 interface ChordQuizProps {
   mode: QuizMode;
@@ -72,6 +73,17 @@ export function ChordQuiz({ mode, difficulty, questionCount = 10, onBack }: Chor
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, [answered, mode, quizState.isComplete, handleAnswer]);
+
+  // Record the finished round in the practice journal (once per completion)
+  useEffect(() => {
+    if (!quizState.isComplete) return;
+    const stats = calculateStats(quizState);
+    Storage.saveSession({
+      module: 'chord-quiz',
+      correct: stats.correct,
+      incorrect: stats.incorrect,
+    });
+  }, [quizState]);
 
   if (quizState.isComplete) {
     const stats = calculateStats(quizState);

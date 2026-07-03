@@ -5,7 +5,7 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { Badge } from '@hudak/ui/components/badge';
 import { Button } from '@hudak/ui/components/button';
 import { Input } from '@hudak/ui/components/input';
@@ -17,11 +17,9 @@ import {
   type ScaleDefinition,
   type ScaleFamily,
 } from '@/data/scales/scale-registry';
-import { resolveForScale } from '@/data/enharmonics';
 import { Note } from 'tonal';
 import { playMelody, Drone, type PlaybackHandle } from '@/lib/audio/player';
-import { PianoScaleDiagram } from '../ScaleReference/PianoScaleDiagram';
-import { GuitarFretboard } from '../GuitarFretboard';
+import { ScaleDetailPanel } from '../shared/ScaleDetailPanel';
 
 const KEYS = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
 
@@ -37,14 +35,32 @@ const FAMILY_LABELS: Record<ScaleFamily, string> = {
   world: 'World',
 };
 
-export function ScaleExplorer(): JSX.Element {
-  const [family, setFamily] = useState<ScaleFamily | 'all'>('diatonic');
+interface ScaleExplorerProps {
+  initialScaleId?: string;
+  initialRoot?: string;
+}
+
+export function ScaleExplorer({ initialScaleId, initialRoot }: ScaleExplorerProps): JSX.Element {
+  const initialScale = initialScaleId
+    ? SCALE_REGISTRY.find(s => s.id === initialScaleId)
+    : undefined;
+  const [family, setFamily] = useState<ScaleFamily | 'all'>(initialScale?.family ?? 'diatonic');
   const [query, setQuery] = useState('');
-  const [selectedId, setSelectedId] = useState('ionian');
-  const [root, setRoot] = useState('C');
+  const [selectedId, setSelectedId] = useState(initialScale?.id ?? 'ionian');
+  const [root, setRoot] = useState(initialRoot && KEYS.includes(initialRoot) ? initialRoot : 'C');
   const [droneOn, setDroneOn] = useState(false);
   const playHandle = useRef<PlaybackHandle | null>(null);
   const drone = useRef<Drone | null>(null);
+  const navigate = useNavigate();
+
+  // Keep selection in the URL so views are deep-linkable and survive refresh
+  useEffect(() => {
+    navigate({
+      to: '/scale-explorer',
+      search: { scale: selectedId, root } as never,
+      replace: true,
+    });
+  }, [selectedId, root, navigate]);
 
   const families = useMemo(() => getAllScaleFamilies(), []);
   const scales = useMemo(() => {
@@ -55,11 +71,6 @@ export function ScaleExplorer(): JSX.Element {
   const scale: ScaleDefinition | undefined = useMemo(
     () => SCALE_REGISTRY.find(s => s.id === selectedId) ?? scales[0],
     [selectedId, scales],
-  );
-
-  const notes = useMemo(
-    () => (scale ? resolveForScale(scale.semitones, scale.name, root) : []),
-    [scale, root],
   );
 
   const rootMidi = useMemo(() => Note.midi(`${root}3`) ?? 48, [root]);
@@ -166,25 +177,6 @@ export function ScaleExplorer(): JSX.Element {
               <p className="text-sm text-muted-foreground mt-2">{scale.description}</p>
             </div>
 
-            {/* Notes + step pattern */}
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-              <div className="flex gap-1">
-                {notes.map((n, i) => (
-                  <span
-                    key={i}
-                    className={`font-mono text-sm px-2 py-1 rounded ${
-                      i === 0
-                        ? 'bg-[var(--accent-color)] text-white font-semibold'
-                        : 'bg-muted text-foreground'
-                    }`}
-                  >
-                    {n}
-                  </span>
-                ))}
-              </div>
-              <span className="font-mono text-xs text-muted-foreground">{scale.stepPattern}</span>
-            </div>
-
             {/* Key selector */}
             <div className="flex flex-wrap gap-1">
               {KEYS.map(k => (
@@ -223,11 +215,8 @@ export function ScaleExplorer(): JSX.Element {
               </Button>
             </div>
 
-            {/* Diagrams */}
-            <div className="space-y-4">
-              <PianoScaleDiagram notes={notes} rootNote={root} size="medium" />
-              <GuitarFretboard notes={notes} root={root} compact label={`${root} ${scale.name}`} />
-            </div>
+            {/* Notes, staff notation + diagrams */}
+            <ScaleDetailPanel scale={scale} root={root} />
 
             {scale.tags.length > 0 && (
               <div className="flex flex-wrap gap-1">

@@ -32,6 +32,17 @@ describe('chord library integrity', () => {
     expect(dupes).toEqual([]);
   });
 
+  it('has no semantic duplicates under ordinal naming ("7" vs "7th")', () => {
+    // Two generations of data used "C Major 7" and "C Major 7th" for the same
+    // chord — normalize ordinal suffixes before checking uniqueness.
+    const keys = CHORD_LIBRARY.map(
+      c => `${c.root}|${c.name.toLowerCase().replace(/\b(\d+)(st|nd|rd|th)\b/g, '$1')}`,
+    );
+    const seen = new Set<string>();
+    const dupes = keys.filter(k => (seen.has(k) ? true : (seen.add(k), false)));
+    expect(dupes).toEqual([]);
+  });
+
   it('resolves every chordId referenced by the chord-scale matrix', () => {
     const dangling = CHORD_SCALE_MATRIX.filter(e => e.chordId && !getChordById(e.chordId)).map(
       e => `${e.scaleType} degree ${e.degree} -> ${e.chordId}`,

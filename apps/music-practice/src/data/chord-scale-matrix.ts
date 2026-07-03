@@ -2,7 +2,7 @@
  * Chord-Scale Matrix Data Model
  * Based on Jeff Schneider's "Last Chord Scale Charts" system
  *
- * This module contains the complete 28-entry chord-scale matrix
+ * This module contains the complete 35-entry chord-scale matrix
  * (7 degrees × 4 scale types) that maps chord qualities to their
  * parent scales and modes.
  */
@@ -34,10 +34,10 @@ export interface ChordScaleEntry {
 }
 
 /**
- * The complete chord-scale matrix (28 entries total)
+ * The complete chord-scale matrix (35 entries total)
  *
  * This is the foundation of the Jeff Schneider system:
- * - 4 scale families (Major, Natural Minor, Melodic Minor, Harmonic Minor)
+ * - 5 scale families (Major, Natural Minor, Melodic Minor, Harmonic Minor)
  * - 7 degrees per scale
  * - Each degree has a specific chord quality and mode
  */
@@ -49,7 +49,7 @@ export const CHORD_SCALE_MATRIX: ChordScaleEntry[] = [
     chordQuality: "Maj7",
     modeName: "Ionian",
     romanNumeral: "IMaj7",
-    chordId: "c-major-7",
+    chordId: "c-major-7th",
     voicingIndex: 0
   },
   {
@@ -58,7 +58,7 @@ export const CHORD_SCALE_MATRIX: ChordScaleEntry[] = [
     chordQuality: "m7",
     modeName: "Dorian",
     romanNumeral: "iim7",
-    chordId: "d-minor-7",
+    chordId: "d-minor-7th",
     voicingIndex: 0
   },
   {
@@ -67,7 +67,7 @@ export const CHORD_SCALE_MATRIX: ChordScaleEntry[] = [
     chordQuality: "m7",
     modeName: "Phrygian",
     romanNumeral: "iiim7",
-    chordId: "e-minor-7",
+    chordId: "e-minor-7th",
     voicingIndex: 0
   },
   {
@@ -85,7 +85,7 @@ export const CHORD_SCALE_MATRIX: ChordScaleEntry[] = [
     chordQuality: "7",
     modeName: "Mixolydian",
     romanNumeral: "V7",
-    chordId: "g-dominant-7",
+    chordId: "g-dominant-7th",
     voicingIndex: 0
   },
   {
@@ -94,7 +94,7 @@ export const CHORD_SCALE_MATRIX: ChordScaleEntry[] = [
     chordQuality: "m7",
     modeName: "Aeolian",
     romanNumeral: "vim7",
-    chordId: "a-minor-7",
+    chordId: "a-minor-7th",
     voicingIndex: 0
   },
   {
@@ -114,7 +114,7 @@ export const CHORD_SCALE_MATRIX: ChordScaleEntry[] = [
     chordQuality: "m7",
     modeName: "Aeolian",
     romanNumeral: "im7",
-    chordId: "a-minor-7",
+    chordId: "a-minor-7th",
     voicingIndex: 0
   },
   {
@@ -132,7 +132,7 @@ export const CHORD_SCALE_MATRIX: ChordScaleEntry[] = [
     chordQuality: "Maj7",
     modeName: "Ionian",
     romanNumeral: "bIIIMaj7",
-    chordId: "c-major-7",
+    chordId: "c-major-7th",
     voicingIndex: 0
   },
   {
@@ -141,7 +141,7 @@ export const CHORD_SCALE_MATRIX: ChordScaleEntry[] = [
     chordQuality: "m7",
     modeName: "Dorian",
     romanNumeral: "ivm7",
-    chordId: "d-minor-7",
+    chordId: "d-minor-7th",
     voicingIndex: 0
   },
   {
@@ -150,7 +150,7 @@ export const CHORD_SCALE_MATRIX: ChordScaleEntry[] = [
     chordQuality: "m7",
     modeName: "Phrygian",
     romanNumeral: "vm7",
-    chordId: "e-minor-7",
+    chordId: "e-minor-7th",
     voicingIndex: 0
   },
   {
@@ -168,7 +168,7 @@ export const CHORD_SCALE_MATRIX: ChordScaleEntry[] = [
     chordQuality: "7",
     modeName: "Mixolydian",
     romanNumeral: "bVII7",
-    chordId: "g-dominant-7",
+    chordId: "g-dominant-7th",
     voicingIndex: 0
   },
 
@@ -206,7 +206,7 @@ export const CHORD_SCALE_MATRIX: ChordScaleEntry[] = [
     chordQuality: "7",
     modeName: "Lydian Dominant",
     romanNumeral: "IV7",
-    chordId: "d-dominant-7",
+    chordId: "d-dominant-7th",
     voicingIndex: 0
   },
   {
@@ -215,7 +215,7 @@ export const CHORD_SCALE_MATRIX: ChordScaleEntry[] = [
     chordQuality: "7",
     modeName: "Mixolydian b6",
     romanNumeral: "V7",
-    chordId: "e-dominant-7",
+    chordId: "e-dominant-7th",
     voicingIndex: 0
   },
   {
@@ -272,7 +272,7 @@ export const CHORD_SCALE_MATRIX: ChordScaleEntry[] = [
     chordQuality: "m7",
     modeName: "Dorian #4",
     romanNumeral: "ivm7",
-    chordId: "d-minor-7",
+    chordId: "d-minor-7th",
     voicingIndex: 0
   },
   {
@@ -281,7 +281,7 @@ export const CHORD_SCALE_MATRIX: ChordScaleEntry[] = [
     chordQuality: "7",
     modeName: "Phrygian Dominant",
     romanNumeral: "V7",
-    chordId: "e-dominant-7",
+    chordId: "e-dominant-7th",
     voicingIndex: 0
   },
   {

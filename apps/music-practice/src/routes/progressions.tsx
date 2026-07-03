@@ -4,6 +4,7 @@
  */
 
 import { createFileRoute } from '@tanstack/react-router';
+import { PROGRESSION_REGISTRY } from '../data/progressions/progression-registry';
 import { ProgressionLibrary } from '../components/Progressions/ProgressionLibrary';
 
 export const Route = createFileRoute('/progressions')({
@@ -22,7 +23,7 @@ function ProgressionsRoute() {
             Chord Progressions
           </h1>
           <p className="text-[var(--ink-secondary)] text-sm">
-            35 progressions across jazz, blues, pop, classical, and modal — play them in any key,
+            {PROGRESSION_REGISTRY.length} progressions across jazz, blues, pop, classical, and modal — play them in any key,
             loop them, or cycle through all 12 keys.
           </p>
         </div>

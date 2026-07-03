@@ -865,11 +865,11 @@ const worldScales: ScaleDefinition[] = [
     name: 'Algerian',
     aliases: [],
     family: 'world',
-    semitones: [0, 2, 3, 6, 7, 8, 11],
-    stepPattern: 'W-H-3H-H-H-3H-H',
-    noteCount: 7,
-    description: 'North African scale similar to Hungarian/Double Harmonic minor. Passionate and dramatic.',
-    tags: ['exotic', 'north-african', 'algerian', 'dramatic', 'minor'],
+    semitones: [0, 2, 3, 5, 6, 7, 8, 11],
+    stepPattern: 'W-H-W-H-H-H-3H-H',
+    noteCount: 8,
+    description: 'Traditional 8-note North African scale — Double Harmonic Minor with an added perfect 4th passing tone. Passionate and dramatic.',
+    tags: ['exotic', 'north-african', 'algerian', 'dramatic', 'minor', 'octatonic'],
   },
 ];
 

@@ -5,11 +5,21 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { ScaleExplorer } from '../components/ScaleExplorer/ScaleExplorer';
 
+export interface ScaleExplorerSearch {
+  scale?: string;
+  root?: string;
+}
+
 export const Route = createFileRoute('/scale-explorer')({
   component: ScaleExplorerRoute,
+  validateSearch: (search: Record<string, unknown>): ScaleExplorerSearch => ({
+    scale: typeof search.scale === 'string' ? search.scale : undefined,
+    root: typeof search.root === 'string' ? search.root : undefined,
+  }),
 });
 
 function ScaleExplorerRoute() {
+  const { scale, root } = Route.useSearch();
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto py-8 px-4 max-w-6xl">
@@ -25,7 +35,7 @@ function ScaleExplorerRoute() {
             mode of the four parent scales. Hear them, see them, drone over them.
           </p>
         </div>
-        <ScaleExplorer />
+        <ScaleExplorer initialScaleId={scale} initialRoot={root} />
       </div>
     </div>
   );

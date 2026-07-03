@@ -24,7 +24,6 @@ import { Route as CircleOfFifthsRouteImport } from './routes/circle-of-fifths'
 import { Route as ChordScaleRouteImport } from './routes/chord-scale'
 import { Route as ChordQuizRouteImport } from './routes/chord-quiz'
 import { Route as ArpeggiosRouteImport } from './routes/arpeggios'
-import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 
 const StyleguideRoute = StyleguideRouteImport.update({
@@ -102,11 +101,6 @@ const ArpeggiosRoute = ArpeggiosRouteImport.update({
   path: '/arpeggios',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AboutRoute = AboutRouteImport.update({
-  id: '/about',
-  path: '/about',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -115,7 +109,6 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
   '/arpeggios': typeof ArpeggiosRoute
   '/chord-quiz': typeof ChordQuizRoute
   '/chord-scale': typeof ChordScaleRoute
@@ -134,7 +127,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
   '/arpeggios': typeof ArpeggiosRoute
   '/chord-quiz': typeof ChordQuizRoute
   '/chord-scale': typeof ChordScaleRoute
@@ -154,7 +146,6 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
   '/arpeggios': typeof ArpeggiosRoute
   '/chord-quiz': typeof ChordQuizRoute
   '/chord-scale': typeof ChordScaleRoute
@@ -175,7 +166,6 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/about'
     | '/arpeggios'
     | '/chord-quiz'
     | '/chord-scale'
@@ -194,7 +184,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/about'
     | '/arpeggios'
     | '/chord-quiz'
     | '/chord-scale'
@@ -213,7 +202,6 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/about'
     | '/arpeggios'
     | '/chord-quiz'
     | '/chord-scale'
@@ -233,7 +221,6 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AboutRoute: typeof AboutRoute
   ArpeggiosRoute: typeof ArpeggiosRoute
   ChordQuizRoute: typeof ChordQuizRoute
   ChordScaleRoute: typeof ChordScaleRoute
@@ -358,13 +345,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ArpeggiosRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/about': {
-      id: '/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AboutRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -377,7 +357,6 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AboutRoute: AboutRoute,
   ArpeggiosRoute: ArpeggiosRoute,
   ChordQuizRoute: ChordQuizRoute,
   ChordScaleRoute: ChordScaleRoute,

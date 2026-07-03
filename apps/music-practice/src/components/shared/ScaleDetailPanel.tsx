@@ -1,0 +1,83 @@
+/**
+ * ScaleDetailPanel — the full scale reference block: spelled notes, step
+ * pattern, staff notation, piano diagram, and guitar fretboard. Shared by
+ * Scale Explorer and the improv practice prompt.
+ */
+
+import { useMemo } from 'react';
+import { Note } from 'tonal';
+import type { ScaleDefinition } from '@/data/scales/scale-registry';
+import { resolveForScale } from '@/data/enharmonics';
+import { StaffDisplay } from '../notation/StaffDisplay';
+import { PianoScaleDiagram } from '../ScaleReference/PianoScaleDiagram';
+import { GuitarFretboard } from '../GuitarFretboard';
+
+interface ScaleDetailPanelProps {
+  scale: ScaleDefinition;
+  root: string;
+  showStaff?: boolean;
+}
+
+const LETTERS = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+
+/**
+ * Assign ascending octaves (from 4) to pitch classes, closing with the top
+ * root. Octaves increment on letter wrap (B→C), not chroma, so enharmonics
+ * like Cb land in the right written octave.
+ */
+function toStaffNotes(notes: string[]): string[] {
+  let octave = 4;
+  let prevIdx = -1;
+  const staffNotes = notes.map(n => {
+    const idx = LETTERS.indexOf(Note.get(n).letter);
+    if (prevIdx !== -1 && idx < prevIdx) octave++;
+    prevIdx = idx;
+    return `${n}${octave}`;
+  });
+  if (notes.length > 0) {
+    const firstOctave = Number(staffNotes[0].match(/\d+$/)?.[0] ?? 4);
+    staffNotes.push(`${notes[0]}${firstOctave + 1}`);
+  }
+  return staffNotes;
+}
+
+export function ScaleDetailPanel({ scale, root, showStaff = true }: ScaleDetailPanelProps): JSX.Element {
+  const notes = useMemo(() => resolveForScale(scale.semitones, scale.name, root), [scale, root]);
+  const staffNotes = useMemo(() => toStaffNotes(notes), [notes]);
+
+  return (
+    <div className="space-y-4">
+      {/* Notes + step pattern */}
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+        <div className="flex flex-wrap gap-1">
+          {notes.map((n, i) => (
+            <span
+              key={i}
+              className={`font-mono text-sm px-2 py-1 rounded ${
+                i === 0
+                  ? 'bg-[var(--accent-color)] text-white font-semibold'
+                  : 'bg-muted text-foreground'
+              }`}
+            >
+              {n}
+            </span>
+          ))}
+        </div>
+        <span className="font-mono text-xs text-muted-foreground">{scale.stepPattern}</span>
+      </div>
+
+      {/* Staff notation */}
+      {showStaff && (
+        <div className="rounded-xl border border-[var(--border-subtle)] bg-card p-2 overflow-x-auto">
+          <StaffDisplay notes={staffNotes} clef="treble" />
+        </div>
+      )}
+
+      {/* Diagrams — piano needs octaved notes to place keys */}
+      <div className="space-y-4">
+        <PianoScaleDiagram notes={staffNotes} rootNote={staffNotes[0]} size="medium" />
+        <GuitarFretboard notes={notes} root={root} compact label={`${root} ${scale.name}`} />
+      </div>
+    </div>
+  );
+}

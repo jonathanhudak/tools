@@ -8,14 +8,14 @@ import {
 
 describe('Progression Registry', () => {
   // ── 1. Registry size ──────────────────────────────────────────────────
-  it('has exactly 33 progressions', () => {
-    expect(PROGRESSION_REGISTRY).toHaveLength(33);
+  it('has exactly 49 progressions', () => {
+    expect(PROGRESSION_REGISTRY).toHaveLength(49);
   });
 
-  // ── 2. All 4 families represented ─────────────────────────────────────
-  it('has all 4 families represented', () => {
+  // ── 2. All 5 families represented ─────────────────────────────────────
+  it('has all 5 families represented', () => {
     const families = new Set(PROGRESSION_REGISTRY.map((p) => p.family));
-    expect(families).toEqual(new Set(['jazz', 'blues', 'pop', 'classical']));
+    expect(families).toEqual(new Set(['jazz', 'blues', 'pop', 'classical', 'modal']));
   });
 
   // ── 3. All IDs unique ─────────────────────────────────────────────────

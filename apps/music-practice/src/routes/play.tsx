@@ -436,7 +436,7 @@ function PlayRoute() {
     setShowScoreSummary(true);
     const range = getNoteRange(instrument, difficulty);
     Storage.saveSession({
-      module: 'sightReading',
+      module: 'sight-reading',
       correct: state.correctCount,
       incorrect: state.incorrectCount,
       bestStreak: state.streak,
@@ -764,7 +764,7 @@ function PlayRoute() {
     sessionActiveRef.current = false;
     if (gameMode !== 'timed' && (stats.correct > 0 || stats.incorrect > 0)) {
       Storage.saveSession({
-        module: 'sightReading',
+        module: 'sight-reading',
         instrument,
         clef,
         range: noteRange(),

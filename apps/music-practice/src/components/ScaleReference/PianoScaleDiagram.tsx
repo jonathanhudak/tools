@@ -89,7 +89,8 @@ export function PianoScaleDiagram({ notes, rootNote, size = 'medium' }: PianoSca
           {whiteKeys.map(({ midiNum, x }) => {
             const isHighlighted = midiNumbers.includes(midiNum);
             const isRoot = rootMidi !== null && midiNum === rootMidi;
-            const label = midiToName.get(midiNum) || (NOTE_NAMES[midiNum % 12] + Math.floor(midiNum / 12));
+            const named = midiToName.get(midiNum);
+            const label = named ? Note.get(named).pc || named : NOTE_NAMES[midiNum % 12];
 
             return (
               <g key={`white-${midiNum}`}>
@@ -130,7 +131,8 @@ export function PianoScaleDiagram({ notes, rootNote, size = 'medium' }: PianoSca
             if (nextNoteIndex !== 0 && nextNoteIndex !== 5 && isBlackKey(nextMidi)) {
               const isHighlighted = midiNumbers.includes(nextMidi);
               const isRoot = rootMidi !== null && nextMidi === rootMidi;
-              const label = midiToName.get(nextMidi) || (NOTE_NAMES[nextNoteIndex] + Math.floor(nextMidi / 12));
+              const named = midiToName.get(nextMidi);
+              const label = named ? Note.get(named).pc || named : NOTE_NAMES[nextNoteIndex];
 
               return (
                 <g key={`black-${nextMidi}`}>

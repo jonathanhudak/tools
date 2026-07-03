@@ -174,8 +174,8 @@ export class StaffRenderer {
                 duration: 'w', // Whole note
                 clef: this.clef
             });
-            if (vexflowNote.includes('#')) note.addModifier(new VF.Accidental('#'), 0);
-            else if (/[a-g]b\//.test(vexflowNote)) note.addModifier(new VF.Accidental('b'), 0);
+            const noteAccidental = this.accidentalOf(vexflowNote);
+            if (noteAccidental) note.addModifier(new VF.Accidental(noteAccidental), 0);
 
             // Create a voice and add the note
             const voice = new VF.Voice({
@@ -213,11 +213,17 @@ export class StaffRenderer {
     /**
      * Convert standard note name (e.g. "C4", "Eb5", "F#4") to VexFlow format ("c/4", "eb/5", "f#/4")
      */
+    /** Accidental glyph for a VexFlow key ("bb/4" → "b", "b/4" → null, "f##/5" → "##"). */
+    private accidentalOf(vexflowNote: string): string | null {
+        const match = vexflowNote.match(/^[a-g](#{1,2}|b{1,2})\//);
+        return match ? match[1] : null;
+    }
+
     private toVexflowFormat(note: string): string {
         // Already in VexFlow format (has slash)
         if (note.includes('/')) return note;
-        // Match standard format: note name + octave
-        const match = note.match(/^([A-Ga-g][b#]?)(\d)$/);
+        // Match standard format: note name + octave (single or double accidental)
+        const match = note.match(/^([A-Ga-g](?:bb|##|[b#])?)(\d)$/);
         if (match) {
             return `${match[1].toLowerCase()}/${match[2]}`;
         }
@@ -263,8 +269,8 @@ export class StaffRenderer {
 
             // Add accidentals
             vexNotes.forEach((vn, i) => {
-                if (vn.includes('#')) chordNote.addModifier(new VF.Accidental('#'), i);
-                else if (vn.includes('b')) chordNote.addModifier(new VF.Accidental('b'), i);
+                const accidental = this.accidentalOf(vn);
+                if (accidental) chordNote.addModifier(new VF.Accidental(accidental), i);
             });
 
             const voice = new VF.Voice({ num_beats: 4, beat_value: 4 });
@@ -323,8 +329,8 @@ export class StaffRenderer {
                     duration: 'q',
                     clef: this.clef
                 });
-                if (vn.includes('#')) sn.addModifier(new VF.Accidental('#'), 0);
-                else if (vn.includes('b')) sn.addModifier(new VF.Accidental('b'), 0);
+                const accidental = this.accidentalOf(vn);
+                if (accidental) sn.addModifier(new VF.Accidental(accidental), 0);
                 return sn;
             });
 

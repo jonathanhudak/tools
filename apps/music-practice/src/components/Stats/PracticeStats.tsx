@@ -31,6 +31,8 @@ const MODULE_LABELS: Record<string, string> = {
   'chord-quiz': 'Chords',
   'scales-quiz': 'Scales',
   'chord-scale': 'Chord-Scale',
+  'ear-training': 'Ear Training',
+  intervals: 'Intervals',
 };
 
 export function PracticeStats(): JSX.Element {

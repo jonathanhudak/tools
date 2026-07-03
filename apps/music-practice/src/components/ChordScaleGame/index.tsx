@@ -184,7 +184,7 @@ export function ChordScaleGame(): JSX.Element {
 
   // Reference mode has its own full-page layout
   if (gameMode === 'reference') {
-    return <ScaleReference onBack={() => setGameStarted(false)} />;
+    return <ScaleReference />;
   }
 
   // Game started - render the active game mode

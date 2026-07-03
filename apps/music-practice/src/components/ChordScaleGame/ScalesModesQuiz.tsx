@@ -12,6 +12,7 @@ import { ScaleSelector } from './ScaleSelector';
 import { QuizGame, type QuizResults } from './QuizGame';
 import { ResultsSummary } from './ResultsSummary';
 import { type ScaleType } from '../../data/chord-scale-matrix';
+import { Storage } from '@/lib/utils/storage';
 
 type QuizStage = 'selection' | 'playing' | 'results';
 
@@ -28,6 +29,11 @@ export function ScalesModesQuiz(): JSX.Element {
   const handleQuizComplete = (quizResults: QuizResults): void => {
     setResults(quizResults);
     setStage('results');
+    Storage.saveSession({
+      module: 'scales-quiz',
+      correct: quizResults.correctAnswers,
+      incorrect: quizResults.incorrectAnswers,
+    });
   };
 
   const handleRetry = (): void => {

@@ -1,10 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import {
   resolveForKey,
+  resolveForScale,
   KEY_SPELLING,
   getPreferredSpelling,
   areEnharmonic,
 } from '../enharmonics';
+import { SCALE_REGISTRY } from '../scales/scale-registry';
 
 describe('Enharmonics', () => {
   // ── 1. Flat key spellings ─────────────────────────────────────────────
@@ -136,6 +138,36 @@ describe('Enharmonics', () => {
 
     it('E and F are NOT enharmonic', () => {
       expect(areEnharmonic('E', 'F')).toBe(false);
+    });
+  });
+
+  // ── Scale spelling: short scales must skip letters, not stack accidentals ──
+  describe('resolveForScale: pentatonic / blues spellings', () => {
+    it('F# hirajoshi avoids double accidentals', () => {
+      expect(resolveForScale([0, 2, 3, 7, 8], 'hirajoshi', 'F#'))
+        .toEqual(['F#', 'G#', 'A', 'C#', 'D']);
+    });
+
+    it('F# major pentatonic', () => {
+      expect(resolveForScale([0, 2, 4, 7, 9], 'major pentatonic', 'F#'))
+        .toEqual(['F#', 'G#', 'A#', 'C#', 'D#']);
+    });
+
+    it('C minor blues uses flats', () => {
+      expect(resolveForScale([0, 3, 5, 6, 7, 10], 'minor blues', 'C'))
+        .toEqual(['C', 'Eb', 'F', 'Gb', 'G', 'Bb']);
+    });
+
+    it('no double accidentals in any non-heptatonic registry scale, all 12 roots', () => {
+      const roots = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
+      for (const scale of SCALE_REGISTRY.filter(s => s.semitones.length !== 7)) {
+        for (const root of roots) {
+          const notes = resolveForScale(scale.semitones, scale.name, root);
+          for (const n of notes) {
+            expect(n, `${root} ${scale.name}: ${notes.join(' ')}`).not.toMatch(/##|bb/);
+          }
+        }
+      }
     });
   });
 });

@@ -86,6 +86,16 @@ const KEYS = {
     STATS: 'music_practice_stats'
 } as const;
 
+// Sessions saved before 2026-07 used the camelCase id; stats/journal read kebab-case
+const LEGACY_MODULE_IDS: Record<string, string> = {
+    sightReading: 'sight-reading'
+};
+
+export function normalizeModuleId(module: string | undefined): string {
+    if (!module) return 'sight-reading';
+    return LEGACY_MODULE_IDS[module] ?? module;
+}
+
 /**
  * Check if localStorage is available
  */
@@ -137,7 +147,8 @@ export function getSessions(): Session[] {
 
     try {
         const data = localStorage.getItem(KEYS.SESSIONS);
-        return data ? JSON.parse(data) : [];
+        const sessions: Session[] = data ? JSON.parse(data) : [];
+        return sessions.map(s => ({ ...s, module: normalizeModuleId(s.module) }));
     } catch (error) {
         console.error('Error loading sessions:', error);
         return [];
@@ -180,7 +191,7 @@ export function updateStats(sessionData: SessionData): void {
         }
 
         // Track by module
-        const module = sessionData.module || 'sightReading';
+        const module = normalizeModuleId(sessionData.module);
         if (!stats.byModule[module]) {
             stats.byModule[module] = {
                 sessions: 0,
@@ -212,7 +223,21 @@ export function getStats(): Stats {
 
     try {
         const data = localStorage.getItem(KEYS.STATS);
-        return data ? JSON.parse(data) : getDefaultStats();
+        if (!data) return getDefaultStats();
+        const stats: Stats = JSON.parse(data);
+        const byModule: Record<string, ModuleStats> = {};
+        for (const [key, value] of Object.entries(stats.byModule ?? {})) {
+            const id = normalizeModuleId(key);
+            const existing = byModule[id];
+            byModule[id] = existing
+                ? {
+                    sessions: existing.sessions + value.sessions,
+                    correct: existing.correct + value.correct,
+                    incorrect: existing.incorrect + value.incorrect
+                }
+                : value;
+        }
+        return { ...stats, byModule };
     } catch (error) {
         console.error('Error loading stats:', error);
         return getDefaultStats();

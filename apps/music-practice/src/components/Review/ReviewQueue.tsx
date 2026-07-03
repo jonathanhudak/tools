@@ -3,7 +3,7 @@
  * chord spellings, key signatures, and intervals.
  */
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@hudak/ui/components/button';
 import { Badge } from '@hudak/ui/components/badge';
 import { Volume2 } from 'lucide-react';
@@ -172,6 +172,24 @@ export function ReviewQueue(): JSX.Element {
     setReviewed(r => r + 1);
   };
 
+  // Keyboard: Space/Enter reveal, 1-4 grade Again/Hard/Good/Easy
+  useEffect(() => {
+    if (!deck) return;
+    const grades: Grade[] = ['again', 'hard', 'good', 'easy'];
+    const onKey = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLElement && /^(input|textarea|select)$/i.test(e.target.tagName)) return;
+      if (!revealed && (e.key === ' ' || e.key === 'Enter')) {
+        e.preventDefault();
+        setRevealed(true);
+      } else if (revealed) {
+        const idx = Number(e.key) - 1;
+        if (idx >= 0 && idx < grades.length) grade(grades[idx]);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
+
   if (!deck) {
     return (
       <div className="max-w-xl space-y-3">
@@ -246,16 +264,16 @@ export function ReviewQueue(): JSX.Element {
       ) : (
         <div className="grid grid-cols-4 gap-2">
           <Button variant="outline" size="lg" className="border-rose-300 dark:border-rose-800" onClick={() => grade('again')}>
-            Again
+            <span className="text-muted-foreground font-mono text-xs mr-1">1</span> Again
           </Button>
           <Button variant="outline" size="lg" className="border-amber-300 dark:border-amber-800" onClick={() => grade('hard')}>
-            Hard
+            <span className="text-muted-foreground font-mono text-xs mr-1">2</span> Hard
           </Button>
           <Button variant="outline" size="lg" className="border-emerald-300 dark:border-emerald-800" onClick={() => grade('good')}>
-            Good
+            <span className="text-muted-foreground font-mono text-xs mr-1">3</span> Good
           </Button>
           <Button variant="outline" size="lg" className="border-sky-300 dark:border-sky-800" onClick={() => grade('easy')}>
-            Easy
+            <span className="text-muted-foreground font-mono text-xs mr-1">4</span> Easy
           </Button>
         </div>
       )}

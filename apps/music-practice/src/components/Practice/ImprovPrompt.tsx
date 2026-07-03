@@ -1,18 +1,22 @@
 /**
  * Improv Prompt Generator — deals practice cards combining key, scale,
  * progression, constraint, and tempo. Lock any axis and re-deal the rest.
+ * The dealt scale and progression render with the full reference UX:
+ * staff notation, piano + fretboard diagrams, and the progression player.
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { Button } from '@hudak/ui/components/button';
 import { Badge } from '@hudak/ui/components/badge';
-import { Shuffle, Lock, LockOpen, Waves } from 'lucide-react';
+import { Shuffle, Lock, LockOpen, Waves, Play, Music2 } from 'lucide-react';
 import { Note } from 'tonal';
 import { SCALE_REGISTRY } from '@/data/scales/scale-registry';
 import { PROGRESSION_REGISTRY } from '@/data/progressions/progression-registry';
 import { resolveForScale } from '@/data/enharmonics';
-import { Drone } from '@/lib/audio/player';
+import { Drone, playMelody, type PlaybackHandle } from '@/lib/audio/player';
+import { ScaleDetailPanel } from '../shared/ScaleDetailPanel';
+import { ProgressionPlayer } from '../shared/ProgressionPlayer';
 
 const KEYS = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
 
@@ -74,10 +78,16 @@ export function ImprovPrompt(): JSX.Element {
   const [prompt, setPrompt] = useState<Prompt>(() => dealPrompt(null, new Set()));
   const [droneOn, setDroneOn] = useState(false);
   const [drone] = useState(() => new Drone());
+  const [playHandle, setPlayHandle] = useState<PlaybackHandle | null>(null);
+  // Progression key/tempo start from the prompt but stay adjustable in the player
+  const [progressionKey, setProgressionKey] = useState(prompt.key);
+  const [bpm, setBpm] = useState(prompt.tempo);
 
   const scale = SCALE_REGISTRY.find(s => s.id === prompt.scaleId);
   const progression = PROGRESSION_REGISTRY.find(p => p.id === prompt.progressionId);
   const notes = scale ? resolveForScale(scale.semitones, scale.name, prompt.key) : [];
+
+  useEffect(() => () => { drone.stop(); playHandle?.stop(); }, [drone, playHandle]);
 
   const toggleLock = (k: keyof Prompt) => {
     const next = new Set(locks);
@@ -87,8 +97,11 @@ export function ImprovPrompt(): JSX.Element {
   };
 
   const deal = () => {
-    setPrompt(dealPrompt(prompt, locks));
-    if (droneOn) {
+    const next = dealPrompt(prompt, locks);
+    setPrompt(next);
+    setProgressionKey(next.key);
+    setBpm(next.tempo);
+    if (droneOn && next.key !== prompt.key) {
       drone.stop();
       setDroneOn(false);
     }
@@ -101,6 +114,14 @@ export function ImprovPrompt(): JSX.Element {
       drone.start((Note.midi(`${prompt.key}3`) ?? 48));
     }
     setDroneOn(!droneOn);
+  };
+
+  const playScale = () => {
+    if (!scale) return;
+    playHandle?.stop();
+    const base = Note.midi(`${prompt.key}4`) ?? 60;
+    const ascending = [...scale.semitones.map(s => base + s), base + 12];
+    setPlayHandle(playMelody(ascending, 180));
   };
 
   const rows: Array<{ id: keyof Prompt; label: string; value: React.ReactNode }> = [
@@ -132,8 +153,8 @@ export function ImprovPrompt(): JSX.Element {
   ];
 
   return (
-    <div className="max-w-2xl space-y-4">
-      <div className="space-y-2">
+    <div className="max-w-4xl space-y-4">
+      <div className="space-y-2 max-w-2xl">
         {rows.map(row => (
           <div
             key={row.id}
@@ -166,14 +187,52 @@ export function ImprovPrompt(): JSX.Element {
         <Button variant={droneOn ? 'default' : 'outline'} size="lg" className="gap-2" onClick={toggleDrone}>
           <Waves className="w-4 h-4" /> {droneOn ? 'Stop drone' : `Drone on ${prompt.key}`}
         </Button>
-        <Button asChild variant="outline" size="lg">
-          <Link to="/progressions">Open progression player</Link>
-        </Button>
       </div>
       <p className="text-xs text-muted-foreground">
         Lock the axes you want to keep <Badge variant="outline" className="text-[9px] align-middle">🔒</Badge>,
         then deal a new prompt for the rest. Improvise for at least 5 minutes before re-dealing.
       </p>
+
+      {/* Full scale reference */}
+      {scale && (
+        <section className="pt-4 border-t border-[var(--border-subtle)] space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-xl font-semibold" style={{ fontFamily: 'var(--font-display)' }}>
+              {prompt.key} {scale.name}
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              <Button onClick={playScale} variant="outline" className="gap-2">
+                <Play className="w-4 h-4" /> Play scale
+              </Button>
+              <Button asChild variant="outline" className="gap-2">
+                <Link to="/play" search={{ scaleRoot: prompt.key, scaleId: scale.id } as never}>
+                  <Music2 className="w-4 h-4" /> Sight-read this scale
+                </Link>
+              </Button>
+            </div>
+          </div>
+          <ScaleDetailPanel scale={scale} root={prompt.key} />
+        </section>
+      )}
+
+      {/* Full progression reference + player */}
+      {progression && (
+        <section className="pt-4 border-t border-[var(--border-subtle)] space-y-4">
+          <div>
+            <h2 className="text-xl font-semibold" style={{ fontFamily: 'var(--font-display)' }}>
+              {progression.name}
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1">{progression.description}</p>
+          </div>
+          <ProgressionPlayer
+            progression={progression}
+            musicKey={progressionKey}
+            onKeyChange={setProgressionKey}
+            bpm={bpm}
+            onBpmChange={setBpm}
+          />
+        </section>
+      )}
     </div>
   );
 }

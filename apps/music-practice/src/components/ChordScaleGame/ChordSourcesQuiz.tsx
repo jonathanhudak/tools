@@ -8,6 +8,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { useSessionRecorder } from '@/hooks/use-session-recorder';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@hudak/ui/components/card';
 import { Skeleton } from '@hudak/ui/components/skeleton';
 import { Button } from '@hudak/ui/components/button';
@@ -118,6 +119,7 @@ export function ChordSourcesQuiz({ difficulty }: ChordSourcesQuizProps): JSX.Ele
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [score, setScore] = useState({ correct: 0, total: 0 });
   const [streak, setStreak] = useState(0);
+  const record = useSessionRecorder('chord-scale');
 
   // Generate initial question
   useEffect(() => {
@@ -129,6 +131,7 @@ export function ChordSourcesQuiz({ difficulty }: ChordSourcesQuizProps): JSX.Ele
 
     setSelectedAnswer(optionLabel);
     setIsCorrect(correct);
+    record(correct);
 
     setScore(prev => ({
       correct: prev.correct + (correct ? 1 : 0),

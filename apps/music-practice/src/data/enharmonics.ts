@@ -96,6 +96,17 @@ function noteLetter(name: string): string {
   return name.charAt(0).toUpperCase();
 }
 
+/** Spell a semitone on a specific letter, up to double accidentals; null if impossible */
+function spellOnLetter(letter: string, targetSemitone: number): string | null {
+  const diff = mod12(targetSemitone - LETTER_TO_NATURAL[letter]);
+  if (diff === 0) return letter;
+  if (diff === 1) return letter + '#';
+  if (diff === 11) return letter + 'b';
+  if (diff === 2) return letter + '##';
+  if (diff === 10) return letter + 'bb';
+  return null;
+}
+
 // ---------------------------------------------------------------------------
 // KEY_SPELLING — correct note spellings for all 15 major keys + relative minors
 // ---------------------------------------------------------------------------
@@ -297,30 +308,34 @@ function spellScaleFromRoot(
   for (let i = 0; i < semitones.length; i++) {
     const targetSemitone = mod12(rootSemitone + semitones[i]);
 
-    // For 7-note scales, assign letters sequentially
-    if (semitones.length <= 7) {
-      const letterIndex = (rootLetterIndex + i) % 7;
-      const letter = LETTERS[letterIndex];
-      const natural = LETTER_TO_NATURAL[letter];
-      const diff = mod12(targetSemitone - natural);
-
-      if (diff === 0) {
-        result.push(letter);
-      } else if (diff === 1) {
-        result.push(letter + '#');
-      } else if (diff === 11) {
-        result.push(letter + 'b');
-      } else if (diff === 2) {
-        // double sharp — simplify display
-        result.push(letter + '##');
-      } else if (diff === 10) {
-        // double flat — simplify display
-        result.push(letter + 'bb');
-      } else {
-        // Fallback: just use the preferred spelling based on root
-        const preferFlats = root.includes('b') && root !== 'B';
-        result.push(getPreferredSpelling(targetSemitone, preferFlats));
+    if (semitones.length === 7) {
+      // 7-note scales use each letter exactly once (sequential).
+      const letter = LETTERS[(rootLetterIndex + i) % 7];
+      result.push(spellOnLetter(letter, targetSemitone) ??
+        getPreferredSpelling(targetSemitone, root.includes('b') && root !== 'B'));
+    } else if (semitones.length < 7) {
+      // Shorter scales (pentatonic, blues, hexatonic) must SKIP letters or
+      // sequential assignment produces double accidentals (F# hirajoshi
+      // spelled G#-A-B##-C##). Each interval's proportional letter distance
+      // (a perfect 5th ≈ 4 letters) gives two candidate letters; pick the
+      // one needing the fewest accidentals, avoiding letter reuse on ties
+      // (so a tritone is G natural in Db whole tone but Gb in C blues).
+      const exact = (semitones[i] * 7) / 12;
+      const prevLetter = result.length > 0 ? noteLetter(result[result.length - 1]) : null;
+      let best: { name: string; score: number } | null = null;
+      for (const offset of new Set([Math.floor(exact), Math.ceil(exact)])) {
+        const letter = LETTERS[(rootLetterIndex + offset) % 7];
+        const name = spellOnLetter(letter, targetSemitone);
+        if (!name) continue;
+        const accidentals = name.length - 1;
+        const score =
+          accidentals * 4 +
+          (letter === prevLetter ? 2 : 0) +
+          (offset !== Math.round(exact) ? 1 : 0);
+        if (!best || score < best.score) best = { name, score };
       }
+      const preferFlats = root.includes('b') && root !== 'B';
+      result.push(best?.name ?? getPreferredSpelling(targetSemitone, preferFlats));
     } else {
       // For scales with more than 7 notes (e.g. chromatic, bebop),
       // we can't guarantee unique letters; use key preference

@@ -23,10 +23,6 @@ import {
   type Degree,
 } from '../../data/chord-scale-matrix';
 
-interface ScaleReferenceProps {
-  onBack: () => void;
-}
-
 const SCALE_TYPES: ScaleType[] = ['major', 'naturalMinor', 'melodicMinor', 'harmonicMinor', 'harmonicMajor'];
 
 const SCALE_DESCRIPTIONS: Record<ScaleType, string> = {
@@ -39,8 +35,7 @@ const SCALE_DESCRIPTIONS: Record<ScaleType, string> = {
 
 const ROOT_KEYS = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
 
-// onBack is accepted for API compatibility; navigation lives in the app header.
-export function ScaleReference({ onBack: _onBack }: ScaleReferenceProps): JSX.Element {
+export function ScaleReference(): JSX.Element {
   const [activeScale, setActiveScale] = useState<ScaleType>('major');
   const [selectedDegree, setSelectedDegree] = useState<Degree>(1);
   const [rootKey, setRootKey] = useState('C');

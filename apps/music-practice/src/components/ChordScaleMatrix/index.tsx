@@ -7,8 +7,11 @@
  */
 
 import { useState, useMemo, useEffect } from 'react';
+import { Link } from '@tanstack/react-router';
 import { Badge } from '@hudak/ui/components/badge';
 import { InstrumentToggle } from '../Piano/InstrumentToggle';
+import { EXTENDED_CHORD_SCALE_MAPPINGS } from '@/data/chord-scale-extended';
+import { getScale } from '@/data/scales/scale-registry';
 import { ChordVoicingDisplay } from '../ChordScaleGame/ChordVoicingDisplay';
 import type { Chord } from '@/lib/chord-library';
 import { getAvoidNotes } from '@/data/avoid-notes';
@@ -289,6 +292,51 @@ export function ChordScaleMatrix({
               instrument={instrument}
               onInstrumentChange={setInstrument}
             />
+          ))}
+        </div>
+      </div>
+
+      {/* ── Beyond the matrix: altered & non-diatonic chords ───────── */}
+      <div className="pt-2">
+        <h2
+          className="text-xl font-semibold mb-1"
+          style={{ fontFamily: 'var(--font-display)' }}
+        >
+          Beyond the matrix
+        </h2>
+        <p className="text-sm text-[var(--ink-secondary)] mb-4">
+          Altered dominants, diminished passing chords, sus and sixth chords don&apos;t live on a
+          single degree. Recommended scale choices, in {selectedKey}:
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+          {EXTENDED_CHORD_SCALE_MAPPINGS.map(m => (
+            <div
+              key={m.chordQuality}
+              className="rounded-lg border border-[var(--border-medium)] bg-[var(--surface-card)] p-3 space-y-1.5"
+            >
+              <p className="font-mono font-bold text-sm">
+                {selectedKey}
+                {m.chordQuality}
+              </p>
+              <p className="text-xs text-[var(--ink-secondary)]">{m.description}</p>
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {[m.primaryScale, ...m.secondaryScales].map((scaleId, i) => (
+                  <Link
+                    key={scaleId}
+                    to="/scale-explorer"
+                    search={{ scale: scaleId, root: selectedKey } as never}
+                    className={[
+                      'text-[11px] px-2 py-1 rounded-full border transition-colors',
+                      i === 0
+                        ? 'border-[var(--accent)] bg-[var(--accent)] text-white font-medium'
+                        : 'border-[var(--border-medium)] text-[var(--ink-secondary)] hover:border-[var(--accent)]',
+                    ].join(' ')}
+                  >
+                    {getScale(scaleId)?.name ?? scaleId}
+                  </Link>
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       </div>

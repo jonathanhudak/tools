@@ -28,7 +28,7 @@ export interface ProgressionDefinition {
 }
 
 // ---------------------------------------------------------------------------
-// Jazz Progressions (12)
+// Jazz Progressions (13)
 // ---------------------------------------------------------------------------
 
 const jazzProgressions: ProgressionDefinition[] = [
@@ -574,15 +574,282 @@ const classicalProgressions: ProgressionDefinition[] = [
 ];
 
 // ---------------------------------------------------------------------------
+// Modal Progressions (8)
+// ---------------------------------------------------------------------------
+
+const modalProgressions: ProgressionDefinition[] = [
+  {
+    id: 'dorian-vamp',
+    name: 'Dorian Vamp',
+    family: 'modal',
+    difficulty: 'beginner',
+    steps: [
+      { romanNumeral: 'i7', function: 'tonic', bars: 2 },
+      { romanNumeral: 'IV7', function: 'subdominant', bars: 2 },
+    ],
+    description: 'The classic Dorian two-chord vamp — Am7→D9 feel. "Oye Como Va", "Evil Ways".',
+    tags: ['dorian', 'vamp', 'latin', 'funk', 'two-chord'],
+    totalBars: 4,
+  },
+  {
+    id: 'so-what',
+    name: 'So What',
+    family: 'modal',
+    difficulty: 'intermediate',
+    steps: [
+      { romanNumeral: 'i7', function: 'tonic', bars: 8 },
+      { romanNumeral: 'bii7', function: 'subdominant', bars: 4 },
+      { romanNumeral: 'i7', function: 'tonic', bars: 4 },
+    ],
+    description: 'Modal jazz signature — Dorian minor 7ths a half-step apart. Dm7 (8) → Ebm7 (4) → Dm7 (4).',
+    tags: ['dorian', 'modal-jazz', 'kind-of-blue', 'half-step'],
+    totalBars: 16,
+  },
+  {
+    id: 'mixolydian-vamp',
+    name: 'Mixolydian Vamp',
+    family: 'modal',
+    difficulty: 'beginner',
+    steps: [
+      { romanNumeral: 'I7', function: 'tonic', bars: 2 },
+      { romanNumeral: 'bVII', function: 'subtonic', bars: 2 },
+    ],
+    description: 'Dominant-7 tonic with the bVII a whole step below. The sound of funk and jam-band rock.',
+    tags: ['mixolydian', 'vamp', 'funk', 'rock', 'two-chord'],
+    totalBars: 4,
+  },
+  {
+    id: 'aeolian-vamp',
+    name: 'Aeolian Vamp',
+    family: 'modal',
+    difficulty: 'beginner',
+    steps: [
+      { romanNumeral: 'i', function: 'tonic', bars: 2 },
+      { romanNumeral: 'bVI', function: 'subdominant', bars: 1 },
+      { romanNumeral: 'bVII', function: 'subtonic', bars: 1 },
+    ],
+    description: 'Natural-minor epic: Am→F→G. Everywhere in rock, film scores, and EDM.',
+    tags: ['aeolian', 'minor', 'rock', 'epic'],
+    totalBars: 4,
+  },
+  {
+    id: 'phrygian-vamp',
+    name: 'Phrygian Vamp',
+    family: 'modal',
+    difficulty: 'intermediate',
+    steps: [
+      { romanNumeral: 'i', function: 'tonic', bars: 2 },
+      { romanNumeral: 'bII', function: 'subdominant', bars: 2 },
+    ],
+    description: 'Tonic minor against the flat-2 major chord — Em→F. Flamenco and metal both live here.',
+    tags: ['phrygian', 'flamenco', 'metal', 'spanish', 'two-chord'],
+    totalBars: 4,
+  },
+  {
+    id: 'lydian-vamp',
+    name: 'Lydian Vamp',
+    family: 'modal',
+    difficulty: 'intermediate',
+    steps: [
+      { romanNumeral: 'Imaj7', function: 'tonic', bars: 2 },
+      { romanNumeral: 'II', function: 'subdominant', bars: 2 },
+    ],
+    description: 'Major tonic with the major II — Cmaj7→D. The floating, dreamy Lydian signature.',
+    tags: ['lydian', 'vamp', 'dreamy', 'film', 'two-chord'],
+    totalBars: 4,
+  },
+  {
+    id: 'sus-vamp',
+    name: 'Sus Vamp',
+    family: 'modal',
+    difficulty: 'intermediate',
+    steps: [
+      { romanNumeral: 'I7sus4', function: 'tonic', bars: 4 },
+      { romanNumeral: 'bVII7sus4', function: 'subtonic', bars: 4 },
+    ],
+    description: 'Unresolved suspended 7ths a whole step apart — the "Maiden Voyage" sound.',
+    tags: ['sus', 'modal-jazz', 'floating', 'quartal'],
+    totalBars: 8,
+  },
+  {
+    id: 'mixolydian-rock',
+    name: 'I-bVII-IV Rock',
+    family: 'modal',
+    difficulty: 'beginner',
+    steps: [
+      { romanNumeral: 'I', function: 'tonic', bars: 1 },
+      { romanNumeral: 'bVII', function: 'subtonic', bars: 1 },
+      { romanNumeral: 'IV', function: 'subdominant', bars: 1 },
+      { romanNumeral: 'I', function: 'tonic', bars: 1 },
+    ],
+    description: 'Mixolydian rock anthem changes — D→C→G in D. Classic-rock all-timer.',
+    tags: ['mixolydian', 'rock', 'anthem', 'classic-rock'],
+    totalBars: 4,
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Additional jazz / blues / pop / classical entries
+// ---------------------------------------------------------------------------
+
+const jazzAdditions: ProgressionDefinition[] = [
+  {
+    id: 'minor-line-cliche',
+    name: 'Minor Line Cliché',
+    family: 'jazz',
+    difficulty: 'intermediate',
+    steps: [
+      { romanNumeral: 'i', function: 'tonic', bars: 1 },
+      { romanNumeral: 'i(maj7)', function: 'tonic', bars: 1 },
+      { romanNumeral: 'i7', function: 'tonic', bars: 1 },
+      { romanNumeral: 'i6', function: 'tonic', bars: 1 },
+    ],
+    description: 'Descending inner line over a static minor chord: Cm→Cm(maj7)→Cm7→Cm6. "My Funny Valentine".',
+    tags: ['line-cliche', 'minor', 'voice-leading', 'ballad'],
+    totalBars: 4,
+  },
+  {
+    id: 'autumn-leaves',
+    name: 'Autumn Leaves (A section)',
+    family: 'jazz',
+    difficulty: 'intermediate',
+    steps: [
+      { romanNumeral: 'ii7', function: 'predominant', bars: 1 },
+      { romanNumeral: 'V7', function: 'dominant', bars: 1 },
+      { romanNumeral: 'Imaj7', function: 'tonic', bars: 1 },
+      { romanNumeral: 'IVmaj7', function: 'subdominant', bars: 1 },
+      { romanNumeral: 'viiø7', function: 'predominant', bars: 1 },
+      { romanNumeral: 'III7', function: 'dominant', bars: 1 },
+      { romanNumeral: 'vi', function: 'tonic', bars: 2 },
+    ],
+    description: 'The classic major→relative-minor cycle every jazz player learns first.',
+    tags: ['standard', 'cycle', 'relative-minor', 'essential'],
+    totalBars: 8,
+  },
+];
+
+const bluesAdditions: ProgressionDefinition[] = [
+  {
+    id: 'quick-change-blues',
+    name: 'Quick-Change Blues',
+    family: 'blues',
+    difficulty: 'beginner',
+    steps: [
+      { romanNumeral: 'I7', function: 'tonic', bars: 1 },
+      { romanNumeral: 'IV7', function: 'subdominant', bars: 1 },
+      { romanNumeral: 'I7', function: 'tonic', bars: 2 },
+      { romanNumeral: 'IV7', function: 'subdominant', bars: 2 },
+      { romanNumeral: 'I7', function: 'tonic', bars: 2 },
+      { romanNumeral: 'V7', function: 'dominant', bars: 1 },
+      { romanNumeral: 'IV7', function: 'subdominant', bars: 1 },
+      { romanNumeral: 'I7', function: 'tonic', bars: 1 },
+      { romanNumeral: 'V7', function: 'dominant', bars: 1 },
+    ],
+    description: '12-bar blues with the IV in bar 2 — the "quick change". Keeps the top of the form moving.',
+    tags: ['12-bar', 'quick-change', 'shuffle', 'essential'],
+    totalBars: 12,
+  },
+];
+
+const popAdditions: ProgressionDefinition[] = [
+  {
+    id: 'IV-I-V-vi',
+    name: 'IV-I-V-vi Rotation',
+    family: 'pop',
+    difficulty: 'beginner',
+    steps: [
+      { romanNumeral: 'IV', function: 'subdominant', bars: 1 },
+      { romanNumeral: 'I', function: 'tonic', bars: 1 },
+      { romanNumeral: 'V', function: 'dominant', bars: 1 },
+      { romanNumeral: 'vi', function: 'tonic', bars: 1 },
+    ],
+    description: 'The axis progression started on IV — subdominant-first gives a lifted, searching feel.',
+    tags: ['axis', 'rotation', 'four-chord', 'modern-pop'],
+    totalBars: 4,
+  },
+  {
+    id: 'I-iii-IV-V',
+    name: 'I-iii-IV-V Motown',
+    family: 'pop',
+    difficulty: 'beginner',
+    steps: [
+      { romanNumeral: 'I', function: 'tonic', bars: 1 },
+      { romanNumeral: 'iii', function: 'mediant', bars: 1 },
+      { romanNumeral: 'IV', function: 'subdominant', bars: 1 },
+      { romanNumeral: 'V', function: 'dominant', bars: 1 },
+    ],
+    description: 'Sweet stepwise climb through the mediant — a Motown and early-Beatles staple.',
+    tags: ['motown', 'soul', '60s', 'climb'],
+    totalBars: 4,
+  },
+  {
+    id: 'I-V-IV',
+    name: 'Three-Chord Rock',
+    family: 'pop',
+    difficulty: 'beginner',
+    steps: [
+      { romanNumeral: 'I', function: 'tonic', bars: 2 },
+      { romanNumeral: 'V', function: 'dominant', bars: 1 },
+      { romanNumeral: 'IV', function: 'subdominant', bars: 1 },
+    ],
+    description: 'I, V, and IV — the entire foundation of rock and roll in one bar-form.',
+    tags: ['rock', 'three-chord', 'foundation'],
+    totalBars: 4,
+  },
+];
+
+const classicalAdditions: ProgressionDefinition[] = [
+  {
+    id: 'diatonic-circle',
+    name: 'Diatonic Circle of Fifths',
+    family: 'classical',
+    difficulty: 'intermediate',
+    steps: [
+      { romanNumeral: 'I', function: 'tonic', bars: 1 },
+      { romanNumeral: 'IV', function: 'subdominant', bars: 1 },
+      { romanNumeral: 'viidim', function: 'dominant', bars: 1 },
+      { romanNumeral: 'iii', function: 'mediant', bars: 1 },
+      { romanNumeral: 'vi', function: 'tonic', bars: 1 },
+      { romanNumeral: 'ii', function: 'predominant', bars: 1 },
+      { romanNumeral: 'V', function: 'dominant', bars: 1 },
+      { romanNumeral: 'I', function: 'tonic', bars: 1 },
+    ],
+    description: 'All seven diatonic chords falling in fifths — the sequence behind countless Baroque passages.',
+    tags: ['sequence', 'fifths', 'baroque', 'complete-cycle'],
+    totalBars: 8,
+  },
+  {
+    id: 'neapolitan-cadence',
+    name: 'Neapolitan Cadence',
+    family: 'classical',
+    difficulty: 'advanced',
+    steps: [
+      { romanNumeral: 'i', function: 'tonic', bars: 1 },
+      { romanNumeral: 'bII', function: 'predominant', bars: 1 },
+      { romanNumeral: 'V7', function: 'dominant', bars: 1 },
+      { romanNumeral: 'i', function: 'tonic', bars: 1 },
+    ],
+    description: 'The flat-2 major chord as predominant — dramatic, dark approach to the dominant.',
+    tags: ['neapolitan', 'cadence', 'minor', 'dramatic'],
+    totalBars: 4,
+  },
+];
+
+// ---------------------------------------------------------------------------
 // All Progressions
 // ---------------------------------------------------------------------------
 
 /** Complete registry of all progression definitions */
 export const PROGRESSION_REGISTRY: readonly ProgressionDefinition[] = [
   ...jazzProgressions,
+  ...jazzAdditions,
   ...bluesProgressions,
+  ...bluesAdditions,
   ...popProgressions,
+  ...popAdditions,
   ...classicalProgressions,
+  ...classicalAdditions,
+  ...modalProgressions,
 ];
 
 /** O(1) lookup of progressions by ID */

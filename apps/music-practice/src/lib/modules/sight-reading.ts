@@ -594,7 +594,7 @@ export class SightReadingModule {
      */
     private saveSession(): void {
         const sessionData: SessionData = {
-            module: 'sightReading',
+            module: 'sight-reading',
             correct: this.stats.correct,
             incorrect: this.stats.incorrect,
             bestStreak: this.stats.bestStreak,

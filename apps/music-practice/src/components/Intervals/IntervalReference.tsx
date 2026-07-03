@@ -3,13 +3,14 @@
  * audio playback, inversions, and a name-the-interval quiz (visual or by ear).
  */
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Badge } from '@hudak/ui/components/badge';
 import { Button } from '@hudak/ui/components/button';
-import { Play, RefreshCw, Ear, Eye } from 'lucide-react';
+import { Play, RefreshCw, Ear, Eye, Layers } from 'lucide-react';
 import { Note } from 'tonal';
 import { INTERVALS, COMPOUND_INTERVALS, type IntervalDefinition } from '@/data/intervals';
 import { playMelody, playChordMidis } from '@/lib/audio/player';
+import { useSessionRecorder } from '@/hooks/use-session-recorder';
 
 const QUALITY_COLOR: Record<string, string> = {
   perfect: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300',
@@ -50,8 +51,14 @@ function ReferenceTable({ intervals }: { intervals: IntervalDefinition[] }): JSX
             <Button variant="outline" size="icon" aria-label={`Play ${ivl.fullName} melodically`} onClick={() => playInterval(ivl.semitones)}>
               <Play className="w-3.5 h-3.5" />
             </Button>
-            <Button variant="outline" size="icon" aria-label={`Play ${ivl.fullName} harmonically`} onClick={() => playInterval(ivl.semitones, true)}>
-              <span className="text-[10px] font-mono">⠿</span>
+            <Button
+              variant="outline"
+              size="icon"
+              aria-label={`Play ${ivl.fullName} harmonically`}
+              title="Play both notes together"
+              onClick={() => playInterval(ivl.semitones, true)}
+            >
+              <Layers className="w-3.5 h-3.5" />
             </Button>
           </div>
         </div>
@@ -83,6 +90,7 @@ function IntervalQuiz({ byEar }: { byEar: boolean }): JSX.Element {
   const [question, setQuestion] = useState<Question>(makeQuestion);
   const [answered, setAnswered] = useState<string | null>(null);
   const [score, setScore] = useState({ correct: 0, total: 0 });
+  const record = useSessionRecorder('intervals');
 
   const next = () => {
     setQuestion(makeQuestion());
@@ -93,11 +101,29 @@ function IntervalQuiz({ byEar }: { byEar: boolean }): JSX.Element {
   const answer = (shortName: string) => {
     if (answered) return;
     setAnswered(shortName);
+    const correct = shortName === question.interval.shortName;
+    record(correct);
     setScore(s => ({
-      correct: s.correct + (shortName === question.interval.shortName ? 1 : 0),
+      correct: s.correct + (correct ? 1 : 0),
       total: s.total + 1,
     }));
   };
+
+  // Keyboard: 1-4 answer, Enter/Space next
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLElement && /^(input|textarea|select)$/i.test(e.target.tagName)) return;
+      const idx = Number(e.key) - 1;
+      if (idx >= 0 && idx < question.options.length && !answered) {
+        answer(question.options[idx]);
+      } else if ((e.key === 'Enter' || e.key === ' ') && answered) {
+        e.preventDefault();
+        next();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
 
   const noteA = Note.fromMidi(question.rootMidi);
   const noteB = Note.fromMidi(question.rootMidi + question.interval.semitones);
@@ -123,7 +149,7 @@ function IntervalQuiz({ byEar }: { byEar: boolean }): JSX.Element {
       </div>
 
       <div className="grid grid-cols-2 gap-2">
-        {question.options.map(opt => {
+        {question.options.map((opt, i) => {
           const isCorrect = opt === question.interval.shortName;
           const state = !answered ? 'idle' : isCorrect ? 'correct' : opt === answered ? 'wrong' : 'idle';
           return (
@@ -140,6 +166,7 @@ function IntervalQuiz({ byEar }: { byEar: boolean }): JSX.Element {
                     : ''
               }
             >
+              <span className="text-muted-foreground font-mono text-xs mr-1.5">{i + 1}</span>
               <span className="font-mono font-bold mr-2">{opt}</span>
               <span className="text-xs text-muted-foreground">
                 {INTERVALS.find(i => i.shortName === opt)?.fullName}

@@ -1,7 +1,7 @@
 /**
  * Extended Chord-Scale Matrix
  *
- * Extends the base chord-scale-matrix.ts (28 entries for Major, Natural Minor,
+ * Extends the base chord-scale-matrix.ts (35 entries for Major, Natural Minor,
  * Melodic Minor, Harmonic Minor) with:
  *
  * 1. Harmonic Major family (7 new entries, degrees 1-7)
@@ -184,6 +184,34 @@ export const EXTENDED_CHORD_SCALE_MAPPINGS: readonly ExtendedChordScaleMapping[]
     secondaryScales: [],
     description: 'Dominant 13th with #11 — Lydian Dominant',
     tags: ['dominant', 'lydian', 'extended', '#11'],
+  },
+  {
+    chordQuality: 'm7b5',
+    primaryScale: 'locrian',
+    secondaryScales: ['locrian-sharp2'],
+    description: 'Half-diminished — Locrian, or Locrian #2 for a stronger 9th',
+    tags: ['half-diminished', 'minor', 'locrian'],
+  },
+  {
+    chordQuality: 'mMaj7',
+    primaryScale: 'melodic-minor',
+    secondaryScales: ['harmonic-minor'],
+    description: 'Minor-major 7th — Melodic Minor (jazz minor) or Harmonic Minor',
+    tags: ['minor', 'tonic-minor', 'jazz'],
+  },
+  {
+    chordQuality: 'maj7#5',
+    primaryScale: 'lydian-augmented',
+    secondaryScales: [],
+    description: 'Major 7th with raised 5th — Lydian Augmented (melodic minor mode 3)',
+    tags: ['major', 'augmented', 'lydian'],
+  },
+  {
+    chordQuality: 'dim7',
+    primaryScale: 'diminished-wh',
+    secondaryScales: [],
+    description: 'Diminished 7th — whole-half diminished scale',
+    tags: ['diminished', 'symmetric', 'octatonic'],
   },
 ];
 

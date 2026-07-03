@@ -78,16 +78,29 @@ export function getChordById(id: string): Chord | undefined {
   return CHORD_LIBRARY.find(c => c.id === id);
 }
 
-/** Look up a chord by its shortName (e.g. "C", "Dm", "G7"). 
+const DIFFICULTY_RANK: Record<string, number> = {
+  beginner: 0, intermediate: 1, advanced: 2, jazz: 3,
+};
+
+/** Several entries share a shortName (e.g. plain Dm7 vs the "Dm7 (ii)" jazz
+ *  shell). Prefer the most fundamental voicing: lowest difficulty wins. */
+function simplestMatch(matches: Chord[]): Chord | undefined {
+  if (matches.length <= 1) return matches[0];
+  return [...matches].sort(
+    (a, b) => (DIFFICULTY_RANK[a.difficulty] ?? 9) - (DIFFICULTY_RANK[b.difficulty] ?? 9),
+  )[0];
+}
+
+/** Look up a chord by its shortName (e.g. "C", "Dm", "G7").
  *  Tries exact match, case-insensitive, and normalized quality suffixes. */
 export function getChordByShortName(shortName: string): Chord | undefined {
   // Exact match
-  const exact = CHORD_LIBRARY.find(c => c.shortName === shortName);
+  const exact = simplestMatch(CHORD_LIBRARY.filter(c => c.shortName === shortName));
   if (exact) return exact;
-  
+
   // Case-insensitive match (handles Cmaj7 vs CMaj7)
   const lower = shortName.toLowerCase();
-  const caseMatch = CHORD_LIBRARY.find(c => c.shortName.toLowerCase() === lower);
+  const caseMatch = simplestMatch(CHORD_LIBRARY.filter(c => c.shortName.toLowerCase() === lower));
   if (caseMatch) return caseMatch;
   
   // Normalized quality aliases: mMaj7 → m(maj7), Maj7#5 → aug etc.
@@ -107,8 +120,8 @@ export function getChordByShortName(shortName: string): Chord | undefined {
     };
     const alts = aliases[quality] || aliases[quality.toLowerCase()] || [];
     for (const alt of alts) {
-      const altName = `${root}${alt}`;
-      const found = CHORD_LIBRARY.find(c => c.shortName.toLowerCase() === altName.toLowerCase());
+      const altName = `${root}${alt}`.toLowerCase();
+      const found = simplestMatch(CHORD_LIBRARY.filter(c => c.shortName.toLowerCase() === altName));
       if (found) return found;
     }
   }
@@ -611,415 +624,19 @@ export const CHORD_LIBRARY: Chord[] = [
   },
 
   // ===== DOMINANT 7 CHORDS (8) =====
-  {
-    id: 'c-dominant-7',
-    name: 'C Dominant 7',
-    shortName: 'C7',
-    root: 'C',
-    type: 'dominant',
-    difficulty: 'beginner',
-    theory: {
-      intervals: ['R', 'M3', 'P5', 'm7'],
-      construction: 'Major triad + Minor 7th',
-      commonProgressions: ['V7-I', 'Blues: I7-IV7-V7'],
-    },
-    voicings: [
-      {
-        voicingName: 'Open Position',
-        position: 1,
-        guitar: {
-          frets: [-1, 3, 2, 3, 5, 3],
-          fingers: ['muted', '2', '1', '3', '0', '4'],
-          muted: [1],
-          barred: false,
-          description: 'Classic open C7. Blues staple.',
-        },
-        piano: {
-          notes: ['C4', 'E4', 'G4', 'Bb4'],
-          octaveRange: [4, 4],
-          description: 'Root position.',
-        },
-      },
-    ],
-    description: 'Essential for blues and jazz.',
-    tags: ['beginner', 'dominant', 'blues', 'jazz'],
-  },
 
-  {
-    id: 'g-dominant-7',
-    name: 'G Dominant 7',
-    shortName: 'G7',
-    root: 'G',
-    type: 'dominant',
-    difficulty: 'beginner',
-    theory: {
-      intervals: ['R', 'M3', 'P5', 'm7'],
-      construction: 'Major triad + Minor 7th',
-      commonProgressions: ['V7-I', 'Blues'],
-    },
-    voicings: [
-      {
-        voicingName: 'Open Position',
-        position: 1,
-        guitar: {
-          frets: [3, 2, 0, 0, 0, 1],
-          fingers: ['3', '2', 'open', 'open', 'open', '1'],
-          muted: [],
-          barred: false,
-          description: 'Common open G7.',
-        },
-        piano: {
-          notes: ['G3', 'B3', 'D4', 'F4'],
-          octaveRange: [3, 4],
-          description: 'Root position.',
-        },
-      },
-    ],
-    description: 'Blues essential chord.',
-    tags: ['beginner', 'dominant', 'blues'],
-  },
 
-  {
-    id: 'd-dominant-7',
-    name: 'D Dominant 7',
-    shortName: 'D7',
-    root: 'D',
-    type: 'dominant',
-    difficulty: 'beginner',
-    theory: {
-      intervals: ['R', 'M3', 'P5', 'm7'],
-      construction: 'Major triad + Minor 7th',
-      commonProgressions: ['V7-I', 'Blues'],
-    },
-    voicings: [
-      {
-        voicingName: 'Open Position',
-        position: 1,
-        guitar: {
-          frets: [-1, 0, 0, 2, 1, 2],
-          fingers: ['muted', 'open', 'open', '2', '1', '2'],
-          muted: [1],
-          barred: false,
-          description: 'Open D7.',
-        },
-        piano: {
-          notes: ['D4', 'F#4', 'A4', 'C5'],
-          octaveRange: [4, 5],
-          description: 'Root position.',
-        },
-      },
-    ],
-    description: 'Common in blues progressions.',
-    tags: ['beginner', 'dominant', 'blues'],
-  },
 
-  {
-    id: 'a-dominant-7',
-    name: 'A Dominant 7',
-    shortName: 'A7',
-    root: 'A',
-    type: 'dominant',
-    difficulty: 'beginner',
-    theory: {
-      intervals: ['R', 'M3', 'P5', 'm7'],
-      construction: 'Major triad + Minor 7th',
-      commonProgressions: ['V7-I', 'Blues'],
-    },
-    voicings: [
-      {
-        voicingName: 'Open Position',
-        position: 1,
-        guitar: {
-          frets: [0, 0, 2, 0, 2, 0],
-          fingers: ['open', 'open', '2', 'open', '2', 'open'],
-          muted: [],
-          barred: false,
-          description: 'Easy and open.',
-        },
-        piano: {
-          notes: ['A3', 'C#4', 'E4', 'G4'],
-          octaveRange: [3, 4],
-          description: 'Root position.',
-        },
-      },
-    ],
-    description: 'Common dominant chord.',
-    tags: ['beginner', 'dominant', 'blues'],
-  },
 
-  {
-    id: 'e-dominant-7',
-    name: 'E Dominant 7',
-    shortName: 'E7',
-    root: 'E',
-    type: 'dominant',
-    difficulty: 'beginner',
-    theory: {
-      intervals: ['R', 'M3', 'P5', 'm7'],
-      construction: 'Major triad + Minor 7th',
-      commonProgressions: ['V7-I', 'Blues'],
-    },
-    voicings: [
-      {
-        voicingName: 'Open Position',
-        position: 1,
-        guitar: {
-          frets: [0, 2, 0, 1, 0, 0],
-          fingers: ['open', '2', 'open', '1', 'open', 'open'],
-          muted: [],
-          barred: false,
-          description: 'Very easy. Just 1 finger!',
-        },
-        piano: {
-          notes: ['E4', 'G#4', 'B4', 'D5'],
-          octaveRange: [4, 5],
-          description: 'Root position.',
-        },
-      },
-    ],
-    description: 'Super easy dominant chord.',
-    tags: ['beginner', 'dominant', 'blues'],
-  },
 
   // ===== MINOR 7 CHORDS (6) =====
-  {
-    id: 'a-minor-7',
-    name: 'A Minor 7',
-    shortName: 'Am7',
-    root: 'A',
-    type: 'extended',
-    difficulty: 'beginner',
-    theory: {
-      intervals: ['R', 'm3', 'P5', 'm7'],
-      construction: 'Minor triad + Minor 7th',
-      commonProgressions: ['ii-V-I', 'vi-IV-I-V'],
-    },
-    voicings: [
-      {
-        voicingName: 'Open Position',
-        position: 1,
-        guitar: {
-          frets: [0, 0, 2, 0, 1, 0],
-          fingers: ['open', 'open', '2', 'open', '1', 'open'],
-          muted: [],
-          barred: false,
-          description: 'Just 2 fingers. Same as Am but with 1 string open.',
-        },
-        piano: {
-          notes: ['A3', 'C4', 'E4', 'G4'],
-          octaveRange: [3, 4],
-          description: 'Root position.',
-        },
-      },
-    ],
-    description: 'Jazz essential. Easy and beautiful.',
-    tags: ['beginner', 'extended', 'jazz', 'open-position'],
-  },
 
-  {
-    id: 'e-minor-7',
-    name: 'E Minor 7',
-    shortName: 'Em7',
-    root: 'E',
-    type: 'minor',
-    difficulty: 'beginner',
-    theory: {
-      intervals: ['R', 'm3', 'P5', 'm7'],
-      construction: 'Minor triad + Minor 7th',
-      commonProgressions: ['ii-V-I', 'vi-IV-I-V'],
-    },
-    voicings: [
-      {
-        voicingName: 'Open Position',
-        position: 1,
-        guitar: {
-          frets: [0, 2, 0, 0, 0, 0],
-          fingers: ['open', '1', 'open', 'open', 'open', 'open'],
-          muted: [],
-          barred: false,
-          description: 'Open Em7. Just one finger on A string fret 2. All other strings open.',
-        },
-        piano: {
-          notes: ['E4', 'G4', 'B4', 'D5'],
-          octaveRange: [4, 5],
-          description: 'Root position E Minor 7th.',
-        },
-      },
-    ],
-    description: 'E Minor 7th chord. One of the easiest chords on guitar.',
-    tags: ['beginner', 'minor', 'seventh', 'open-position'],
-  },
 
-  {
-    id: 'd-minor-7',
-    name: 'D Minor 7',
-    shortName: 'Dm7',
-    root: 'D',
-    type: 'extended',
-    difficulty: 'beginner',
-    theory: {
-      intervals: ['R', 'm3', 'P5', 'm7'],
-      construction: 'Minor triad + Minor 7th',
-      commonProgressions: ['ii-V-I', 'i-iv-v'],
-    },
-    voicings: [
-      {
-        voicingName: 'Open Position',
-        position: 1,
-        guitar: {
-          frets: [-1, 0, 0, 2, 1, 1],
-          fingers: ['muted', 'open', 'open', '2', '1', '1'],
-          muted: [1],
-          barred: false,
-          description: 'Easy minor 7. Common in jazz.',
-        },
-        piano: {
-          notes: ['D4', 'F4', 'A4', 'C5'],
-          octaveRange: [4, 5],
-          description: 'Root position.',
-        },
-      },
-    ],
-    description: 'Jazz staple chord.',
-    tags: ['beginner', 'extended', 'jazz'],
-  },
 
-  {
-    id: 'g-minor-7',
-    name: 'G Minor 7',
-    shortName: 'Gm7',
-    root: 'G',
-    type: 'extended',
-    difficulty: 'beginner',
-    theory: {
-      intervals: ['R', 'm3', 'P5', 'm7'],
-      construction: 'Minor triad + Minor 7th',
-      commonProgressions: ['ii-V-I', 'v7-I'],
-    },
-    voicings: [
-      {
-        voicingName: 'Barre Position (3rd Fret)',
-        position: 1,
-        guitar: {
-          frets: [3, 5, 3, 3, 3, 3],
-          fingers: ['1', '2', '1', '1', '1', '1'],
-          muted: [],
-          barred: true,
-          description: 'Barre minor 7.',
-        },
-        piano: {
-          notes: ['G3', 'Bb3', 'D4', 'F4'],
-          octaveRange: [3, 4],
-          description: 'Root position.',
-        },
-      },
-    ],
-    description: 'Barre version of Gm7.',
-    tags: ['beginner', 'extended', 'jazz', 'barre-chord'],
-  },
 
   // ===== MAJOR 7 CHORDS (4) =====
-  {
-    id: 'c-major-7',
-    name: 'C Major 7',
-    shortName: 'Cmaj7',
-    root: 'C',
-    type: 'extended',
-    difficulty: 'beginner',
-    theory: {
-      intervals: ['R', 'M3', 'P5', 'M7'],
-      construction: 'Major triad + Major 7th',
-      commonProgressions: ['ii-V-I', 'I-vi-IV-V'],
-    },
-    voicings: [
-      {
-        voicingName: 'Open Position',
-        position: 1,
-        guitar: {
-          frets: [0, 3, 2, 0, 0, -1],
-          fingers: ['open', '3', '2', 'open', 'open', 'muted'],
-          muted: [6],
-          barred: false,
-          description: 'Smooth, jazzy. The major 7 chord.',
-        },
-        piano: {
-          notes: ['C4', 'E4', 'G4', 'B4'],
-          octaveRange: [4, 4],
-          description: 'Root position.',
-        },
-      },
-    ],
-    description: 'Jazz essential. Smooth and sophisticated.',
-    tags: ['beginner', 'extended', 'jazz'],
-  },
 
-  {
-    id: 'a-major-7',
-    name: 'A Major 7',
-    shortName: 'Amaj7',
-    root: 'A',
-    type: 'extended',
-    difficulty: 'beginner',
-    theory: {
-      intervals: ['R', 'M3', 'P5', 'M7'],
-      construction: 'Major triad + Major 7th',
-      commonProgressions: ['ii-V-I', 'I-IV-I'],
-    },
-    voicings: [
-      {
-        voicingName: 'Open Position',
-        position: 1,
-        guitar: {
-          frets: [0, 0, 2, 1, 2, 0],
-          fingers: ['open', 'open', '2', '1', '2', 'open'],
-          muted: [],
-          barred: false,
-          description: 'Beautiful major 7.',
-        },
-        piano: {
-          notes: ['A3', 'C#4', 'E4', 'G#4'],
-          octaveRange: [3, 4],
-          description: 'Root position.',
-        },
-      },
-    ],
-    description: 'Sophisticated major 7.',
-    tags: ['beginner', 'extended', 'jazz'],
-  },
 
-  {
-    id: 'g-major-7',
-    name: 'G Major 7',
-    shortName: 'Gmaj7',
-    root: 'G',
-    type: 'extended',
-    difficulty: 'beginner',
-    theory: {
-      intervals: ['R', 'M3', 'P5', 'M7'],
-      construction: 'Major triad + Major 7th',
-      commonProgressions: ['ii-V-I', 'I-IV-I'],
-    },
-    voicings: [
-      {
-        voicingName: 'Open Position',
-        position: 1,
-        guitar: {
-          frets: [3, 2, 0, 0, 0, 2],
-          fingers: ['3', '2', 'open', 'open', 'open', '2'],
-          muted: [],
-          barred: false,
-          description: 'Shimmering major 7.',
-        },
-        piano: {
-          notes: ['G3', 'B3', 'D4', 'F#4'],
-          octaveRange: [3, 4],
-          description: 'Root position.',
-        },
-      },
-    ],
-    description: 'Bright and sophisticated.',
-    tags: ['beginner', 'extended', 'jazz'],
-  },
 
   // ===== SUSPENDED CHORDS (4) =====
   {
@@ -3393,7 +3010,7 @@ export const CHORD_LIBRARY: Chord[] = [
     shortName: 'C7',
     root: 'C',
     type: 'dominant',
-    difficulty: 'intermediate',
+    difficulty: 'beginner',
     theory: {
       intervals: ['R', 'M3', 'P5', 'm7'],
       construction: 'Major triad + Minor 7th',
@@ -3426,7 +3043,7 @@ export const CHORD_LIBRARY: Chord[] = [
     shortName: 'G7',
     root: 'G',
     type: 'dominant',
-    difficulty: 'intermediate',
+    difficulty: 'beginner',
     theory: {
       intervals: ['R', 'M3', 'P5', 'm7'],
       construction: 'Major triad + Minor 7th',
@@ -3459,7 +3076,7 @@ export const CHORD_LIBRARY: Chord[] = [
     shortName: 'D7',
     root: 'D',
     type: 'dominant',
-    difficulty: 'intermediate',
+    difficulty: 'beginner',
     theory: {
       intervals: ['R', 'M3', 'P5', 'm7'],
       construction: 'Major triad + Minor 7th',
@@ -3492,7 +3109,7 @@ export const CHORD_LIBRARY: Chord[] = [
     shortName: 'A7',
     root: 'A',
     type: 'dominant',
-    difficulty: 'intermediate',
+    difficulty: 'beginner',
     theory: {
       intervals: ['R', 'M3', 'P5', 'm7'],
       construction: 'Major triad + Minor 7th',
@@ -3525,7 +3142,7 @@ export const CHORD_LIBRARY: Chord[] = [
     shortName: 'E7',
     root: 'E',
     type: 'dominant',
-    difficulty: 'intermediate',
+    difficulty: 'beginner',
     theory: {
       intervals: ['R', 'M3', 'P5', 'm7'],
       construction: 'Major triad + Minor 7th',
@@ -3888,7 +3505,7 @@ export const CHORD_LIBRARY: Chord[] = [
     shortName: 'Cmaj7',
     root: 'C',
     type: 'major',
-    difficulty: 'intermediate',
+    difficulty: 'beginner',
     theory: {
       intervals: ['R', 'M3', 'P5', 'M7'],
       construction: 'Major triad + Major 7th',
@@ -3921,7 +3538,7 @@ export const CHORD_LIBRARY: Chord[] = [
     shortName: 'Gmaj7',
     root: 'G',
     type: 'major',
-    difficulty: 'intermediate',
+    difficulty: 'beginner',
     theory: {
       intervals: ['R', 'M3', 'P5', 'M7'],
       construction: 'Major triad + Major 7th',
@@ -3987,7 +3604,7 @@ export const CHORD_LIBRARY: Chord[] = [
     shortName: 'Amaj7',
     root: 'A',
     type: 'major',
-    difficulty: 'intermediate',
+    difficulty: 'beginner',
     theory: {
       intervals: ['R', 'M3', 'P5', 'M7'],
       construction: 'Major triad + Major 7th',
@@ -4383,7 +4000,7 @@ export const CHORD_LIBRARY: Chord[] = [
     shortName: 'Am7',
     root: 'A',
     type: 'minor',
-    difficulty: 'intermediate',
+    difficulty: 'beginner',
     theory: {
       intervals: ['R', 'm3', 'P5', 'm7'],
       construction: 'Minor triad + Minor 7th',
@@ -4416,7 +4033,7 @@ export const CHORD_LIBRARY: Chord[] = [
     shortName: 'Em7',
     root: 'E',
     type: 'minor',
-    difficulty: 'intermediate',
+    difficulty: 'beginner',
     theory: {
       intervals: ['R', 'm3', 'P5', 'm7'],
       construction: 'Minor triad + Minor 7th',
@@ -4482,7 +4099,7 @@ export const CHORD_LIBRARY: Chord[] = [
     shortName: 'Dm7',
     root: 'D',
     type: 'minor',
-    difficulty: 'intermediate',
+    difficulty: 'beginner',
     theory: {
       intervals: ['R', 'm3', 'P5', 'm7'],
       construction: 'Minor triad + Minor 7th',
@@ -4515,7 +4132,7 @@ export const CHORD_LIBRARY: Chord[] = [
     shortName: 'Gm7',
     root: 'G',
     type: 'minor',
-    difficulty: 'intermediate',
+    difficulty: 'beginner',
     theory: {
       intervals: ['R', 'm3', 'P5', 'm7'],
       construction: 'Minor triad + Minor 7th',

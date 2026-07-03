@@ -11,3 +11,4 @@
 
 ## Project-Specific Notes
 <!-- Notes relevant to this specific project -->
+- **Screenshot-verify rendering paths with hostile inputs, not just C major.** Three long-lived render bugs (piano diagram never rendered, B natural flatted on staff, pentatonic double-accidental spellings) were invisible in default C-major views; driving Bb Phrygian and F# Hirajoshi in a browser exposed all three in minutes. (2026-07-02)

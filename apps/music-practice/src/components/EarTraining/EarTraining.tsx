@@ -3,12 +3,13 @@
  * (Interval ear training lives on the Intervals page.)
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@hudak/ui/components/button';
 import { Play, RefreshCw } from 'lucide-react';
 import { getChordType } from '@/data/chords/chord-types';
 import { getScale } from '@/data/scales/scale-registry';
 import { playChordMidis, playMelody } from '@/lib/audio/player';
+import { useSessionRecorder } from '@/hooks/use-session-recorder';
 
 type Mode = 'chords' | 'scales';
 
@@ -75,12 +76,13 @@ export function EarTraining(): JSX.Element {
   const [question, setQuestion] = useState<Question>(() => makeQuestion('chords', 4));
   const [answered, setAnswered] = useState<string | null>(null);
   const [score, setScore] = useState({ correct: 0, total: 0 });
+  const record = useSessionRecorder('ear-training');
 
-  const reset = (m: Mode) => {
+  // Switching mode deals a fresh question but keeps the running score
+  const switchMode = (m: Mode) => {
     setMode(m);
     setQuestion(makeQuestion(m, 4));
     setAnswered(null);
-    setScore({ correct: 0, total: 0 });
   };
   const next = () => {
     setQuestion(makeQuestion(mode, 4));
@@ -89,16 +91,34 @@ export function EarTraining(): JSX.Element {
   const answer = (id: string) => {
     if (answered) return;
     setAnswered(id);
-    setScore(s => ({ correct: s.correct + (id === question.id ? 1 : 0), total: s.total + 1 }));
+    const correct = id === question.id;
+    record(correct);
+    setScore(s => ({ correct: s.correct + (correct ? 1 : 0), total: s.total + 1 }));
   };
+
+  // Keyboard: 1-4 answer, Enter/Space next
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLElement && /^(input|textarea|select)$/i.test(e.target.tagName)) return;
+      const idx = Number(e.key) - 1;
+      if (idx >= 0 && idx < question.options.length && !answered) {
+        answer(question.options[idx].id);
+      } else if ((e.key === 'Enter' || e.key === ' ') && answered) {
+        e.preventDefault();
+        next();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
 
   return (
     <div className="max-w-xl space-y-6">
       <div className="flex gap-2">
-        <Button variant={mode === 'chords' ? 'default' : 'outline'} size="lg" onClick={() => reset('chords')}>
+        <Button variant={mode === 'chords' ? 'default' : 'outline'} size="lg" onClick={() => switchMode('chords')}>
           Chord qualities
         </Button>
-        <Button variant={mode === 'scales' ? 'default' : 'outline'} size="lg" onClick={() => reset('scales')}>
+        <Button variant={mode === 'scales' ? 'default' : 'outline'} size="lg" onClick={() => switchMode('scales')}>
           Scale flavors
         </Button>
       </div>
@@ -117,7 +137,7 @@ export function EarTraining(): JSX.Element {
       </div>
 
       <div className="grid grid-cols-2 gap-2">
-        {question.options.map(opt => {
+        {question.options.map((opt, i) => {
           const isCorrect = opt.id === question.id;
           const state = !answered ? 'idle' : isCorrect ? 'correct' : opt.id === answered ? 'wrong' : 'idle';
           return (
@@ -134,6 +154,7 @@ export function EarTraining(): JSX.Element {
                     : ''
               }
             >
+              <span className="text-muted-foreground font-mono text-xs mr-1.5">{i + 1}</span>
               {opt.label}
             </Button>
           );

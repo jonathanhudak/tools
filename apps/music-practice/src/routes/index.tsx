@@ -142,7 +142,7 @@ function LandingRoute() {
                 key={module.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.1 }}
+                transition={{ delay: Math.min(idx * 0.04, 0.2) }}
               >
                 <Card
                   onClick={() => navigate({ to: `/${module.id}` })}
@@ -180,7 +180,7 @@ function LandingRoute() {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.15 }}
         >
           <h2 className="text-2xl font-bold font-display text-foreground mb-6">Theory Tools</h2>
         </motion.div>
@@ -192,7 +192,7 @@ function LandingRoute() {
                 key={module.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 + idx * 0.1 }}
+                transition={{ delay: Math.min(0.15 + idx * 0.04, 0.35) }}
               >
                 <Card
                   onClick={() => navigate({ to: `/${module.id}` })}
