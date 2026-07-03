@@ -20,6 +20,7 @@ import { getPreferredSpelling } from '@/data/enharmonics';
 import { playMelody, type PlaybackHandle } from '@/lib/audio/player';
 import { PianoScaleDiagram } from '../ScaleReference/PianoScaleDiagram';
 import { GuitarFretboard } from '../GuitarFretboard';
+import { StaffDisplay } from '../notation/StaffDisplay';
 
 const KEYS = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
 const FAMILIES: ArpeggioFamily[] = ['triadic', 'seventh', 'sixth', 'extended', 'altered'];
@@ -72,6 +73,12 @@ export function ArpeggioPractice(): JSX.Element {
     // Patterns address up to 4 tones; clamp into range for triads (octave = last tone)
     return pattern.pattern.map(i => tones[Math.min(i, tones.length - 1)]);
   }, [arp, pattern, root]);
+
+  /** Pattern sequence spelled for the staff, matching the key's flat/sharp lean. */
+  const staffNotes = useMemo(() => {
+    const flats = root.includes('b') || root === 'F';
+    return sequence.map(midi => (flats ? Note.fromMidi(midi) : Note.fromMidiSharps(midi)));
+  }, [sequence, root]);
 
   const stop = () => {
     handle.current?.stop();
@@ -193,6 +200,13 @@ export function ArpeggioPractice(): JSX.Element {
                 </span>
               ))}
             </div>
+
+            {/* Staff notation of the pattern */}
+            {staffNotes.length > 0 && (
+              <div className="rounded-xl border border-[var(--border-subtle)] bg-card p-2 overflow-x-auto">
+                <StaffDisplay notes={staffNotes} clef="treble" />
+              </div>
+            )}
 
             {/* Transport */}
             <div className="flex flex-wrap items-center gap-3">
