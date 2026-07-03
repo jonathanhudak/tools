@@ -38,36 +38,21 @@ export class StaffRenderer {
     }
 
     /**
-     * Check if dark mode is active
-     */
-    private isDarkMode(): boolean {
-        return document.documentElement.classList.contains('dark');
-    }
-
-    /**
-     * Get the appropriate stroke color based on theme
-     */
-    private getStrokeColor(): string {
-        return getComputedStyle(document.documentElement).getPropertyValue('--ink-primary').trim()
-            || (this.isDarkMode() ? '#f0ead9' : '#1a1714');
-    }
-
-    /**
-     * Apply theme-aware styling to SVG
+     * Apply theme-aware styling to SVG.
+     * Uses currentColor bound to the --ink-primary CSS variable instead of a
+     * baked-in computed color: on first paint the theme provider may not have
+     * applied the .dark class yet, and a JS-resolved color would freeze the
+     * wrong theme's ink into the SVG. currentColor re-resolves on theme flip.
      */
     private applyThemeToSVG(svg: SVGElement): void {
-        const strokeColor = this.getStrokeColor();
+        svg.style.color = 'var(--ink-primary, #1a1714)';
 
-        // Style all staff lines and note elements
-        svg.style.color = strokeColor;
-
-        // Apply stroke color to all paths and lines
         const elements = svg.querySelectorAll('path, line, rect, circle, ellipse');
         elements.forEach(el => {
             const element = el as SVGElement;
             if (!element.style.fill || element.style.fill === 'black' || element.style.fill === 'rgb(0, 0, 0)') {
-                element.style.stroke = strokeColor;
-                element.style.fill = strokeColor;
+                element.style.stroke = 'currentColor';
+                element.style.fill = 'currentColor';
             }
         });
     }

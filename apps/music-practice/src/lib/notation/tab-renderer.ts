@@ -87,21 +87,13 @@ export class TabRenderer {
     }
 
     /**
-     * Get the appropriate stroke color based on theme
-     */
-    private getStrokeColor(): string {
-        return getComputedStyle(document.documentElement).getPropertyValue('--ink-primary').trim()
-            || (this.isDarkMode() ? '#f0ead9' : '#1a1714');
-    }
-
-    /**
      * Apply theme-aware styling to SVG
      */
     private applyThemeToSVG(svg: SVGElement): void {
-        const strokeColor = this.getStrokeColor();
-
-        // Style all staff lines and note elements
-        svg.style.color = strokeColor;
+        // currentColor bound to the CSS variable: re-resolves if the .dark
+        // class lands after first paint or the user flips the theme.
+        const strokeColor = 'currentColor';
+        svg.style.color = 'var(--ink-primary, #1a1714)';
 
         // Apply stroke color to paths, lines, and other elements (but NOT rects with white fill)
         const elements = svg.querySelectorAll('path, line, circle, ellipse');
