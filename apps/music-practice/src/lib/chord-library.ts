@@ -4,6 +4,8 @@
  * Based on CAGED system for guitar, root position + inversions for piano
  */
 
+import { Note } from 'tonal';
+
 export interface ChordVoicing {
   voicingName: string;
   position: number; // 1-5 for CAGED or inversion number
@@ -91,41 +93,50 @@ function simplestMatch(matches: Chord[]): Chord | undefined {
   )[0];
 }
 
+/** Quality suffix aliases: the same chord is spelled differently across the library */
+const QUALITY_ALIASES: Record<string, string[]> = {
+  'mmaj7': ['m(maj7)', 'mMaj7', 'mmaj7'],
+  'm(maj7)': ['m(maj7)', 'mMaj7', 'mmaj7'],
+  'maj7#5': ['Maj7#5', 'aug(maj7)', 'augmaj7', 'aug'],
+  'aug(maj7)': ['aug(maj7)', 'Maj7#5', 'augmaj7'],
+  'augmaj7': ['augmaj7', 'aug(maj7)', 'Maj7#5'],
+  'dim7': ['dim7', 'o7'],
+  'o7': ['o7', 'dim7'],
+};
+
 /** Look up a chord by its shortName (e.g. "C", "Dm", "G7").
- *  Tries exact match, case-insensitive, and normalized quality suffixes. */
+ *  Tries exact match, case-insensitive, quality aliases (mMaj7 → m(maj7)),
+ *  and enharmonic roots (Gbm7 → F#m7, BbbMaj7 → AMaj7) — in every combination. */
 export function getChordByShortName(shortName: string): Chord | undefined {
-  // Exact match
+  // Exact match first
   const exact = simplestMatch(CHORD_LIBRARY.filter(c => c.shortName === shortName));
   if (exact) return exact;
 
-  // Case-insensitive match (handles Cmaj7 vs CMaj7)
-  const lower = shortName.toLowerCase();
-  const caseMatch = simplestMatch(CHORD_LIBRARY.filter(c => c.shortName.toLowerCase() === lower));
-  if (caseMatch) return caseMatch;
-  
-  // Normalized quality aliases: mMaj7 → m(maj7), Maj7#5 → aug etc.
-  const rootMatch = shortName.match(/^([A-G][b#]?)(.*)/);
-  if (rootMatch) {
-    const [, root, quality] = rootMatch;
-    const aliases: Record<string, string[]> = {
-      'mMaj7': ['m(maj7)', 'mmaj7'],
-      'mmaj7': ['m(maj7)', 'mMaj7'],
-      'm(maj7)': ['mMaj7', 'mmaj7'],
-      'Maj7#5': ['aug(maj7)', 'augmaj7', 'aug'],
-      'maj7#5': ['aug(maj7)', 'augmaj7', 'aug'],
-      'aug(maj7)': ['Maj7#5', 'augmaj7'],
-      'augmaj7': ['aug(maj7)', 'Maj7#5'],
-      'dim7': ['dim7', 'o7'],
-      'o7': ['dim7'],
-    };
-    const alts = aliases[quality] || aliases[quality.toLowerCase()] || [];
-    for (const alt of alts) {
-      const altName = `${root}${alt}`.toLowerCase();
+  const rootMatch = shortName.match(/^([A-G](?:bb|##|[b#])?)(.*)/);
+  if (!rootMatch) return undefined;
+  const [, root, quality] = rootMatch;
+
+  // Candidate roots: as written, plus enharmonic equivalents
+  // (theory-correct spellings like Gb/Cb/Bbb/D# are voiced under F#/B/A/Eb)
+  const roots = new Set([root]);
+  const simplified = Note.simplify(root);
+  if (simplified) {
+    roots.add(simplified);
+    const enharmonic = Note.enharmonic(simplified);
+    if (enharmonic) roots.add(enharmonic);
+  }
+
+  // Candidate qualities: as written, plus known alias spellings
+  const qualities = new Set([quality, ...(QUALITY_ALIASES[quality.toLowerCase()] ?? [])]);
+
+  for (const altRoot of roots) {
+    for (const altQuality of qualities) {
+      const altName = `${altRoot}${altQuality}`.toLowerCase();
       const found = simplestMatch(CHORD_LIBRARY.filter(c => c.shortName.toLowerCase() === altName));
       if (found) return found;
     }
   }
-  
+
   return undefined;
 }
 

@@ -477,10 +477,13 @@ export async function getChordForDegree(
   const byName = getChordByShortName(chordName);
   if (byName) return byName;
 
-  // Fallback: try the hardcoded chordId (only correct for key of C)
-  const entry = getDegreeInfo(scaleType, degree);
-  if (entry?.chordId) {
-    return CHORD_LIBRARY.find(c => c.id === entry.chordId) ?? null;
+  // Fallback: the hardcoded chordId is a C-key chord — only valid when the
+  // selected key IS C. Showing it in other keys displays the wrong chord.
+  if (rootKey === 'C') {
+    const entry = getDegreeInfo(scaleType, degree);
+    if (entry?.chordId) {
+      return CHORD_LIBRARY.find(c => c.id === entry.chordId) ?? null;
+    }
   }
 
   return null;

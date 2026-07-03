@@ -13,7 +13,7 @@ import { GuitarFretboard } from '../GuitarFretboard/GuitarFretboard';
 import { PianoScaleDiagram } from './PianoScaleDiagram';
 import { StaffDisplay } from '../notation/StaffDisplay';
 import { ChordVoicingDisplay } from '../ChordScaleGame/ChordVoicingDisplay';
-import { getChordById } from '@/lib/chord-library';
+import { getChordById, getChordByShortName } from '@/lib/chord-library';
 import {
   buildScaleChords,
   getModeNotes,
@@ -65,8 +65,16 @@ export function ScaleReference(): JSX.Element {
     [activeScale, selectedDegree, rootKey]
   );
 
-  // Chord for this degree
-  const chord = selectedEntry.chordId ? getChordById(selectedEntry.chordId) : undefined;
+  // Chord for this degree — built on the mode root in the SELECTED key
+  // (the matrix chordIds are hard-coded C-key chords)
+  const chord = useMemo(() => {
+    const byKey = getChordByShortName(`${modeRoot}${selectedEntry.chordQuality}`);
+    if (byKey) return byKey;
+    // C is the matrix's home key, so its curated chordId is a safe fallback
+    return rootKey === 'C' && selectedEntry.chordId
+      ? getChordById(selectedEntry.chordId)
+      : undefined;
+  }, [modeRoot, selectedEntry, rootKey]);
 
   return (
     <div className="space-y-6">
