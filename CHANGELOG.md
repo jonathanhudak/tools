@@ -1,3 +1,10 @@
+## [1.49.1](https://github.com/jonathanhudak/tools/compare/v1.49.0...v1.49.1) (2026-07-06)
+
+
+### Bug Fixes
+
+* **pages:** restore SPA deep links on GitHub Pages ([3884068](https://github.com/jonathanhudak/tools/commit/3884068d65933cffb1facf5b4be3490cd301cd0f))
+
 # [1.49.0](https://github.com/jonathanhudak/tools/compare/v1.48.0...v1.49.0) (2026-07-06)
 
 
