@@ -54,3 +54,9 @@ Proposal: docs/plans/tuner-ux-integration-proposal.md
 - [x] "A4 = <hz> Hz" badge on all three tuning-library pages (extracted ReferencePitchBadge component)
 - Verified: typecheck/build/tests green (1585), browser smoke: ?a4=432 roundtrip + persistence, featured-select rewrites URL with a4, share hint renders, library badge renders
 - Remaining backlog (unchanged): last-tuning persistence in dedicated app, recents/favorites, flat tuning search, 432 in music-practice playback, sticky-gauge height polish, tuner eslint config, code splitting, TuningSelector/CustomTuningBuilder dead-code check
+
+### Deploy + CI repair (completed 2026-07-05)
+- [x] Pushed all tuner work; semantic-release cut v1.49.0
+- [x] AWS deploy (music-practice → s3://learn-music-hudak-land + CloudFront E1IL5LSQHQUG3Y): fixed router basepath (was hardcoded /tools/music-practice, broke client routing on the standalone domain) — derive from import.meta.env.BASE_URL; verified live at https://learn.music.hudak.land/tuner
+- [x] CI release workflow was red since audio-components import landed: typecheck step ran before shared packages built (no dist/) — now builds @hudak/audio-components + @hudak/tuning-data first; run green
+- [x] GH Pages SPA deep links 404'd (per-app 404.html never served — Pages only reads root 404): added docs/404.html redirector + ?redirect restore in instrument-tuner root route; verified /music-practice/tuner and /instrument-tuner/tunings/violin live
