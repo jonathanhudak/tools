@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Redirecting…</title>
+  <script>
+    // GitHub Pages serves the custom 404 only from the site root, so SPA
+    // deep links (e.g. /tools/music-practice/tuner) land here. Bounce them
+    // to the app root with the intended route in ?redirect=, which each
+    // SPA's root route restores client-side. Extra query params survive.
+    (function () {
+      var match = window.location.pathname.match(/^\/tools\/(music-practice|instrument-tuner)\/(.+)$/);
+      if (match) {
+        var extra = window.location.search ? '&' + window.location.search.slice(1) : '';
+        window.location.replace(
+          '/tools/' + match[1] + '/?redirect=/' + match[2] + extra + window.location.hash
+        );
+      } else {
+        window.location.replace('/tools/');
+      }
+    })();
+  </script>
+</head>
+<body>
+  <p>Redirecting…</p>
+</body>
+</html>
