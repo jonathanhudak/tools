@@ -5,12 +5,27 @@ import {
   findTuningById,
   findTuningByNotes,
   serializeTuning,
+  STANDARD_A4,
+  MIN_REFERENCE_PITCH,
+  MAX_REFERENCE_PITCH,
 } from '@hudak/tuning-data';
 
 export interface TuningUrlParams {
   tuningId?: string; // Preset tuning ID
   notes?: string; // Custom notes string (E2-A2-D3-G3-B3-E4)
   name?: string; // Custom tuning name
+  a4?: number; // A4 reference pitch in Hz (only when it differs from 440)
+}
+
+/**
+ * Parse the a4 search param — accept only a finite number in the valid range
+ */
+function parseA4Param(value: string | null): number | undefined {
+  if (!value) return undefined;
+  const a4 = Number(value);
+  if (!Number.isFinite(a4)) return undefined;
+  if (a4 < MIN_REFERENCE_PITCH || a4 > MAX_REFERENCE_PITCH) return undefined;
+  return a4;
 }
 
 /**
@@ -21,6 +36,7 @@ export function parseTuningFromUrl(searchParams: URLSearchParams): TuningUrlPara
     tuningId: searchParams.get('tuning') || undefined,
     notes: searchParams.get('notes') || undefined,
     name: searchParams.get('name') || undefined,
+    a4: parseA4Param(searchParams.get('a4')),
   };
 }
 
@@ -56,7 +72,7 @@ export function getTuningFromParams(params: TuningUrlParams): Tuning | null {
  */
 export function createTuningUrlParams(
   tuning: Tuning,
-  options: { includePresetId?: boolean } = {}
+  options: { includePresetId?: boolean; a4?: number } = {}
 ): URLSearchParams {
   const params = new URLSearchParams();
 
@@ -73,23 +89,28 @@ export function createTuningUrlParams(
     }
   }
 
+  // Only pin A4 when it differs from the 440 standard
+  if (options.a4 !== undefined && options.a4 !== STANDARD_A4) {
+    params.set('a4', String(options.a4));
+  }
+
   return params;
 }
 
 /**
  * Create a full shareable URL for a tuning
  */
-export function createShareableUrl(tuning: Tuning, baseUrl?: string): string {
+export function createShareableUrl(tuning: Tuning, baseUrl?: string, a4?: number): string {
   const base = baseUrl || window.location.origin + window.location.pathname;
-  const params = createTuningUrlParams(tuning, { includePresetId: true });
+  const params = createTuningUrlParams(tuning, { includePresetId: true, a4 });
   return `${base}?${params.toString()}`;
 }
 
 /**
  * Update URL with current tuning (without navigation)
  */
-export function updateUrlWithTuning(tuning: Tuning): void {
-  const params = createTuningUrlParams(tuning, { includePresetId: true });
+export function updateUrlWithTuning(tuning: Tuning, a4?: number): void {
+  const params = createTuningUrlParams(tuning, { includePresetId: true, a4 });
   const newUrl = `${window.location.pathname}?${params.toString()}`;
   window.history.replaceState({}, '', newUrl);
 }

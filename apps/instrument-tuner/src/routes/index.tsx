@@ -112,7 +112,7 @@ function TunerPage() {
   const { theme, setTheme } = useTheme();
 
   // Reference pitch (A4) preference
-  const { referencePitch } = useReferencePitch();
+  const { referencePitch, setReferencePitch } = useReferencePitch();
 
   // State
   const [microphoneActive, setMicrophoneActive] = useState(false);
@@ -150,6 +150,12 @@ function TunerPage() {
     if (urlTuning) {
       setCurrentTuning(urlTuning);
     }
+
+    // A shared link's A4 wins over the stored preference on load
+    if (urlParams.a4 !== undefined) {
+      setReferencePitch(urlParams.a4);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Stale pitch detection — fade gauge after 2s of silence (3.2)
@@ -307,8 +313,8 @@ function TunerPage() {
     setCurrentTuning(tuning);
     highlightedStringRef.current = null;
     setHighlightedString(null);
-    updateUrlWithTuning(tuning);
-  }, []);
+    updateUrlWithTuning(tuning, referencePitch);
+  }, [referencePitch]);
 
   // Sort notes by string number (high to low for display)
   const sortedNotes = useMemo(() => {
@@ -366,7 +372,7 @@ function TunerPage() {
           }
           actions={
             <>
-            <ShareTuning tuning={currentTuning} />
+            <ShareTuning tuning={currentTuning} referencePitch={referencePitch} />
             <Button
               onClick={toggleMicrophone}
               variant={microphoneActive ? 'default' : 'outline'}

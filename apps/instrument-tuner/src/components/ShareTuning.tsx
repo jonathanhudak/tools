@@ -7,16 +7,18 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@hudak/ui';
-import { type Tuning } from '@hudak/tuning-data';
+import { type Tuning, STANDARD_A4 } from '@hudak/tuning-data';
 import { createShareableUrl } from '../utils/tuning-url';
 
 interface ShareTuningProps {
   tuning: Tuning;
+  referencePitch?: number;
 }
 
-export function ShareTuning({ tuning }: ShareTuningProps) {
+export function ShareTuning({ tuning, referencePitch }: ShareTuningProps) {
   const [copied, setCopied] = useState(false);
-  const shareUrl = createShareableUrl(tuning);
+  const shareUrl = createShareableUrl(tuning, undefined, referencePitch);
+  const pinsA4 = referencePitch !== undefined && referencePitch !== STANDARD_A4;
 
   const handleCopy = async () => {
     try {
@@ -108,6 +110,12 @@ export function ShareTuning({ tuning }: ShareTuningProps) {
               <Link2 className="h-4 w-4" />
               Share via...
             </Button>
+          )}
+
+          {pinsA4 && (
+            <p className="text-xs text-muted-foreground">
+              Link includes A4 = {referencePitch} Hz
+            </p>
           )}
 
           <p className="text-xs text-muted-foreground">
