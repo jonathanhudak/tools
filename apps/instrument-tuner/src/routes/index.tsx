@@ -27,7 +27,6 @@ import {
   frequencyToNote,
   getInstrumentForTuning,
   getSectionForTuning,
-  STANDARD_A4,
 } from '@hudak/tuning-data';
 import { parseTuningFromUrl, getTuningFromParams, updateUrlWithTuning } from '../utils/tuning-url';
 
@@ -36,6 +35,7 @@ import { ShareTuning } from '../components/ShareTuning';
 import { TunerPageHeader } from '../components/TunerPageHeader';
 import { TuningBreadcrumbs } from '../components/TuningBreadcrumbs';
 import { FeaturedTuningList } from '../components/FeaturedTuningList';
+import { ReferencePitchBadge } from '../components/ReferencePitchBadge';
 import { ReferencePitchControl } from '../components/ReferencePitchControl';
 import { useReferencePitch } from '../hooks/use-reference-pitch';
 import { useTheme } from '../hooks/use-theme';
@@ -54,19 +54,6 @@ interface DetectedPitch {
   cents: number;
   frequency: number;
   clarity: number;
-}
-
-/** Badge shown whenever the reference pitch deviates from concert standard. */
-function ReferencePitchBadge({ hz, className = '' }: { hz: number; className?: string }) {
-  if (hz === STANDARD_A4) return null;
-  return (
-    <span
-      className={`inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary ${className}`}
-      title={`Reference pitch: every frequency is scaled by exactly ${hz}/440`}
-    >
-      A4 = {hz} Hz
-    </span>
-  );
 }
 
 interface GaugePanelProps {
