@@ -14,9 +14,9 @@ import {
 import { Route as rootRoute } from '../__root';
 import { RouteThemeSettings } from '../../components/RouteThemeSettings';
 import { TunerPageHeader } from '../../components/TunerPageHeader';
-import { INSTRUMENT_CATEGORIES } from '../../data/tunings';
+import { INSTRUMENT_CATEGORIES } from '@hudak/tuning-data';
 
-interface TuningsSearch {
+export interface TuningsSearch {
   q?: string;
   instrument?: string;
   strings?: number;

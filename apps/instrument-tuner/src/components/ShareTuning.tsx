@@ -7,7 +7,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@hudak/ui';
-import { type Tuning } from '../data/tunings';
+import { type Tuning } from '@hudak/tuning-data';
 import { createShareableUrl } from '../utils/tuning-url';
 
 interface ShareTuningProps {
@@ -98,7 +98,7 @@ export function ShareTuning({ tuning }: ShareTuningProps) {
           )}
 
           {/* Native share button (mobile) */}
-          {typeof window !== 'undefined' && typeof navigator !== 'undefined' && navigator.share && (
+          {typeof window !== 'undefined' && typeof navigator !== 'undefined' && typeof navigator.share === 'function' && (
             <Button
               variant="outline"
               size="sm"

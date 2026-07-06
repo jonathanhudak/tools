@@ -5,12 +5,14 @@ import { Button } from "@hudak/ui";
 import { Route as rootRoute } from "../__root";
 import { RouteThemeSettings } from "../../components/RouteThemeSettings";
 import { TunerPageHeader } from "../../components/TunerPageHeader";
-import { useReferenceTonePlayer } from "../../hooks/use-reference-tone-player";
+import { useReferenceTonePlayer } from '@hudak/audio-components';
 import {
+  applyReferencePitch,
   getInstrumentById,
   getSectionById,
-} from "../../utils/tuning-navigation";
+} from "@hudak/tuning-data";
 import { TuningBreadcrumbs } from "../../components/TuningBreadcrumbs";
+import { useReferencePitch } from "../../hooks/use-reference-pitch";
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
@@ -23,6 +25,7 @@ function SectionTuningsPage() {
   const instrument = getInstrumentById(instrumentId);
   const section = getSectionById(instrumentId, sectionId);
   const navigate = useNavigate();
+  const { referencePitch } = useReferencePitch();
   const { playSequence, playingKey, sequenceKey, startTone, stopTone } =
     useReferenceTonePlayer();
   const recoveryLink = instrument
@@ -89,7 +92,10 @@ function SectionTuningsPage() {
         />
 
         <div className="space-y-4 sm:space-y-5">
-          {section.tunings.map((tuning) => (
+          {section.tunings.map((catalogTuning) => {
+            // All displayed/played frequencies honor the A4 preference
+            const tuning = applyReferencePitch(catalogTuning, referencePitch);
+            return (
             <Card
               key={tuning.id}
               className="tuner-card-surface gap-0 border py-0"
@@ -220,7 +226,8 @@ function SectionTuningsPage() {
                 </div>
               </CardContent>
             </Card>
-          ))}
+            );
+          })}
         </div>
 
         <Link

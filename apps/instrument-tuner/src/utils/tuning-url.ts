@@ -5,7 +5,7 @@ import {
   findTuningById,
   findTuningByNotes,
   serializeTuning,
-} from '../data/tunings';
+} from '@hudak/tuning-data';
 
 export interface TuningUrlParams {
   tuningId?: string; // Preset tuning ID

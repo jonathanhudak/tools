@@ -5,7 +5,7 @@ import { Button } from '@hudak/ui';
 import { Route as rootRoute } from '../__root';
 import { RouteThemeSettings } from '../../components/RouteThemeSettings';
 import { TunerPageHeader } from '../../components/TunerPageHeader';
-import { getInstrumentById, getSectionsForInstrument } from '../../utils/tuning-navigation';
+import { getInstrumentById, getSectionsForInstrument } from '@hudak/tuning-data';
 import { TuningBreadcrumbs } from '../../components/TuningBreadcrumbs';
 
 export const Route = createRoute({

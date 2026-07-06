@@ -1,4 +1,4 @@
-import { INSTRUMENT_CATEGORIES, type InstrumentCategory, type Tuning } from '../data/tunings';
+import { INSTRUMENT_CATEGORIES, type InstrumentCategory, type Tuning } from './tunings';
 
 export interface TuningSection {
   id: string;

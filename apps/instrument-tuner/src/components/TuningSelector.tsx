@@ -21,7 +21,7 @@ import {
   INSTRUMENT_CATEGORIES,
   type Tuning,
   searchTunings,
-} from '../data/tunings';
+} from '@hudak/tuning-data';
 
 interface TuningSelectorProps {
   currentTuning: Tuning;

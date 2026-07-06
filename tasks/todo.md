@@ -35,3 +35,15 @@
 - Phase 0 verified at every step: typecheck CLEAN, 1524 unit tests green (27 files), production build green.
 - ScaleReference accepts an `onBack` prop from 3 call sites but renders no back affordance — product decision deferred (global header provides navigation).
 - Chord library still hand-maintains ~5.5K lines; Phase 1+ should derive root-position voicings from chord-types + enharmonics (audit §3.3).
+
+### Tuner integration + 432 Hz reference pitch (completed 2026-07-05)
+Proposal: docs/plans/tuner-ux-integration-proposal.md
+- [x] `packages/tuning-data` (@hudak/tuning-data): 150-tuning catalog + microtonal helpers + navigation/search moved out of instrument-tuner; new reference-pitch math (applyReferencePitch, frequencyToNote, midiToFrequency — exact ×ref/440 scaling) + curated featured list
+- [x] `@hudak/audio-components`: useReferenceTonePlayer moved in (shared with music-practice); PitchGauge gains optional `size: 'sm'|'md'`
+- [x] instrument-tuner: A4 reference preference (440/432 presets + custom 415–466, localStorage `instrument-tuner:reference-pitch`), applied to detection, string cards, library preview tones/Hz labels; "A4 = 432 Hz" badge; landing redesigned — featured-tunings scroll list with sticky gauge (mobile pinned top bar, desktop sticky right rail); pre-existing typecheck errors fixed (unused params, navigator.share narrowing, TuningsSearch export)
+- [x] music-practice: new /tuner route (mic tuner via app AudioManager, featured chips + instrument/tuning selects over the full shared catalog, hold-to-play string tones, same 440/432 preference persisted as settings.referencePitch, cross-link to full tuner app carrying ?tuning=); nav (desktop bar + drawer) + home Tuner card
+
+## Review Notes (2026-07-05)
+- Verified: both apps typecheck clean, vite builds green, music-practice 1585 unit tests pass (incl. 11 new reference-pitch math tests), lint clean (instrument-tuner has no eslint config — pre-existing; lint script fails there on main too).
+- Browser smoke (gstack browse): 432 toggle scales A string 110→108 Hz exactly, violin A shows 432 Hz on library page, preference persists across routes, mobile sticky gauge follows featured-list scroll, Drop D + 432 selection persists in music_practice_settings.
+- Deferred: applying referencePitch to music-practice playback (Tone.js) and sight-reading mic validation; recents/favorites; flat tuning-level library search.

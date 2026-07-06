@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@hudak/ui';
-import { type Tuning, createCustomTuning } from '../data/tunings';
+import { type Tuning, createCustomTuning } from '@hudak/tuning-data';
 
 interface CustomTuningBuilderProps {
   onTuningCreate: (tuning: Tuning) => void;

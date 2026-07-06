@@ -1,9 +1,8 @@
 import { createRoute } from '@tanstack/react-router';
 import { Route as rootRoute } from './__root';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { Note } from 'tonal';
 import { toast } from 'sonner';
-import { PitchGauge } from '@hudak/audio-components';
+import { PitchGauge, useReferenceTonePlayer } from '@hudak/audio-components';
 import { Card, CardContent } from '@hudak/ui';
 import { Button } from '@hudak/ui';
 import { Label } from '@hudak/ui';
@@ -24,16 +23,22 @@ import {
   type Tuning,
   INSTRUMENT_CATEGORIES,
   findTuningById,
-} from '../data/tunings';
-import { parseTuningFromUrl, getTuningFromParams } from '../utils/tuning-url';
+  applyReferencePitch,
+  frequencyToNote,
+  getInstrumentForTuning,
+  getSectionForTuning,
+  STANDARD_A4,
+} from '@hudak/tuning-data';
+import { parseTuningFromUrl, getTuningFromParams, updateUrlWithTuning } from '../utils/tuning-url';
 
 // Components
 import { ShareTuning } from '../components/ShareTuning';
 import { TunerPageHeader } from '../components/TunerPageHeader';
 import { TuningBreadcrumbs } from '../components/TuningBreadcrumbs';
-import { useReferenceTonePlayer } from '../hooks/use-reference-tone-player';
+import { FeaturedTuningList } from '../components/FeaturedTuningList';
+import { ReferencePitchControl } from '../components/ReferencePitchControl';
+import { useReferencePitch } from '../hooks/use-reference-pitch';
 import { useTheme } from '../hooks/use-theme';
-import { getInstrumentForTuning, getSectionForTuning } from '../utils/tuning-navigation';
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
@@ -51,9 +56,76 @@ interface DetectedPitch {
   clarity: number;
 }
 
+/** Badge shown whenever the reference pitch deviates from concert standard. */
+function ReferencePitchBadge({ hz, className = '' }: { hz: number; className?: string }) {
+  if (hz === STANDARD_A4) return null;
+  return (
+    <span
+      className={`inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary ${className}`}
+      title={`Reference pitch: every frequency is scaled by exactly ${hz}/440`}
+    >
+      A4 = {hz} Hz
+    </span>
+  );
+}
+
+interface GaugePanelProps {
+  detectedPitch: DetectedPitch | null;
+  isStale: boolean;
+  microphoneActive: boolean;
+  pitchSensitivity: number;
+  pitchSmoothing: number;
+  subdueNote: boolean;
+  referencePitch: number;
+  size?: 'sm' | 'md';
+}
+
+function GaugePanel({
+  detectedPitch,
+  isStale,
+  microphoneActive,
+  pitchSensitivity,
+  pitchSmoothing,
+  subdueNote,
+  referencePitch,
+  size = 'md',
+}: GaugePanelProps) {
+  return (
+    <div
+      className={`flex flex-col items-center transition-opacity duration-300 ${
+        !detectedPitch ? 'opacity-40' : isStale ? 'opacity-40 saturate-50' : 'opacity-100'
+      }`}
+    >
+      <PitchGauge
+        note={detectedPitch?.note ?? '—'}
+        cents={detectedPitch?.cents ?? 0}
+        clarity={size === 'md' ? detectedPitch?.clarity : undefined}
+        inTuneThreshold={pitchSensitivity}
+        smoothingFactor={pitchSmoothing}
+        subdueNote={subdueNote}
+        size={size}
+      />
+      <ReferencePitchBadge hz={referencePitch} className="mt-1" />
+      {size === 'md' && !detectedPitch && microphoneActive && (
+        <p className="text-sm text-muted-foreground text-center mt-2">
+          Play a string to start tuning
+        </p>
+      )}
+      {size === 'md' && !microphoneActive && (
+        <p className="text-sm text-muted-foreground text-center mt-2">
+          Enable microphone to begin
+        </p>
+      )}
+    </div>
+  );
+}
+
 function TunerPage() {
   // Theme
   const { theme, setTheme } = useTheme();
+
+  // Reference pitch (A4) preference
+  const { referencePitch } = useReferencePitch();
 
   // State
   const [microphoneActive, setMicrophoneActive] = useState(false);
@@ -74,6 +146,13 @@ function TunerPage() {
   const lastPitchUpdateRef = useRef(0);
   const lastPitchTimeRef = useRef(0);
   const highlightedStringRef = useRef<number | null>(null);
+
+  // The active tuning with all frequencies calibrated to the chosen A4.
+  // Exact in 12-TET: every catalog frequency is scaled by referencePitch/440.
+  const activeTuning = useMemo(
+    () => applyReferencePitch(currentTuning, referencePitch),
+    [currentTuning, referencePitch]
+  );
 
   // Parse tuning from URL on mount
   useEffect(() => {
@@ -106,7 +185,7 @@ function TunerPage() {
 
     // Auto-detect which string with hysteresis (1.2)
     if (autoDetectString) {
-      const closestString = currentTuning.notes.reduce((closest, tuning) => {
+      const closestString = activeTuning.notes.reduce((closest, tuning) => {
         const diff = Math.abs(frequency - tuning.frequency);
         const closestDiff = Math.abs(frequency - closest.frequency);
         return diff < closestDiff ? tuning : closest;
@@ -131,7 +210,7 @@ function TunerPage() {
       } else {
         // Closest string differs from highlighted — require drift >5% from current
         // AND <3% to new string before switching
-        const currentStringData = currentTuning.notes.find(n => n.string === currentHighlight);
+        const currentStringData = activeTuning.notes.find(n => n.string === currentHighlight);
         if (currentStringData) {
           const driftFromCurrent = Math.abs(frequency - currentStringData.frequency) / currentStringData.frequency;
           if (driftFromCurrent > 0.05 && percentDiff < 0.03) {
@@ -147,26 +226,17 @@ function TunerPage() {
     if (now - lastPitchUpdateRef.current < 100) return;
     lastPitchUpdateRef.current = now;
 
-    // Get note info
-    const noteInfo = Note.fromFreq(frequency);
-    const noteName = noteInfo || 'Unknown';
-
-    // Calculate cents deviation
-    const midiNumber = Note.midi(noteName);
-    if (midiNumber === null) return;
-
-    const expectedFreq = Note.freq(noteName);
-    if (!expectedFreq) return;
-
-    const cents = 1200 * Math.log2(frequency / expectedFreq);
+    // Map frequency to the nearest note under the active A4 reference
+    const detected = frequencyToNote(frequency, referencePitch);
+    if (!detected) return;
 
     setDetectedPitch({
-      note: noteName,
-      cents: Math.round(cents),
+      note: detected.name,
+      cents: Math.round(detected.cents),
       frequency,
       clarity,
     });
-  }, [autoDetectString, currentTuning]);
+  }, [autoDetectString, activeTuning, referencePitch]);
 
   // Stable pitch handler that always calls the latest callback via ref
   const stablePitchHandler = useCallback((event: PitchDetectedEvent) => {
@@ -229,14 +299,22 @@ function TunerPage() {
     }
   }, [microphoneActive, initAudio]);
 
+  // Select a tuning from the featured list without leaving the page
+  const selectTuning = useCallback((tuning: Tuning) => {
+    setCurrentTuning(tuning);
+    highlightedStringRef.current = null;
+    setHighlightedString(null);
+    updateUrlWithTuning(tuning);
+  }, []);
+
   // Sort notes by string number (high to low for display)
   const sortedNotes = useMemo(() => {
-    return [...currentTuning.notes].sort((a, b) => a.string - b.string);
-  }, [currentTuning]);
+    return [...activeTuning.notes].sort((a, b) => a.string - b.string);
+  }, [activeTuning]);
 
   // Dynamic grid columns based on number of strings
   const gridCols = useMemo(() => {
-    const count = currentTuning.notes.length;
+    const count = activeTuning.notes.length;
     if (count === 1) return 'grid-cols-1 max-w-[200px] mx-auto';
     if (count === 2) return 'grid-cols-2 max-w-[400px] mx-auto';
     if (count === 3) return 'grid-cols-3 max-w-[500px] mx-auto';
@@ -245,16 +323,16 @@ function TunerPage() {
     if (count <= 8) return 'grid-cols-4 md:grid-cols-8';
     if (count <= 10) return 'grid-cols-5 md:grid-cols-10';
     return 'grid-cols-4 sm:grid-cols-6 lg:grid-cols-8';
-  }, [currentTuning.notes.length]);
+  }, [activeTuning.notes.length]);
 
   // Get tuning display
   const tuningDisplay = useMemo(() => {
-    const notes = [...currentTuning.notes]
+    const notes = [...activeTuning.notes]
       .sort((a, b) => b.string - a.string)
       .map((n) => n.name)
       .join(' ');
     return notes;
-  }, [currentTuning]);
+  }, [activeTuning]);
 
 
   const currentInstrument = useMemo(() => getInstrumentForTuning(currentTuning.id), [currentTuning.id]);
@@ -263,11 +341,26 @@ function TunerPage() {
     [currentInstrument, currentTuning.id]
   );
 
+  const gaugePanelProps = {
+    detectedPitch,
+    isStale,
+    microphoneActive,
+    pitchSensitivity,
+    pitchSmoothing,
+    subdueNote: highlightedString !== null,
+    referencePitch,
+  };
+
   return (
     <div className="bg-tuner-shell min-h-screen">
       <div className="container mx-auto max-w-6xl space-y-6 px-4 py-5 motion-safe:animate-[tuner-fade-up_220ms_ease-out] sm:space-y-8 sm:px-6 sm:py-8 lg:px-8">
         <TunerPageHeader
-          subtitle={`${currentTuning.name} · ${tuningDisplay}`}
+          subtitle={
+            <span className="inline-flex flex-wrap items-center gap-2">
+              {`${currentTuning.name} · ${tuningDisplay}`}
+              <ReferencePitchBadge hz={referencePitch} />
+            </span>
+          }
           actions={
             <>
             <ShareTuning tuning={currentTuning} />
@@ -310,6 +403,9 @@ function TunerPage() {
         {showSettings && (
           <Card className="tuner-card-surface">
             <CardContent className="pt-4 pb-4 space-y-3">
+              {/* Reference Pitch (A4) */}
+              <ReferencePitchControl />
+
               {/* Auto Detect String */}
               <div className="flex items-center justify-between">
                 <Label htmlFor="auto-detect">Auto-detect string</Label>
@@ -393,10 +489,16 @@ function TunerPage() {
           </Card>
         )}
 
-        {/* Unified Tuning View: Strings + Gauge (1.4) */}
-        <div className="lg:flex lg:gap-6 space-y-4 lg:space-y-0">
-          {/* Strings Grid */}
-          <div className="lg:flex-1 min-w-0">
+        {/* Tuner workspace: scrollable content left, sticky gauge rail right (lg+).
+            On mobile a compact gauge pins to the top and follows the scroll. */}
+        <div className="lg:flex lg:items-start lg:gap-6">
+          <div className="min-w-0 space-y-6 lg:flex-1">
+            {/* Mobile sticky gauge — follows you down the featured list */}
+            <div className="sticky top-0 z-30 -mx-4 border-b border-border/60 bg-tuner-shell/95 px-4 py-2 backdrop-blur lg:hidden">
+              <GaugePanel {...gaugePanelProps} size="sm" />
+            </div>
+
+            {/* Strings Grid */}
             <div className={`grid ${gridCols} gap-3`}>
               {sortedNotes.map((tuning) => {
                 const isHighlighted = highlightedString === tuning.string;
@@ -453,30 +555,14 @@ function TunerPage() {
                 );
               })}
             </div>
+
+            {/* Featured tunings — scroll and tap while the gauge follows */}
+            <FeaturedTuningList activeTuningId={currentTuning.id} onSelect={selectTuning} />
           </div>
 
-          {/* Pitch Gauge — always rendered (1.3), stale fade (3.2), subdued note (3.6) */}
-          <div className={`lg:w-80 flex-shrink-0 flex flex-col items-center justify-start transition-opacity duration-300 ${
-            !detectedPitch ? 'opacity-40' : isStale ? 'opacity-40 saturate-50' : 'opacity-100'
-          }`}>
-            <PitchGauge
-              note={detectedPitch?.note ?? '—'}
-              cents={detectedPitch?.cents ?? 0}
-              clarity={detectedPitch?.clarity}
-              inTuneThreshold={pitchSensitivity}
-              smoothingFactor={pitchSmoothing}
-              subdueNote={highlightedString !== null}
-            />
-            {!detectedPitch && microphoneActive && (
-              <p className="text-sm text-muted-foreground text-center mt-2">
-                Play a string to start tuning
-              </p>
-            )}
-            {!microphoneActive && (
-              <p className="text-sm text-muted-foreground text-center mt-2">
-                Enable microphone to begin
-              </p>
-            )}
+          {/* Desktop sticky gauge rail */}
+          <div className="hidden flex-shrink-0 lg:sticky lg:top-8 lg:block lg:w-80">
+            <GaugePanel {...gaugePanelProps} size="md" />
           </div>
         </div>
 

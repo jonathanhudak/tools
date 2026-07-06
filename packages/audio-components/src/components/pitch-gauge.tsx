@@ -16,6 +16,7 @@ export interface PitchGaugeProps {
   inTuneThreshold?: number; // Cents threshold for "in tune" (default: 5)
   smoothingFactor?: number; // 0-1, higher = smoother but slower response (default: 0.7)
   subdueNote?: boolean; // When true, reduces note label prominence (for when string cards show the note)
+  size?: 'sm' | 'md'; // 'sm' renders a compact gauge for sticky/embedded layouts (default: 'md')
 }
 
 // Helper to map cents to percentage (0 to 1) for the gauge
@@ -124,8 +125,10 @@ const PitchGaugeComponent: React.FC<PitchGaugeProps> = ({
   clarity,
   inTuneThreshold = 5,
   smoothingFactor = 0.7,
-  subdueNote = false
+  subdueNote = false,
+  size = 'md'
 }) => {
+  const compact = size === 'sm';
   // Smooth the cents value to reduce jitter
   const [smoothedCents, setSmoothedCents] = useState(cents);
   const animationFrameRef = useRef<number | null>(null);
@@ -179,7 +182,7 @@ const PitchGaugeComponent: React.FC<PitchGaugeProps> = ({
     <div className={`flex flex-col items-center ${className}`}>
       {/* Note name — above the gauge */}
       <span className={`font-bold drop-shadow-md transition-all duration-200 mb-1 ${
-        subdueNote ? 'text-2xl opacity-60' : 'text-4xl'
+        subdueNote ? (compact ? 'text-lg opacity-60' : 'text-2xl opacity-60') : compact ? 'text-2xl' : 'text-4xl'
       } ${
         inTune ? 'text-green-600 dark:text-green-400' : 'text-gray-800 dark:text-gray-200'
       }`}>
@@ -187,13 +190,13 @@ const PitchGaugeComponent: React.FC<PitchGaugeProps> = ({
       </span>
 
       {/* Gauge */}
-      <div className="w-56">
+      <div className={compact ? 'w-36' : 'w-56'}>
         <GaugeSVG percent={percent} />
       </div>
 
       {/* Cents + status below gauge */}
       <div className="text-center mt-1">
-        <span className={`text-2xl font-mono font-semibold transition-colors duration-200 ${
+        <span className={`${compact ? 'text-lg' : 'text-2xl'} font-mono font-semibold transition-colors duration-200 ${
           Math.abs(displayCents) <= inTuneThreshold ? 'text-green-600 dark:text-green-400' :
           displayCents < 0 ? 'text-red-500 dark:text-red-400' :
           'text-amber-500 dark:text-amber-400'
@@ -201,7 +204,7 @@ const PitchGaugeComponent: React.FC<PitchGaugeProps> = ({
           {direction && <span className="mr-1">{direction}</span>}
           {Math.abs(displayCents)}¢
         </span>
-        <div className="text-sm text-muted-foreground mt-0.5">
+        <div className={`${compact ? 'text-xs' : 'text-sm'} text-muted-foreground mt-0.5`}>
           {inTune ? 'In tune! ✓' : displayCents < 0 ? 'Too flat' : 'Too sharp'}
         </div>
         {clarity !== undefined && (
@@ -223,7 +226,8 @@ export const PitchGauge = React.memo(PitchGaugeComponent, (prevProps, nextProps)
     prevProps.className === nextProps.className &&
     prevProps.inTuneThreshold === nextProps.inTuneThreshold &&
     prevProps.smoothingFactor === nextProps.smoothingFactor &&
-    prevProps.subdueNote === nextProps.subdueNote
+    prevProps.subdueNote === nextProps.subdueNote &&
+    prevProps.size === nextProps.size
   );
 });
 

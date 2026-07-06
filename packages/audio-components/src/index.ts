@@ -5,3 +5,4 @@
 
 export { PitchGauge } from './components/pitch-gauge';
 export type { PitchGaugeProps } from './components/pitch-gauge';
+export { useReferenceTonePlayer } from './hooks/use-reference-tone-player';
