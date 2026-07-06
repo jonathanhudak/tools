@@ -69,6 +69,9 @@ export interface Settings {
     confettiEnabled?: boolean;
     // Tab notation settings
     tabOrientation?: 'standard' | 'leftHanded'; // standard: high E left, low E right; leftHanded: low E left, high E right
+    // Tuner settings
+    referencePitch?: number; // A4 reference in Hz (440 standard, 432 Verdi); all frequencies scale by ref/440
+    tunerTuningId?: string; // Last tuning selected on the tuner page
     [key: string]: unknown; // Allow additional settings
 }
 

@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TunerRouteImport } from './routes/tuner'
 import { Route as StyleguideRouteImport } from './routes/styleguide'
 import { Route as StatsRouteImport } from './routes/stats'
 import { Route as ScalesQuizRouteImport } from './routes/scales-quiz'
@@ -26,6 +27,11 @@ import { Route as ChordQuizRouteImport } from './routes/chord-quiz'
 import { Route as ArpeggiosRouteImport } from './routes/arpeggios'
 import { Route as IndexRouteImport } from './routes/index'
 
+const TunerRoute = TunerRouteImport.update({
+  id: '/tuner',
+  path: '/tuner',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StyleguideRoute = StyleguideRouteImport.update({
   id: '/styleguide',
   path: '/styleguide',
@@ -124,6 +130,7 @@ export interface FileRoutesByFullPath {
   '/scales-quiz': typeof ScalesQuizRoute
   '/stats': typeof StatsRoute
   '/styleguide': typeof StyleguideRoute
+  '/tuner': typeof TunerRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -142,6 +149,7 @@ export interface FileRoutesByTo {
   '/scales-quiz': typeof ScalesQuizRoute
   '/stats': typeof StatsRoute
   '/styleguide': typeof StyleguideRoute
+  '/tuner': typeof TunerRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -161,6 +169,7 @@ export interface FileRoutesById {
   '/scales-quiz': typeof ScalesQuizRoute
   '/stats': typeof StatsRoute
   '/styleguide': typeof StyleguideRoute
+  '/tuner': typeof TunerRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -181,6 +190,7 @@ export interface FileRouteTypes {
     | '/scales-quiz'
     | '/stats'
     | '/styleguide'
+    | '/tuner'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -199,6 +209,7 @@ export interface FileRouteTypes {
     | '/scales-quiz'
     | '/stats'
     | '/styleguide'
+    | '/tuner'
   id:
     | '__root__'
     | '/'
@@ -217,6 +228,7 @@ export interface FileRouteTypes {
     | '/scales-quiz'
     | '/stats'
     | '/styleguide'
+    | '/tuner'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -236,10 +248,18 @@ export interface RootRouteChildren {
   ScalesQuizRoute: typeof ScalesQuizRoute
   StatsRoute: typeof StatsRoute
   StyleguideRoute: typeof StyleguideRoute
+  TunerRoute: typeof TunerRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/tuner': {
+      id: '/tuner'
+      path: '/tuner'
+      fullPath: '/tuner'
+      preLoaderRoute: typeof TunerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/styleguide': {
       id: '/styleguide'
       path: '/styleguide'
@@ -372,6 +392,7 @@ const rootRouteChildren: RootRouteChildren = {
   ScalesQuizRoute: ScalesQuizRoute,
   StatsRoute: StatsRoute,
   StyleguideRoute: StyleguideRoute,
+  TunerRoute: TunerRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

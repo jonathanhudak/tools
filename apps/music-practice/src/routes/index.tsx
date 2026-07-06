@@ -6,7 +6,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Button } from '@hudak/ui/components/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@hudak/ui/components/card';
-import { Music, Zap, BookOpen, Grid3x3, ArrowRight, Target, Compass, ListMusic, Ruler, AudioWaveform, Shuffle, Ear, Layers, BarChart3 } from 'lucide-react';
+import { Music, Zap, BookOpen, Grid3x3, ArrowRight, Target, Compass, ListMusic, Ruler, AudioWaveform, Shuffle, Ear, Gauge, Layers, BarChart3 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const Route = createFileRoute('/')(  {
@@ -96,6 +96,13 @@ function LandingRoute() {
       description: 'Identify chord qualities and scale flavors by ear',
       icon: Ear,
       buttonText: 'Train',
+    },
+    {
+      id: 'tuner',
+      title: 'Tuner',
+      description: 'Tune any instrument by mic — 150+ tunings, 440 or 432 Hz reference',
+      icon: Gauge,
+      buttonText: 'Tune',
     },
     {
       id: 'review',

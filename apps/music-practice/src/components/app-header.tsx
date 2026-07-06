@@ -12,6 +12,7 @@ const primaryLinks = [
   { to: '/chord-scale' as const, label: 'Matrix' },
   { to: '/progressions' as const, label: 'Progressions' },
   { to: '/practice' as const, label: 'Practice' },
+  { to: '/tuner' as const, label: 'Tuner' },
   { to: '/play' as const, label: 'Sight Reading' },
 ] as const;
 
@@ -27,6 +28,7 @@ const navLinks = [
   { to: '/intervals' as const, label: 'Intervals' },
   { to: '/ear-training' as const, label: 'Ear Training' },
   { to: '/practice' as const, label: 'Practice' },
+  { to: '/tuner' as const, label: 'Tuner' },
   { to: '/review' as const, label: 'Review' },
   { to: '/stats' as const, label: 'Journal' },
   { to: '/play' as const, label: 'Sight Reading' },

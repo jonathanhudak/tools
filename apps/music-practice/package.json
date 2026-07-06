@@ -21,6 +21,7 @@
   "license": "ISC",
   "dependencies": {
     "@hudak/audio-components": "workspace:*",
+    "@hudak/tuning-data": "workspace:*",
     "@hudak/ui": "workspace:*",
     "@tanstack/react-query": "^5.83.0",
     "@tanstack/react-router": "^1.91.6",
