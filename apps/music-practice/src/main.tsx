@@ -10,7 +10,9 @@ import { routeTree } from './routeTree.gen'
 import { queryClient } from './lib/query-client';
 
 // Create a new router instance
-const router = createRouter({ routeTree, basepath: '/tools/music-practice' })
+// Basepath follows Vite's base: '/tools/music-practice/' on GitHub Pages,
+// '/' on the standalone AWS deploy (deploy script builds with --base /)
+const router = createRouter({ routeTree, basepath: import.meta.env.BASE_URL })
 
 // Register the router instance for type safety
 declare module '@tanstack/react-router' {
