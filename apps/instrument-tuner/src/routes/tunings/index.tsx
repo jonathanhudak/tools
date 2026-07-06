@@ -12,8 +12,10 @@ import {
   SelectValue,
 } from '@hudak/ui';
 import { Route as rootRoute } from '../__root';
+import { ReferencePitchBadge } from '../../components/ReferencePitchBadge';
 import { RouteThemeSettings } from '../../components/RouteThemeSettings';
 import { TunerPageHeader } from '../../components/TunerPageHeader';
+import { useReferencePitch } from '../../hooks/use-reference-pitch';
 import { INSTRUMENT_CATEGORIES } from '@hudak/tuning-data';
 
 export interface TuningsSearch {
@@ -60,6 +62,7 @@ export const Route = createRoute({
 });
 
 function TuningsIndexPage() {
+  const { referencePitch } = useReferencePitch();
   const navigate = useNavigate({ from: Route.fullPath });
   const search = Route.useSearch();
   const query = search.q?.toLowerCase() ?? '';
@@ -104,7 +107,12 @@ function TuningsIndexPage() {
     <div className="bg-tuner-shell min-h-screen">
       <div className="container mx-auto max-w-6xl space-y-6 px-4 py-5 motion-safe:animate-[tuner-fade-up_220ms_ease-out] sm:space-y-8 sm:px-6 sm:py-8 lg:px-8">
         <TunerPageHeader
-          subtitle="Choose an instrument"
+          subtitle={
+            <span className="inline-flex flex-wrap items-center gap-2">
+              {'Choose an instrument'}
+              <ReferencePitchBadge hz={referencePitch} />
+            </span>
+          }
           actions={<RouteThemeSettings />}
         />
 

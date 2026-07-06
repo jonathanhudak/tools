@@ -3,10 +3,12 @@ import { ArrowLeft } from 'lucide-react';
 import { Card, CardContent } from '@hudak/ui';
 import { Button } from '@hudak/ui';
 import { Route as rootRoute } from '../__root';
+import { ReferencePitchBadge } from '../../components/ReferencePitchBadge';
 import { RouteThemeSettings } from '../../components/RouteThemeSettings';
 import { TunerPageHeader } from '../../components/TunerPageHeader';
 import { getInstrumentById, getSectionsForInstrument } from '@hudak/tuning-data';
 import { TuningBreadcrumbs } from '../../components/TuningBreadcrumbs';
+import { useReferencePitch } from '../../hooks/use-reference-pitch';
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
@@ -15,6 +17,7 @@ export const Route = createRoute({
 });
 
 function InstrumentSectionsPage() {
+  const { referencePitch } = useReferencePitch();
   const { instrumentId } = Route.useParams();
   const instrument = getInstrumentById(instrumentId);
 
@@ -49,7 +52,12 @@ function InstrumentSectionsPage() {
     <div className="bg-tuner-shell min-h-screen">
       <div className="container mx-auto max-w-6xl space-y-6 px-4 py-5 motion-safe:animate-[tuner-fade-up_220ms_ease-out] sm:space-y-8 sm:px-6 sm:py-8 lg:px-8">
         <TunerPageHeader
-          subtitle={`${instrument.name} · choose a tuning family`}
+          subtitle={
+            <span className="inline-flex flex-wrap items-center gap-2">
+              {`${instrument.name} · choose a tuning family`}
+              <ReferencePitchBadge hz={referencePitch} />
+            </span>
+          }
           actions={<RouteThemeSettings />}
         />
 
