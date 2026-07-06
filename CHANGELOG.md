@@ -1,3 +1,24 @@
+# [1.49.0](https://github.com/jonathanhudak/tools/compare/v1.48.0...v1.49.0) (2026-07-06)
+
+
+### Bug Fixes
+
+* **music-practice:** degree chords follow the selected key, full lookup coverage ([1481652](https://github.com/jonathanhudak/tools/commit/1481652bba668471129e3be6dd75ff087a4deb09)), closes [F#m7](https://github.com/F/issues/m7)
+* **music-practice:** derive router basepath from Vite base ([9e95bf1](https://github.com/jonathanhudak/tools/commit/9e95bf19a11aa224109eb1a9f278f05aada7f0e7))
+* **music-practice:** stack scale diagrams vertically, render piano for pitch-class input ([4e1bf09](https://github.com/jonathanhudak/tools/commit/4e1bf09d7d9152c3d33cb93965889d6e2ef37250))
+* **music-practice:** staff notation invisible on first render in dark mode ([1786470](https://github.com/jonathanhudak/tools/commit/17864708dd6d05b7faef3ebf15f7a95a8713e3eb))
+
+
+### Features
+
+* **instrument-tuner:** 432 Hz reference pitch and featured-tunings landing ([0452652](https://github.com/jonathanhudak/tools/commit/0452652941ac395156c1205a7101ecd38fd900a5))
+* **instrument-tuner:** carry the A4 reference pitch in shareable URLs ([9f8e14f](https://github.com/jonathanhudak/tools/commit/9f8e14f54b444f618c7e6e0e96b74580abd5e1c4))
+* **instrument-tuner:** show the A4 badge across the tuning library ([60fcc13](https://github.com/jonathanhudak/tools/commit/60fcc138861109bfb836832de1c3c68882e6df6d))
+* **music-practice:** embedded tuner with shared catalog and A4 preference ([2b2092f](https://github.com/jonathanhudak/tools/commit/2b2092f4aaecf996384dc48181207accb77a6bca))
+* **music-practice:** full reference UX on practice tab, library growth, data accuracy fixes ([1093e55](https://github.com/jonathanhudak/tools/commit/1093e5524740db97fc2a756b576035a103f78422))
+* **music-practice:** staff notation for arpeggio practice patterns ([0688d53](https://github.com/jonathanhudak/tools/commit/0688d535fa3e2b7e4d4d2c8e804e236b303902f6))
+* **tuner:** gauge measures against the highlighted string's exact target ([b861a5c](https://github.com/jonathanhudak/tools/commit/b861a5c32c5ca8e56c4f2be7d74211df434d0fe3)), closes [F#-14c](https://github.com/F/issues/-14c)
+
 # [1.48.0](https://github.com/jonathanhudak/tools/compare/v1.47.0...v1.48.0) (2026-05-23)
 
 
