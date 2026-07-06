@@ -47,3 +47,10 @@ Proposal: docs/plans/tuner-ux-integration-proposal.md
 - Verified: both apps typecheck clean, vite builds green, music-practice 1585 unit tests pass (incl. 11 new reference-pitch math tests), lint clean (instrument-tuner has no eslint config — pre-existing; lint script fails there on main too).
 - Browser smoke (gstack browse): 432 toggle scales A string 110→108 Hz exactly, violin A shows 432 Hz on library page, preference persists across routes, mobile sticky gauge follows featured-list scroll, Drop D + 432 selection persists in music_practice_settings.
 - Deferred: applying referencePitch to music-practice playback (Tone.js) and sight-reading mic validation; recents/favorites; flat tuning-level library search.
+
+### Tuner follow-ups 1-3 via subagent fan-out (completed 2026-07-05)
+- [x] String-target gauge: when a string is locked, cents + note label measure against that string's calibrated target (microtonal/just-intonation tunings can now read "in tune"); both apps
+- [x] Share URLs carry ?a4=<hz> when reference pitch != 440; opening such a link applies it (URL wins over stored preference); share dialog states "Link includes A4 = ..."
+- [x] "A4 = <hz> Hz" badge on all three tuning-library pages (extracted ReferencePitchBadge component)
+- Verified: typecheck/build/tests green (1585), browser smoke: ?a4=432 roundtrip + persistence, featured-select rewrites URL with a4, share hint renders, library badge renders
+- Remaining backlog (unchanged): last-tuning persistence in dedicated app, recents/favorites, flat tuning search, 432 in music-practice playback, sticky-gauge height polish, tuner eslint config, code splitting, TuningSelector/CustomTuningBuilder dead-code check
