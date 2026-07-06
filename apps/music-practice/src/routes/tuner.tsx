@@ -150,6 +150,21 @@ function TunerRoute() {
       if (now - lastPitchUpdateRef.current < 100) return;
       lastPitchUpdateRef.current = now;
 
+      // When a string is held, measure against its exact target frequency so
+      // microtonal targets (e.g. F#−14¢) can read in tune
+      const heldNote = highlightedStringRef.current !== null
+        ? activeTuning.notes.find((n) => n.string === highlightedStringRef.current)
+        : undefined;
+
+      if (heldNote) {
+        setDetectedPitch({
+          note: heldNote.name,
+          cents: Math.round(1200 * Math.log2(frequency / heldNote.frequency)),
+          clarity,
+        });
+        return;
+      }
+
       const detected = frequencyToNote(frequency, referencePitch);
       if (!detected) return;
       setDetectedPitch({
