@@ -1,3 +1,10 @@
+# [1.50.0](https://github.com/jonathanhudak/tools/compare/v1.49.1...v1.50.0) (2026-07-11)
+
+
+### Features
+
+* **music-practice:** add 5-string banjo mode across the app ([45e15dc](https://github.com/jonathanhudak/tools/commit/45e15dc1c6ec76ec11b3bed5c138730768053089)), closes [F#4](https://github.com/F/issues/4)
+
 ## [1.49.1](https://github.com/jonathanhudak/tools/compare/v1.49.0...v1.49.1) (2026-07-06)
 
 
