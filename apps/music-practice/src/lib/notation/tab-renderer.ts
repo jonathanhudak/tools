@@ -4,6 +4,7 @@
  */
 
 import { midiToTabPosition } from '../utils/music-theory';
+import { getTuning } from '../utils/instrument-config';
 
 // Use the Vex global from window
 
@@ -25,10 +26,12 @@ export class TabRenderer {
     private currentNote: number | null = null;
     private instrumentId: string = 'guitar';
     private tabOrientation: 'standard' | 'leftHanded' = 'standard';
+    private stringCount: number = 6;
 
     constructor(containerId: string, instrumentId: string = 'guitar', tabOrientation: 'standard' | 'leftHanded' = 'standard') {
         this.instrumentId = instrumentId;
         this.tabOrientation = tabOrientation;
+        this.stringCount = getTuning(instrumentId)?.length ?? 6;
         this.container = document.getElementById(containerId);
 
         if (!this.container) {
@@ -49,15 +52,14 @@ export class TabRenderer {
 
     /**
      * Convert string number based on orientation
-     * Standard: 1=high E (top), 6=low E (bottom)
-     * LeftHanded: reverse the strings so 6 appears on top, 1 on bottom
-     * @param stringNumber - VexFlow string number (1-6)
+     * Standard: 1=highest string (top), N=lowest (bottom)
+     * LeftHanded: reverse so string N appears on top, 1 on bottom
+     * @param stringNumber - VexFlow string number (1-N)
      * @returns Adjusted string number for current orientation
      */
     private getOrientedString(stringNumber: number): number {
         if (this.tabOrientation === 'leftHanded') {
-            // Reverse: 1→6, 2→5, 3→4, 4→3, 5→2, 6→1
-            return 7 - stringNumber;
+            return this.stringCount + 1 - stringNumber;
         }
         return stringNumber;
     }
@@ -217,8 +219,8 @@ export class TabRenderer {
             this.renderer.resize(500, 180);
             this.context = this.renderer.getContext();
 
-            // Create a tab stave (6 strings for guitar)
-            const tabStave = new VF.TabStave(10, 20, 400);
+            // Create a tab stave (line count follows the instrument's string count)
+            const tabStave = new VF.TabStave(10, 20, 400, { num_lines: this.stringCount });
 
             // Add clef (tab clef shows "TAB")
             tabStave.addTabGlyph();
@@ -307,7 +309,7 @@ export class TabRenderer {
             this.context = this.renderer.getContext();
 
             // Create a tab stave
-            const tabStave = new VF.TabStave(10, 20, 400);
+            const tabStave = new VF.TabStave(10, 20, 400, { num_lines: this.stringCount });
             tabStave.addTabGlyph();
             tabStave.setContext(this.context).draw();
 
@@ -386,7 +388,7 @@ export class TabRenderer {
             this.context = this.renderer.getContext();
 
             // Create a tab stave
-            const tabStave = new VF.TabStave(10, 20, 650);
+            const tabStave = new VF.TabStave(10, 20, 650, { num_lines: this.stringCount });
             tabStave.addTabGlyph();
             tabStave.setContext(this.context).draw();
 
@@ -471,7 +473,7 @@ export class TabRenderer {
             staffStave.setContext(this.context).draw();
 
             // Create tab stave below staff
-            const tabStave = new VF.TabStave(10, 140, 400);
+            const tabStave = new VF.TabStave(10, 140, 400, { num_lines: this.stringCount });
             tabStave.addTabGlyph();
             tabStave.setContext(this.context).draw();
 

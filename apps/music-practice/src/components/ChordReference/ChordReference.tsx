@@ -107,7 +107,7 @@ interface ChordReferenceProps {
   onStartQuiz?: () => void;
 }
 
-type Instrument = 'guitar' | 'piano';
+type Instrument = 'guitar' | 'banjo' | 'piano';
 
 export function ChordReference({ onStartQuiz }: ChordReferenceProps): JSX.Element {
   const [selectedRoot, setSelectedRoot] = useState<string>('C');
@@ -299,6 +299,10 @@ export function ChordReference({ onStartQuiz }: ChordReferenceProps): JSX.Elemen
                     {currentVoicing.guitar.description}
                   </p>
                 </>
+              ) : selectedInstrument === 'banjo' && selectedChord ? (
+                <div className="flex justify-center py-2">
+                  <ChordDiagram chord={selectedChord} instrument="banjo" size="large" hideChordInfo />
+                </div>
               ) : selectedInstrument === 'piano' && currentVoicing?.piano ? (
                 <>
                   <PianoChordDiagram voicing={currentVoicing} size="large" />

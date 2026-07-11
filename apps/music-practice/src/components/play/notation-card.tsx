@@ -5,6 +5,7 @@ import { Button } from '@hudak/ui/components/button';
 import { Card, CardContent } from '@hudak/ui/components/card';
 import { PitchGauge } from '@hudak/audio-components';
 import type { RefObject } from 'react';
+import { supportsTabNotation } from '@/lib/utils/instrument-config';
 
 interface DetectedNote {
   note: number;
@@ -47,7 +48,8 @@ export function NotationCard({
   tabOrientation = 'standard',
   onTabOrientationChange,
 }: NotationCardProps) {
-  const showTabOrientationToggle = instrument === 'guitar' && (tabDisplayMode === 'tab' || tabDisplayMode === 'both');
+  const isTabInstrument = supportsTabNotation(instrument);
+  const showTabOrientationToggle = isTabInstrument && (tabDisplayMode === 'tab' || tabDisplayMode === 'both');
 
   return (
     <Card className="border-2 shadow-2xl bg-card/95 backdrop-blur overflow-hidden">
@@ -82,17 +84,17 @@ export function NotationCard({
       <CardContent className="p-0">
         <div className={`flex ${isMicrophoneInstrument ? 'flex-row' : 'flex-col'} items-center justify-center`}>
           <div className={`flex-1 p-8 flex items-center justify-center ${
-            instrument === 'guitar' && tabDisplayMode === 'both' ? 'min-h-[400px]' : 'min-h-[300px]'
+            isTabInstrument && tabDisplayMode === 'both' ? 'min-h-[400px]' : 'min-h-[300px]'
           }`}>
             <div
               id="staff-display"
               ref={staffContainerRef}
-              className={(instrument === 'guitar' && tabDisplayMode !== 'staff') ? 'hidden' : 'block'}
+              className={(isTabInstrument && tabDisplayMode !== 'staff') ? 'hidden' : 'block'}
             />
             <div
               id="tab-display"
               ref={tabContainerRef}
-              className={(instrument === 'guitar' && (tabDisplayMode === 'tab' || tabDisplayMode === 'both')) ? 'block' : 'hidden'}
+              className={(isTabInstrument && (tabDisplayMode === 'tab' || tabDisplayMode === 'both')) ? 'block' : 'hidden'}
             />
           </div>
 

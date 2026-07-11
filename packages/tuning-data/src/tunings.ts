@@ -223,12 +223,13 @@ export const MANDOCELLO_TUNINGS: Tuning[] = [
 
 export const BANJO_5_TUNINGS: Tuning[] = [
   createTuning('banjo5-open-g', 'Open G', ['G4', 'D3', 'G3', 'B3', 'D4'], 'gDGBD - Standard 5-string'),
-  createTuning('banjo5-open-d', 'Open D', ['F#4', 'D3', 'F#3', 'A3', 'D4'], 'aDF#AD - Bluegrass'),
+  createTuning('banjo5-open-d', 'Open D', ['A4', 'D3', 'F#3', 'A3', 'D4'], 'aDF#AD - Bluegrass'),
   createTuning('banjo5-double-c', 'Double C', ['G4', 'C3', 'G3', 'C4', 'D4'], 'gCGCD - Old-time'),
   createTuning('banjo5-saw-mill', 'Saw Mill', ['G4', 'D3', 'G3', 'C4', 'D4'], 'gDGCD - Old-time'),
   createTuning('banjo5-standard-c', 'Standard C', ['G4', 'C3', 'G3', 'B3', 'D4'], 'gCGBD - C tuning'),
   createTuning('banjo5-old-time-d', 'Old-Time D', ['F#4', 'D3', 'F#3', 'A3', 'D4'], 'f#DF#AD'),
   createTuning('banjo5-open-a', 'Open A', ['A4', 'E3', 'A3', 'C#4', 'E4'], 'aEAC#E'),
+  createTuning('banjo5-double-d', 'Double D', ['A4', 'D3', 'A3', 'D4', 'E4'], 'aDADE - Old-time'),
 ];
 
 export const BANJO_4_TUNINGS: Tuning[] = [

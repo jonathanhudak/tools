@@ -387,17 +387,20 @@ export function midiToTabPosition(midiNote: number, instrumentId: string = 'guit
     tuning.forEach((stringInfo) => {
         const openStringMidi = stringInfo.midi;
         const stringNumber = stringInfo.string || 0;
+        const startFret = stringInfo.startFret ?? 0;
 
-        // Calculate fret number (difference from open string)
-        const fret = midiNote - openStringMidi;
+        const semitones = midiNote - openStringMidi;
+        if (semitones < 0) return;
 
-        // Check if this is a valid position (within typical fret range 0-24)
-        if (fret >= 0 && fret <= 24) {
-            possiblePositions.push({
-                string: stringNumber,
-                fret: fret
-            });
-        }
+        // Short strings (banjo 5th): the open note is written as fret 0,
+        // fretted notes use physical fret numbers above the string's nut.
+        const fret = semitones === 0 ? 0 : semitones + startFret;
+        if (fret > 24) return;
+
+        possiblePositions.push({
+            string: stringNumber,
+            fret: fret
+        });
     });
 
     if (possiblePositions.length === 0) {
@@ -405,14 +408,23 @@ export function midiToTabPosition(midiNote: number, instrumentId: string = 'guit
         return null;
     }
 
+    const shortStrings = new Set(
+        tuning.filter(s => (s.startFret ?? 0) > 0).map(s => s.string || 0)
+    );
+
     // Choose the optimal position
     // Strategy: Prefer lower frets (easier to play) and middle strings when possible
-    // Priority: 1) Lowest fret number, 2) Middle strings (strings 2-4)
+    // Priority: 1) Lowest fret, 2) Full-length over short (drone) strings, 3) Middle strings (2-4)
     possiblePositions.sort((a, b) => {
         // First, compare by fret (prefer lower frets)
         if (a.fret !== b.fret) {
             return a.fret - b.fret;
         }
+
+        // Prefer full-length strings over short (drone) strings
+        const aShort = shortStrings.has(a.string) ? 1 : 0;
+        const bShort = shortStrings.has(b.string) ? 1 : 0;
+        if (aShort !== bShort) return aShort - bShort;
 
         // If same fret, prefer middle strings (2-4)
         const aMiddleBonus = (a.string >= 2 && a.string <= 4) ? -1 : 0;
@@ -438,14 +450,19 @@ export function getAllTabPositions(midiNote: number, instrumentId: string = 'gui
     tuning.forEach((stringInfo) => {
         const openStringMidi = stringInfo.midi;
         const stringNumber = stringInfo.string || 0;
-        const fret = midiNote - openStringMidi;
+        const startFret = stringInfo.startFret ?? 0;
 
-        if (fret >= 0 && fret <= 24) {
-            positions.push({
-                string: stringNumber,
-                fret: fret
-            });
-        }
+        const semitones = midiNote - openStringMidi;
+        if (semitones < 0) return;
+
+        // Short strings: open = fret 0, fretted = physical fret above the string's nut
+        const fret = semitones === 0 ? 0 : semitones + startFret;
+        if (fret > 24) return;
+
+        positions.push({
+            string: stringNumber,
+            fret: fret
+        });
     });
 
     return positions;

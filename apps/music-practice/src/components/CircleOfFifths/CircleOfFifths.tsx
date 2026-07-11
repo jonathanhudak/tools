@@ -79,7 +79,7 @@ function accidentalLabel(entry: CircleOfFifthsEntry): string {
 interface ChordCardProps {
   chordName: string;
   label: string;
-  instrument: 'guitar' | 'piano';
+  instrument: 'guitar' | 'banjo' | 'piano';
 }
 
 function ChordCard({ chordName, label, instrument }: ChordCardProps) {
@@ -103,6 +103,8 @@ function ChordCard({ chordName, label, instrument }: ChordCardProps) {
         {chord && voicing ? (
           instrument === 'guitar' && voicing.guitar ? (
             <ChordDiagram chord={chord} voicing={voicing} />
+          ) : instrument === 'banjo' ? (
+            <ChordDiagram chord={chord} instrument="banjo" hideChordInfo />
           ) : instrument === 'piano' && voicing.piano ? (
             <>
               <PianoChordDiagram voicing={voicing} chordName={chordName} size="small" />
@@ -127,7 +129,7 @@ function ChordCard({ chordName, label, instrument }: ChordCardProps) {
 
 export function CircleOfFifths() {
   const [selectedKey, setSelectedKey] = useState<string>('C');
-  const [instrument, setInstrument] = useState<'guitar' | 'piano'>('guitar');
+  const [instrument, setInstrument] = useState<'guitar' | 'banjo' | 'piano'>('guitar');
 
   const selectedEntry = useMemo(() => getKeyInfo(selectedKey), [selectedKey]);
   const fifthAbove = useMemo(() => getFifthAbove(selectedKey), [selectedKey]);

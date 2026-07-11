@@ -7,6 +7,12 @@ describe('note range helpers', () => {
     expect(getNoteRange('violin', 'advanced')).toBe('g3-g5');
   });
 
+  it('returns banjo ranges', () => {
+    expect(getNoteRange('banjo', 'beginner')).toBe('d3-a4');
+    expect(getNoteRange('banjo', 'intermediate')).toBe('d3-d5');
+    expect(getNoteRange('banjo', 'advanced')).toBe('d3-g5');
+  });
+
   it('falls back to piano ranges when instrument is unknown', () => {
     expect(getNoteRange('unknown', 'beginner')).toBe('c4-c5');
   });
