@@ -1,9 +1,12 @@
 /**
- * ChordDiagram - Visual guitar chord diagram component
- * Displays fingering positions on a guitar fretboard
+ * ChordDiagram - Visual chord diagram component for fretted instruments
+ * Displays fingering positions on a guitar (6-string) or 5-string banjo neck
  */
 
+import { useMemo } from 'react';
 import type { Chord, ChordVoicing } from '@/lib/chord-library';
+import { banjoDroneIsChordTone, getBanjoVoicing } from '@/lib/banjo-chords';
+import { getTuning } from '@/lib/utils/instrument-config';
 
 interface ChordDiagramProps {
   chord: Chord;
@@ -11,11 +14,24 @@ interface ChordDiagramProps {
   size?: 'small' | 'medium' | 'large';
   /** Hide chord name and description (for quiz mode to prevent answer leak) */
   hideChordInfo?: boolean;
+  /** Which instrument's diagram to draw (default guitar) */
+  instrument?: 'guitar' | 'banjo';
 }
 
-const STRING_LABELS = ['E', 'A', 'D', 'G', 'B', 'e'];
+// Diagram columns run left→right, low string to high string.
+const GUITAR_LABELS = ['E', 'A', 'D', 'G', 'B', 'e'];
 
-export function ChordDiagram({ chord, voicing, size = 'medium', hideChordInfo = false }: ChordDiagramProps): JSX.Element {
+// Banjo columns come from the canonical tuning in instrument-config, ordered
+// 5th string (short g drone, lowercased) → string 1.
+const BANJO_STRINGS = (getTuning('banjo') ?? [])
+  .slice()
+  .sort((a, b) => (b.string ?? 0) - (a.string ?? 0));
+const BANJO_LABELS = BANJO_STRINGS.map((s) => {
+  const pc = s.note.replace(/\d+$/, '');
+  return (s.startFret ?? 0) > 0 ? pc.toLowerCase() : pc;
+});
+
+export function ChordDiagram({ chord, voicing, size = 'medium', hideChordInfo = false, instrument = 'guitar' }: ChordDiagramProps): JSX.Element {
   // Use voicing if provided, otherwise use first voicing from chord
   const guitarData = voicing?.guitar || chord.voicings[0]?.guitar;
   const guitarFingerings = guitarData ? [
@@ -27,7 +43,53 @@ export function ChordDiagram({ chord, voicing, size = 'medium', hideChordInfo = 
     { string: 6, fret: guitarData.frets[5] },
   ] : chord.fingerings?.guitar ?? [];
 
-  const frettedNotes = guitarFingerings.filter(f => f.fret > 0);
+  const banjoVoicing = useMemo(
+    () => (instrument === 'banjo' ? getBanjoVoicing(chord) : null),
+    [instrument, chord]
+  );
+  const stringLabels = instrument === 'banjo' ? BANJO_LABELS : GUITAR_LABELS;
+  const stringCount = stringLabels.length;
+
+  // Column-indexed fingerings (column 0 = leftmost/lowest string).
+  // Guitar: frets array is already low-E-first. Banjo: columns follow
+  // BANJO_STRINGS (drone first, then strings 4→1); the drone is always open
+  // and voicing.frets is indexed by string number - 1.
+  const fingerings: Array<{ fret: number; finger?: string }> = useMemo(
+    () =>
+      instrument === 'banjo'
+        ? banjoVoicing
+          ? BANJO_STRINGS.map((s) => ({
+              // Drone: open when g is a chord tone, muted (x) when it clashes
+              fret:
+                (s.startFret ?? 0) > 0
+                  ? banjoDroneIsChordTone(chord)
+                    ? 0
+                    : -1
+                  : banjoVoicing.frets[(s.string ?? 0) - 1],
+            }))
+          : []
+        : guitarFingerings.map((f, i) => ({
+            fret: f.fret,
+            finger: guitarData?.fingers[i],
+          })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [instrument, banjoVoicing, guitarData]
+  );
+
+  if (instrument === 'banjo' && !banjoVoicing) {
+    return (
+      <div className="flex flex-col items-center gap-3">
+        {!hideChordInfo && (
+          <div className="text-center">
+            <h3 className="text-lg font-bold text-foreground">{chord.name}</h3>
+          </div>
+        )}
+        <p className="text-sm text-muted-foreground">No banjo voicing for this chord</p>
+      </div>
+    );
+  }
+
+  const frettedNotes = fingerings.filter(f => f.fret > 0);
   const minFret = frettedNotes.length > 0 ? Math.min(...frettedNotes.map(f => f.fret)) : 1;
   const maxFret = frettedNotes.length > 0 ? Math.max(...frettedNotes.map(f => f.fret)) : 4;
   const isOpenPosition = minFret <= 3;
@@ -46,7 +108,7 @@ export function ChordDiagram({ chord, voicing, size = 'medium', hideChordInfo = 
   const leftPad = 28; // space for fret numbers
   const topPad = 24; // space for open/muted indicators
   const bottomPad = 24; // space for string labels
-  const fretboardWidth = stringSpacing * 5;
+  const fretboardWidth = stringSpacing * (stringCount - 1);
   const fretboardHeight = fretHeight * numFrets;
   const nutHeight = isOpenPosition ? 4 : 0;
   const svgWidth = leftPad + fretboardWidth + 16;
@@ -107,7 +169,7 @@ export function ChordDiagram({ chord, voicing, size = 'medium', hideChordInfo = 
         ))}
 
         {/* Vertical string lines */}
-        {Array.from({ length: 6 }).map((_, i) => (
+        {Array.from({ length: stringCount }).map((_, i) => (
           <line
             key={`string-${i}`}
             x1={startX + i * stringSpacing}
@@ -120,7 +182,7 @@ export function ChordDiagram({ chord, voicing, size = 'medium', hideChordInfo = 
         ))}
 
         {/* Open / Muted indicators above nut */}
-        {guitarFingerings.map((fingering, index) => {
+        {fingerings.map((fingering, index) => {
           const x = startX + index * stringSpacing;
           const indicatorY = topPad - 10;
 
@@ -154,7 +216,7 @@ export function ChordDiagram({ chord, voicing, size = 'medium', hideChordInfo = 
         })}
 
         {/* Fretted note dots */}
-        {guitarFingerings.map((fingering, index) => {
+        {fingerings.map((fingering, index) => {
           if (fingering.fret <= 0) return null;
 
           const x = startX + index * stringSpacing;
@@ -170,7 +232,7 @@ export function ChordDiagram({ chord, voicing, size = 'medium', hideChordInfo = 
                 fill="var(--accent-color)"
               />
               {/* Finger number inside dot */}
-              {guitarData?.fingers[index] && guitarData.fingers[index] !== 'open' && (
+              {fingering.finger && fingering.finger !== 'open' && (
                 <text
                   x={x}
                   y={dotY + (fontSize - 2) / 3}
@@ -180,7 +242,7 @@ export function ChordDiagram({ chord, voicing, size = 'medium', hideChordInfo = 
                   fill="white"
                   fontWeight="bold"
                 >
-                  {guitarData.fingers[index]}
+                  {fingering.finger}
                 </text>
               )}
             </g>
@@ -188,7 +250,7 @@ export function ChordDiagram({ chord, voicing, size = 'medium', hideChordInfo = 
         })}
 
         {/* String labels at bottom */}
-        {STRING_LABELS.map((label, i) => (
+        {stringLabels.map((label, i) => (
           <text
             key={`label-${i}`}
             x={startX + i * stringSpacing}
@@ -202,6 +264,11 @@ export function ChordDiagram({ chord, voicing, size = 'medium', hideChordInfo = 
           </text>
         ))}
       </svg>
+
+      {/* Banjo voicing description (e.g. movable-shape provenance) */}
+      {instrument === 'banjo' && banjoVoicing && !hideChordInfo && (
+        <p className="text-xs text-muted-foreground">{banjoVoicing.description}</p>
+      )}
     </div>
   );
 }

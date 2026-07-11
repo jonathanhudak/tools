@@ -1,5 +1,6 @@
 import type { ClefType } from '../utils/music-theory';
 import { midiToVexflow } from '../utils/music-theory';
+import { supportsTabNotation } from '../utils/instrument-config';
 import type { StaffRenderer } from '../notation/staff-renderer';
 import type { TabRenderer } from '../notation/tab-renderer';
 
@@ -20,7 +21,7 @@ export function renderPracticeNote({
   staffRenderer,
   tabRenderer,
 }: RenderNoteParams): void {
-  if (instrument === 'guitar') {
+  if (supportsTabNotation(instrument)) {
     if (tabDisplayMode === 'both' && tabRenderer) {
       tabRenderer.renderStaffAndTab(midiNote);
       return;

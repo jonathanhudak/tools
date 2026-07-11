@@ -8,7 +8,8 @@ export const InstrumentType = {
     PIANO: 'piano',
     PIANO_VIRTUAL: 'piano-virtual',
     VIOLIN: 'violin',
-    GUITAR: 'guitar'
+    GUITAR: 'guitar',
+    BANJO: 'banjo'
 } as const;
 
 export type InstrumentTypeValue = typeof InstrumentType[keyof typeof InstrumentType];
@@ -47,6 +48,8 @@ export interface TuningInfo {
     midi: number;
     frequency: number;
     string?: number;
+    /** Fret where this string begins (banjo short 5th string = 5). Omit for full-length strings. */
+    startFret?: number;
 }
 
 export interface ValidationConfig {
@@ -75,6 +78,8 @@ export interface UIConfig {
     showTuningReference?: boolean;
     showCentsDeviation?: boolean;
     showFretboardReference?: boolean;
+    /** Instrument reads tablature (enables tab display modes) */
+    showTabNotation?: boolean;
 }
 
 export interface AudioConfig {
@@ -337,7 +342,8 @@ export const INSTRUMENTS: Record<InstrumentTypeValue, InstrumentConfig> = {
             showMicrophoneLevel: true,
             showTuningReference: true,
             showCentsDeviation: true,
-            showFretboardReference: false // Future feature
+            showFretboardReference: false, // Future feature
+            showTabNotation: true
         },
 
         // Audio processing settings
@@ -346,6 +352,82 @@ export const INSTRUMENTS: Record<InstrumentTypeValue, InstrumentConfig> = {
             noiseGate: -35,    // dB threshold (slightly higher due to picking noise)
             minFrequency: 70,  // Hz (below E2)
             maxFrequency: 1400 // Hz (above E6 fundamental)
+        }
+    },
+
+    [InstrumentType.BANJO]: {
+        id: InstrumentType.BANJO,
+        name: 'Banjo',
+        displayName: 'Banjo (5-string)',
+        emoji: '🪕',
+        inputType: InputMethod.MICROPHONE,
+
+        // Range settings (MIDI note numbers)
+        range: {
+            min: 50,  // D3 (open 4th string)
+            max: 84,  // C6 (upper frets on 1st string)
+            default: {
+                min: 50,  // D3
+                max: 69   // A4 (first position)
+            }
+        },
+
+        // Clef settings
+        clefs: [Clef.TREBLE],
+        defaultClef: Clef.TREBLE,
+
+        // Input capabilities
+        polyphonic: false,
+        requiresSustain: true,
+
+        // Open G tuning (gDGBD). String 5 is the short drone string: its nut
+        // sits at the 5th fret, so tab frets on it are 0 (open) or >= 6.
+        tuning: [
+            { note: 'D3', midi: 50, frequency: 146.83, string: 4 },
+            { note: 'G3', midi: 55, frequency: 196.00, string: 3 },
+            { note: 'B3', midi: 59, frequency: 246.94, string: 2 },
+            { note: 'D4', midi: 62, frequency: 293.66, string: 1 },
+            { note: 'G4', midi: 67, frequency: 392.00, string: 5, startFret: 5 }
+        ],
+
+        // Validation settings
+        validation: {
+            exactMatch: false,
+            pitchTolerance: 50,  // ±50 cents for beginners
+            pitchToleranceAdvanced: 30,
+            octaveFlexible: false,
+            minDuration: 400, // 400ms minimum (pluck sustain)
+            minClarity: 0.75
+        },
+
+        // Practice settings
+        practice: {
+            defaultNoteCount: 15,
+            adaptiveDifficulty: true,
+            supportedModes: ['sight-reading', 'scales', 'arpeggios', 'key-signatures'],
+            calibrationRequired: false,
+            tuningCheckRecommended: true,
+            fretIndependent: true
+        },
+
+        // UI settings
+        ui: {
+            showVirtualKeyboard: false,
+            showMidiStatus: false,
+            showPitchAccuracy: true,
+            showMicrophoneLevel: true,
+            showTuningReference: true,
+            showCentsDeviation: true,
+            showFretboardReference: false,
+            showTabNotation: true
+        },
+
+        // Audio processing settings
+        audio: {
+            bufferSize: 2048,
+            noiseGate: -35,    // dB threshold (picking noise, like guitar)
+            minFrequency: 140, // Hz (below D3 = 146.83)
+            maxFrequency: 1400
         }
     }
 };
@@ -390,6 +472,14 @@ export function requiresMicrophone(instrumentId: string): boolean {
 export function requiresMIDI(instrumentId: string): boolean {
     const instrument = getInstrument(instrumentId);
     return instrument.inputType === InputMethod.MIDI;
+}
+
+/**
+ * Check if instrument reads tablature (guitar, banjo)
+ */
+export function supportsTabNotation(instrumentId: string): boolean {
+    const instrument = getInstrument(instrumentId);
+    return instrument.ui.showTabNotation === true;
 }
 
 /**

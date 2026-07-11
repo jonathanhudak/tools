@@ -4,13 +4,14 @@
  * Scale Explorer and the improv practice prompt.
  */
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { ScaleDefinition } from '@/data/scales/scale-registry';
 import { assignAscendingOctaves } from '@/lib/utils/music-theory';
 import { resolveForScale } from '@/data/enharmonics';
 import { StaffDisplay } from '../notation/StaffDisplay';
 import { PianoScaleDiagram } from '../ScaleReference/PianoScaleDiagram';
-import { GuitarFretboard } from '../GuitarFretboard';
+import { GuitarFretboard, BANJO_OPEN_G } from '../GuitarFretboard';
+import { InstrumentToggle } from '../Piano/InstrumentToggle';
 
 interface ScaleDetailPanelProps {
   scale: ScaleDefinition;
@@ -31,6 +32,7 @@ function toStaffNotes(notes: string[]): string[] {
 export function ScaleDetailPanel({ scale, root, showStaff = true }: ScaleDetailPanelProps): JSX.Element {
   const notes = useMemo(() => resolveForScale(scale.semitones, scale.name, root), [scale, root]);
   const staffNotes = useMemo(() => toStaffNotes(notes), [notes]);
+  const [fretboardInstrument, setFretboardInstrument] = useState<'guitar' | 'banjo'>('guitar');
 
   return (
     <div className="space-y-4">
@@ -63,7 +65,24 @@ export function ScaleDetailPanel({ scale, root, showStaff = true }: ScaleDetailP
       {/* Diagrams — piano needs octaved notes to place keys */}
       <div className="space-y-4">
         <PianoScaleDiagram notes={staffNotes} rootNote={staffNotes[0]} size="medium" />
-        <GuitarFretboard notes={notes} root={root} compact label={`${root} ${scale.name}`} />
+        <div className="space-y-2">
+          <InstrumentToggle
+            instrument={fretboardInstrument}
+            onChange={(inst) => setFretboardInstrument(inst as 'guitar' | 'banjo')}
+            options={['guitar', 'banjo']}
+          />
+          <GuitarFretboard
+            notes={notes}
+            root={root}
+            compact
+            label={
+              fretboardInstrument === 'banjo'
+                ? `${root} ${scale.name} — banjo (Open G)`
+                : `${root} ${scale.name}`
+            }
+            {...(fretboardInstrument === 'banjo' ? BANJO_OPEN_G : {})}
+          />
+        </div>
       </div>
     </div>
   );

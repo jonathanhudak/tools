@@ -8,6 +8,7 @@
 
 import { useMemo } from 'react';
 import { Note } from 'tonal';
+import { getTuning } from '@/lib/utils/instrument-config';
 
 // ── Types ────────────────────────────────────────────────
 
@@ -29,6 +30,12 @@ export interface GuitarFretboardProps {
   fretCount?: number;
   /** Guitar tuning, low to high (default standard EADGBE) */
   tuning?: string[];
+  /**
+   * Fret where each string begins, aligned to `tuning` (default all 0).
+   * Banjo's short 5th string uses 5: the string is drawn from fret 5 and its
+   * open pitch sounds at that position.
+   */
+  startFrets?: number[];
   /** Show note names inside dots */
   showNoteNames?: boolean;
   /** Show scale degree numbers instead of note names */
@@ -41,6 +48,22 @@ export interface GuitarFretboardProps {
 
 // Standard guitar tuning (low E to high E)
 const STANDARD_TUNING = ['E2', 'A2', 'D3', 'G3', 'B3', 'E4'];
+
+/**
+ * 5-string banjo Open G preset (gDGBD), derived from the canonical banjo
+ * profile in instrument-config. The component reverses the tuning array for
+ * display, so string order is descending (5th string first) to render the
+ * short g drone at the bottom, matching banjo tab/diagram convention.
+ */
+export const BANJO_OPEN_G = (() => {
+  const strings = (getTuning('banjo') ?? [])
+    .slice()
+    .sort((a, b) => (b.string ?? 0) - (a.string ?? 0));
+  return {
+    tuning: strings.map((s) => s.note),
+    startFrets: strings.map((s) => s.startFret ?? 0),
+  };
+})();
 
 // Fret inlay marker positions
 const SINGLE_DOTS = [3, 5, 7, 9, 15, 17, 19, 21];
@@ -67,7 +90,8 @@ function computeNotes(
   notes: string[],
   root: string,
   tuning: string[],
-  fretCount: number
+  fretCount: number,
+  startFrets: number[]
 ): FretboardNote[] {
   const normalizedNotes = new Set(notes.map(normalizeNote));
   const normalizedRoot = normalizeNote(root);
@@ -75,10 +99,14 @@ function computeNotes(
 
   // Strings are displayed top=high E, bottom=low E, so reverse tuning
   const reversedTuning = [...tuning].reverse();
+  const reversedStartFrets = [...startFrets].reverse();
 
   for (let stringIdx = 0; stringIdx < reversedTuning.length; stringIdx++) {
-    for (let fret = 0; fret <= fretCount; fret++) {
-      const note = noteAtFret(reversedTuning[stringIdx], fret);
+    const startFret = reversedStartFrets[stringIdx] ?? 0;
+    for (let fret = startFret; fret <= fretCount; fret++) {
+      // Short strings: pitch offset is measured from the string's own nut,
+      // so fret === startFret is the open note.
+      const note = noteAtFret(reversedTuning[stringIdx], fret - startFret);
       const normalized = normalizeNote(note);
       if (normalizedNotes.has(normalized)) {
         const degree = notes.findIndex(n => normalizeNote(n) === normalized) + 1;
@@ -102,14 +130,19 @@ export function GuitarFretboard({
   root,
   fretCount = 15,
   tuning = STANDARD_TUNING,
+  startFrets,
   showNoteNames = true,
   showDegrees = false,
   label,
   compact = false,
 }: GuitarFretboardProps): JSX.Element {
+  const resolvedStartFrets = useMemo(
+    () => startFrets ?? tuning.map(() => 0),
+    [startFrets, tuning]
+  );
   const fretboardNotes = useMemo(
-    () => computeNotes(notes, root, tuning, fretCount),
-    [notes, root, tuning, fretCount]
+    () => computeNotes(notes, root, tuning, fretCount, resolvedStartFrets),
+    [notes, root, tuning, fretCount, resolvedStartFrets]
   );
 
   // ── Layout constants ─────────────────────────────────
@@ -127,12 +160,21 @@ export function GuitarFretboard({
   const svgWidth = leftPad + nutWidth + fretboardWidth + rightPad;
   const svgHeight = topPad + fretboardHeight + bottomPad;
   const fretboardStartX = leftPad + nutWidth;
+  // X position of a string's nut: the instrument nut for full-length strings,
+  // the string's own nut (e.g. banjo 5th-string peg at fret 5) for short ones.
+  const nutX = (startFret: number): number =>
+    startFret === 0 ? leftPad : fretboardStartX + startFret * fretWidth;
   const dotRadius = compact ? 6.5 : 9;
   const rootDotRadius = dotRadius + (compact ? 1 : 1.5);
   const fontSize = compact ? 8 : 10;
 
-  // String labels (high to low, top to bottom)
-  const stringLabels = [...tuning].reverse().map(t => Note.pitchClass(t));
+  // String labels (high to low, top to bottom); short (drone) strings are
+  // lowercased per banjo convention (g D G B D)
+  const reversedStartFrets = [...resolvedStartFrets].reverse();
+  const stringLabels = [...tuning].reverse().map((t, i) => {
+    const pc = Note.pitchClass(t);
+    return (reversedStartFrets[i] ?? 0) > 0 ? pc.toLowerCase() : pc;
+  });
 
   return (
     <div className="flex flex-col gap-2">
@@ -180,10 +222,13 @@ export function GuitarFretboard({
             const y = topPad + i * stringSpacing;
             // Thicker strings for bass, thinner for treble
             const thickness = 1 + (i * 0.3);
+            // Short strings (banjo 5th) start at their own nut
+            const x1 = nutX(reversedStartFrets[i] ?? 0);
             return (
               <line
                 key={`string-${i}`}
-                x1={leftPad}
+                data-string={i}
+                x1={x1}
                 y1={y}
                 x2={fretboardStartX + fretboardWidth}
                 y2={y}
@@ -226,14 +271,18 @@ export function GuitarFretboard({
 
           {/* ── Scale note dots ──────────────────────── */}
           {fretboardNotes.map((n, idx) => {
-            const cx = n.fret === 0
-              ? leftPad - (compact ? 10 : 14)
+            const stringStartFret = reversedStartFrets[n.string] ?? 0;
+            // Open notes sit just left of the string's nut (the instrument nut
+            // for full strings, the string's own nut for short strings).
+            const isOpen = n.fret === stringStartFret;
+            const cx = isOpen
+              ? nutX(stringStartFret) - (compact ? 10 : 14)
               : fretboardStartX + (n.fret - 1) * fretWidth + fretWidth / 2;
             const cy = topPad + n.string * stringSpacing;
             const r = n.isRoot ? rootDotRadius : dotRadius;
 
             return (
-              <g key={`note-${idx}`}>
+              <g key={`note-${idx}`} data-string-idx={n.string} data-fret={n.fret}>
                 <circle
                   cx={cx}
                   cy={cy}

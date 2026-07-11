@@ -5,6 +5,7 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import type { Chord } from '@/lib/chord-library';
+import { getBanjoVoicing } from '@/lib/banjo-chords';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@hudak/ui/components/card';
 import { ChordDiagram } from '../ChordReference/ChordDiagram';
 import { PianoChordDiagram } from '../ChordReference/PianoChordDiagram';
@@ -18,11 +19,11 @@ import { motion } from 'framer-motion';
 interface ChordVoicingDisplayProps {
   chord: Chord;
   voicingIndex?: number;
-  onInstrumentChange?: (instrument: 'guitar' | 'piano') => void;
-  externalInstrument?: 'guitar' | 'piano';
+  onInstrumentChange?: (instrument: Instrument) => void;
+  externalInstrument?: Instrument;
 }
 
-type Instrument = 'guitar' | 'piano';
+type Instrument = 'guitar' | 'banjo' | 'piano';
 
 export function ChordVoicingDisplay({
   chord,
@@ -63,8 +64,9 @@ export function ChordVoicingDisplay({
     setSelectedVoicing(parseInt(index, 10));
   }, []);
 
-  // Guard against empty voicings array
-  if (!hasVoicings || !currentVoicing) {
+  // Guard against empty voicings array — banjo is exempt: its voicings come
+  // from the banjo-chords module, not the library voicing list
+  if ((!hasVoicings || !currentVoicing) && instrument !== 'banjo') {
     return (
       <div className="w-full text-center text-sm text-muted-foreground py-8">
         <p>No voicing data available for {chord.name}.</p>
@@ -72,8 +74,12 @@ export function ChordVoicingDisplay({
     );
   }
 
-  const availableVoicings = instrument === 'guitar' ? guitarVoicings : pianoVoicings;
-  const voicingLabel = currentVoicing.voicingName || `Voicing ${safeVoicingIndex + 1}`;
+  const availableVoicings =
+    instrument === 'guitar' ? guitarVoicings : instrument === 'piano' ? pianoVoicings : [];
+  const voicingLabel =
+    instrument === 'banjo'
+      ? getBanjoVoicing(chord)?.description ?? 'Banjo (Open G tuning)'
+      : currentVoicing?.voicingName || `Voicing ${safeVoicingIndex + 1}`;
 
   return (
     <motion.div
@@ -126,7 +132,7 @@ export function ChordVoicingDisplay({
 
           {/* Chord Diagram */}
           <div className="flex flex-col items-center justify-center gap-6 py-6">
-            {instrument === 'guitar' && currentVoicing.guitar ? (
+            {instrument === 'guitar' && currentVoicing?.guitar ? (
               <>
                 <ChordDiagram
                   chord={chord}
@@ -136,7 +142,9 @@ export function ChordVoicingDisplay({
                   {currentVoicing.guitar.description}
                 </p>
               </>
-            ) : instrument === 'piano' && currentVoicing.piano ? (
+            ) : instrument === 'banjo' ? (
+              <ChordDiagram chord={chord} instrument="banjo" hideChordInfo />
+            ) : instrument === 'piano' && currentVoicing?.piano ? (
               <>
                 <PianoChordDiagram
                   voicing={currentVoicing}
@@ -157,7 +165,7 @@ export function ChordVoicingDisplay({
           </div>
 
           {/* Audio Player */}
-          {currentVoicing.guitar || currentVoicing.piano ? (
+          {currentVoicing?.guitar || currentVoicing?.piano ? (
             <div className="flex items-center gap-3 pt-4 border-t">
               <ChordPlayer chord={chord} />
             </div>

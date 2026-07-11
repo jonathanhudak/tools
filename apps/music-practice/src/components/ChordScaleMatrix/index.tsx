@@ -87,8 +87,8 @@ function useChordForDegree(
 interface FullDegreeCardProps {
   entry: ReturnType<typeof buildScaleChords>[number];
   rootKey: RootKey;
-  instrument: 'guitar' | 'piano';
-  onInstrumentChange: (i: 'guitar' | 'piano') => void;
+  instrument: 'guitar' | 'banjo' | 'piano';
+  onInstrumentChange: (i: 'guitar' | 'banjo' | 'piano') => void;
 }
 
 function FullDegreeCard({ entry, rootKey, instrument, onInstrumentChange }: FullDegreeCardProps) {
@@ -207,7 +207,7 @@ export function ChordScaleMatrix({
 }: ChordScaleMatrixProps) {
   const [selectedKey, setSelectedKey] = useState<RootKey>(initialKey);
   const [selectedScale, setSelectedScale] = useState<ScaleType>(initialScaleType);
-  const [instrument, setInstrument] = useState<'guitar' | 'piano'>('guitar');
+  const [instrument, setInstrument] = useState<'guitar' | 'banjo' | 'piano'>('guitar');
 
   const degrees = useMemo(() => buildScaleChords(selectedScale), [selectedScale]);
 

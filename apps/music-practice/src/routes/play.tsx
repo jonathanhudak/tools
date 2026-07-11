@@ -19,7 +19,7 @@ import { MidiManager, type NoteOnEvent, type DeviceChangeEvent } from '../lib/in
 import { AudioManager, type PitchDetectedEvent } from '../lib/input/audio-manager';
 import { StaffRenderer } from '../lib/notation/staff-renderer';
 import { TabRenderer } from '../lib/notation/tab-renderer';
-import { getInstrument, requiresMIDI, type InstrumentTypeValue } from '../lib/utils/instrument-config';
+import { getInstrument, requiresMIDI, requiresMicrophone, supportsTabNotation, type InstrumentTypeValue } from '../lib/utils/instrument-config';
 import { generateRandomNote, generateRandomNoteFromScale, validateNote } from '../lib/utils/music-theory';
 import { getScale } from '../data/scales/scale-registry';
 import { Note as TonalNote } from 'tonal';
@@ -74,13 +74,22 @@ const INSTRUMENTS = [
   { id: 'piano-virtual', label: 'Piano (Virtual)', icon: Piano, description: 'On-screen keyboard' },
   { id: 'violin', label: 'Violin (Mic)', icon: Mic, description: 'Microphone pitch detection' },
   { id: 'guitar', label: 'Guitar (Mic)', icon: Guitar, description: 'Microphone pitch detection' },
+  { id: 'banjo', label: 'Banjo (Mic)', icon: Guitar, description: 'Microphone pitch detection' },
 ] as const;
 
 const DIFFICULTIES = [
-  { id: 'beginner', label: 'Beginner', range: 'C4 – C5' },
-  { id: 'intermediate', label: 'Intermediate', range: 'C4 – G5' },
-  { id: 'advanced', label: 'Advanced', range: 'A3 – C6' },
+  { id: 'beginner', label: 'Beginner' },
+  { id: 'intermediate', label: 'Intermediate' },
+  { id: 'advanced', label: 'Advanced' },
 ] as const;
+
+/** Format a note-range string like "d3-a4" as "D3 – A4" for display */
+function formatNoteRange(range: string): string {
+  return range
+    .split('-')
+    .map((n) => n.charAt(0).toUpperCase() + n.slice(1))
+    .join(' – ');
+}
 
 // ─── Setup Screen ──────────────────────────────────────────
 function SetupScreen({ onStart }: {
@@ -112,7 +121,7 @@ function SetupScreen({ onStart }: {
   const [selectedAudioDevice, setSelectedAudioDevice] = useState(saved.audioDeviceId || '');
   const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
 
-  const isMicInstrument = instrument === 'violin' || instrument === 'guitar';
+  const isMicInstrument = requiresMicrophone(instrument);
 
   // Fetch audio devices when mic instrument is selected
   useEffect(() => {
@@ -228,7 +237,7 @@ function SetupScreen({ onStart }: {
                 <SelectContent>
                   {DIFFICULTIES.map((d) => (
                     <SelectItem key={d.id} value={d.id}>
-                      {d.label} ({d.range})
+                      {d.label} ({formatNoteRange(getNoteRange(instrument, d.id))})
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -250,8 +259,8 @@ function SetupScreen({ onStart }: {
             </Select>
           </div>
 
-          {/* Tab Display Mode (guitar only) */}
-          {instrument === 'guitar' && (
+          {/* Tab Display Mode (tab-reading instruments) */}
+          {supportsTabNotation(instrument) && (
             <div className="space-y-2">
               <Label htmlFor="tab-display-select" className="text-sm font-medium">Tab Display</Label>
               <Select value={tabDisplayMode} onValueChange={setTabDisplayMode}>
@@ -517,7 +526,7 @@ function PlayRoute() {
 
     let centsOff: number | undefined;
     if (currentNoteRef.current !== null) {
-      const instrumentConfig = getInstrument(instrumentRef.current as 'piano' | 'violin' | 'guitar');
+      const instrumentConfig = getInstrument(instrumentRef.current);
       const result = validateNote(event.midi, currentNoteRef.current, {
         allowOctaveError: instrumentConfig.validation.octaveFlexible,
       });
@@ -527,7 +536,7 @@ function PlayRoute() {
     setLastDetectedNote({ note: event.midi, noteName: event.noteName, centsOff });
 
     if (sessionActiveRef.current && currentNoteRef.current !== null) {
-      const instrumentConfig = getInstrument(instrumentRef.current as 'piano' | 'violin' | 'guitar');
+      const instrumentConfig = getInstrument(instrumentRef.current);
       const result = validateNote(event.midi, currentNoteRef.current, {
         allowOctaveError: instrumentConfig.validation.octaveFlexible,
       });
@@ -577,7 +586,7 @@ function PlayRoute() {
 
     let centsOff: number | undefined;
     if (currentNoteRef.current !== null) {
-      const instrumentConfig = getInstrument(instrumentRef.current as 'piano' | 'violin' | 'guitar');
+      const instrumentConfig = getInstrument(instrumentRef.current);
       const result = validateNote(event.note, currentNoteRef.current, {
         allowOctaveError: instrumentConfig.validation.octaveFlexible,
       });
@@ -587,7 +596,7 @@ function PlayRoute() {
     setLastDetectedNote({ note: event.note, noteName: event.noteName, centsOff });
 
     if (sessionActiveRef.current && currentNoteRef.current !== null) {
-      const instrumentConfig = getInstrument(instrumentRef.current as 'piano' | 'violin' | 'guitar');
+      const instrumentConfig = getInstrument(instrumentRef.current);
       const result = validateNote(event.note, currentNoteRef.current, {
         allowOctaveError: instrumentConfig.validation.octaveFlexible,
       });
@@ -693,7 +702,7 @@ function PlayRoute() {
   // Audio manager for microphone instruments
   useEffect(() => {
     if (!setupComplete) return;
-    const isMicrophoneInstrument = instrument === 'violin' || instrument === 'guitar';
+    const isMicrophoneInstrument = requiresMicrophone(instrument);
     if (isMicrophoneInstrument && !audioInitAttemptedRef.current) {
       const initAudio = async () => {
         audioInitAttemptedRef.current = true;
@@ -788,7 +797,7 @@ function PlayRoute() {
   }
 
   // ─── Game screen ──────────────────────────────────────────
-  const isMicrophoneInstrument = instrument === 'violin' || instrument === 'guitar';
+  const isMicrophoneInstrument = requiresMicrophone(instrument);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
