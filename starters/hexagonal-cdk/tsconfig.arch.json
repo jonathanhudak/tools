@@ -1,0 +1,6 @@
+{
+  "//": "Flat program used ONLY by ArchUnitTS (arch/*.arch.test.ts) to read the import graph. Not built.",
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": { "composite": false, "noEmit": true, "emitDeclarationOnly": false, "declaration": false, "declarationMap": false, "types": [] },
+  "include": ["packages/*/src/**/*.ts", "packages/*/test/**/*.ts", "infra/bin/**/*.ts", "infra/lib/**/*.ts"]
+}

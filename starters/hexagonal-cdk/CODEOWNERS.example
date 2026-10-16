@@ -1,0 +1,25 @@
+# Architecture enforcement files require human review.
+# GitHub only reads CODEOWNERS from the repo root, docs/, or .github/. After copying this
+# starter into its own repo, move this file to .github/CODEOWNERS, replace @your-org/architects,
+# and enable "Require review from Code Owners" in the branch protection rule for main.
+#
+# Paths below assume the starter IS the repo root. If it stays nested (as in jonathanhudak/tools),
+# prefix each path with /starters/hexagonal-cdk.
+
+/eslint.config.js                 @your-org/architects
+/.dependency-cruiser.cjs          @your-org/architects
+/tsconfig*.json                   @your-org/architects
+/packages/*/tsconfig*.json        @your-org/architects
+/infra/tsconfig.json              @your-org/architects
+/packages/*/package.json          @your-org/architects
+/pnpm-workspace.yaml              @your-org/architects
+/.npmrc                           @your-org/architects
+/vitest.config.ts                 @your-org/architects
+/arch/                            @your-org/architects
+/canary/                          @your-org/architects
+/scripts/                         @your-org/architects
+/.claude/                         @your-org/architects
+/.github/workflows/               @your-org/architects
+/.github/CODEOWNERS               @your-org/architects
+/AGENTS.md                        @your-org/architects
+/CLAUDE.md                        @your-org/architects

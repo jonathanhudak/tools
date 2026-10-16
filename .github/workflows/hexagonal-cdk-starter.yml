@@ -1,0 +1,59 @@
+name: hexagonal-cdk starter
+
+# Self-contained: runs only when the starter (or this workflow) changes, and only inside
+# starters/hexagonal-cdk. It never touches the root workspace or the Pages build.
+on:
+  pull_request:
+    paths:
+      - 'starters/hexagonal-cdk/**'
+      - '.github/workflows/hexagonal-cdk-starter.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'starters/hexagonal-cdk/**'
+      - '.github/workflows/hexagonal-cdk-starter.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hexagonal-cdk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: starters/hexagonal-cdk
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: starters/hexagonal-cdk/package.json
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: starters/hexagonal-cdk/pnpm-lock.yaml
+
+      - name: Install (frozen, strict node_modules)
+        run: pnpm install --frozen-lockfile
+
+      # Each layer as its own step so a failure names the rail that bit.
+      - name: Typecheck (tsc -b, project references)
+        run: pnpm typecheck
+      - name: Lint (boundaries + purity + anti-tamper)
+        run: pnpm lint
+      - name: dependency-cruiser
+        run: pnpm arch:cruise
+      - name: Architecture tests (ArchUnitTS)
+        run: pnpm arch:test
+      - name: Unit tests
+        run: pnpm test
+      - name: Canary (every rail still bites)
+        run: pnpm arch:canary
+      - name: cdk synth (offline, no deploy)
+        run: pnpm synth
