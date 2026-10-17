@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "test",
+    "outDir": "dist-test",
+    "tsBuildInfoFile": "dist-test/.tsbuildinfo"
+  },
+  "include": ["test"],
+  "references": [{ "path": "./tsconfig.json" }, { "path": "../domain" }, { "path": "../adapters-driven" }]
+}

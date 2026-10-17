@@ -1,0 +1,84 @@
+{
+  "$comment": "ENFORCEMENT - human-owned. Every planted violation (canary/fixtures/<path>) and what MUST report it. eslint: rule ids; cruise: dependency-cruiser rule names; tsc: true = tsc -b must error in this file; arch: ArchUnitTS test titles that must fail. suppressed.ts has no tsc expectation on purpose: @ts-ignore really does hide the type error, which is why ESLint bans it.",
+  "fixtures": {
+    "packages/domain/src/__canary__/imports-adapter-relative.ts": {
+      "eslint": [
+        "boundaries/dependencies",
+        "no-restricted-imports"
+      ],
+      "cruise": [
+        "domain-is-pure",
+        "only-composition-imports-driven-adapters"
+      ],
+      "tsc": true,
+      "arch": [
+        "domain must not depend on adapters-driven"
+      ]
+    },
+    "packages/domain/src/__canary__/imports-adapter-package.ts": {
+      "eslint": [
+        "boundaries/dependencies",
+        "no-restricted-imports"
+      ],
+      "cruise": [
+        "not-to-unresolvable"
+      ],
+      "tsc": true
+    },
+    "packages/domain/src/__canary__/impure.ts": {
+      "eslint": [
+        "no-restricted-properties",
+        "no-restricted-syntax",
+        "no-restricted-globals"
+      ]
+    },
+    "packages/domain/stray/stray.ts": {
+      "eslint": [
+        "boundaries/no-unknown-files"
+      ]
+    },
+    "packages/application/src/__canary__/aws-sdk.ts": {
+      "eslint": [
+        "boundaries/dependencies",
+        "no-restricted-imports"
+      ],
+      "cruise": [
+        "not-to-unresolvable"
+      ],
+      "tsc": true
+    },
+    "packages/application/src/__canary__/suppressed.ts": {
+      "eslint": [
+        "eslint-comments/no-use",
+        "@typescript-eslint/ban-ts-comment",
+        "no-restricted-properties"
+      ]
+    },
+    "packages/application/src/__canary__/cycle-a.ts": {
+      "cruise": [
+        "no-circular"
+      ],
+      "arch": [
+        "ring sources are cycle-free"
+      ]
+    },
+    "packages/application/src/__canary__/misplaced.port.ts": {
+      "arch": [
+        "port files live in domain/src/ports and are named *.port.ts"
+      ]
+    },
+    "packages/adapters-driving/src/__canary__/cross.ts": {
+      "eslint": [
+        "boundaries/dependencies"
+      ],
+      "cruise": [
+        "no-adapter-cross-imports-driving-to-driven",
+        "only-composition-imports-driven-adapters"
+      ],
+      "tsc": true,
+      "arch": [
+        "adapters-driving must not depend on adapters-driven"
+      ]
+    }
+  }
+}

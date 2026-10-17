@@ -1,0 +1,9 @@
+{
+  "name": "@hex/application",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts" },
+  "dependencies": { "@hex/domain": "workspace:*" },
+  "devDependencies": { "@hex/adapters-driven": "workspace:*", "vitest": "4.1.12" }
+}

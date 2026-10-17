@@ -1,0 +1,1 @@
+{"version":3,"file":"fixed-clock.adapter.d.ts","sourceRoot":"","sources":["fixed-clock.adapter.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,SAAS,EAAE,MAAM,aAAa,CAAC;AAE7C,qBAAa,UAAW,YAAW,SAAS;IAC9B,OAAO,CAAC,OAAO;gBAAP,OAAO,EAAE,IAAI;IAEjC,GAAG,IAAI,IAAI;IAIX,OAAO,CAAC,EAAE,EAAE,MAAM,GAAG,IAAI;CAG1B"}

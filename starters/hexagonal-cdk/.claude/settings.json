@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "deny": [
+      "Edit(eslint.config.js)",
+      "Write(eslint.config.js)",
+      "Edit(.dependency-cruiser.cjs)",
+      "Write(.dependency-cruiser.cjs)",
+      "Edit(tsconfig*.json)",
+      "Write(tsconfig*.json)",
+      "Edit(**/tsconfig*.json)",
+      "Write(**/tsconfig*.json)",
+      "Edit(vitest.config.ts)",
+      "Write(vitest.config.ts)",
+      "Edit(.npmrc)",
+      "Write(.npmrc)",
+      "Edit(pnpm-workspace.yaml)",
+      "Write(pnpm-workspace.yaml)",
+      "Edit(packages/*/package.json)",
+      "Write(packages/*/package.json)",
+      "Edit(arch/**)",
+      "Write(arch/**)",
+      "Edit(canary/**)",
+      "Write(canary/**)",
+      "Edit(scripts/**)",
+      "Write(scripts/**)",
+      "Edit(.claude/**)",
+      "Write(.claude/**)",
+      "Edit(CODEOWNERS.example)",
+      "Write(CODEOWNERS.example)",
+      "Edit(CODEOWNERS)",
+      "Write(CODEOWNERS)",
+      "Edit(**/.github/workflows/**)",
+      "Write(**/.github/workflows/**)",
+      "Edit(**/.github/CODEOWNERS)",
+      "Write(**/.github/CODEOWNERS)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(sed -i:*)",
+      "Bash(perl -pi:*)",
+      "Bash(rm -rf arch:*)",
+      "Bash(rm -rf canary:*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm remove:*)",
+      "Bash(npm install:*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|MultiEdit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/arch-check.mjs\"",
+            "timeout": 60
+          }
+        ]
+      }
+    ]
+  }
+}
