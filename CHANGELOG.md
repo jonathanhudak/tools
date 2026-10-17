@@ -1,3 +1,10 @@
+# [1.51.0](https://github.com/jonathanhudak/tools/compare/v1.50.0...v1.51.0) (2026-10-17)
+
+
+### Features
+
+* **starters:** add hexagonal CDK starter with agent-proof architecture rails ([#87](https://github.com/jonathanhudak/tools/issues/87)) ([d5fa2ab](https://github.com/jonathanhudak/tools/commit/d5fa2ab74b41a791f6ea07a9529d1c8d58762471))
+
 # [1.50.0](https://github.com/jonathanhudak/tools/compare/v1.49.1...v1.50.0) (2026-07-11)
 
 
