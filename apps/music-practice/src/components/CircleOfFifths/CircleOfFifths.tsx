@@ -7,7 +7,7 @@
  * All SVG fills use --color-* CSS vars (Tailwind v4 convention).
  */
 
-import { useState, useMemo, useCallback } from 'react';
+import { useMemo, useCallback } from 'react';
 import {
   getKeyInfo,
   getFifthAbove,
@@ -18,6 +18,7 @@ import { Badge } from '@hudak/ui/components/badge';
 import { Button } from '@hudak/ui/components/button';
 import { InstrumentToggle } from '../Piano/InstrumentToggle';
 import { ChordCard } from '../shared/ChordCard';
+import type { Instrument } from '../../lib/search-params';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -73,10 +74,13 @@ function accidentalLabel(entry: CircleOfFifthsEntry): string {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export function CircleOfFifths() {
-  const [selectedKey, setSelectedKey] = useState<string>('C');
-  const [instrument, setInstrument] = useState<'guitar' | 'banjo' | 'piano'>('guitar');
+export interface CircleOfFifthsProps {
+  selectedKey: string;
+  instrument: Instrument;
+  onChange: (next: { key?: string; instrument?: Instrument }) => void;
+}
 
+export function CircleOfFifths({ selectedKey, instrument, onChange }: CircleOfFifthsProps) {
   const selectedEntry = useMemo(() => getKeyInfo(selectedKey), [selectedKey]);
   const fifthAbove = useMemo(() => getFifthAbove(selectedKey), [selectedKey]);
   const fifthBelow = useMemo(() => getFifthBelow(selectedKey), [selectedKey]);
@@ -85,9 +89,7 @@ export function CircleOfFifths() {
     return CLOCKWISE_ORDER.map((key) => getKeyInfo(key)!);
   }, []);
 
-  const handleKeyClick = useCallback((key: string) => {
-    setSelectedKey(key);
-  }, []);
+  const handleKeyClick = useCallback((key: string) => onChange({ key }), [onChange]);
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
@@ -301,12 +303,12 @@ export function CircleOfFifths() {
               {/* Fifth relationships */}
               <div className="flex gap-3 pt-1">
                 {fifthBelow && (
-                  <Button variant="outline" size="sm" onClick={() => setSelectedKey(fifthBelow)}>
+                  <Button variant="outline" size="sm" onClick={() => onChange({ key: fifthBelow })}>
                     ← {fifthBelow}
                   </Button>
                 )}
                 {fifthAbove && (
-                  <Button variant="outline" size="sm" onClick={() => setSelectedKey(fifthAbove)}>
+                  <Button variant="outline" size="sm" onClick={() => onChange({ key: fifthAbove })}>
                     {fifthAbove} →
                   </Button>
                 )}
@@ -315,7 +317,7 @@ export function CircleOfFifths() {
 
             {/* Instrument toggle */}
             <div className="flex justify-center">
-              <InstrumentToggle instrument={instrument} onChange={setInstrument} />
+              <InstrumentToggle instrument={instrument} onChange={(next) => onChange({ instrument: next })} />
             </div>
 
             {/* All Keys quick selector */}
@@ -332,7 +334,7 @@ export function CircleOfFifths() {
                       variant={key === selectedKey ? 'default' : 'outline'}
                       size="sm"
                       className="text-xs px-2 py-1 h-auto"
-                      onClick={() => setSelectedKey(key)}
+                      onClick={() => onChange({ key })}
                     >
                       {key}
                       <span className="ml-1 opacity-50 text-[10px]">

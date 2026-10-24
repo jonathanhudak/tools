@@ -24,13 +24,14 @@ import {
   type ScaleType,
   type Degree,
 } from '@/data/chord-scale-matrix';
+import type { Instrument } from '@/lib/search-params';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-const CHROMATIC_KEYS = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'] as const;
-type RootKey = typeof CHROMATIC_KEYS[number];
+export const CHROMATIC_KEYS = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'] as const;
+export type RootKey = typeof CHROMATIC_KEYS[number];
 
-const SCALE_TYPES: ScaleType[] = ['major', 'naturalMinor', 'melodicMinor', 'harmonicMinor', 'harmonicMajor'];
+export const SCALE_TYPES: readonly ScaleType[] = ['major', 'naturalMinor', 'melodicMinor', 'harmonicMinor', 'harmonicMajor'];
 
 /** Modal character descriptions keyed by mode name */
 const MODAL_CHARACTER: Record<string, { character: string; function: string; color: string }> = {
@@ -196,20 +197,20 @@ function FullDegreeCard({ entry, rootKey, instrument, onInstrumentChange }: Full
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-interface ChordScaleMatrixProps {
-  initialKey?: RootKey;
-  initialScaleType?: ScaleType;
+export interface ChordScaleMatrixProps {
+  selectedKey: RootKey;
+  selectedScaleType: ScaleType;
+  instrument: Instrument;
+  onChange: (next: { key?: RootKey; scale?: ScaleType; instrument?: Instrument }) => void;
 }
 
 export function ChordScaleMatrix({
-  initialKey = 'C',
-  initialScaleType = 'major',
+  selectedKey,
+  selectedScaleType,
+  instrument,
+  onChange,
 }: ChordScaleMatrixProps) {
-  const [selectedKey, setSelectedKey] = useState<RootKey>(initialKey);
-  const [selectedScale, setSelectedScale] = useState<ScaleType>(initialScaleType);
-  const [instrument, setInstrument] = useState<'guitar' | 'banjo' | 'piano'>('guitar');
-
-  const degrees = useMemo(() => buildScaleChords(selectedScale), [selectedScale]);
+  const degrees = useMemo(() => buildScaleChords(selectedScaleType), [selectedScaleType]);
 
   return (
     <div className="space-y-5">
@@ -224,7 +225,7 @@ export function ChordScaleMatrix({
             {CHROMATIC_KEYS.map(key => (
               <button
                 key={key}
-                onClick={() => setSelectedKey(key)}
+                onClick={() => onChange({ key })}
                 className={[
                   'font-mono text-sm min-h-11 min-w-11 px-2.5 py-1 rounded-lg border transition-all flex-shrink-0',
                   selectedKey === key
@@ -244,10 +245,10 @@ export function ChordScaleMatrix({
             {SCALE_TYPES.map(scale => (
               <button
                 key={scale}
-                onClick={() => setSelectedScale(scale)}
+                onClick={() => onChange({ scale })}
                 className={[
                   'text-xs min-h-11 px-4 py-1.5 rounded-full border-2 font-medium transition-all flex-shrink-0',
-                  selectedScale === scale
+                  selectedScaleType === scale
                     ? 'border-[var(--accent)] bg-[var(--accent)] text-white'
                     : 'border-[var(--border-medium)] text-[var(--ink-secondary)] hover:border-[var(--accent)]',
                 ].join(' ')}
@@ -256,7 +257,7 @@ export function ChordScaleMatrix({
               </button>
             ))}
           </div>
-          <InstrumentToggle instrument={instrument} onChange={setInstrument} />
+          <InstrumentToggle instrument={instrument} onChange={(next) => onChange({ instrument: next })} />
         </div>
       </div>
 
@@ -269,14 +270,14 @@ export function ChordScaleMatrix({
         >
           {degrees.map(entry => (
             <div
-              key={`${entry.degree}-${selectedScale}-${selectedKey}`}
+              key={`${entry.degree}-${selectedScaleType}-${selectedKey}`}
               className="snap-start flex-shrink-0 w-[75vw] sm:w-[280px]"
             >
               <FullDegreeCard
                 entry={entry}
                 rootKey={selectedKey}
                 instrument={instrument}
-                onInstrumentChange={setInstrument}
+                onInstrumentChange={(next) => onChange({ instrument: next })}
               />
             </div>
           ))}
@@ -286,11 +287,11 @@ export function ChordScaleMatrix({
         <div className="hidden lg:grid lg:grid-cols-7 gap-3 px-8">
           {degrees.map(entry => (
             <FullDegreeCard
-              key={`${entry.degree}-${selectedScale}-${selectedKey}`}
+              key={`${entry.degree}-${selectedScaleType}-${selectedKey}`}
               entry={entry}
               rootKey={selectedKey}
               instrument={instrument}
-              onInstrumentChange={setInstrument}
+              onInstrumentChange={(next) => onChange({ instrument: next })}
             />
           ))}
         </div>
