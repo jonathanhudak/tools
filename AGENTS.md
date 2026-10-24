@@ -9,6 +9,7 @@
 - [Making Changes](#making-changes)
 - [Testing and Verification](#testing-and-verification)
 - [Common Pitfalls](#common-pitfalls)
+- [Deploy](#deploy)
 
 ---
 
@@ -248,6 +249,25 @@ When adding a new tool:
 - [ ] Committed changes with descriptive message
 
 ---
+
+## Deploy
+
+Two sites deploy from `main` automatically (`.github/workflows/release.yml`); never deploy by hand
+from a branch.
+
+| Site | What | How |
+|---|---|---|
+| https://jonathanhudak.github.io/tools/ | every app, built into `docs/` | `release` + `deploy` jobs (GitHub Pages) |
+| https://learn.music.hudak.land/ | `apps/music-practice` only | `deploy-learn-music` job: `pnpm --filter @hudak/music-practice run deploy` |
+
+`learn.music.hudak.land` is S3 bucket `learn-music-hudak-land` (us-east-1) behind CloudFront
+distribution `E1IL5LSQHQUG3Y`, DNS in Route 53. The job runs after `release` passes, signs in with
+GitHub OIDC as IAM role `github-deploy-learn-music` (trusts only `main` of this repo; can only sync
+that bucket and invalidate that distribution), builds with `--base /`, syncs with `--delete`,
+invalidates `/*`, then checks `/` and `/tuner` return 200. No AWS keys live in this repo or its secrets.
+
+To deploy: merge to `main`. To roll back: revert on `main`. If the job fails, read its log in the
+Actions tab; do not add AWS keys as secrets to work around it.
 
 ## Resources
 
