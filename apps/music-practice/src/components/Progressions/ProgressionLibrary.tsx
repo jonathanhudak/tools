@@ -11,7 +11,10 @@ import {
   type ProgressionFamily,
 } from '@/data/progressions/progression-registry';
 import { HARMONIC_SEQUENCES } from '@/data/progressions/harmonic-sequences';
+import { resolveProgression } from '@/lib/theory/roman';
 import { ProgressionPlayer } from '../shared/ProgressionPlayer';
+import { ChordCard } from '../shared/ChordCard';
+import { InstrumentToggle } from '../Piano/InstrumentToggle';
 
 const SEQUENCE_TYPE_LABELS: Record<string, string> = {
   diatonic: 'Diatonic',
@@ -32,6 +35,7 @@ export function ProgressionLibrary(): JSX.Element {
   const [selectedId, setSelectedId] = useState<string>('ii-V-I-major');
   const [musicKey, setMusicKey] = useState('C');
   const [bpm, setBpm] = useState(90);
+  const [instrument, setInstrument] = useState<'guitar' | 'banjo' | 'piano'>('guitar');
 
   const progressions = useMemo(
     () => PROGRESSION_REGISTRY.filter(p => p.family === family),
@@ -41,6 +45,13 @@ export function ProgressionLibrary(): JSX.Element {
     () =>
       PROGRESSION_REGISTRY.find(p => p.id === selectedId) ?? progressions[0],
     [selectedId, progressions],
+  );
+  const resolved = useMemo(
+    () =>
+      selected
+        ? resolveProgression(musicKey, selected.steps.map(s => s.romanNumeral))
+        : [],
+    [selected, musicKey],
   );
 
   return (
@@ -105,6 +116,29 @@ export function ProgressionLibrary(): JSX.Element {
               bpm={bpm}
               onBpmChange={setBpm}
             />
+
+            {/* Chord diagrams — one card per step, in the current key */}
+            <div className="space-y-3 pt-2 border-t border-[var(--border-subtle)]">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h3 className="text-sm font-semibold" style={{ fontFamily: 'var(--font-display)' }}>
+                  Chord diagrams — {musicKey}
+                </h3>
+                <InstrumentToggle instrument={instrument} onChange={setInstrument} />
+              </div>
+              <div
+                className="flex gap-3 overflow-x-auto pb-3 snap-x snap-mandatory lg:grid lg:grid-cols-4 lg:overflow-visible"
+                style={{ scrollbarWidth: 'none' }}
+              >
+                {resolved.map((c, i) => (
+                  <div
+                    key={i}
+                    className="snap-start flex-shrink-0 w-[75vw] sm:w-[240px] lg:w-auto"
+                  >
+                    <ChordCard chordName={c.symbol} label={c.numeral} instrument={instrument} />
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         )}
       </div>
