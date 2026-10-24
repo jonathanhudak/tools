@@ -126,13 +126,13 @@ export function ProgressionLibrary(): JSX.Element {
                 <InstrumentToggle instrument={instrument} onChange={setInstrument} />
               </div>
               <div
-                className="flex gap-3 overflow-x-auto pb-3 snap-x snap-mandatory lg:grid lg:grid-cols-4 lg:overflow-visible"
+                className="flex gap-3 overflow-x-auto pb-3 snap-x snap-mandatory"
                 style={{ scrollbarWidth: 'none' }}
               >
                 {resolved.map((c, i) => (
                   <div
                     key={i}
-                    className="snap-start flex-shrink-0 w-[75vw] sm:w-[240px] lg:w-auto"
+                    className="snap-start flex-shrink-0 w-[75vw] sm:w-[280px]"
                   >
                     <ChordCard chordName={c.symbol} label={c.numeral} instrument={instrument} />
                   </div>
