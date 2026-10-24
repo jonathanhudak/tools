@@ -68,3 +68,53 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  # music-practice → https://learn.music.hudak.land (S3 learn-music-hudak-land + CloudFront E1IL5LSQHQUG3Y).
+  # Signs in with GitHub OIDC: no AWS keys are stored anywhere. The role trusts only this repo's main
+  # branch and can only sync that bucket and invalidate that distribution (see AGENTS.md "Deploy").
+  deploy-learn-music:
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    concurrency:
+      group: deploy-learn-music
+      cancel-in-progress: false
+    env:
+      PUPPETEER_SKIP_DOWNLOAD: 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build shared packages
+        run: pnpm --filter @hudak/audio-components --filter @hudak/tuning-data build
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::348481028386:role/github-deploy-learn-music
+          aws-region: us-east-1
+
+      - name: Build, sync to S3, invalidate CloudFront
+        run: pnpm --filter @hudak/music-practice run deploy
+
+      - name: Smoke test
+        run: |
+          for path in / /tuner; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "https://learn.music.hudak.land$path")
+            echo "$path -> HTTP $code"
+            [ "$code" = 200 ] || exit 1
+          done
