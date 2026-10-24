@@ -2,9 +2,33 @@
  * ProgressionLibrary tests — the chord diagram grid renders one shared
  * ChordCard per step and follows the key + instrument controls.
  */
+import { useState } from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
+import type { ProgressionFamily } from '@/data/progressions/progression-registry';
+import type { Instrument } from '@/lib/search-params';
 import { ProgressionLibrary } from '../ProgressionLibrary';
+
+/** Controlled harness: the real app keeps this state in the URL. */
+function Harness() {
+  const [search, setSearch] = useState({
+    family: 'jazz' as ProgressionFamily,
+    progression: 'ii-V-I-major',
+    key: 'C',
+    bpm: 90,
+    instrument: 'guitar' as Instrument,
+  });
+  return (
+    <ProgressionLibrary
+      family={search.family}
+      progression={search.progression}
+      musicKey={search.key}
+      bpm={search.bpm}
+      instrument={search.instrument}
+      onChange={(next) => setSearch((prev) => ({ ...prev, ...next }))}
+    />
+  );
+}
 
 // Mock heavy leaf renderers — the grid wiring is what matters here.
 vi.mock('../../ChordReference/ChordDiagram', () => ({
@@ -36,7 +60,7 @@ vi.mock('../../shared/ProgressionPlayer', () => ({
 
 describe('ProgressionLibrary chord diagram grid', () => {
   it('renders one shared ChordCard per step of the selected progression', () => {
-    render(<ProgressionLibrary />);
+    render(<Harness />);
 
     // Default selection is ii-V-I Major in C: Dm7 → G7 → Cmaj7
     expect(screen.getByText('ii7')).toBeInTheDocument();
@@ -49,7 +73,7 @@ describe('ProgressionLibrary chord diagram grid', () => {
   });
 
   it('transposes the grid when the key changes', () => {
-    render(<ProgressionLibrary />);
+    render(<Harness />);
 
     fireEvent.click(screen.getByTestId('key-change'));
 
@@ -61,7 +85,7 @@ describe('ProgressionLibrary chord diagram grid', () => {
   });
 
   it('lays the cards out in a single scrollable row with fixed-width cards', () => {
-    const { container } = render(<ProgressionLibrary />);
+    const { container } = render(<Harness />);
 
     const cards = container.querySelectorAll('.snap-start');
     expect(cards.length).toBeGreaterThan(0);
@@ -80,7 +104,7 @@ describe('ProgressionLibrary chord diagram grid', () => {
   });
 
   it('switches every card to the piano diagram via the shared instrument toggle', () => {
-    render(<ProgressionLibrary />);
+    render(<Harness />);
 
     expect(screen.queryByTestId('piano-diagram')).not.toBeInTheDocument();
 

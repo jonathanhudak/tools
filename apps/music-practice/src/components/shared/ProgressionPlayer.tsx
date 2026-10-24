@@ -14,7 +14,7 @@ import { playChordSequence, type PlaybackHandle } from '@/lib/audio/player';
 import { getChordByShortName } from '@/lib/chord-library';
 import { ChordVoicingDisplay } from '../ChordScaleGame/ChordVoicingDisplay';
 
-const KEYS = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+export const KEYS = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
 /** Circle-of-fifths order for key cycling */
 const FIFTHS = ['C', 'F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb', 'B', 'E', 'A', 'D', 'G'];
 
