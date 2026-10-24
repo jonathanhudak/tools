@@ -60,6 +60,25 @@ describe('ProgressionLibrary chord diagram grid', () => {
     expect(screen.queryByText('Dm7')).not.toBeInTheDocument();
   });
 
+  it('lays the cards out in a single scrollable row with fixed-width cards', () => {
+    const { container } = render(<ProgressionLibrary />);
+
+    const cards = container.querySelectorAll('.snap-start');
+    expect(cards.length).toBeGreaterThan(0);
+
+    const row = cards[0].parentElement as HTMLElement;
+    expect(row.className).toContain('overflow-x-auto');
+    expect(row.className).not.toContain('lg:grid');
+    expect(row.className).not.toContain('grid-cols');
+    expect(row.className).not.toMatch(/\bgrid\b/);
+
+    cards.forEach(card => {
+      expect(card.className).toContain('w-[75vw]');
+      expect(card.className).toContain('sm:w-[280px]');
+      expect(card.className).not.toContain('lg:w-auto');
+    });
+  });
+
   it('switches every card to the piano diagram via the shared instrument toggle', () => {
     render(<ProgressionLibrary />);
 
