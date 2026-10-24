@@ -25,6 +25,14 @@ export class StaffRenderer {
     private context: VexFlowAPI = null;
     private currentNote: string | null = null;
     private clef: ClefType = 'treble';
+    /**
+     * The last draw requested before VexFlow finished loading. VexFlow comes
+     * from a CDN <script>, so a hard reload can request a draw before
+     * `window.Vex` exists. The request is stashed here and replayed by init().
+     * Only the latest request is kept.
+     */
+    private pendingRender: (() => void) | null = null;
+    private initAttempts = 0;
 
     constructor(containerId: string) {
         this.container = document.getElementById(containerId);
@@ -62,11 +70,15 @@ export class StaffRenderer {
      */
     private init(): void {
         try {
-            // Check if VexFlow is loaded
+            // Check if VexFlow is loaded (CDN script may not be ready yet)
             if (typeof Vex === 'undefined' || typeof window.Vex === 'undefined') {
-                console.error('VexFlow not loaded - waiting...');
-                // Try again after a short delay
-                setTimeout(() => this.init(), 500);
+                if (this.initAttempts++ < 20) {
+                    // Try again after a short delay; a pending render replays once ready
+                    setTimeout(() => this.init(), 500);
+                } else {
+                    console.error('VexFlow failed to load after multiple attempts');
+                    this.showError('Unable to load music notation');
+                }
                 return;
             }
 
@@ -96,6 +108,14 @@ export class StaffRenderer {
 
             // Get drawing context
             this.context = this.renderer.getContext();
+            this.initAttempts = 0;
+
+            // Replay the draw requested before VexFlow finished loading
+            if (this.pendingRender) {
+                const replay = this.pendingRender;
+                this.pendingRender = null;
+                replay();
+            }
 
         } catch (error) {
             console.error('Failed to initialize StaffRenderer:', error);
@@ -118,13 +138,9 @@ export class StaffRenderer {
      */
     renderNote(vexflowNote: string, options: RenderOptions = {}): void {
         if (!this.context) {
-            console.warn('Renderer not initialized, attempting to initialize...');
-            this.init();
-            if (!this.context) {
-                console.error('Failed to initialize renderer');
-                this.showError('Unable to display notation - please refresh');
-                return;
-            }
+            // VexFlow not ready yet — replay this draw once init() completes
+            this.pendingRender = () => this.renderNote(vexflowNote, options);
+            return;
         }
 
         try {
@@ -234,7 +250,7 @@ export class StaffRenderer {
      */
     renderChord(notes: string[]): void {
         if (!this.context) {
-            console.error('Renderer not initialized');
+            this.pendingRender = () => this.renderChord(notes);
             return;
         }
 
@@ -296,7 +312,7 @@ export class StaffRenderer {
      */
     renderNotes(notes: string[]): void {
         if (!this.context) {
-            console.error('Renderer not initialized');
+            this.pendingRender = () => this.renderNotes(notes);
             return;
         }
 
@@ -399,6 +415,11 @@ export class StaffRenderer {
     showFeedback(isCorrect: boolean): void {
         if (!this.container) return;
 
+        if (!this.context) {
+            this.pendingRender = () => this.showFeedback(isCorrect);
+            return;
+        }
+
         const svg = this.container.querySelector('svg');
         if (!svg) return;
 
@@ -445,6 +466,11 @@ export class StaffRenderer {
      */
     showWelcome(): void {
         if (!this.container) return;
+
+        if (!this.context) {
+            this.pendingRender = () => this.showWelcome();
+            return;
+        }
 
         this.container.innerHTML = `
             <div style="
