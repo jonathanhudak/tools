@@ -3,7 +3,7 @@
  * in the registry. Includes guide-tone display and "all 12 keys" cycling.
  */
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Badge } from '@hudak/ui/components/badge';
 import {
   PROGRESSION_REGISTRY,
@@ -12,9 +12,11 @@ import {
 } from '@/data/progressions/progression-registry';
 import { HARMONIC_SEQUENCES } from '@/data/progressions/harmonic-sequences';
 import { resolveProgression } from '@/lib/theory/roman';
+import type { Instrument } from '@/lib/search-params';
 import { ProgressionPlayer } from '../shared/ProgressionPlayer';
 import { ChordCard } from '../shared/ChordCard';
 import { InstrumentToggle } from '../Piano/InstrumentToggle';
+import type { ProgressionsSearch } from '../../routes/progressions';
 
 const SEQUENCE_TYPE_LABELS: Record<string, string> = {
   diatonic: 'Diatonic',
@@ -22,7 +24,7 @@ const SEQUENCE_TYPE_LABELS: Record<string, string> = {
   modulation: 'Modulation',
 };
 
-const FAMILIES: ProgressionFamily[] = ['jazz', 'blues', 'pop', 'classical', 'modal'];
+export const FAMILIES: readonly ProgressionFamily[] = ['jazz', 'blues', 'pop', 'classical', 'modal'];
 
 const DIFFICULTY_COLOR: Record<string, string> = {
   beginner: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300',
@@ -30,21 +32,31 @@ const DIFFICULTY_COLOR: Record<string, string> = {
   advanced: 'bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-300',
 };
 
-export function ProgressionLibrary(): JSX.Element {
-  const [family, setFamily] = useState<ProgressionFamily>('jazz');
-  const [selectedId, setSelectedId] = useState<string>('ii-V-I-major');
-  const [musicKey, setMusicKey] = useState('C');
-  const [bpm, setBpm] = useState(90);
-  const [instrument, setInstrument] = useState<'guitar' | 'banjo' | 'piano'>('guitar');
+export interface ProgressionLibraryProps {
+  family: ProgressionFamily;
+  progression: string;
+  musicKey: string;
+  bpm: number;
+  instrument: Instrument;
+  onChange: (next: Partial<ProgressionsSearch>) => void;
+}
 
+export function ProgressionLibrary({
+  family,
+  progression,
+  musicKey,
+  bpm,
+  instrument,
+  onChange,
+}: ProgressionLibraryProps): JSX.Element {
   const progressions = useMemo(
     () => PROGRESSION_REGISTRY.filter(p => p.family === family),
     [family],
   );
   const selected: ProgressionDefinition | undefined = useMemo(
     () =>
-      PROGRESSION_REGISTRY.find(p => p.id === selectedId) ?? progressions[0],
-    [selectedId, progressions],
+      PROGRESSION_REGISTRY.find(p => p.id === progression) ?? progressions[0],
+    [progression, progressions],
   );
   const resolved = useMemo(
     () =>
@@ -54,6 +66,16 @@ export function ProgressionLibrary(): JSX.Element {
     [selected, musicKey],
   );
 
+  const selectFamily = (nextFamily: ProgressionFamily) => {
+    const familyProgressions = PROGRESSION_REGISTRY.filter(p => p.family === nextFamily);
+    const keepsProgression = familyProgressions.some(p => p.id === progression);
+    onChange(
+      keepsProgression
+        ? { family: nextFamily }
+        : { family: nextFamily, progression: familyProgressions[0].id },
+    );
+  };
+
   return (
     <div className="space-y-6">
       {/* Family filter */}
@@ -61,7 +83,7 @@ export function ProgressionLibrary(): JSX.Element {
         {FAMILIES.map(f => (
           <button
             key={f}
-            onClick={() => setFamily(f)}
+            onClick={() => selectFamily(f)}
             className={`min-h-11 px-4 py-1.5 text-xs font-medium capitalize rounded-full border-2 transition-colors ${
               family === f
                 ? 'border-[var(--accent-color)] bg-[var(--accent-color)] text-white'
@@ -79,7 +101,7 @@ export function ProgressionLibrary(): JSX.Element {
           {progressions.map(p => (
             <button
               key={p.id}
-              onClick={() => setSelectedId(p.id)}
+              onClick={() => onChange({ progression: p.id })}
               className={`w-full min-h-11 text-left p-3 rounded-lg border transition-colors ${
                 selected?.id === p.id
                   ? 'border-[var(--accent-color)] bg-[var(--accent-light)]'
@@ -112,9 +134,9 @@ export function ProgressionLibrary(): JSX.Element {
             <ProgressionPlayer
               progression={selected}
               musicKey={musicKey}
-              onKeyChange={setMusicKey}
+              onKeyChange={(next) => onChange({ key: next })}
               bpm={bpm}
-              onBpmChange={setBpm}
+              onBpmChange={(next) => onChange({ bpm: next })}
             />
 
             {/* Chord diagrams — one card per step, in the current key */}
@@ -123,7 +145,7 @@ export function ProgressionLibrary(): JSX.Element {
                 <h3 className="text-sm font-semibold" style={{ fontFamily: 'var(--font-display)' }}>
                   Chord diagrams — {musicKey}
                 </h3>
-                <InstrumentToggle instrument={instrument} onChange={setInstrument} />
+                <InstrumentToggle instrument={instrument} onChange={(next) => onChange({ instrument: next })} />
               </div>
               <div
                 className="flex gap-3 overflow-x-auto pb-3 snap-x snap-mandatory"
