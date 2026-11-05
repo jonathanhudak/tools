@@ -7,8 +7,16 @@ import { Route, validateCircleOfFifthsSearch } from '../routes/circle-of-fifths'
 import { CircleOfFifths } from '../components/CircleOfFifths/CircleOfFifths';
 
 vi.mock('../components/shared/ChordCard', () => ({
-  ChordCard: ({ chordName, instrument }: { chordName: string; instrument: string }) => (
-    <div data-testid="chord-card" data-instrument={instrument}>
+  ChordCard: ({
+    chordName,
+    label,
+    instrument,
+  }: {
+    chordName: string;
+    label: string;
+    instrument: string;
+  }) => (
+    <div data-testid="chord-card" data-label={label} data-instrument={instrument}>
       {chordName}
     </div>
   ),
@@ -84,16 +92,17 @@ describe('CircleOfFifths component', () => {
     expect(onChange).toHaveBeenCalledWith({ instrument: 'piano' });
   });
 
-  it('lists the borrowed set grouped by source mode in borrowed view', () => {
+  it('lists the borrowed set below the diatonic grids in borrowed view', () => {
     render(
       <CircleOfFifths selectedKey="C" instrument="guitar" view="borrowed" onChange={() => {}} />,
     );
 
     expect(screen.getByText('Borrowed from Aeolian (parallel minor)')).toBeInTheDocument();
-    expect(screen.getByText('iv')).toBeInTheDocument();
-    expect(screen.getByText('bVI')).toBeInTheDocument();
-    expect(screen.getByText('bVII')).toBeInTheDocument();
-    expect(screen.queryByText('Diatonic Triads')).not.toBeInTheDocument();
+    const numerals = screen
+      .getAllByTestId('borrowed-chord')
+      .map((el) => el.querySelector('[data-testid="chord-card"]')?.getAttribute('data-label'));
+    expect(numerals).toEqual(expect.arrayContaining(['iv', 'bVI', 'bVII']));
+    expect(screen.getByText('Diatonic Triads')).toBeInTheDocument();
   });
 
   it('asks the route to switch to the borrowed view', () => {

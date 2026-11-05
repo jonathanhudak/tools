@@ -10,8 +10,8 @@ import { useState, useMemo, useEffect } from 'react';
 import { Link } from '@tanstack/react-router';
 import { Badge } from '@hudak/ui/components/badge';
 import { InstrumentToggle } from '../Piano/InstrumentToggle';
-import { BorrowedChordPanel } from '../shared/BorrowedChordPanel';
-import { BORROWED_VIEWS, type BorrowedView } from '@/data/borrowed-chords';
+import { BorrowedChordPanel, BorrowedViewToggle } from '../shared/BorrowedChordPanel';
+import type { BorrowedView } from '@/data/borrowed-chords';
 import { EXTENDED_CHORD_SCALE_MAPPINGS } from '@/data/chord-scale-extended';
 import { getScale } from '@/data/scales/scale-registry';
 import { ChordVoicingDisplay } from '../ChordScaleGame/ChordVoicingDisplay';
@@ -250,7 +250,6 @@ export function ChordScaleMatrix({
 
         {/* Scale type + view + Instrument toggle */}
         <div className="flex items-center justify-between gap-3 flex-wrap">
-          {view === 'diatonic' && (
           <div className="flex gap-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
             {SCALE_TYPES.map(scale => (
               <button
@@ -267,34 +266,13 @@ export function ChordScaleMatrix({
               </button>
             ))}
           </div>
-          )}
           <div className="flex items-center gap-2 ml-auto">
-            <div className="flex rounded-full border-2 border-[var(--border-medium)] overflow-hidden">
-              {BORROWED_VIEWS.map(v => (
-                <button
-                  key={v}
-                  onClick={() => onChange({ view: v })}
-                  aria-pressed={view === v}
-                  className={[
-                    'text-xs min-h-11 px-3 py-1.5 font-medium transition-all',
-                    view === v
-                      ? 'bg-[var(--accent)] text-white'
-                      : 'text-[var(--ink-secondary)] hover:text-[var(--ink-primary)]',
-                  ].join(' ')}
-                >
-                  {v === 'diatonic' ? 'Diatonic' : 'Borrowed'}
-                </button>
-              ))}
-            </div>
+            <BorrowedViewToggle view={view} onChange={(next) => onChange({ view: next })} />
             <InstrumentToggle instrument={instrument} onChange={(next) => onChange({ instrument: next })} />
           </div>
         </div>
       </div>
 
-      {view === 'borrowed' ? (
-        <BorrowedChordPanel homeKey={selectedKey} instrument={instrument} />
-      ) : (
-        <>
       {/* ── Degree cards — break out of max-w container on lg+ ────── */}
       <div className="lg:w-[100vw] lg:relative lg:left-1/2 lg:-translate-x-1/2">
         {/* Mobile: horizontal swipeable carousel */}
@@ -375,7 +353,10 @@ export function ChordScaleMatrix({
           ))}
         </div>
       </div>
-        </>
+
+      {/* ── Borrowed chords (modal interchange), under the degree cards ── */}
+      {view === 'borrowed' && (
+        <BorrowedChordPanel homeKey={selectedKey} instrument={instrument} />
       )}
     </div>
   );

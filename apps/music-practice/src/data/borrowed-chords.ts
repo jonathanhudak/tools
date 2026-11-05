@@ -7,7 +7,8 @@
  * supports a major home key only (see issue jonathanhudak/tools#102).
  */
 
-import { resolveRomanInKey } from '../lib/theory/roman';
+import { Chord, Note } from 'tonal';
+import { resolveRomanInKey, voiceChord } from '../lib/theory/roman';
 import type { HarmonicFunction } from './progressions/progression-registry';
 
 /** One of the seven parallel modes over a given tonic. */
@@ -39,7 +40,10 @@ export interface BorrowedChord {
   romanNumeral: string;
   /** Harmonic function in the home key. */
   function: HarmonicFunction;
-  /** scale-registry id to improvise with over this chord. */
+  /**
+   * scale-registry id to improvise with, built on the chord root: the source
+   * mode re-centred there (e.g. bVI in C → Ab Lydian = C Aeolian).
+   */
   scaleId: string;
   /** One sentence: how the borrowed chord behaves. */
   behaviour: string;
@@ -108,7 +112,7 @@ export const BORROWED_CHORDS: readonly BorrowedChord[] = [
     sourceMode: 'aeolian',
     romanNumeral: 'bIII',
     function: 'mediant',
-    scaleId: 'aeolian',
+    scaleId: 'ionian',
     behaviour: 'Chromatic mediant lift, often moving to IV or the tonic.',
   },
   {
@@ -126,8 +130,8 @@ export const BORROWED_CHORDS: readonly BorrowedChord[] = [
     sourceMode: 'aeolian',
     romanNumeral: 'v',
     function: 'dominant',
-    scaleId: 'aeolian',
-    behaviour: 'Weak modal dominant that cadences gently to i rather than I.',
+    scaleId: 'phrygian',
+    behaviour: 'Minor dominant with no leading tone, so it pulls back to I only weakly.',
   },
   {
     id: 'major-aeolian-bVI',
@@ -135,7 +139,7 @@ export const BORROWED_CHORDS: readonly BorrowedChord[] = [
     sourceMode: 'aeolian',
     romanNumeral: 'bVI',
     function: 'subdominant',
-    scaleId: 'aeolian',
+    scaleId: 'lydian',
     behaviour: 'Dark submediant colour, classic in bVI–bVII–I and bVI–iv–V.',
   },
   {
@@ -153,8 +157,8 @@ export const BORROWED_CHORDS: readonly BorrowedChord[] = [
     sourceMode: 'phrygian',
     romanNumeral: 'bII',
     function: 'predominant',
-    scaleId: 'phrygian',
-    behaviour: 'Neapolitan flattened supertonic that resolves home to I.',
+    scaleId: 'lydian',
+    behaviour: 'Neapolitan predominant that classically moves to V, or slides straight to I.',
   },
   {
     id: 'major-lydian-II',
@@ -162,7 +166,7 @@ export const BORROWED_CHORDS: readonly BorrowedChord[] = [
     sourceMode: 'lydian',
     romanNumeral: 'II',
     function: 'dominant',
-    scaleId: 'lydian',
+    scaleId: 'mixolydian',
     behaviour: 'Major supertonic borrowed from Lydian; acts as V/V.',
   },
   {
@@ -171,10 +175,21 @@ export const BORROWED_CHORDS: readonly BorrowedChord[] = [
     sourceMode: 'lydian',
     romanNumeral: '#iv°',
     function: 'dominant',
-    scaleId: 'lydian',
+    scaleId: 'locrian',
     behaviour: 'Raised-fourth diminished chord that tonicises V.',
   },
 ];
+
+/**
+ * Respell a double-flat/double-sharp root (Bbb, F##) as its natural/single
+ * accidental enharmonic. The chord library already resolves such symbols to
+ * the enharmonic voicing, so this keeps the card title and the drawing in step.
+ */
+function respellDoubleAccidental(symbol: string, root: string): { symbol: string; root: string } {
+  if (!/bb|##/.test(root)) return { symbol, root };
+  const simple = Note.enharmonic(root);
+  return { symbol: `${simple}${symbol.slice(root.length)}`, root: simple };
+}
 
 /** All borrowed chords resolved in `tonic`, in table order. */
 export function getBorrowedChords(tonic: string): ResolvedBorrowedChord[] {
@@ -182,12 +197,14 @@ export function getBorrowedChords(tonic: string): ResolvedBorrowedChord[] {
   for (const chord of BORROWED_CHORDS) {
     const match = resolveRomanInKey(tonic, chord.romanNumeral);
     if (!match) continue;
+    const { symbol, root } = respellDoubleAccidental(match.symbol, match.root);
+    const notes = symbol === match.symbol ? match.notes : Chord.get(symbol).notes;
     resolved.push({
       ...chord,
-      symbol: match.symbol,
-      root: match.root,
-      notes: match.notes,
-      midis: match.midis,
+      symbol,
+      root,
+      notes,
+      midis: symbol === match.symbol ? match.midis : voiceChord(notes),
     });
   }
   return resolved;

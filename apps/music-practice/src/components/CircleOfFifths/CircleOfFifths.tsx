@@ -18,8 +18,8 @@ import { Badge } from '@hudak/ui/components/badge';
 import { Button } from '@hudak/ui/components/button';
 import { InstrumentToggle } from '../Piano/InstrumentToggle';
 import { ChordCard } from '../shared/ChordCard';
-import { BorrowedChordPanel } from '../shared/BorrowedChordPanel';
-import { BORROWED_VIEWS, type BorrowedView } from '../../data/borrowed-chords';
+import { BorrowedChordPanel, BorrowedViewToggle } from '../shared/BorrowedChordPanel';
+import type { BorrowedView } from '../../data/borrowed-chords';
 import type { Instrument } from '../../lib/search-params';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -325,23 +325,7 @@ export function CircleOfFifths({
 
             {/* View + instrument toggle */}
             <div className="flex flex-wrap items-center justify-center gap-2">
-              <div className="flex rounded-full border-2 border-border overflow-hidden">
-                {BORROWED_VIEWS.map((v) => (
-                  <button
-                    key={v}
-                    onClick={() => onChange({ view: v })}
-                    aria-pressed={view === v}
-                    className={[
-                      'text-xs min-h-11 px-3 py-1.5 font-medium transition-all',
-                      view === v
-                        ? 'bg-[var(--accent-color)] text-white'
-                        : 'text-muted-foreground hover:text-foreground',
-                    ].join(' ')}
-                  >
-                    {v === 'diatonic' ? 'Diatonic' : 'Borrowed'}
-                  </button>
-                ))}
-              </div>
+              <BorrowedViewToggle view={view} onChange={(next) => onChange({ view: next })} />
               <InstrumentToggle instrument={instrument} onChange={(next) => onChange({ instrument: next })} />
             </div>
 
@@ -374,13 +358,8 @@ export function CircleOfFifths({
         )}
       </div>
 
-      {/* ── Borrowed chords (modal interchange) ── */}
-      {selectedEntry && view === 'borrowed' && (
-        <BorrowedChordPanel homeKey={selectedEntry.majorKey} instrument={instrument} />
-      )}
-
       {/* ── Diatonic chord grids — break out of max-w container on lg+ ── */}
-      {selectedEntry && view === 'diatonic' && (
+      {selectedEntry && (
         <div className="space-y-6 lg:w-[100vw] lg:relative lg:left-1/2 lg:-translate-x-1/2">
           {/* Diatonic Triads */}
           <section className="space-y-2">
@@ -424,6 +403,11 @@ export function CircleOfFifths({
             </div>
           </section>
         </div>
+      )}
+
+      {/* ── Borrowed chords (modal interchange), below the diatonic grids ── */}
+      {selectedEntry && view === 'borrowed' && (
+        <BorrowedChordPanel homeKey={selectedEntry.majorKey} instrument={instrument} />
       )}
     </div>
   );

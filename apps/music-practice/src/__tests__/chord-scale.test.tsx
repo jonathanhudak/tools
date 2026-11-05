@@ -30,8 +30,16 @@ vi.mock('../components/ChordScaleGame/ChordVoicingDisplay', () => ({
 }));
 
 vi.mock('../components/shared/ChordCard', () => ({
-  ChordCard: ({ chordName, instrument }: { chordName: string; instrument: string }) => (
-    <div data-testid="chord-card" data-instrument={instrument}>
+  ChordCard: ({
+    chordName,
+    label,
+    instrument,
+  }: {
+    chordName: string;
+    label: string;
+    instrument: string;
+  }) => (
+    <div data-testid="chord-card" data-label={label} data-instrument={instrument}>
       {chordName}
     </div>
   ),
@@ -171,7 +179,7 @@ describe('ChordScaleMatrix component', () => {
     expect(onChange).toHaveBeenCalledWith({ instrument: 'piano' });
   });
 
-  it('swaps the degree cards for the borrowed panel in borrowed view', () => {
+  it('adds the borrowed panel under the degree cards in borrowed view', () => {
     render(
       <ChordScaleMatrix
         selectedKey="C"
@@ -185,7 +193,11 @@ describe('ChordScaleMatrix component', () => {
     expect(screen.getByText('Borrowed from Aeolian (parallel minor)')).toBeInTheDocument();
     expect(screen.getAllByTestId('borrowed-chord')).toHaveLength(10);
     expect(screen.getByText('Fm')).toBeInTheDocument();
-    expect(screen.queryByText('Beyond the matrix')).not.toBeInTheDocument();
+    expect(screen.getByText('Borrowed into C major from its parallel modes')).toBeInTheDocument();
+    expect(screen.getAllByText('Beyond the matrix').length).toBeGreaterThan(0);
+    expect(screen.getByRole('button', { name: 'Harmonic Minor' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Chord view' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Borrowed' })).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('asks the route to switch to the borrowed view', () => {
