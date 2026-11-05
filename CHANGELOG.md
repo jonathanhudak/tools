@@ -1,3 +1,10 @@
+## [1.51.1](https://github.com/jonathanhudak/tools/compare/v1.51.0...v1.51.1) (2026-11-05)
+
+
+### Bug Fixes
+
+* **ci:** pin release workflow to Node 24 ([#104](https://github.com/jonathanhudak/tools/issues/104)) ([565293a](https://github.com/jonathanhudak/tools/commit/565293af7c89e30e12ed3a37da680cd6723cbe11))
+
 # [1.51.0](https://github.com/jonathanhudak/tools/compare/v1.50.0...v1.51.0) (2026-10-17)
 
 
