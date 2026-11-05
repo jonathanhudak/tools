@@ -14,7 +14,7 @@
     "test:unit": "vitest run",
     "test:watch": "vitest",
     "test:build": "pnpm run build && pnpm run test",
-    "deploy": "vite build --base / --outDir dist --emptyOutDir && aws s3 sync dist/ s3://learn-music-hudak-land/ --delete && aws cloudfront create-invalidation --distribution-id E1IL5LSQHQUG3Y --paths '/*'"
+    "deploy": "vite build --base / --outDir dist --emptyOutDir && aws s3 sync dist/assets/ s3://learn-music-hudak-land/assets/ --cache-control 'public, max-age=31536000, immutable' && aws s3 sync dist/ s3://learn-music-hudak-land/ --delete --exclude 'assets/*' --cache-control 'no-cache' && aws s3 sync dist/assets/ s3://learn-music-hudak-land/assets/ --delete --cache-control 'public, max-age=31536000, immutable' && aws cloudfront create-invalidation --distribution-id E1IL5LSQHQUG3Y --paths '/*'"
   },
   "keywords": [],
   "author": "Jonathan Hudak",
