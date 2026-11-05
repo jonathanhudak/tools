@@ -18,6 +18,8 @@ import { Badge } from '@hudak/ui/components/badge';
 import { Button } from '@hudak/ui/components/button';
 import { InstrumentToggle } from '../Piano/InstrumentToggle';
 import { ChordCard } from '../shared/ChordCard';
+import { BorrowedChordPanel, BorrowedViewToggle } from '../shared/BorrowedChordPanel';
+import type { BorrowedView } from '../../data/borrowed-chords';
 import type { Instrument } from '../../lib/search-params';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -77,10 +79,16 @@ function accidentalLabel(entry: CircleOfFifthsEntry): string {
 export interface CircleOfFifthsProps {
   selectedKey: string;
   instrument: Instrument;
-  onChange: (next: { key?: string; instrument?: Instrument }) => void;
+  view?: BorrowedView;
+  onChange: (next: { key?: string; instrument?: Instrument; view?: BorrowedView }) => void;
 }
 
-export function CircleOfFifths({ selectedKey, instrument, onChange }: CircleOfFifthsProps) {
+export function CircleOfFifths({
+  selectedKey,
+  instrument,
+  view = 'diatonic',
+  onChange,
+}: CircleOfFifthsProps) {
   const selectedEntry = useMemo(() => getKeyInfo(selectedKey), [selectedKey]);
   const fifthAbove = useMemo(() => getFifthAbove(selectedKey), [selectedKey]);
   const fifthBelow = useMemo(() => getFifthBelow(selectedKey), [selectedKey]);
@@ -315,8 +323,9 @@ export function CircleOfFifths({ selectedKey, instrument, onChange }: CircleOfFi
               </div>
             </div>
 
-            {/* Instrument toggle */}
-            <div className="flex justify-center">
+            {/* View + instrument toggle */}
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <BorrowedViewToggle view={view} onChange={(next) => onChange({ view: next })} />
               <InstrumentToggle instrument={instrument} onChange={(next) => onChange({ instrument: next })} />
             </div>
 
@@ -394,6 +403,11 @@ export function CircleOfFifths({ selectedKey, instrument, onChange }: CircleOfFi
             </div>
           </section>
         </div>
+      )}
+
+      {/* ── Borrowed chords (modal interchange), below the diatonic grids ── */}
+      {selectedEntry && view === 'borrowed' && (
+        <BorrowedChordPanel homeKey={selectedEntry.majorKey} instrument={instrument} />
       )}
     </div>
   );

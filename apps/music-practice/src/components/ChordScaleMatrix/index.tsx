@@ -10,6 +10,8 @@ import { useState, useMemo, useEffect } from 'react';
 import { Link } from '@tanstack/react-router';
 import { Badge } from '@hudak/ui/components/badge';
 import { InstrumentToggle } from '../Piano/InstrumentToggle';
+import { BorrowedChordPanel, BorrowedViewToggle } from '../shared/BorrowedChordPanel';
+import type { BorrowedView } from '@/data/borrowed-chords';
 import { EXTENDED_CHORD_SCALE_MAPPINGS } from '@/data/chord-scale-extended';
 import { getScale } from '@/data/scales/scale-registry';
 import { ChordVoicingDisplay } from '../ChordScaleGame/ChordVoicingDisplay';
@@ -201,13 +203,20 @@ export interface ChordScaleMatrixProps {
   selectedKey: RootKey;
   selectedScaleType: ScaleType;
   instrument: Instrument;
-  onChange: (next: { key?: RootKey; scale?: ScaleType; instrument?: Instrument }) => void;
+  view?: BorrowedView;
+  onChange: (next: {
+    key?: RootKey;
+    scale?: ScaleType;
+    instrument?: Instrument;
+    view?: BorrowedView;
+  }) => void;
 }
 
 export function ChordScaleMatrix({
   selectedKey,
   selectedScaleType,
   instrument,
+  view = 'diatonic',
   onChange,
 }: ChordScaleMatrixProps) {
   const degrees = useMemo(() => buildScaleChords(selectedScaleType), [selectedScaleType]);
@@ -239,7 +248,7 @@ export function ChordScaleMatrix({
           </div>
         </div>
 
-        {/* Scale type + Instrument toggle */}
+        {/* Scale type + view + Instrument toggle */}
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div className="flex gap-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
             {SCALE_TYPES.map(scale => (
@@ -257,7 +266,10 @@ export function ChordScaleMatrix({
               </button>
             ))}
           </div>
-          <InstrumentToggle instrument={instrument} onChange={(next) => onChange({ instrument: next })} />
+          <div className="flex items-center gap-2 ml-auto">
+            <BorrowedViewToggle view={view} onChange={(next) => onChange({ view: next })} />
+            <InstrumentToggle instrument={instrument} onChange={(next) => onChange({ instrument: next })} />
+          </div>
         </div>
       </div>
 
@@ -341,6 +353,11 @@ export function ChordScaleMatrix({
           ))}
         </div>
       </div>
+
+      {/* ── Borrowed chords (modal interchange), under the degree cards ── */}
+      {view === 'borrowed' && (
+        <BorrowedChordPanel homeKey={selectedKey} instrument={instrument} />
+      )}
     </div>
   );
 }

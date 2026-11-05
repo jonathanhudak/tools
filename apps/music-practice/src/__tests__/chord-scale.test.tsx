@@ -29,6 +29,22 @@ vi.mock('../components/ChordScaleGame/ChordVoicingDisplay', () => ({
   ),
 }));
 
+vi.mock('../components/shared/ChordCard', () => ({
+  ChordCard: ({
+    chordName,
+    label,
+    instrument,
+  }: {
+    chordName: string;
+    label: string;
+    instrument: string;
+  }) => (
+    <div data-testid="chord-card" data-label={label} data-instrument={instrument}>
+      {chordName}
+    </div>
+  ),
+}));
+
 const BAD_VALUES: Array<string | number | null> = [
   'toString',
   'constructor',
@@ -47,8 +63,15 @@ describe('chord-scale validateSearch', () => {
         key: 'F#',
         scale: 'melodicMinor',
         instrument: 'banjo',
+        view: 'borrowed',
       }),
-    ).toEqual({ tab: 'practice', key: 'F#', scale: 'melodicMinor', instrument: 'banjo' });
+    ).toEqual({
+      tab: 'practice',
+      key: 'F#',
+      scale: 'melodicMinor',
+      instrument: 'banjo',
+      view: 'borrowed',
+    });
   });
 
   it('returns all defaults for an empty search', () => {
@@ -57,6 +80,7 @@ describe('chord-scale validateSearch', () => {
       key: 'C',
       scale: 'major',
       instrument: 'guitar',
+      view: 'diatonic',
     });
   });
 
@@ -74,6 +98,10 @@ describe('chord-scale validateSearch', () => {
 
   it.each(BAD_VALUES)('falls back to the default instrument for %p', (value) => {
     expect(validateChordScaleSearch({ instrument: value }).instrument).toBe('guitar');
+  });
+
+  it.each(BAD_VALUES)('falls back to the default view for %p', (value) => {
+    expect(validateChordScaleSearch({ view: value }).view).toBe('diatonic');
   });
 
   it("rejects 'Gb' because this page spells the key 'F#'", () => {
@@ -150,6 +178,43 @@ describe('ChordScaleMatrix component', () => {
 
     expect(onChange).toHaveBeenCalledWith({ instrument: 'piano' });
   });
+
+  it('adds the borrowed panel under the degree cards in borrowed view', () => {
+    render(
+      <ChordScaleMatrix
+        selectedKey="C"
+        selectedScaleType="major"
+        instrument="guitar"
+        view="borrowed"
+        onChange={() => {}}
+      />,
+    );
+
+    expect(screen.getByText('Borrowed from Aeolian (parallel minor)')).toBeInTheDocument();
+    expect(screen.getAllByTestId('borrowed-chord')).toHaveLength(10);
+    expect(screen.getByText('Fm')).toBeInTheDocument();
+    expect(screen.getByText('Borrowed into C major from its parallel modes')).toBeInTheDocument();
+    expect(screen.getAllByText('Beyond the matrix').length).toBeGreaterThan(0);
+    expect(screen.getByRole('button', { name: 'Harmonic Minor' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Chord view' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Borrowed' })).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('asks the route to switch to the borrowed view', () => {
+    const onChange = vi.fn();
+    render(
+      <ChordScaleMatrix
+        selectedKey="C"
+        selectedScaleType="major"
+        instrument="guitar"
+        onChange={onChange}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Borrowed' }));
+
+    expect(onChange).toHaveBeenCalledWith({ view: 'borrowed' });
+  });
 });
 
 beforeAll(() => {
@@ -212,5 +277,17 @@ describe('deep links', () => {
     render(<RouterProvider router={router} />);
 
     expect(await screen.findByText('Chord-Scale Matrix Trainer')).toBeInTheDocument();
+  }, 20000);
+
+  it('restores the borrowed view from the URL', async () => {
+    const history = createMemoryHistory({ initialEntries: ['/chord-scale?view=borrowed'] });
+    const router = createRouter({ routeTree, history });
+
+    render(<RouterProvider router={router} />);
+
+    expect(
+      await screen.findByText('Borrowed from Aeolian (parallel minor)'),
+    ).toBeInTheDocument();
+    expect(router.state.location.search).toMatchObject({ view: 'borrowed' });
   }, 20000);
 });

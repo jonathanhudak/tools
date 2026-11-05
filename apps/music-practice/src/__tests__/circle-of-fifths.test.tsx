@@ -7,8 +7,16 @@ import { Route, validateCircleOfFifthsSearch } from '../routes/circle-of-fifths'
 import { CircleOfFifths } from '../components/CircleOfFifths/CircleOfFifths';
 
 vi.mock('../components/shared/ChordCard', () => ({
-  ChordCard: ({ chordName, instrument }: { chordName: string; instrument: string }) => (
-    <div data-testid="chord-card" data-instrument={instrument}>
+  ChordCard: ({
+    chordName,
+    label,
+    instrument,
+  }: {
+    chordName: string;
+    label: string;
+    instrument: string;
+  }) => (
+    <div data-testid="chord-card" data-label={label} data-instrument={instrument}>
       {chordName}
     </div>
   ),
@@ -26,14 +34,17 @@ const BAD_VALUES: Array<string | number | null> = [
 
 describe('circle-of-fifths validateSearch', () => {
   it('passes valid values through', () => {
-    expect(validateCircleOfFifthsSearch({ key: 'Eb', instrument: 'piano' })).toEqual({
-      key: 'Eb',
-      instrument: 'piano',
-    });
+    expect(
+      validateCircleOfFifthsSearch({ key: 'Eb', instrument: 'piano', view: 'borrowed' }),
+    ).toEqual({ key: 'Eb', instrument: 'piano', view: 'borrowed' });
   });
 
   it('returns all defaults for an empty search', () => {
-    expect(validateCircleOfFifthsSearch({})).toEqual({ key: 'C', instrument: 'guitar' });
+    expect(validateCircleOfFifthsSearch({})).toEqual({
+      key: 'C',
+      instrument: 'guitar',
+      view: 'diatonic',
+    });
   });
 
   it.each(BAD_VALUES)('falls back to the default key for %p', (value) => {
@@ -42,6 +53,10 @@ describe('circle-of-fifths validateSearch', () => {
 
   it.each(BAD_VALUES)('falls back to the default instrument for %p', (value) => {
     expect(validateCircleOfFifthsSearch({ instrument: value }).instrument).toBe('guitar');
+  });
+
+  it.each(BAD_VALUES)('falls back to the default view for %p', (value) => {
+    expect(validateCircleOfFifthsSearch({ view: value }).view).toBe('diatonic');
   });
 
   it('is the validator wired into the route', () => {
@@ -75,5 +90,27 @@ describe('CircleOfFifths component', () => {
     fireEvent.click(screen.getByRole('button', { name: /piano/i }));
 
     expect(onChange).toHaveBeenCalledWith({ instrument: 'piano' });
+  });
+
+  it('lists the borrowed set below the diatonic grids in borrowed view', () => {
+    render(
+      <CircleOfFifths selectedKey="C" instrument="guitar" view="borrowed" onChange={() => {}} />,
+    );
+
+    expect(screen.getByText('Borrowed from Aeolian (parallel minor)')).toBeInTheDocument();
+    const numerals = screen
+      .getAllByTestId('borrowed-chord')
+      .map((el) => el.querySelector('[data-testid="chord-card"]')?.getAttribute('data-label'));
+    expect(numerals).toEqual(expect.arrayContaining(['iv', 'bVI', 'bVII']));
+    expect(screen.getByText('Diatonic Triads')).toBeInTheDocument();
+  });
+
+  it('asks the route to switch to the borrowed view', () => {
+    const onChange = vi.fn();
+    render(<CircleOfFifths selectedKey="C" instrument="guitar" onChange={onChange} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Borrowed' }));
+
+    expect(onChange).toHaveBeenCalledWith({ view: 'borrowed' });
   });
 });
