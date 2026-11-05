@@ -20,6 +20,7 @@ import {
   type RootKey,
 } from '../components/ChordScaleMatrix';
 import type { ScaleType } from '../data/chord-scale-matrix';
+import { BORROWED_VIEWS, type BorrowedView } from '../data/borrowed-chords';
 import { oneOf, INSTRUMENTS, type Instrument } from '../lib/search-params';
 
 type Tab = 'matrix' | 'practice';
@@ -29,6 +30,7 @@ export interface ChordScaleSearch {
   key: RootKey;
   scale: ScaleType;
   instrument: Instrument;
+  view: BorrowedView;
 }
 
 const TABS: readonly Tab[] = ['matrix', 'practice'];
@@ -39,6 +41,7 @@ export function validateChordScaleSearch(search: Record<string, unknown>): Chord
     key: oneOf(CHROMATIC_KEYS, search.key, 'C'),
     scale: oneOf(SCALE_TYPES, search.scale, 'major'),
     instrument: oneOf(INSTRUMENTS, search.instrument, 'guitar'),
+    view: oneOf(BORROWED_VIEWS, search.view, 'diatonic'),
   };
 }
 
@@ -48,11 +51,11 @@ export const Route = createFileRoute('/chord-scale')({
 });
 
 function ChordScaleRoute() {
-  const { tab, key, scale, instrument } = Route.useSearch();
+  const { tab, key, scale, instrument, view } = Route.useSearch();
   const navigate = Route.useNavigate();
 
   const update = (next: Partial<ChordScaleSearch>) =>
-    navigate({ search: { tab, key, scale, instrument, ...next }, replace: true });
+    navigate({ search: { tab, key, scale, instrument, view, ...next }, replace: true });
 
   return (
     <div className="min-h-screen bg-background">
@@ -103,6 +106,7 @@ function ChordScaleRoute() {
             selectedKey={key}
             selectedScaleType={scale}
             instrument={instrument}
+            view={view}
             onChange={update}
           />
         )}

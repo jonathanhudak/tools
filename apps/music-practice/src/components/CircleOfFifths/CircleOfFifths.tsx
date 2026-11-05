@@ -18,6 +18,8 @@ import { Badge } from '@hudak/ui/components/badge';
 import { Button } from '@hudak/ui/components/button';
 import { InstrumentToggle } from '../Piano/InstrumentToggle';
 import { ChordCard } from '../shared/ChordCard';
+import { BorrowedChordPanel } from '../shared/BorrowedChordPanel';
+import { BORROWED_VIEWS, type BorrowedView } from '../../data/borrowed-chords';
 import type { Instrument } from '../../lib/search-params';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -77,10 +79,16 @@ function accidentalLabel(entry: CircleOfFifthsEntry): string {
 export interface CircleOfFifthsProps {
   selectedKey: string;
   instrument: Instrument;
-  onChange: (next: { key?: string; instrument?: Instrument }) => void;
+  view?: BorrowedView;
+  onChange: (next: { key?: string; instrument?: Instrument; view?: BorrowedView }) => void;
 }
 
-export function CircleOfFifths({ selectedKey, instrument, onChange }: CircleOfFifthsProps) {
+export function CircleOfFifths({
+  selectedKey,
+  instrument,
+  view = 'diatonic',
+  onChange,
+}: CircleOfFifthsProps) {
   const selectedEntry = useMemo(() => getKeyInfo(selectedKey), [selectedKey]);
   const fifthAbove = useMemo(() => getFifthAbove(selectedKey), [selectedKey]);
   const fifthBelow = useMemo(() => getFifthBelow(selectedKey), [selectedKey]);
@@ -315,8 +323,25 @@ export function CircleOfFifths({ selectedKey, instrument, onChange }: CircleOfFi
               </div>
             </div>
 
-            {/* Instrument toggle */}
-            <div className="flex justify-center">
+            {/* View + instrument toggle */}
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <div className="flex rounded-full border-2 border-border overflow-hidden">
+                {BORROWED_VIEWS.map((v) => (
+                  <button
+                    key={v}
+                    onClick={() => onChange({ view: v })}
+                    aria-pressed={view === v}
+                    className={[
+                      'text-xs min-h-11 px-3 py-1.5 font-medium transition-all',
+                      view === v
+                        ? 'bg-[var(--accent-color)] text-white'
+                        : 'text-muted-foreground hover:text-foreground',
+                    ].join(' ')}
+                  >
+                    {v === 'diatonic' ? 'Diatonic' : 'Borrowed'}
+                  </button>
+                ))}
+              </div>
               <InstrumentToggle instrument={instrument} onChange={(next) => onChange({ instrument: next })} />
             </div>
 
@@ -349,8 +374,13 @@ export function CircleOfFifths({ selectedKey, instrument, onChange }: CircleOfFi
         )}
       </div>
 
+      {/* ── Borrowed chords (modal interchange) ── */}
+      {selectedEntry && view === 'borrowed' && (
+        <BorrowedChordPanel homeKey={selectedEntry.majorKey} instrument={instrument} />
+      )}
+
       {/* ── Diatonic chord grids — break out of max-w container on lg+ ── */}
-      {selectedEntry && (
+      {selectedEntry && view === 'diatonic' && (
         <div className="space-y-6 lg:w-[100vw] lg:relative lg:left-1/2 lg:-translate-x-1/2">
           {/* Diatonic Triads */}
           <section className="space-y-2">
