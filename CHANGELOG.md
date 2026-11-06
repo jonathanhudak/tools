@@ -1,3 +1,15 @@
+# [1.52.0](https://github.com/jonathanhudak/tools/compare/v1.51.1...v1.52.0) (2026-11-06)
+
+
+### Bug Fixes
+
+* **music-practice:** recover from stale chunks after a deploy ([52f53da](https://github.com/jonathanhudak/tools/commit/52f53da2d0bbdd3094b9d4b108f5df8c48994086))
+
+
+### Features
+
+* **music-practice:** interleave borrowed chords with the diatonic row ([829f972](https://github.com/jonathanhudak/tools/commit/829f9727db6fe729de667a713e1d11752d982824))
+
 ## [1.51.1](https://github.com/jonathanhudak/tools/compare/v1.51.0...v1.51.1) (2026-11-05)
 
 
