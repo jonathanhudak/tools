@@ -36,12 +36,14 @@ export interface ChordScaleSearch {
 const TABS: readonly Tab[] = ['matrix', 'practice'];
 
 export function validateChordScaleSearch(search: Record<string, unknown>): ChordScaleSearch {
+  const scale = oneOf(SCALE_TYPES, search.scale, 'major');
   return {
     tab: oneOf(TABS, search.tab, 'matrix'),
     key: oneOf(CHROMATIC_KEYS, search.key, 'C'),
-    scale: oneOf(SCALE_TYPES, search.scale, 'major'),
+    scale,
     instrument: oneOf(INSTRUMENTS, search.instrument, 'guitar'),
-    view: oneOf(BORROWED_VIEWS, search.view, 'diatonic'),
+    // Borrowed chords are defined against a major home key only.
+    view: scale === 'major' ? oneOf(BORROWED_VIEWS, search.view, 'diatonic') : 'diatonic',
   };
 }
 

@@ -8,7 +8,7 @@
  */
 
 import { Chord, Note } from 'tonal';
-import { resolveRomanInKey, voiceChord } from '../lib/theory/roman';
+import { parseRomanNumeral, resolveRomanInKey, voiceChord } from '../lib/theory/roman';
 import type { HarmonicFunction } from './progressions/progression-registry';
 
 /** One of the seven parallel modes over a given tonic. */
@@ -71,17 +71,6 @@ export const SOURCE_MODE_NAMES: Record<ParallelMode, string> = {
   aeolian: 'Aeolian (parallel minor)',
   locrian: 'Locrian',
 };
-
-/** Order the panel groups source modes in: the parallel minor first. */
-export const SOURCE_MODE_ORDER: readonly ParallelMode[] = [
-  'aeolian',
-  'dorian',
-  'mixolydian',
-  'phrygian',
-  'lydian',
-  'ionian',
-  'locrian',
-];
 
 /**
  * The canonical borrowings into a major key. Numerals are major-relative;
@@ -213,4 +202,55 @@ export function getBorrowedChords(tonic: string): ResolvedBorrowedChord[] {
 /** Look up a borrowed chord by its written numeral. */
 export function getBorrowedChord(romanNumeral: string): BorrowedChord | undefined {
   return BORROWED_CHORDS.find((chord) => chord.romanNumeral === romanNumeral);
+}
+
+/** Semitones above the tonic of each major-scale degree (1-indexed). */
+const DEGREE_SEMITONES = [0, 2, 4, 5, 7, 9, 11];
+
+/**
+ * Semitones from the tonic to a major-relative numeral's root, e.g.
+ * 'I' → 0, 'bVI' → 8, '#iv°' → 6, 'iim7' → 2. Null if unparseable.
+ */
+export function semitonesFromTonic(numeral: string): number | null {
+  const parsed = parseRomanNumeral(numeral);
+  if (!parsed) return null;
+  const shift = parsed.accidental === 'b' ? -1 : parsed.accidental === '#' ? 1 : 0;
+  return (DEGREE_SEMITONES[parsed.degree - 1] + shift + 12) % 12;
+}
+
+/** Whether a borrowed chord is a seventh chord (iiø7) rather than a triad. */
+export function isSeventhChord(chord: BorrowedChord): boolean {
+  return chord.romanNumeral.includes('7');
+}
+
+/** One slot in a row that mixes the home key's chords with borrowed ones. */
+export type InterleavedSlot<D> =
+  | { kind: 'diatonic'; item: D }
+  | { kind: 'borrowed'; chord: ResolvedBorrowedChord };
+
+/**
+ * Merge borrowed chords into a diatonic row by root distance from the tonic,
+ * so each sits beside its diatonic neighbour: I i bII ii II bIII iii IV iv
+ * #iv° V v bVI vi bVII vii°. On a tie the diatonic chord comes first.
+ */
+export function interleaveByDegree<D>(
+  diatonic: readonly D[],
+  numeralOf: (item: D) => string,
+  borrowed: readonly ResolvedBorrowedChord[],
+): InterleavedSlot<D>[] {
+  const keyed = [
+    ...diatonic.map((item, i) => ({
+      slot: { kind: 'diatonic', item } as InterleavedSlot<D>,
+      pos: semitonesFromTonic(numeralOf(item)) ?? i * 2,
+      tie: 0,
+    })),
+    ...borrowed.map((chord) => ({
+      slot: { kind: 'borrowed', chord } as InterleavedSlot<D>,
+      pos: semitonesFromTonic(chord.romanNumeral) ?? 12,
+      tie: 1,
+    })),
+  ];
+  return keyed
+    .sort((a, b) => a.pos - b.pos || a.tie - b.tie)
+    .map(({ slot }) => slot);
 }

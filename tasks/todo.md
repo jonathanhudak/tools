@@ -1,5 +1,16 @@
 # Task Tracking
 
+## Done — 2026-11-06: borrowed chords interleaved with diatonic (follow-up to #103)
+Problem: Borrowed switch appended a panel below 7 tall cards → off-screen → looked dead.
+Decided: order by degree; matrix = Major only; on/off "Show borrowed chords"; URL `view=borrowed` kept.
+- [x] data: `semitonesFromTonic`, `interleaveByDegree` (I i bII ii II bIII iii IV iv #iv° V v bVI vi bVII vii°), `isSeventhChord` (iiø7 → 7th row)
+- [x] shared/BorrowedChordCard.tsx replaces BorrowedChordPanel: dashed accent border, "Borrowed · Aeolian" tag, function/scale/behaviour, ▶ I–x–I hear-it-in-context
+- [x] `ShowBorrowedSwitch` (`role="switch"`, aria-checked)
+- [x] Circle: both rows interleave, scroll horizontally on lg; parallel-minor spoke dashed (C → Cm on Eb spoke)
+- [x] Matrix: degree row interleaves; switch on → scale=major; other scale → view=diatonic; validator coerces
+- [x] Tests: 1870 green (row order C/Db, coercion, switch, spoke); typecheck + lint clean; vite build green
+- [ ] Browser screenshots 390/1440: NOT DONE — headless Chrome segfaults in the tool sandbox; bypass denied. Check by hand on learn.music.hudak.land
+
 ## Current Tasks — 2026-07-02 goal: assess features, grow libraries, refine UX
 - [x] Assess latest features for completeness/accuracy (app map + UX audit complete; data audit agent pending — findings folded into spec backlog)
 - [x] Grow progressions library: 33 → 50 (modal family was EMPTY in UI — added 8; jazz +3, blues +1, pop +3, classical +2); wired 16 harmonic sequences into /progressions; wired altered-dominant chord→scale mappings into /chord-scale

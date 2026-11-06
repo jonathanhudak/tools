@@ -10,6 +10,8 @@ import {
   BORROWED_CHORDS,
   getBorrowedChord,
   getBorrowedChords,
+  interleaveByDegree,
+  semitonesFromTonic,
 } from '../borrowed-chords';
 import { getScale } from '../scales/scale-registry';
 import { CIRCLE_OF_FIFTHS } from '../circle-of-fifths';
@@ -140,5 +142,38 @@ describe('getBorrowedChord', () => {
 
   it('returns undefined for an unknown numeral', () => {
     expect(getBorrowedChord('nope')).toBeUndefined();
+  });
+});
+
+describe('semitonesFromTonic', () => {
+  it.each([
+    ['I', 0], ['i', 0], ['bII', 1], ['iiø7', 2], ['iim7', 2], ['bIII', 3], ['iii', 4],
+    ['IV', 5], ['#iv°', 6], ['V7', 7], ['bVI', 8], ['vi', 9], ['bVII', 10], ['vii°', 11],
+  ])('%s → %i', (numeral, semitones) => {
+    expect(semitonesFromTonic(numeral)).toBe(semitones);
+  });
+
+  it('returns null for junk', () => {
+    expect(semitonesFromTonic('nope')).toBeNull();
+  });
+});
+
+describe('interleaveByDegree', () => {
+  const DIATONIC = ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii°'];
+
+  it('puts each borrowed chord beside its diatonic neighbour, diatonic first on ties', () => {
+    const triads = getBorrowedChords('Db').filter(c => !c.romanNumeral.includes('7'));
+    const row = interleaveByDegree(DIATONIC, n => n, triads).map(slot =>
+      slot.kind === 'diatonic' ? slot.item : `*${slot.chord.romanNumeral}`,
+    );
+    expect(row).toEqual([
+      'I', '*i', '*bII', 'ii', '*II', '*bIII', 'iii', 'IV', '*iv', '*#iv°',
+      'V', '*v', '*bVI', 'vi', '*bVII', 'vii°',
+    ]);
+  });
+
+  it('leaves the diatonic row untouched with nothing borrowed', () => {
+    expect(interleaveByDegree(DIATONIC, n => n, []).map(s => s.kind === 'diatonic' && s.item))
+      .toEqual(DIATONIC);
   });
 });

@@ -63,14 +63,26 @@ describe('chord-scale validateSearch', () => {
         key: 'F#',
         scale: 'melodicMinor',
         instrument: 'banjo',
-        view: 'borrowed',
+        view: 'diatonic',
       }),
     ).toEqual({
       tab: 'practice',
       key: 'F#',
       scale: 'melodicMinor',
       instrument: 'banjo',
-      view: 'borrowed',
+      view: 'diatonic',
+    });
+  });
+
+  it('keeps the borrowed view on the major scale', () => {
+    expect(validateChordScaleSearch({ scale: 'major', view: 'borrowed' }).view).toBe('borrowed');
+    expect(validateChordScaleSearch({ view: 'borrowed' }).view).toBe('borrowed');
+  });
+
+  it('drops the borrowed view for a non-major scale (borrowing is major-home only)', () => {
+    expect(validateChordScaleSearch({ scale: 'harmonicMinor', view: 'borrowed' })).toMatchObject({
+      scale: 'harmonicMinor',
+      view: 'diatonic',
     });
   });
 
@@ -160,7 +172,7 @@ describe('ChordScaleMatrix component', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Harmonic Minor' }));
 
-    expect(onChange).toHaveBeenCalledWith({ scale: 'harmonicMinor' });
+    expect(onChange).toHaveBeenCalledWith({ scale: 'harmonicMinor', view: 'diatonic' });
   });
 
   it('calls onChange with the new instrument', () => {
@@ -179,8 +191,8 @@ describe('ChordScaleMatrix component', () => {
     expect(onChange).toHaveBeenCalledWith({ instrument: 'piano' });
   });
 
-  it('adds the borrowed panel under the degree cards in borrowed view', () => {
-    render(
+  it('mixes borrowed chords into the major degree row by degree', () => {
+    const { container } = render(
       <ChordScaleMatrix
         selectedKey="C"
         selectedScaleType="major"
@@ -190,30 +202,56 @@ describe('ChordScaleMatrix component', () => {
       />,
     );
 
-    expect(screen.getByText('Borrowed from Aeolian (parallel minor)')).toBeInTheDocument();
+    const slots = [...container.querySelectorAll('[data-row-slot]')];
+    expect(slots.map((el) => el.getAttribute('data-numeral'))).toEqual([
+      'IMaj7', 'i', 'bII', 'iim7', 'iiø7', 'II', 'bIII', 'iiim7', 'IVMaj7', 'iv', '#iv°',
+      'V7', 'v', 'bVI', 'vim7', 'bVII', 'viim7b5',
+    ]);
+    expect(slots.filter((el) => el.getAttribute('data-row-slot') === 'borrowed')).toHaveLength(10);
     expect(screen.getAllByTestId('borrowed-chord')).toHaveLength(10);
     expect(screen.getByText('Fm')).toBeInTheDocument();
-    expect(screen.getByText('Borrowed into C major from its parallel modes')).toBeInTheDocument();
-    expect(screen.getAllByText('Beyond the matrix').length).toBeGreaterThan(0);
-    expect(screen.getByRole('button', { name: 'Harmonic Minor' })).toBeInTheDocument();
-    expect(screen.getByRole('group', { name: 'Chord view' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Borrowed' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('switch', { name: 'Show borrowed chords' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
   });
 
-  it('asks the route to switch to the borrowed view', () => {
+  it('shows only the diatonic row when borrowed is off or the scale is not major', () => {
+    const { container, rerender } = render(
+      <ChordScaleMatrix selectedKey="C" selectedScaleType="major" instrument="guitar" onChange={() => {}} />,
+    );
+    expect(container.querySelectorAll('[data-row-slot="borrowed"]')).toHaveLength(0);
+
+    rerender(
+      <ChordScaleMatrix
+        selectedKey="C"
+        selectedScaleType="naturalMinor"
+        instrument="guitar"
+        view="borrowed"
+        onChange={() => {}}
+      />,
+    );
+    expect(container.querySelectorAll('[data-row-slot="borrowed"]')).toHaveLength(0);
+    expect(screen.getByRole('switch', { name: 'Show borrowed chords' })).toHaveAttribute(
+      'aria-checked',
+      'false',
+    );
+  });
+
+  it('turning borrowed on also selects the major scale', () => {
     const onChange = vi.fn();
     render(
       <ChordScaleMatrix
         selectedKey="C"
-        selectedScaleType="major"
+        selectedScaleType="harmonicMinor"
         instrument="guitar"
         onChange={onChange}
       />,
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Borrowed' }));
+    fireEvent.click(screen.getByRole('switch', { name: 'Show borrowed chords' }));
 
-    expect(onChange).toHaveBeenCalledWith({ view: 'borrowed' });
+    expect(onChange).toHaveBeenCalledWith({ view: 'borrowed', scale: 'major' });
   });
 });
 
@@ -286,8 +324,8 @@ describe('deep links', () => {
     render(<RouterProvider router={router} />);
 
     expect(
-      await screen.findByText('Borrowed from Aeolian (parallel minor)'),
-    ).toBeInTheDocument();
+      (await screen.findAllByTestId('borrowed-chord')).length,
+    ).toBe(10);
     expect(router.state.location.search).toMatchObject({ view: 'borrowed' });
   }, 20000);
 });

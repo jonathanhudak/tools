@@ -92,25 +92,51 @@ describe('CircleOfFifths component', () => {
     expect(onChange).toHaveBeenCalledWith({ instrument: 'piano' });
   });
 
-  it('lists the borrowed set below the diatonic grids in borrowed view', () => {
+  it('mixes borrowed chords into the triad and 7th rows by degree', () => {
     render(
       <CircleOfFifths selectedKey="C" instrument="guitar" view="borrowed" onChange={() => {}} />,
     );
 
-    expect(screen.getByText('Borrowed from Aeolian (parallel minor)')).toBeInTheDocument();
-    const numerals = screen
-      .getAllByTestId('borrowed-chord')
-      .map((el) => el.querySelector('[data-testid="chord-card"]')?.getAttribute('data-label'));
-    expect(numerals).toEqual(expect.arrayContaining(['iv', 'bVI', 'bVII']));
+    const row = (title: string): (string | null)[] =>
+      [...(screen.getByText(title).closest('section')?.querySelectorAll('[data-row-slot]') ?? [])].map(
+        (el) => el.getAttribute('data-numeral'),
+      );
+
+    expect(row('Triads — diatonic + borrowed')).toEqual([
+      'I', 'i', 'bII', 'ii', 'II', 'bIII', 'iii', 'IV', 'iv', '#iv°',
+      'V', 'v', 'bVI', 'vi', 'bVII', 'vii°',
+    ]);
+    expect(row('7th Chords — diatonic + borrowed')).toEqual([
+      'Imaj7', 'ii7', 'iiø7', 'iii7', 'IVmaj7', 'V7', 'vi7', 'viiø7',
+    ]);
+    expect(screen.getAllByTestId('borrowed-chord')).toHaveLength(10);
+  });
+
+  it('marks C\'s parallel minor (Cm, on the Eb spoke) only while borrowed is on', () => {
+    const { container, rerender } = render(
+      <CircleOfFifths selectedKey="C" instrument="guitar" view="borrowed" onChange={() => {}} />,
+    );
+    const spoke = container.querySelector('[data-testid="parallel-minor-spoke"]');
+    expect(spoke?.closest('g')?.getAttribute('aria-label')).toBe('Eb major');
+
+    rerender(<CircleOfFifths selectedKey="C" instrument="guitar" onChange={() => {}} />);
+    expect(container.querySelector('[data-testid="parallel-minor-spoke"]')).toBeNull();
     expect(screen.getByText('Diatonic Triads')).toBeInTheDocument();
   });
 
-  it('asks the route to switch to the borrowed view', () => {
+  it('asks the route to switch borrowed chords on and off', () => {
     const onChange = vi.fn();
-    render(<CircleOfFifths selectedKey="C" instrument="guitar" onChange={onChange} />);
+    const { rerender } = render(
+      <CircleOfFifths selectedKey="C" instrument="guitar" onChange={onChange} />,
+    );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Borrowed' }));
+    const toggle = screen.getByRole('switch', { name: 'Show borrowed chords' });
+    expect(toggle).toHaveAttribute('aria-checked', 'false');
+    fireEvent.click(toggle);
+    expect(onChange).toHaveBeenLastCalledWith({ view: 'borrowed' });
 
-    expect(onChange).toHaveBeenCalledWith({ view: 'borrowed' });
+    rerender(<CircleOfFifths selectedKey="C" instrument="guitar" view="borrowed" onChange={onChange} />);
+    fireEvent.click(screen.getByRole('switch', { name: 'Show borrowed chords' }));
+    expect(onChange).toHaveBeenLastCalledWith({ view: 'diatonic' });
   });
 });

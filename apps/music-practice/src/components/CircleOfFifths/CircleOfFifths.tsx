@@ -18,8 +18,15 @@ import { Badge } from '@hudak/ui/components/badge';
 import { Button } from '@hudak/ui/components/button';
 import { InstrumentToggle } from '../Piano/InstrumentToggle';
 import { ChordCard } from '../shared/ChordCard';
-import { BorrowedChordPanel, BorrowedViewToggle } from '../shared/BorrowedChordPanel';
-import type { BorrowedView } from '../../data/borrowed-chords';
+import { Note } from 'tonal';
+import { BorrowedChordCard, ShowBorrowedSwitch } from '../shared/BorrowedChordCard';
+import {
+  getBorrowedChords,
+  interleaveByDegree,
+  isSeventhChord,
+  type BorrowedView,
+  type ResolvedBorrowedChord,
+} from '../../data/borrowed-chords';
 import type { Instrument } from '../../lib/search-params';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -93,6 +100,21 @@ export function CircleOfFifths({
   const fifthAbove = useMemo(() => getFifthAbove(selectedKey), [selectedKey]);
   const fifthBelow = useMemo(() => getFifthBelow(selectedKey), [selectedKey]);
 
+  const showBorrowed = view === 'borrowed';
+  const borrowed = useMemo<ResolvedBorrowedChord[]>(
+    () => (showBorrowed && selectedEntry ? getBorrowedChords(selectedEntry.majorKey) : []),
+    [showBorrowed, selectedEntry],
+  );
+  // The parallel minor (same letter, minor) — source of most borrowed chords —
+  // sits on the inner ring of a different spoke: Cm is the relative minor of Eb.
+  const parallelMinorSpoke = useMemo(() => {
+    if (!showBorrowed) return null;
+    const chroma = Note.chroma(selectedKey);
+    return CLOCKWISE_ORDER.find(
+      (key) => Note.chroma(getKeyInfo(key)?.relativeMinor.replace(/m$/, '') ?? '') === chroma,
+    ) ?? null;
+  }, [showBorrowed, selectedKey]);
+
   const keyEntries = useMemo(() => {
     return CLOCKWISE_ORDER.map((key) => getKeyInfo(key)!);
   }, []);
@@ -136,6 +158,7 @@ export function CircleOfFifths({
               const isSelected = entry.majorKey === selectedKey;
               const isFifthAbove = entry.majorKey === fifthAbove;
               const isFifthBelow = entry.majorKey === fifthBelow;
+              const isParallelMinor = entry.majorKey === parallelMinorSpoke;
 
               const outerLabelPos = polarToCartesian(CX, CY, (OUTER_R + MID_R) / 2, midAngle);
               const innerLabelPos = polarToCartesian(CX, CY, (MID_R + INNER_R) / 2, midAngle);
@@ -193,6 +216,17 @@ export function CircleOfFifths({
                     stroke={outerStroke}
                     strokeWidth={isSelected ? 2 : 0.5}
                   />
+                  {/* Parallel minor of the selected key, dashed like borrowed cards */}
+                  {isParallelMinor && (
+                    <path
+                      d={segmentPath(CX, CY, MID_R - 2, INNER_R + 2, startAngle + 1, endAngle - 1)}
+                      fill="none"
+                      stroke="var(--accent-color)"
+                      strokeWidth={2.5}
+                      strokeDasharray="5 3"
+                      data-testid="parallel-minor-spoke"
+                    />
+                  )}
                   {/* Major key label */}
                   <text
                     x={outerLabelPos.x}
@@ -323,11 +357,20 @@ export function CircleOfFifths({
               </div>
             </div>
 
-            {/* View + instrument toggle */}
+            {/* Borrowed switch + instrument toggle */}
             <div className="flex flex-wrap items-center justify-center gap-2">
-              <BorrowedViewToggle view={view} onChange={(next) => onChange({ view: next })} />
+              <ShowBorrowedSwitch
+                checked={showBorrowed}
+                onChange={(on) => onChange({ view: on ? 'borrowed' : 'diatonic' })}
+              />
               <InstrumentToggle instrument={instrument} onChange={(next) => onChange({ instrument: next })} />
             </div>
+            {showBorrowed && (
+              <p className="text-xs text-muted-foreground text-center">
+                Dashed cards are borrowed from {selectedKey}&apos;s parallel modes; the dashed
+                inner spoke is {selectedKey}m, the parallel minor most of them come from.
+              </p>
+            )}
 
             {/* All Keys quick selector */}
             <div className="border border-border bg-card p-4 space-y-2">
@@ -358,57 +401,85 @@ export function CircleOfFifths({
         )}
       </div>
 
-      {/* ── Diatonic chord grids — break out of max-w container on lg+ ── */}
+      {/* ── Chord rows — break out of max-w container on lg+ ── */}
       {selectedEntry && (
         <div className="space-y-6 lg:w-[100vw] lg:relative lg:left-1/2 lg:-translate-x-1/2">
-          {/* Diatonic Triads */}
-          <section className="space-y-2">
-            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest font-mono-app px-4 lg:px-8">
-              Diatonic Triads
-            </h2>
-            <div
-              className="flex gap-3 overflow-x-auto pb-3 snap-x snap-mandatory px-4 lg:px-8 lg:grid lg:grid-cols-7 lg:overflow-visible"
-              style={{ scrollbarWidth: 'none' }}
-            >
-              {selectedEntry.chords.triads.map((chordName, i) => (
-                <div key={chordName} className="snap-start flex-shrink-0 w-[75vw] sm:w-[240px] lg:w-auto">
-                  <ChordCard
-                    chordName={chordName}
-                    label={TRIAD_LABELS[i]}
-                    instrument={instrument}
-                  />
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* Diatonic 7th Chords */}
-          <section className="space-y-2">
-            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest font-mono-app px-4 lg:px-8">
-              Diatonic 7th Chords
-            </h2>
-            <div
-              className="flex gap-3 overflow-x-auto pb-3 snap-x snap-mandatory px-4 lg:px-8 lg:grid lg:grid-cols-7 lg:overflow-visible"
-              style={{ scrollbarWidth: 'none' }}
-            >
-              {selectedEntry.chords.sevenths.map((chordName, i) => (
-                <div key={chordName} className="snap-start flex-shrink-0 w-[75vw] sm:w-[240px] lg:w-auto">
-                  <ChordCard
-                    chordName={chordName}
-                    label={SEVENTH_LABELS[i]}
-                    instrument={instrument}
-                  />
-                </div>
-              ))}
-            </div>
-          </section>
+          <ChordRow
+            title={showBorrowed ? 'Triads — diatonic + borrowed' : 'Diatonic Triads'}
+            chords={selectedEntry.chords.triads}
+            labels={TRIAD_LABELS}
+            borrowed={borrowed.filter((c) => !isSeventhChord(c))}
+            homeKey={selectedEntry.majorKey}
+            instrument={instrument}
+          />
+          <ChordRow
+            title={showBorrowed ? '7th Chords — diatonic + borrowed' : 'Diatonic 7th Chords'}
+            chords={selectedEntry.chords.sevenths}
+            labels={SEVENTH_LABELS}
+            borrowed={borrowed.filter(isSeventhChord)}
+            homeKey={selectedEntry.majorKey}
+            instrument={instrument}
+          />
         </div>
       )}
-
-      {/* ── Borrowed chords (modal interchange), below the diatonic grids ── */}
-      {selectedEntry && view === 'borrowed' && (
-        <BorrowedChordPanel homeKey={selectedEntry.majorKey} instrument={instrument} />
-      )}
     </div>
+  );
+}
+
+// ─── Chord row ───────────────────────────────────────────────────────────────
+
+interface ChordRowProps {
+  title: string;
+  chords: readonly string[];
+  labels: readonly string[];
+  borrowed: readonly ResolvedBorrowedChord[];
+  homeKey: string;
+  instrument: Instrument;
+}
+
+/**
+ * One row of the key's chords. With borrowed chords mixed in it holds up to
+ * 16 cards, so it scrolls horizontally at every width instead of using the
+ * 7-column desktop grid.
+ */
+function ChordRow({ title, chords, labels, borrowed, homeKey, instrument }: ChordRowProps): JSX.Element {
+  const slots = interleaveByDegree(
+    chords.map((chordName, i) => ({ chordName, label: labels[i] })),
+    (d) => d.label,
+    borrowed,
+  );
+  const mixed = borrowed.length > 0;
+
+  return (
+    <section className="space-y-2">
+      <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest font-mono-app px-4 lg:px-8">
+        {title}
+      </h2>
+      <div
+        className={[
+          'flex gap-3 overflow-x-auto pb-3 snap-x snap-mandatory px-4 lg:px-8',
+          mixed ? 'items-start' : 'lg:grid lg:grid-cols-7 lg:overflow-visible',
+        ].join(' ')}
+        style={{ scrollbarWidth: mixed ? 'thin' : 'none' }}
+      >
+        {slots.map((slot) => (
+          <div
+            key={slot.kind === 'diatonic' ? slot.item.chordName : slot.chord.id}
+            data-row-slot={slot.kind}
+            data-numeral={slot.kind === 'diatonic' ? slot.item.label : slot.chord.romanNumeral}
+            className={[
+              'snap-start flex-shrink-0 w-[75vw] sm:w-[240px]',
+              mixed ? 'lg:w-[220px]' : 'lg:w-auto',
+            ].join(' ')}
+          >
+            {slot.kind === 'diatonic' ? (
+              <ChordCard chordName={slot.item.chordName} label={slot.item.label} instrument={instrument} />
+            ) : (
+              <BorrowedChordCard chord={slot.chord} homeKey={homeKey} instrument={instrument} />
+            )}
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }

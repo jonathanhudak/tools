@@ -8,6 +8,7 @@
 
 ## Rules to Follow
 <!-- Write rules that prevent repeated mistakes -->
+- **A toggle must change what is on screen where the toggle is.** Review fix S1 on #103 moved the borrowed panel "below" the degree cards per the spec; below seven tall cards it rendered off-screen, so the Borrowed switch looked dead. Spec-conformance alone is not done: before recommending or shipping a view switch, check its effect is visible above the fold at 390px and 1440px, and prefer integrating new content into the existing row over appending a section. (2026-11-05)
 
 ## Project-Specific Notes
 <!-- Notes relevant to this specific project -->

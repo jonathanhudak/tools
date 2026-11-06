@@ -10,8 +10,8 @@ import { useState, useMemo, useEffect } from 'react';
 import { Link } from '@tanstack/react-router';
 import { Badge } from '@hudak/ui/components/badge';
 import { InstrumentToggle } from '../Piano/InstrumentToggle';
-import { BorrowedChordPanel, BorrowedViewToggle } from '../shared/BorrowedChordPanel';
-import type { BorrowedView } from '@/data/borrowed-chords';
+import { BorrowedChordCard, ShowBorrowedSwitch } from '../shared/BorrowedChordCard';
+import { getBorrowedChords, interleaveByDegree, type BorrowedView } from '@/data/borrowed-chords';
 import { EXTENDED_CHORD_SCALE_MAPPINGS } from '@/data/chord-scale-extended';
 import { getScale } from '@/data/scales/scale-registry';
 import { ChordVoicingDisplay } from '../ChordScaleGame/ChordVoicingDisplay';
@@ -220,6 +220,18 @@ export function ChordScaleMatrix({
   onChange,
 }: ChordScaleMatrixProps) {
   const degrees = useMemo(() => buildScaleChords(selectedScaleType), [selectedScaleType]);
+  // Borrowed chords are defined against a major home key, so they only mix
+  // into the Major row (the route also coerces view → 'diatonic' otherwise).
+  const showBorrowed = view === 'borrowed' && selectedScaleType === 'major';
+  const slots = useMemo(
+    () =>
+      interleaveByDegree(
+        degrees,
+        (entry) => entry.romanNumeral,
+        showBorrowed ? getBorrowedChords(selectedKey) : [],
+      ),
+    [degrees, showBorrowed, selectedKey],
+  );
 
   return (
     <div className="space-y-5">
@@ -254,7 +266,9 @@ export function ChordScaleMatrix({
             {SCALE_TYPES.map(scale => (
               <button
                 key={scale}
-                onClick={() => onChange({ scale })}
+                onClick={() =>
+                  onChange(scale === 'major' ? { scale } : { scale, view: 'diatonic' })
+                }
                 className={[
                   'text-xs min-h-11 px-4 py-1.5 rounded-full border-2 font-medium transition-all flex-shrink-0',
                   selectedScaleType === scale
@@ -267,46 +281,74 @@ export function ChordScaleMatrix({
             ))}
           </div>
           <div className="flex items-center gap-2 ml-auto">
-            <BorrowedViewToggle view={view} onChange={(next) => onChange({ view: next })} />
+            <ShowBorrowedSwitch
+              checked={showBorrowed}
+              onChange={(on) =>
+                onChange(on ? { view: 'borrowed', scale: 'major' } : { view: 'diatonic' })
+              }
+            />
             <InstrumentToggle instrument={instrument} onChange={(next) => onChange({ instrument: next })} />
           </div>
         </div>
       </div>
 
+      {showBorrowed && (
+        <p className="text-xs text-[var(--ink-secondary)]">
+          Dashed cards are chords {selectedKey} major borrows from its parallel modes, placed
+          beside the diatonic chord on the same degree.
+        </p>
+      )}
+
       {/* ── Degree cards — break out of max-w container on lg+ ────── */}
       <div className="lg:w-[100vw] lg:relative lg:left-1/2 lg:-translate-x-1/2">
-        {/* Mobile: horizontal swipeable carousel */}
+        {/* Swipeable carousel: always on mobile; on lg+ too once borrowed
+            chords push the row past the 7-column grid. */}
         <div
-          className="flex gap-4 overflow-x-auto pb-3 snap-x snap-mandatory px-4 lg:hidden"
-          style={{ scrollbarWidth: 'none' }}
+          className={[
+            'flex gap-4 overflow-x-auto pb-3 snap-x snap-mandatory px-4 items-start',
+            showBorrowed ? 'lg:px-8' : 'lg:hidden',
+          ].join(' ')}
+          style={{ scrollbarWidth: showBorrowed ? 'thin' : 'none' }}
         >
-          {degrees.map(entry => (
+          {slots.map(slot => (
             <div
-              key={`${entry.degree}-${selectedScaleType}-${selectedKey}`}
+              key={
+                slot.kind === 'diatonic'
+                  ? `${slot.item.degree}-${selectedScaleType}-${selectedKey}`
+                  : slot.chord.id
+              }
+              data-row-slot={slot.kind}
+              data-numeral={slot.kind === 'diatonic' ? slot.item.romanNumeral : slot.chord.romanNumeral}
               className="snap-start flex-shrink-0 w-[75vw] sm:w-[280px]"
             >
+              {slot.kind === 'diatonic' ? (
+                <FullDegreeCard
+                  entry={slot.item}
+                  rootKey={selectedKey}
+                  instrument={instrument}
+                  onInstrumentChange={(next) => onChange({ instrument: next })}
+                />
+              ) : (
+                <BorrowedChordCard chord={slot.chord} homeKey={selectedKey} instrument={instrument} />
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop (lg+), diatonic only: all 7 visible in a grid */}
+        {!showBorrowed && (
+          <div className="hidden lg:grid lg:grid-cols-7 gap-3 px-8">
+            {degrees.map(entry => (
               <FullDegreeCard
+                key={`${entry.degree}-${selectedScaleType}-${selectedKey}`}
                 entry={entry}
                 rootKey={selectedKey}
                 instrument={instrument}
                 onInstrumentChange={(next) => onChange({ instrument: next })}
               />
-            </div>
-          ))}
-        </div>
-
-        {/* Desktop (lg+): all 7 visible in a grid */}
-        <div className="hidden lg:grid lg:grid-cols-7 gap-3 px-8">
-          {degrees.map(entry => (
-            <FullDegreeCard
-              key={`${entry.degree}-${selectedScaleType}-${selectedKey}`}
-              entry={entry}
-              rootKey={selectedKey}
-              instrument={instrument}
-              onInstrumentChange={(next) => onChange({ instrument: next })}
-            />
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* ── Beyond the matrix: altered & non-diatonic chords ───────── */}
@@ -353,11 +395,6 @@ export function ChordScaleMatrix({
           ))}
         </div>
       </div>
-
-      {/* ── Borrowed chords (modal interchange), under the degree cards ── */}
-      {view === 'borrowed' && (
-        <BorrowedChordPanel homeKey={selectedKey} instrument={instrument} />
-      )}
     </div>
   );
 }
